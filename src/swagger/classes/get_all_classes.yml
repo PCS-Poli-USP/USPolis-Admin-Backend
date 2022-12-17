@@ -1,0 +1,13 @@
+Buscar turmas
+---
+tags:
+  - Turmas
+parameters:
+  - name: username
+    in: header
+    required: true
+responses:
+  200:
+    description:
+    schema:
+      $ref : '#/definitions/Class'

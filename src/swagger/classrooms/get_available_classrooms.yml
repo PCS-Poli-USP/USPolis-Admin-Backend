@@ -1,0 +1,21 @@
+Buscar salas disponíveis em um horário
+---
+tags:
+  - Salas
+parameters:
+  - name: username
+    in: header
+    required: true
+  - name: start_time
+    in: query
+    required: true
+  - name: end_time
+    in: query
+    required: true
+  - name: week_day
+    in: query
+    required: true
+    enum: [seg, ter, qua, qui, sex]
+responses:
+  200:
+    description:

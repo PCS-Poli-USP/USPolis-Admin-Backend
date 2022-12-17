@@ -1,0 +1,13 @@
+Buscar salas
+---
+tags:
+  - Salas
+parameters:
+  - name: username
+    in: header
+    required: true
+responses:
+  200:
+    description: Salas cadastradas pelo usuário
+    schema:
+      $ref: '#/definitions/Classroom'

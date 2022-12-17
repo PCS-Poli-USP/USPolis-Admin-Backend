@@ -1,0 +1,181 @@
+_id,building,class_code,class_type,classroom,created_by,end_period,end_time,has_to_be_allocated,pendings,preferences.accessibility,preferences.air_conditioning,preferences.building,preferences.projector,professor,start_period,start_time,subject_code,subject_name,subscribers,updated_at,vacancies,week_day
+6390df7a0d97fb7dc16400b5,Biênio,2023101,Teórica,C2-03,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT2453,Cálculo Diferencial e Integral I,10,07/12/2022 16:25,5,seg
+6390df7a0d97fb7dc16400b7,Biênio,2023101,Teórica,C2-08,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT2453,Cálculo Diferencial e Integral I,10,07/12/2022 16:25,5,qui
+6390df7a0d97fb7dc16400b9,Biênio,2023101,Teórica,C2-04,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT2453,Cálculo Diferencial e Integral I,10,07/12/2022 16:25,5,sex
+6390df7a0d97fb7dc16400bb,Biênio,2023102,Teórica,C2-13,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,MAT2453,Cálculo Diferencial e Integral I,9,07/12/2022 16:25,5,ter
+6390df7a0d97fb7dc16400bd,Biênio,2023102,Teórica,C2-07,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,MAT2453,Cálculo Diferencial e Integral I,9,07/12/2022 16:25,5,qui
+6390df7a0d97fb7dc16400bf,Biênio,2023102,Teórica,C2-10,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT2453,Cálculo Diferencial e Integral I,9,07/12/2022 16:25,5,sex
+6390df7a0d97fb7dc16400c1,Biênio,2023103,Teórica,C2-01,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,MAT2453,Cálculo Diferencial e Integral I,4,07/12/2022 16:25,1,ter
+6390df7a0d97fb7dc16400c3,Biênio,2023103,Teórica,A1-01,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,MAT2453,Cálculo Diferencial e Integral I,4,07/12/2022 16:25,1,qui
+6390df7a0d97fb7dc16400c5,Biênio,2023103,Teórica,C1-01,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT2453,Cálculo Diferencial e Integral I,4,07/12/2022 16:25,1,sex
+6390df7a0d97fb7dc16400c7,Biênio,2023104,Teórica,C2-08,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,MAT2453,Cálculo Diferencial e Integral I,3,07/12/2022 16:25,5,seg
+6390df7a0d97fb7dc16400c9,Biênio,2023104,Teórica,A1-06,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT2453,Cálculo Diferencial e Integral I,3,07/12/2022 16:25,5,qua
+6390df7a0d97fb7dc16400cb,Biênio,2023104,Teórica,C1-01,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT2453,Cálculo Diferencial e Integral I,3,07/12/2022 16:25,5,sex
+6390df7a0d97fb7dc16400cd,Biênio,2023105,Teórica,C2-02,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,MAT2453,Cálculo Diferencial e Integral I,1,07/12/2022 16:25,5,seg
+6390df7a0d97fb7dc16400cf,Biênio,2023105,Teórica,A1-06,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT2453,Cálculo Diferencial e Integral I,1,07/12/2022 16:25,5,qua
+6390df7a0d97fb7dc16400d1,Biênio,2023105,Teórica,A1-02,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT2453,Cálculo Diferencial e Integral I,1,07/12/2022 16:25,5,sex
+6390df7a0d97fb7dc16400d3,Biênio,2023106,Teórica,C2-05,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT2453,Cálculo Diferencial e Integral I,6,07/12/2022 16:25,5,seg
+6390df7a0d97fb7dc16400d5,Biênio,2023106,Teórica,A1-03,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT2453,Cálculo Diferencial e Integral I,6,07/12/2022 16:25,5,qua
+6390df7a0d97fb7dc16400d7,Biênio,2023106,Teórica,A1-05,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT2453,Cálculo Diferencial e Integral I,6,07/12/2022 16:25,5,sex
+6390df7a0d97fb7dc16400d9,Biênio,2023107,Teórica,C1-04,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,MAT2453,Cálculo Diferencial e Integral I,4,07/12/2022 16:25,5,seg
+6390df7a0d97fb7dc16400db,Biênio,2023107,Teórica,C1-05,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT2453,Cálculo Diferencial e Integral I,4,07/12/2022 16:25,5,qua
+6390df7a0d97fb7dc16400dd,Biênio,2023107,Teórica,C2-04,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,MAT2453,Cálculo Diferencial e Integral I,4,07/12/2022 16:25,5,sex
+6390df7a0d97fb7dc16400df,Biênio,2023108,Teórica,C1-05,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT2453,Cálculo Diferencial e Integral I,7,07/12/2022 16:25,5,seg
+6390df7a0d97fb7dc16400e1,Biênio,2023108,Teórica,C2-09,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT2453,Cálculo Diferencial e Integral I,7,07/12/2022 16:25,5,qua
+6390df7a0d97fb7dc16400e3,Biênio,2023108,Teórica,C1-01,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,MAT2453,Cálculo Diferencial e Integral I,7,07/12/2022 16:25,5,sex
+6390df7a0d97fb7dc16400e5,Biênio,2023109,Teórica,C1-04,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT2453,Cálculo Diferencial e Integral I,4,07/12/2022 16:25,5,seg
+6390df7a0d97fb7dc16400e7,Biênio,2023109,Teórica,C1-01,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT2453,Cálculo Diferencial e Integral I,4,07/12/2022 16:25,5,qua
+6390df7a0d97fb7dc16400e9,Biênio,2023109,Teórica,C2-08,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT2453,Cálculo Diferencial e Integral I,4,07/12/2022 16:25,5,sex
+6390df7a0d97fb7dc16400eb,Biênio,2023110,Teórica,A1-02,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT2453,Cálculo Diferencial e Integral I,6,07/12/2022 16:25,10,seg
+6390df7a0d97fb7dc16400ed,Biênio,2023110,Teórica,A1-04,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT2453,Cálculo Diferencial e Integral I,6,07/12/2022 16:25,10,qua
+6390df7a0d97fb7dc16400ef,Biênio,2023110,Teórica,A1-03,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT2453,Cálculo Diferencial e Integral I,6,07/12/2022 16:25,10,sex
+6390df7a0d97fb7dc16400f1,Biênio,2023111,Teórica,C2-09,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT2453,Cálculo Diferencial e Integral I,5,07/12/2022 16:25,10,seg
+6390df7a0d97fb7dc16400f3,Biênio,2023111,Teórica,A1-04,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT2453,Cálculo Diferencial e Integral I,5,07/12/2022 16:25,10,qua
+6390df7a0d97fb7dc16400f5,Biênio,2023111,Teórica,C1-09,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT2453,Cálculo Diferencial e Integral I,5,07/12/2022 16:25,10,sex
+6390df7a0d97fb7dc16400f7,Biênio,2023112,Teórica,C2-07,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT2453,Cálculo Diferencial e Integral I,8,07/12/2022 16:25,5,seg
+6390df7a0d97fb7dc16400f9,Biênio,2023112,Teórica,C2-06,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT2453,Cálculo Diferencial e Integral I,8,07/12/2022 16:25,5,qua
+6390df7a0d97fb7dc16400fb,Biênio,2023112,Teórica,C1-09,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT2453,Cálculo Diferencial e Integral I,8,07/12/2022 16:25,5,sex
+6390df7a0d97fb7dc164010b,Biênio,2023101,Teórica,A1-02,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,(R) Yoshiharu Kohayakawa,2023-03-13,09:20,MAC2166,Introdução à Computação,4,07/12/2022 16:25,67,ter
+6390df7a0d97fb7dc164010d,Biênio,2023101,Teórica,A1-02,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,(R) Yoshiharu Kohayakawa,2023-03-13,13:10,MAC2166,Introdução à Computação,4,07/12/2022 16:25,67,qui
+6390df7a0d97fb7dc164010f,Biênio,2023102,Teórica,A1-06,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,(R) Cristina Gomes Fernandes,2023-03-13,07:30,MAC2166,Introdução à Computação,10,07/12/2022 16:25,67,ter
+6390df7a0d97fb7dc1640111,Biênio,2023102,Teórica,A1-02,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,(R) Cristina Gomes Fernandes,2023-03-13,07:30,MAC2166,Introdução à Computação,10,07/12/2022 16:25,67,qui
+6390df7a0d97fb7dc1640113,Biênio,2023103,Teórica,C1-04,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,Guilherme Oliveira Mota,2023-03-13,09:20,MAC2166,Introdução à Computação,7,07/12/2022 16:25,67,ter
+6390df7a0d97fb7dc1640115,Biênio,2023103,Teórica,A1-02,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,Guilherme Oliveira Mota,2023-03-13,09:20,MAC2166,Introdução à Computação,7,07/12/2022 16:25,67,qui
+6390df7a0d97fb7dc1640117,Biênio,2023104,Teórica,A1-02,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,(R) Alair Pereira do Lago,2023-03-13,13:10,MAC2166,Introdução à Computação,11,07/12/2022 16:25,72,seg
+6390df7a0d97fb7dc1640119,Biênio,2023104,Teórica,C1-03,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,(R) Alair Pereira do Lago,2023-03-13,13:10,MAC2166,Introdução à Computação,11,07/12/2022 16:25,72,qua
+6390df7a0d97fb7dc164011b,Biênio,2023105,Teórica,C1-09,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,(R) Alair Pereira do Lago,2023-03-13,15:00,MAC2166,Introdução à Computação,6,07/12/2022 16:25,72,seg
+6390df7a0d97fb7dc164011d,Biênio,2023105,Teórica,A1-01,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,(R) Alair Pereira do Lago,2023-03-13,15:00,MAC2166,Introdução à Computação,6,07/12/2022 16:25,72,qua
+6390df7a0d97fb7dc164011f,Biênio,2023106,Teórica,C2-05,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,(R) Leliane Nunes de Barros,2023-03-13,09:20,MAC2166,Introdução à Computação,2,07/12/2022 16:25,72,qua
+6390df7a0d97fb7dc1640121,Biênio,2023106,Teórica,C2-06,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,(R) Leliane Nunes de Barros,2023-03-13,07:30,MAC2166,Introdução à Computação,2,07/12/2022 16:25,72,sex
+6390df7a0d97fb7dc1640123,Biênio,2023107,Teórica,C2-10,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,(R) Paulo Andre Vechiatto de Miranda,2023-03-13,07:30,MAC2166,Introdução à Computação,1,07/12/2022 16:25,72,qui
+6390df7a0d97fb7dc1640125,Biênio,2023107,Teórica,C2-05,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,(R) Paulo Andre Vechiatto de Miranda,2023-03-13,15:00,MAC2166,Introdução à Computação,1,07/12/2022 16:25,72,sex
+6390df7a0d97fb7dc1640127,Biênio,2023108,Teórica,C2-13,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,(R) Paulo Andre Vechiatto de Miranda,2023-03-13,09:20,MAC2166,Introdução à Computação,7,07/12/2022 16:25,72,qui
+6390df7a0d97fb7dc1640129,Biênio,2023108,Teórica,C2-10,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,(R) Paulo Andre Vechiatto de Miranda,2023-03-13,13:10,MAC2166,Introdução à Computação,7,07/12/2022 16:25,72,sex
+6390df7a0d97fb7dc164012b,Biênio,2023109,Teórica,C2-13,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,(R) Marcelo Finger,2023-03-13,07:30,MAC2166,Introdução à Computação,4,07/12/2022 16:25,72,ter
+6390df7a0d97fb7dc164012d,Biênio,2023109,Teórica,A1-06,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,(R) Marcelo Finger,2023-03-13,07:30,MAC2166,Introdução à Computação,4,07/12/2022 16:25,72,sex
+6390df7a0d97fb7dc164012f,Biênio,2023110,Teórica,C2-03,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,(R) Marcelo Finger,2023-03-13,09:20,MAC2166,Introdução à Computação,0,07/12/2022 16:25,72,ter
+6390df7a0d97fb7dc1640131,Biênio,2023110,Teórica,C2-01,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,(R) Marcelo Finger,2023-03-13,09:20,MAC2166,Introdução à Computação,0,07/12/2022 16:25,72,sex
+6390df7a0d97fb7dc1640133,Biênio,2023111,Teórica,C1-05,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,(R) Ronaldo Fumio Hashimoto,2023-03-13,15:00,MAC2166,Introdução à Computação,5,07/12/2022 16:25,72,qua
+6390df7a0d97fb7dc1640135,Biênio,2023111,Teórica,C1-03,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,(R) Ronaldo Fumio Hashimoto,2023-03-13,09:20,MAC2166,Introdução à Computação,5,07/12/2022 16:25,72,sex
+6390df7a0d97fb7dc1640137,Biênio,2023112,Teórica,C1-04,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,MAC2166,Introdução à Computação,0,07/12/2022 16:25,72,qua
+6390df7a0d97fb7dc1640139,Biênio,2023112,Teórica,C2-08,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAC2166,Introdução à Computação,0,07/12/2022 16:25,72,sex
+6390df7a0d97fb7dc164013b,Biênio,2023113,Teórica,C1-03,luizhiguti,2023-07-15,20:10,true,0,false,false,Biênio,false,(R) André Fujita,2023-03-13,18:30,MAC2166,Introdução à Computação,21,07/12/2022 16:25,50,seg
+6390df7a0d97fb7dc164013d,Biênio,2023113,Teórica,A1-04,luizhiguti,2023-07-15,18:40,true,0,false,false,Biênio,false,(R) André Fujita,2023-03-13,17:00,MAC2166,Introdução à Computação,21,07/12/2022 16:25,50,sex
+6390df7a0d97fb7dc164013f,Biênio,2023114,Teórica,A1-04,luizhiguti,2023-07-15,18:40,true,0,false,false,Biênio,false,(R) André Fujita,2023-03-13,17:00,MAC2166,Introdução à Computação,35,07/12/2022 16:25,80,ter
+6390df7a0d97fb7dc1640141,Biênio,2023114,Teórica,C1-05,luizhiguti,2023-07-15,18:40,true,0,false,false,Biênio,false,(R) André Fujita,2023-03-13,17:00,MAC2166,Introdução à Computação,35,07/12/2022 16:25,80,qui
+6390df7b0d97fb7dc1640145,Biênio,2023101,Teórica,A1-04,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,MAT2455,Cálculo Diferencial e Integral III,44,07/12/2022 16:25,80,ter
+6390df7b0d97fb7dc1640147,Biênio,2023101,Teórica,C1-09,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,MAT2455,Cálculo Diferencial e Integral III,44,07/12/2022 16:25,80,qui
+6390df7b0d97fb7dc1640149,Biênio,2023102,Teórica,A1-06,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,MAT2455,Cálculo Diferencial e Integral III,89,07/12/2022 16:25,80,ter
+6390df7b0d97fb7dc164014b,Biênio,2023102,Teórica,A1-02,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,MAT2455,Cálculo Diferencial e Integral III,89,07/12/2022 16:25,80,qui
+6390df7b0d97fb7dc164014d,Biênio,2023103,Teórica,C2-09,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,MAT2455,Cálculo Diferencial e Integral III,39,07/12/2022 16:25,80,ter
+6390df7b0d97fb7dc164014f,Biênio,2023103,Teórica,C1-04,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,MAT2455,Cálculo Diferencial e Integral III,39,07/12/2022 16:25,80,qui
+6390df7b0d97fb7dc1640151,Biênio,2023104,Teórica,A1-06,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,MAT2455,Cálculo Diferencial e Integral III,85,07/12/2022 16:25,80,qua
+6390df7b0d97fb7dc1640153,Biênio,2023104,Teórica,A1-06,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,MAT2455,Cálculo Diferencial e Integral III,85,07/12/2022 16:25,80,qui
+6390df7b0d97fb7dc1640155,Biênio,2023105,Teórica,C2-06,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,MAT2455,Cálculo Diferencial e Integral III,30,07/12/2022 16:25,80,seg
+6390df7b0d97fb7dc1640157,Biênio,2023105,Teórica,C1-05,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,MAT2455,Cálculo Diferencial e Integral III,30,07/12/2022 16:25,80,qui
+6390df7b0d97fb7dc1640159,Biênio,2023106,Teórica,C2-03,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,MAT2455,Cálculo Diferencial e Integral III,44,07/12/2022 16:25,80,seg
+6390df7b0d97fb7dc164015b,Biênio,2023106,Teórica,C1-09,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,MAT2455,Cálculo Diferencial e Integral III,44,07/12/2022 16:25,80,qui
+6390df7b0d97fb7dc164015d,Biênio,2023107,Teórica,C2-09,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,MAT2455,Cálculo Diferencial e Integral III,47,07/12/2022 16:25,80,seg
+6390df7b0d97fb7dc164015f,Biênio,2023107,Teórica,C2-09,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,MAT2455,Cálculo Diferencial e Integral III,47,07/12/2022 16:25,80,qui
+6390df7b0d97fb7dc1640161,Biênio,2023108,Teórica,C2-13,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,MAT2455,Cálculo Diferencial e Integral III,55,07/12/2022 16:25,80,seg
+6390df7b0d97fb7dc1640163,Biênio,2023108,Teórica,C2-06,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,MAT2455,Cálculo Diferencial e Integral III,55,07/12/2022 16:25,80,qui
+6390df7b0d97fb7dc1640165,Biênio,2023109,Teórica,C2-05,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,MAT2455,Cálculo Diferencial e Integral III,77,07/12/2022 16:25,82,seg
+6390df7b0d97fb7dc1640167,Biênio,2023109,Teórica,C1-04,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,MAT2455,Cálculo Diferencial e Integral III,77,07/12/2022 16:25,82,qua
+6390df7b0d97fb7dc1640169,Biênio,2023110,Teórica,C1-01,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT2455,Cálculo Diferencial e Integral III,50,07/12/2022 16:25,80,seg
+6390df7b0d97fb7dc164016b,Biênio,2023110,Teórica,A1-02,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT2455,Cálculo Diferencial e Integral III,50,07/12/2022 16:25,80,qua
+6390df7b0d97fb7dc164016d,Biênio,2023111,Teórica,C2-10,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,MAT2455,Cálculo Diferencial e Integral III,57,07/12/2022 16:25,80,seg
+6390df7b0d97fb7dc164016f,Biênio,2023111,Teórica,C2-05,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,MAT2455,Cálculo Diferencial e Integral III,57,07/12/2022 16:25,80,qua
+6390df7b0d97fb7dc1640171,Biênio,2023112,Teórica,A1-03,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT2455,Cálculo Diferencial e Integral III,66,07/12/2022 16:25,80,seg
+6390df7b0d97fb7dc1640173,Biênio,2023112,Teórica,C1-03,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT2455,Cálculo Diferencial e Integral III,66,07/12/2022 16:25,80,qua
+6390df7b0d97fb7dc1640176,Biênio,2023101,Teórica,C2-06,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT3457,Álgebra Linear I,7,07/12/2022 16:25,17,seg
+6390df7b0d97fb7dc1640178,Biênio,2023101,Teórica,C2-03,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT3457,Álgebra Linear I,7,07/12/2022 16:25,17,qui
+6390df7b0d97fb7dc164017a,Biênio,2023102,Teórica,C1-01,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,MAT3457,Álgebra Linear I,18,07/12/2022 16:25,5,ter
+6390df7b0d97fb7dc164017c,Biênio,2023102,Teórica,C1-04,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,MAT3457,Álgebra Linear I,18,07/12/2022 16:25,5,qui
+6390df7b0d97fb7dc164017e,Biênio,2023103,Teórica,C1-03,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,MAT3457,Álgebra Linear I,12,07/12/2022 16:25,5,ter
+6390df7b0d97fb7dc1640180,Biênio,2023103,Teórica,C2-03,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,MAT3457,Álgebra Linear I,12,07/12/2022 16:25,5,qui
+6390df7b0d97fb7dc1640182,Biênio,2023104,Teórica,C1-04,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT3457,Álgebra Linear I,8,07/12/2022 16:25,11,qua
+6390df7b0d97fb7dc1640184,Biênio,2023104,Teórica,C2-10,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT3457,Álgebra Linear I,8,07/12/2022 16:25,11,sex
+6390df7b0d97fb7dc1640186,Biênio,2023105,Teórica,C1-05,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT3457,Álgebra Linear I,4,07/12/2022 16:25,19,qua
+6390df7b0d97fb7dc1640188,Biênio,2023105,Teórica,C2-13,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT3457,Álgebra Linear I,4,07/12/2022 16:25,19,sex
+6390df7b0d97fb7dc164018a,Biênio,2023106,Teórica,C1-03,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT3457,Álgebra Linear I,6,07/12/2022 16:25,10,seg
+6390df7b0d97fb7dc164018c,Biênio,2023106,Teórica,C2-03,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT3457,Álgebra Linear I,6,07/12/2022 16:25,10,qui
+6390df7b0d97fb7dc164018e,Biênio,2023107,Teórica,C2-09,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT3457,Álgebra Linear I,3,07/12/2022 16:25,14,seg
+6390df7b0d97fb7dc1640190,Biênio,2023107,Teórica,C2-07,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT3457,Álgebra Linear I,3,07/12/2022 16:25,14,qua
+6390df7b0d97fb7dc1640192,Biênio,2023108,Teórica,C2-10,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT3457,Álgebra Linear I,1,07/12/2022 16:25,10,seg
+6390df7b0d97fb7dc1640194,Biênio,2023108,Teórica,C2-02,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT3457,Álgebra Linear I,1,07/12/2022 16:25,10,qua
+6390df7b0d97fb7dc1640196,Biênio,2023109,Teórica,C1-04,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT3457,Álgebra Linear I,4,07/12/2022 16:25,10,seg
+6390df7b0d97fb7dc1640198,Biênio,2023109,Teórica,C2-02,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT3457,Álgebra Linear I,4,07/12/2022 16:25,10,qua
+6390df7b0d97fb7dc164019a,Biênio,2023110,Teórica,C2-04,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT3457,Álgebra Linear I,4,07/12/2022 16:25,20,seg
+6390df7b0d97fb7dc164019c,Biênio,2023110,Teórica,A1-05,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT3457,Álgebra Linear I,4,07/12/2022 16:25,20,qua
+6390df7b0d97fb7dc164019e,Biênio,2023111,Teórica,CT-04,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT3457,Álgebra Linear I,2,07/12/2022 16:25,10,seg
+6390df7b0d97fb7dc16401a0,Biênio,2023111,Teórica,C2-03,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,MAT3457,Álgebra Linear I,2,07/12/2022 16:25,10,qua
+6390df7b0d97fb7dc16401a2,Biênio,2023112,Teórica,C2-08,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT3457,Álgebra Linear I,6,07/12/2022 16:25,10,seg
+6390df7b0d97fb7dc16401a4,Biênio,2023112,Teórica,C2-13,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,MAT3457,Álgebra Linear I,6,07/12/2022 16:25,10,qua
+6390df7b0d97fb7dc16401a6,Biênio,2023101,Teórica,C2-07,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,PEA3100,"Energia, Meio Ambiente e Sustentabilidade",5,07/12/2022 16:25,79,seg
+6390df7b0d97fb7dc16401a8,Biênio,2023101,Teórica,C2-13,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,PEA3100,"Energia, Meio Ambiente e Sustentabilidade",5,07/12/2022 16:25,79,sex
+6390df7b0d97fb7dc16401aa,Biênio,2023102,Teórica,C2-04,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,Sérgio Luiz Pereira,2023-03-13,13:10,PEA3100,"Energia, Meio Ambiente e Sustentabilidade",6,07/12/2022 16:25,79,seg
+6390df7b0d97fb7dc16401ac,Biênio,2023102,Teórica,A1-03,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,Sérgio Luiz Pereira,2023-03-13,13:10,PEA3100,"Energia, Meio Ambiente e Sustentabilidade",6,07/12/2022 16:25,79,sex
+6390df7b0d97fb7dc16401ae,Biênio,2023103,Teórica,A1-01,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,PEA3100,"Energia, Meio Ambiente e Sustentabilidade",6,07/12/2022 16:25,79,seg
+6390df7b0d97fb7dc16401b0,Biênio,2023103,Teórica,C1-01,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,PEA3100,"Energia, Meio Ambiente e Sustentabilidade",6,07/12/2022 16:25,79,qua
+6390df7b0d97fb7dc16401b2,Biênio,2023150,Teórica,C2-05,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,Eduardo Franco de Monlevade,2023-03-13,09:20,PMT3200,Ciência dos Materiais,1,07/12/2022 16:25,93,qui
+6390df7b0d97fb7dc16401b4,Biênio,2023150,Teórica,CT-04,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,Helio Goldenstein,2023-03-13,09:20,PMT3200,Ciência dos Materiais,1,07/12/2022 16:25,93,sex
+6390df7c0d97fb7dc16401b6,Biênio,2023101,Teórica,A1-06,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,0303200,Probabilidade,93,07/12/2022 16:25,83,qui
+6390df7c0d97fb7dc16401b8,Biênio,2023102,Teórica,C2-02,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,0303200,Probabilidade,73,07/12/2022 16:25,96,sex
+6390df7c0d97fb7dc16401ba,Biênio,2023103,Teórica,C2-07,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,0303200,Probabilidade,39,07/12/2022 16:25,86,ter
+6390df7c0d97fb7dc16401bc,Biênio,2023105,Teórica,C1-04,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,0303200,Probabilidade,68,07/12/2022 16:25,83,ter
+6390df7c0d97fb7dc16401be,Biênio,2023106,Teórica,C2-03,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,0303200,Probabilidade,78,07/12/2022 16:25,81,sex
+6390df7c0d97fb7dc16401c0,Biênio,2023107,Teórica,C2-04,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,0303200,Probabilidade,33,07/12/2022 16:25,83,sex
+6390df7c0d97fb7dc16401c2,Biênio,2023108,Teórica,C1-03,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,0303200,Probabilidade,41,07/12/2022 16:25,86,sex
+6390df7c0d97fb7dc16401c4,Biênio,2023109,Teórica,CT-04,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,0303200,Probabilidade,54,07/12/2022 16:25,86,qua
+6390df7c0d97fb7dc16401c6,Biênio,2023110,Teórica,C1-04,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,0303200,Probabilidade,59,07/12/2022 16:25,85,sex
+6390df7c0d97fb7dc16401c8,Biênio,2023111,Teórica,C2-02,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,0303200,Probabilidade,71,07/12/2022 16:25,85,qua
+6390df7c0d97fb7dc16401ca,Biênio,2023112,Teórica,C2-06,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,0303200,Probabilidade,57,07/12/2022 16:25,85,ter
+6390df7c0d97fb7dc16401cc,Biênio,2023113,Teórica,A1-01,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,0303200,Probabilidade,61,07/12/2022 16:25,86,ter
+6390df7c0d97fb7dc16401ce,Biênio,2023101,Teórica,A1-02,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,4323101,Física I,0,07/12/2022 16:25,0,ter
+6390df7c0d97fb7dc16401d0,Biênio,2023101,Teórica,C2-10,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,4323101,Física I,0,07/12/2022 16:25,0,qui
+6390df7c0d97fb7dc16401d2,Biênio,2023102,Teórica,C2-10,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,4323101,Física I,0,07/12/2022 16:25,0,ter
+6390df7c0d97fb7dc16401d4,Biênio,2023102,Teórica,C1-04,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,4323101,Física I,0,07/12/2022 16:25,0,qui
+6390df7c0d97fb7dc16401d6,Biênio,2023103,Teórica,C2-05,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,4323101,Física I,0,07/12/2022 16:25,0,ter
+6390df7c0d97fb7dc16401d8,Biênio,2023103,Teórica,C2-04,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,4323101,Física I,0,07/12/2022 16:25,0,qui
+6390df7c0d97fb7dc16401da,Biênio,2023104,Teórica,CT-04,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,4323101,Física I,0,07/12/2022 16:25,0,ter
+6390df7c0d97fb7dc16401dc,Biênio,2023104,Teórica,C2-02,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,4323101,Física I,0,07/12/2022 16:25,0,qua
+6390df7c0d97fb7dc16401de,Biênio,2023105,Teórica,A1-03,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,4323101,Física I,0,07/12/2022 16:25,0,ter
+6390df7c0d97fb7dc16401e0,Biênio,2023105,Teórica,C2-04,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,4323101,Física I,0,07/12/2022 16:25,0,qua
+6390df7c0d97fb7dc16401e2,Biênio,2023106,Teórica,CT-04,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,4323101,Física I,0,07/12/2022 16:25,0,seg
+6390df7c0d97fb7dc16401e4,Biênio,2023106,Teórica,C2-09,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,4323101,Física I,0,07/12/2022 16:25,0,qua
+6390df7c0d97fb7dc16401e6,Biênio,2023107,Teórica,A1-02,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,4323101,Física I,0,07/12/2022 16:25,0,seg
+6390df7c0d97fb7dc16401e8,Biênio,2023107,Teórica,C2-06,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,4323101,Física I,0,07/12/2022 16:25,0,qui
+6390df7c0d97fb7dc16401ea,Biênio,2023108,Teórica,C2-03,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,4323101,Física I,0,07/12/2022 16:25,0,seg
+6390df7c0d97fb7dc16401ec,Biênio,2023108,Teórica,C2-02,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,4323101,Física I,0,07/12/2022 16:25,0,qui
+6390df7c0d97fb7dc16401ee,Biênio,2023109,Teórica,C2-09,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,4323101,Física I,0,07/12/2022 16:25,0,ter
+6390df7c0d97fb7dc16401f0,Biênio,2023109,Teórica,C1-01,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,4323101,Física I,0,07/12/2022 16:25,0,qui
+6390df7c0d97fb7dc16401f2,Biênio,2023110,Teórica,CT-04,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,4323101,Física I,0,07/12/2022 16:25,0,ter
+6390df7c0d97fb7dc16401f4,Biênio,2023110,Teórica,A1-05,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,4323101,Física I,0,07/12/2022 16:25,0,qui
+6390df7c0d97fb7dc16401f6,Biênio,2023111,Teórica,C2-13,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,4323101,Física I,0,07/12/2022 16:25,0,ter
+6390df7c0d97fb7dc16401f8,Biênio,2023111,Teórica,C2-05,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,4323101,Física I,0,07/12/2022 16:25,0,qui
+6390df7c0d97fb7dc16401fa,Biênio,2023112,Teórica,C2-10,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,4323101,Física I,0,07/12/2022 16:25,0,ter
+6390df7c0d97fb7dc16401fc,Biênio,2023112,Teórica,C2-05,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,4323101,Física I,0,07/12/2022 16:25,0,qui
+6390df7c0d97fb7dc16401fe,Biênio,2023101,Teórica,A1-03,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,4323203,Física III,90,07/12/2022 16:25,80,ter
+6390df7c0d97fb7dc1640200,Biênio,2023101,Teórica,A1-04,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,4323203,Física III,90,07/12/2022 16:25,80,qui
+6390df7c0d97fb7dc1640202,Biênio,2023102,Teórica,A1-05,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,4323203,Física III,95,07/12/2022 16:25,80,ter
+6390df7c0d97fb7dc1640204,Biênio,2023102,Teórica,A1-03,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,4323203,Física III,95,07/12/2022 16:25,80,qui
+6390df7c0d97fb7dc1640206,Biênio,2023103,Teórica,C1-03,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,4323203,Física III,51,07/12/2022 16:25,80,ter
+6390df7c0d97fb7dc1640208,Biênio,2023103,Teórica,C1-05,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,4323203,Física III,51,07/12/2022 16:25,80,qui
+6390df7c0d97fb7dc164020a,Biênio,2023104,Teórica,A1-05,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,4323203,Física III,91,07/12/2022 16:25,80,qua
+6390df7c0d97fb7dc164020c,Biênio,2023104,Teórica,A1-04,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,4323203,Física III,91,07/12/2022 16:25,80,qui
+6390df7c0d97fb7dc164020e,Biênio,2023105,Teórica,A1-06,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,4323203,Física III,29,07/12/2022 16:25,80,seg
+6390df7c0d97fb7dc1640210,Biênio,2023105,Teórica,A1-03,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,4323203,Física III,29,07/12/2022 16:25,80,qui
+6390df7c0d97fb7dc1640212,Biênio,2023106,Teórica,A1-03,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,4323203,Física III,42,07/12/2022 16:25,80,seg
+6390df7c0d97fb7dc1640214,Biênio,2023106,Teórica,C2-04,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,4323203,Física III,42,07/12/2022 16:25,80,qui
+6390df7c0d97fb7dc1640216,Biênio,2023107,Teórica,A1-04,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,4323203,Física III,51,07/12/2022 16:25,80,seg
+6390df7c0d97fb7dc1640218,Biênio,2023107,Teórica,C1-03,luizhiguti,2023-07-15,16:40,true,0,false,false,Biênio,false,,2023-03-13,15:00,4323203,Física III,51,07/12/2022 16:25,80,qui
+6390df7c0d97fb7dc164021a,Biênio,2023108,Teórica,C2-01,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,4323203,Física III,58,07/12/2022 16:25,80,seg
+6390df7c0d97fb7dc164021c,Biênio,2023108,Teórica,C2-13,luizhiguti,2023-07-15,14:50,true,0,false,false,Biênio,false,,2023-03-13,13:10,4323203,Física III,58,07/12/2022 16:25,80,qui
+6390df7c0d97fb7dc164021e,Biênio,2023109,Teórica,C2-01,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,4323203,Física III,67,07/12/2022 16:25,80,seg
+6390df7c0d97fb7dc1640220,Biênio,2023109,Teórica,C2-08,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,4323203,Física III,67,07/12/2022 16:25,80,qua
+6390df7c0d97fb7dc1640222,Biênio,2023110,Teórica,A1-01,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,4323203,Física III,47,07/12/2022 16:25,80,seg
+6390df7c0d97fb7dc1640224,Biênio,2023110,Teórica,A1-03,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,4323203,Física III,47,07/12/2022 16:25,80,qua
+6390df7c0d97fb7dc1640226,Biênio,2023111,Teórica,C2-13,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,4323203,Física III,58,07/12/2022 16:25,80,seg
+6390df7c0d97fb7dc1640228,Biênio,2023111,Teórica,C2-01,luizhiguti,2023-07-15,09:10,true,0,false,false,Biênio,false,,2023-03-13,07:30,4323203,Física III,58,07/12/2022 16:25,80,qua
+6390df7c0d97fb7dc164022a,Biênio,2023112,Teórica,C2-04,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,4323203,Física III,61,07/12/2022 16:25,80,seg
+6390df7c0d97fb7dc164022c,Biênio,2023112,Teórica,A1-05,luizhiguti,2023-07-15,11:00,true,0,false,false,Biênio,false,,2023-03-13,09:20,4323203,Física III,61,07/12/2022 16:25,80,qua

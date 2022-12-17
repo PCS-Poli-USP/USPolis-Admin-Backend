@@ -1,0 +1,20 @@
+Cadastrar informações das turmas buscadas no Jupiterweb
+---
+tags:
+  - Turmas
+parameters:
+  - name: username
+    in: header
+    required: true
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: array
+      example: [PCS3560, PCS3860]
+      items:
+        type: string
+
+responses:
+  200:
+    description:

@@ -1,0 +1,137 @@
+_id,accessibility,air_conditioning,building,capacity,classroom_name,created_by,floor,projector,updated_at
+63629088e2d45a83eecada34,false,false,Elétrica,60,B2-01,,1,false,10/03/2018 19:27
+63629088e2d45a83eecada35,true,true,Elétrica,58,B2-03,,1,false,10/03/2018 19:40
+63629088e2d45a83eecada36,true,true,Mecânica,90,A02,,0,false,23/02/2018 21:17
+63629088e2d45a83eecada37,true,true,Mecânica,90,A07,,0,false,23/02/2018 21:18
+63629088e2d45a83eecada3b,true,true,Civil,100,S-05,,0,false,23/02/2018 21:36
+63629088e2d45a83eecada3c,true,true,Mecânica,100,A09,,0,false,23/02/2018 21:41
+63629088e2d45a83eecada3d,true,true,120,1,WEB0,,0,true,07/11/2022 18:35
+63629088e2d45a83eecada3f,true,true,Produção,100,D1 009,,0,false,24/02/2018 00:02
+63629088e2d45a83eecada40,true,true,Produção,100,D2 013,,0,false,24/02/2018 00:03
+63629088e2d45a83eecada42,true,true,Civil,60,S-17,,1,false,06/03/2018 21:55
+63629088e2d45a83eecada43,true,true,Civil,60,S-23,,1,false,01/08/2018 23:24
+63629088e2d45a83eecada44,true,true,Elétrica,56,B2-04,,1,false,10/03/2018 19:40
+63629088e2d45a83eecada45,true,true,Elétrica,66,B2-05,,1,false,10/03/2018 19:40
+63629088e2d45a83eecada46,true,true,Elétrica,55,B2-06,,1,false,10/03/2018 19:41
+63629088e2d45a83eecada47,true,true,Elétrica,60,B2-08,,1,false,10/03/2018 19:32
+63629088e2d45a83eecada48,true,true,Elétrica,60,B2-09,,1,false,10/03/2018 19:32
+63629088e2d45a83eecada49,true,true,Elétrica,55,B2-10,,1,false,10/03/2018 19:41
+63629088e2d45a83eecada4a,true,true,Elétrica,50,A1-10,,0,false,10/03/2018 19:42
+63629088e2d45a83eecada4b,true,true,Elétrica,120,C1-30,,0,false,10/03/2018 19:34
+63629088e2d45a83eecada4c,true,true,Elétrica,60,C1-38,,0,false,10/03/2018 19:34
+63629088e2d45a83eecada4d,true,true,Elétrica,100,D1-01,,0,false,10/03/2018 19:42
+63629088e2d45a83eecada4e,true,true,Elétrica,100,D1-02,,0,false,10/03/2018 19:43
+63629088e2d45a83eecada4f,true,true,Elétrica,100,D1-03,,0,false,10/03/2018 19:43
+63629088e2d45a83eecada50,true,true,Elétrica,100,D1-04,,0,false,10/03/2018 19:37
+63629088e2d45a83eecada51,true,true,Elétrica,55,GD-03,,0,false,10/03/2018 19:43
+63629088e2d45a83eecada52,true,true,Elétrica,120,GD-04,,0,false,10/03/2018 19:38
+63629088e2d45a83eecada53,true,true,Elétrica,55,GD-05,,0,false,10/03/2018 19:38
+63629088e2d45a83eecada54,true,true,Elétrica,55,GD-06,,0,false,10/03/2018 19:38
+63629088e2d45a83eecada55,true,true,Elétrica,55,GD-07,,0,false,10/03/2018 19:39
+63629088e2d45a83eecada56,true,true,Elétrica,56,B2-12,,0,false,10/03/2018 19:42
+63629088e2d45a83eecada57,true,true,Produção,73,D1 008,,0,false,12/03/2018 21:46
+63629088e2d45a83eecada58,true,true,Produção,76,D1 009,,0,false,12/03/2018 21:46
+63629088e2d45a83eecada59,true,true,Produção,100,D1 010A,,0,false,12/03/2018 21:46
+63629088e2d45a83eecada5a,true,true,Produção,70,D2 013,,1,false,12/03/2018 21:48
+63629088e2d45a83eecada5b,true,true,Produção,70,D2 014,,1,false,12/03/2018 21:48
+63629088e2d45a83eecada5c,true,true,Produção,100,D2 015,,1,false,12/03/2018 21:49
+63629088e2d45a83eecada5d,true,true,Produção,40,D2 114,,1,false,12/03/2018 21:49
+63629088e2d45a83eecada5e,true,true,Produção,40,D2 116,,1,false,12/03/2018 21:49
+63629088e2d45a83eecada5f,true,true,Produção,50,OCEAN,,0,false,12/03/2018 21:50
+63629088e2d45a83eecada60,true,true,Produção,70,D1 007,,0,false,12/03/2018 21:52
+63629088e2d45a83eecada61,true,true,Produção,100,D2 116 e D1 007,,0,false,13/03/2018 20:53
+63629088e2d45a83eecada62,true,true,Prod/Bie,100,D2 014 e C2-06,,0,false,13/03/2018 21:29
+63629088e2d45a83eecada63,true,true,Elétrica,50,LabSoft,,0,false,13/03/2018 22:52
+63629088e2d45a83eecada65,false,false,Biênio,75,CT-04,luizhiguti,0,false,07/12/2022 12:40
+63629088e2d45a83eecada66,true,true,Biênio,80,C1-03,luizhiguti,1,true,07/12/2022 14:20
+63629088e2d45a83eecada67,false,false,Biênio,80,C1-04,luizhiguti,1,false,07/12/2022 12:43
+63629088e2d45a83eecada68,false,false,Biênio,80,C1-05,luizhiguti,1,false,07/12/2022 12:44
+63629088e2d45a83eecada69,false,false,Biênio,80,C1-09,luizhiguti,1,false,07/12/2022 12:44
+63629088e2d45a83eecada6a,false,false,Biênio,80,C2-01,luizhiguti,2,false,07/12/2022 12:44
+63629088e2d45a83eecada6b,false,false,Biênio,80,C2-02,luizhiguti,2,false,07/12/2022 12:44
+63629088e2d45a83eecada6c,false,false,Biênio,80,C2-03,luizhiguti,2,false,07/12/2022 12:44
+63629088e2d45a83eecada6d,false,false,Biênio,80,C2-04,luizhiguti,2,false,07/12/2022 12:44
+63629088e2d45a83eecada6e,false,false,Biênio,80,C2-05,luizhiguti,2,false,07/12/2022 12:44
+63629088e2d45a83eecada6f,false,false,Biênio,80,C2-06,luizhiguti,2,false,07/12/2022 12:44
+63629088e2d45a83eecada70,false,false,Biênio,80,C2-07,luizhiguti,2,false,07/12/2022 12:44
+63629088e2d45a83eecada71,false,false,Biênio,80,C2-08,luizhiguti,2,false,07/12/2022 12:44
+63629088e2d45a83eecada72,false,false,Biênio,80,C2-09,luizhiguti,2,false,07/12/2022 12:44
+63629088e2d45a83eecada73,false,false,Biênio,80,C2-10,luizhiguti,2,false,07/12/2022 12:45
+63629088e2d45a83eecada74,false,false,Biênio,80,C2-13,luizhiguti,2,false,07/12/2022 12:45
+63629088e2d45a83eecada75,false,false,Biênio,98,A1-01,luizhiguti,1,false,07/12/2022 14:59
+63629088e2d45a83eecada76,false,false,Biênio,98,A1-02,luizhiguti,1,false,07/12/2022 14:59
+63629088e2d45a83eecada77,false,false,Biênio,95,A1-03,luizhiguti,1,false,07/12/2022 14:57
+63629088e2d45a83eecada78,false,false,Biênio,95,A1-04,luizhiguti,1,false,07/12/2022 14:57
+63629088e2d45a83eecada79,false,false,Biênio,95,A1-05,luizhiguti,1,false,07/12/2022 14:57
+63629088e2d45a83eecada7a,false,false,Biênio,95,A1-06,luizhiguti,1,false,07/12/2022 14:57
+63629088e2d45a83eecada7b,false,false,Produção,57,D2 012,,0,false,31/07/2018 22:02
+63629088e2d45a83eecada7c,false,false,Eng. Química,100,B18t-2/4,,0,false,01/08/2018 20:33
+63629088e2d45a83eecada7d,false,false,Eng. Química,100,B18t-6/8,,0,false,01/08/2018 20:33
+63629088e2d45a83eecada7e,false,false,Eng. Química,100,B18t-10/12,,0,false,01/08/2018 20:34
+63629088e2d45a83eecada7f,false,false,Eng. Química,100,B20t-5/7,,0,false,01/08/2018 20:34
+63629088e2d45a83eecada80,false,false,Eng. Química,100,B20s-1/3,,1,false,01/08/2018 20:34
+63629088e2d45a83eecada81,false,false,Eng. Química,100,B21s-1/3,,1,false,01/08/2018 20:35
+63629088e2d45a83eecada82,false,false,Eng. Química,100,B21s-17/19,,1,false,01/08/2018 20:35
+63629088e2d45a83eecada83,false,false,Eng. Química,100,B22s-10/12,,1,false,01/08/2018 20:36
+63629088e2d45a83eecada84,false,false,Eng. Química,100,Comp. Bl. 21,,0,false,16/02/2019 20:07
+63629088e2d45a83eecada85,false,false,Civil,80,S-01,,1,false,01/08/2018 23:11
+63629088e2d45a83eecada86,false,false,Civil,81,S-03,,1,false,01/08/2018 23:11
+63629088e2d45a83eecada87,false,false,Civil,130,S-04,,1,false,01/08/2018 23:11
+63629088e2d45a83eecada88,false,false,Civil,83,S-05,,1,false,01/08/2018 23:12
+63629088e2d45a83eecada89,false,false,Civil,120,S-06,,1,false,01/08/2018 23:12
+63629088e2d45a83eecada8a,false,false,Civil,120,S-08,,1,false,01/08/2018 23:12
+63629088e2d45a83eecada8b,false,false,Civil,60,S-09,,1,false,01/08/2018 23:13
+63629088e2d45a83eecada8c,false,false,Civil,82,S-10,,1,false,01/08/2018 23:13
+63629088e2d45a83eecada8d,false,false,Civil,60,S-11,,1,false,01/08/2018 23:14
+63629088e2d45a83eecada8e,false,false,Civil,70,S-12,,1,false,01/08/2018 23:14
+63629088e2d45a83eecada8f,false,false,Civil,60,S-13,,1,false,01/08/2018 23:14
+63629088e2d45a83eecada90,false,false,Civil,72,S-14,,1,false,14/02/2019 13:41
+63629088e2d45a83eecada91,false,false,Civil,50,S-15,,1,false,01/08/2018 23:16
+63629088e2d45a83eecada92,false,false,Civil,40,S-18,,1,false,01/08/2018 23:16
+63629088e2d45a83eecada93,false,false,Civil,50,S-19,,1,false,01/08/2018 23:20
+63629088e2d45a83eecada94,false,false,Civil,40,S-20,,1,false,01/08/2018 23:22
+63629088e2d45a83eecada95,false,false,Civil,50,S-21,,1,false,01/08/2018 23:22
+63629088e2d45a83eecada96,false,false,Civil,121,S-22,,1,false,01/08/2018 23:25
+63629088e2d45a83eecada97,false,false,Civil,130,S-24,,1,false,01/08/2018 23:25
+63629088e2d45a83eecada98,false,false,Civil,121,S-26,,1,false,01/08/2018 23:25
+63629088e2d45a83eecada99,false,false,Elétrica,100,Pró-aluno,,0,false,07/08/2018 11:58
+63629088e2d45a83eecada9a,true,true,Produção,35,Lab D2 012,,0,false,17/01/2019 15:46
+63629088e2d45a83eecada9b,true,true,Produção,70,D2 013,,0,false,17/01/2019 15:43
+63629088e2d45a83eecada9c,true,true,Produção,72,D2 014,,0,false,17/01/2019 15:43
+63629088e2d45a83eecada9d,true,true,Produção,100,D2 015,,0,false,17/01/2019 15:43
+63629088e2d45a83eecada9e,true,true,Produção,70,D1 007,,0,false,17/01/2019 15:44
+63629088e2d45a83eecada9f,true,true,Produção,70,D1 008,,0,false,17/01/2019 15:44
+63629088e2d45a83eecadaa0,true,true,Produção,74,D1 009,,0,false,17/01/2019 15:44
+63629088e2d45a83eecadaa1,true,true,Produção,96,D1 010,,0,false,17/01/2019 15:44
+63629088e2d45a83eecadaa4,true,true,Produção,35,Lab Ocean 1,,0,false,17/01/2019 16:17
+63629088e2d45a83eecadaa5,true,true,Produção,35,Lab Ocean 2,,0,false,17/01/2019 16:18
+63629088e2d45a83eecadaa6,false,false,Mecânica,0,A3,,0,false,13/02/2019 13:00
+63629088e2d45a83eecadaa7,false,false,FAU,100,FAU,,0,false,14/02/2019 09:51
+63629088e2d45a83eecadaa8,false,false,Mecânica,0,A-02,,0,false,17/02/2019 12:19
+63629088e2d45a83eecadaa9,false,false,Mecânica,0,A-08,,0,false,17/02/2019 11:32
+63629088e2d45a83eecadaaa,false,false,Mecânica,0,A-09,,0,false,17/02/2019 11:32
+63629088e2d45a83eecadaab,false,false,Mecânica,0,TS-09,,1,false,17/02/2019 12:18
+63629088e2d45a83eecadaac,false,false,Mecânica,0,A-03,,0,false,17/02/2019 12:18
+63629088e2d45a83eecadaad,false,false,Mecânica,0,A-07,,0,false,17/02/2019 12:19
+63629088e2d45a83eecadaae,false,false,Mecânica,0,A-10A,,0,false,17/02/2019 12:20
+63629088e2d45a83eecadaaf,false,false,Mecânica,0,A-01A,,0,false,17/02/2019 13:02
+63629088e2d45a83eecadab0,false,false,Mecânica,0,TS-43,,1,false,17/02/2019 13:19
+63629088e2d45a83eecadab1,false,false,Mecânica,0,TS-20,,1,false,17/02/2019 13:19
+63629088e2d45a83eecadab2,false,false,Eng. Química,100,B20t-6/8,,0,false,17/02/2019 13:39
+63629088e2d45a83eecadab3,false,false,Mecânica,0,A-04,,0,false,17/02/2019 13:39
+63629088e2d45a83eecadab4,false,false,Mecânica,0,A-06,,0,false,17/02/2019 13:40
+63629088e2d45a83eecadab5,false,false,Mecânica,0,TS-02,,1,false,17/02/2019 13:41
+63629088e2d45a83eecadab6,false,false,Mecânica,0,A-05,,0,false,17/02/2019 13:41
+63629088e2d45a83eecadab7,false,false,Eng. Química,100,LAREX,,2,false,17/02/2019 13:54
+63629088e2d45a83eecadab8,false,false,Mecânica,0,TS-03,,1,false,17/02/2019 14:04
+63629088e2d45a83eecadab9,false,false,Mecânica,0,MT-15,,0,false,17/02/2019 14:42
+63629088e2d45a83eecadaba,false,false,Mecânica,0,Oficina,,0,false,17/02/2019 14:45
+63629088e2d45a83eecadabb,false,true,Produção,35,D2-114,,1,false,20/02/2019 18:38
+63629088e2d45a83eecadabc,false,false,Minas e Metal,0,T4,,0,false,24/02/2019 11:55
+63629088e2d45a83eecadabd,false,false,Minas e Metal,0,T1,,0,false,24/02/2019 11:55
+63629088e2d45a83eecadabe,false,false,Minas e Metal,0,T2,,0,false,24/02/2019 11:55
+63629088e2d45a83eecadabf,false,false,Minas e Metal,0,T3,,0,false,24/02/2019 11:55
+63629088e2d45a83eecadac0,false,false,Minas e Metal,0,T5,,0,false,24/02/2019 12:13
+63629088e2d45a83eecadac1,false,false,Metal,0,Anf Metal,,0,false,26/02/2019 18:11
+6362910064b35453921ca994,false,false,Biênio,75,C1-01,luizhiguti,1,true,07/12/2022 14:53
+638926c66ec8c656b8c3bad1,true,true,string,0,string,swagger,0,true,01/12/2022 19:12

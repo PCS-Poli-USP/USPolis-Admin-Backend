@@ -1,0 +1,13 @@
+# cache
+__pycache__
+
+# environment
+.env
+.venv
+env/
+venv/
+env
+env_uspolis
+
+# solver generated data
+*.lp

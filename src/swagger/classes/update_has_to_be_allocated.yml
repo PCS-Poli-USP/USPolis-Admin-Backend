@@ -1,0 +1,17 @@
+Editar obrigatoriedade da turma em ser alocada
+---
+tags:
+  - Turmas
+parameters:
+  - name: username
+    in: header
+    required: true
+  - name: body
+    in: body
+    schema:
+      type: array
+      items:
+        $ref: '#/definitions/HasToBeAllocatedClasses'
+responses:
+  200:
+    description:

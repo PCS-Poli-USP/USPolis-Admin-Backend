@@ -1,0 +1,32 @@
+Editar evento alocado
+---
+tags:
+  - Eventos
+parameters:
+  - name: username
+    in: header
+    required: true
+  - name: subject_code
+    in: path
+    required: true
+  - name: class_code
+    in: path
+    required: true
+  - name: classroom
+    in: query
+    required: true
+  - name: building
+    in: query
+    required: true
+  - name: body
+    in: body
+    required: true
+    schema:
+      type: array
+      items:
+        type: string
+        enum: [seg, ter, qua, qui, sex]
+
+responses:
+  200:
+    description:

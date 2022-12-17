@@ -1,0 +1,33 @@
+Editar preferências
+---
+tags:
+  - Turmas
+parameters:
+  - name: username
+    in: header
+    required: true
+  - name: subject_code
+    in: path
+    required: true
+  - name: class_code
+    in: path
+    required: true
+  - name: body
+    in: body
+    required: true
+    schema:
+      properties:
+        building:
+          type: string
+          required: true
+        air_conditioning:
+          type: boolean
+        projector:
+          type: boolean
+        accessibility:
+          type: boolean
+        has_to_be_allocated:
+          type: boolean
+responses:
+  200:
+    description:

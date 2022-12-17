@@ -1,0 +1,13 @@
+Cadastrar disciplina
+---
+tags:
+  - Disciplinas
+parameters:
+  - name: body
+    in: body
+    required: true
+    schema:
+      $ref: '#definitions/Subject'
+responses:
+  200:
+    description:

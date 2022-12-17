@@ -1,0 +1,39 @@
+Alterar por sala
+---
+tags:
+  - Salas
+put:
+  parameters:
+    - name: username
+      in: header
+      required: true
+    - name: name
+      in: path
+      required: true
+      description: Nome da sala
+    - name: body
+      in: body
+      required: true
+      schema:
+        $ref: '#definitions/Classroom'
+get:
+  parameters:
+    - name: username
+      in: header
+      required: true
+    - name: name
+      in: path
+      required: true
+      description: Nome da sala
+delete:
+  parameters:
+    - name: username
+      in: header
+      required: true
+    - name: name
+      in: path
+      required: true
+      description: Nome da sala
+responses:
+  200:
+    description:

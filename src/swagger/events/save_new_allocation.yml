@@ -1,0 +1,11 @@
+Alocar eventos
+---
+tags:
+  - Eventos
+parameters:
+  - name: username
+    in: header
+    required: true
+responses:
+  200:
+    description:

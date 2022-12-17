@@ -1,0 +1,35 @@
+Editar informações de uma turma
+---
+tags:
+  - Turmas
+parameters:
+  - name: username
+    in: header
+    required: true
+  - name: subject_code
+    in: path
+    required: true
+  - name: class_code
+    in: path
+    required: true
+  - name: body
+    in: body
+    schema:
+      type: array
+      items:
+        properties:
+          week_day_id:
+            enum: [seg, ter, qua, qui, sex]
+            example: seg
+          week_day:
+            enum: [seg, ter, qua, qui, sex]
+            example: qui
+          start_time:
+            example: 00:00
+          end_time:
+            example: 00:00
+          professor:
+            example: Professor Pasquale
+responses:
+  200:
+    description:

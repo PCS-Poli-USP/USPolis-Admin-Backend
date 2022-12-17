@@ -1,0 +1,17 @@
+Excluir uma turma
+---
+tags:
+  - Turmas
+parameters:
+  - name: username
+    in: header
+    required: true
+  - name: subject_code
+    in: path
+    required: true
+  - name: class_code
+    in: path
+    required: true
+responses:
+  200:
+    description:

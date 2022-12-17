@@ -1,0 +1,7 @@
+Buscar disciplinas
+---
+tags:
+  - Disciplinas
+responses:
+  200:
+    description:
