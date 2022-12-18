@@ -1,7 +1,8 @@
 """Web Server Gateway Interface"""
 
 from src.app import app
+from waitress import serve
 
-# run development
+# run
 if __name__ == "__main__":
-  app.run(debug=True)
+  serve(app, port=5000)
