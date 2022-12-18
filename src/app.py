@@ -36,4 +36,8 @@ definitions = [
   HasToBeAllocatedClassesSchema
   ]
 template = spec.to_flasgger(app, definitions=definitions)
-swagger =  Swagger(app, template=template)
+config = {
+  "url_prefix" : "/api"
+}
+
+swagger =  Swagger(app, template=template, config=config, merge=True)
