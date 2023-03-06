@@ -95,12 +95,14 @@ def classroom_by_name(name):
 @swag_from(f"{yaml_files}/get_available_classrooms.yml")
 def get_available_classrooms():
   try:
+    username = request.headers.get('username')
     params = available_classrooms_query_schema.load(request.args)
     unavailable_classrooms = events.find(
       {
         "week_day" : params["week_day"],
         "start_time": { "$lte" : params["end_time"] },
-        "end_time" : { "$gte" : params["start_time"] }
+        "end_time" : { "$gte" : params["start_time"] },
+        "created_by": username
       },
       { "classroom" : True , "_id" : False }
       ).distinct("classroom")

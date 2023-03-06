@@ -15,6 +15,7 @@ class_blueprint = Blueprint("classes", __name__, url_prefix="/api/classes")
 
 # classes = database["classes"]
 events = database["events"]
+users = database["users"]
 
 # USING UPSERT
 # classes.create_index({ "class_code" : 1, "subject_code" : 1 }, unique=True)
@@ -46,7 +47,8 @@ def get_all_classes():
         "week_days": {"$push" : "$week_day"},
         "preferences" : {"$first" : "$preferences"},
         "has_to_be_allocated" : {"$first" : "$has_to_be_allocated"},
-        "subscribers" : {"$first" : "$subscribers"}
+        "subscribers" : {"$first" : "$subscribers"},
+        "classrooms": {"$push" : "$classroom"}
       }
     }
     ])
@@ -62,20 +64,28 @@ def create_many_classes():
     subject_codes_list = request.json
     updated = []
     inserted = []
+    username = request.headers.get('username')
 
     for subject_code in subject_codes_list:
+      user = users.find_one({ "username" : username })
+      preference_building = user["building"]
       subject_classes = get_jupiter_class_infos(subject_code)
 
       for class_info in subject_classes:
         class_schema_load = class_schema.load(class_info)
-        events_list = break_class_into_events(class_schema_load)
+        events_list = break_class_into_events(class_schema_load, preference_building)
 
         for event in events_list:
           event_schema_load = event_schema.load(event)
           event_schema_load["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-          event_schema_load["created_by"] = request.headers.get("username")
+          event_schema_load["created_by"] = username
 
-          query = { "class_code" : event_schema_load["class_code"], "subject_code" : event_schema_load["subject_code"], "week_day" : event_schema_load["week_day"] }
+          query = { 
+            "class_code" : event_schema_load["class_code"],
+            "subject_code" : event_schema_load["subject_code"],
+            "week_day" : event_schema_load["week_day"],
+            "created_by" : event_schema_load["created_by"]
+          }
           result = events.update_one(query, { "$set" : event_schema_load }, upsert=True)
           updated.append(event_schema_load["subject_code"]) if result.matched_count else inserted.append(event_schema_load["subject_code"])
 
@@ -83,7 +93,7 @@ def create_many_classes():
 
   except Exception as ex:
     print(ex)
-    return { "message" : f"Erro ao buscar informações das turmas - {subject_code}", "updated" : updated, "inserted" : inserted }, 400
+    return { "message" : f"Erro ao buscar informações das turmas - {subject_code}", "updated" : updated, "inserted" : inserted , "error": str(ex)}, 400
 
 @class_blueprint.route("/<subject_code>/<class_code>", methods=["DELETE"])
 @swag_from(f"{yaml_files}/delete_by_subject_class_code.yml")

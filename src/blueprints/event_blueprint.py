@@ -38,7 +38,7 @@ def save_new_allocation():
   try:
     username = request.headers.get('username')
     classrooms_list = list(classrooms.find({ "created_by" : username }, { "_id" : 0 }))
-    events_list = list(events.find({}, { "_id" : 0 }))
+    events_list = list(events.find({ "created_by" : username }, { "_id" : 0 }))
 
     # parse date & time fields
     allocation_input_schema_load = allocation_input_schema.load(events_list)
@@ -46,7 +46,7 @@ def save_new_allocation():
     print(f'Number of events: {len(events_list)}')
 
     # clear previous allocation
-    events.update_many({}, { "$unset" : { "classroom" : True, "building" : True } })
+    events.update_many({ "created_by" : username }, { "$unset" : { "classroom" : True, "building" : True } })
 
     allocation_events = allocate_classrooms(classrooms_list, allocation_input_schema_load)
     allocated = 0

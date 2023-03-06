@@ -1,0 +1,7 @@
+Buscar Usuários
+---
+tags:
+  - Usuários
+responses:
+  200:
+    description:

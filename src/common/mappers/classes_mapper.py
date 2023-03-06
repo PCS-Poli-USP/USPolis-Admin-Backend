@@ -1,6 +1,6 @@
 from datetime import datetime
 
-def break_class_into_events(class_obj):
+def break_class_into_events(class_obj, preference_building):
     event_list = []
 
     if isinstance(class_obj['start_time'], list):
@@ -33,7 +33,7 @@ def break_class_into_events(class_obj):
 
             # set default preferences
             event['preferences'] = {
-                'building' : 'Biênio',
+                'building' : preference_building,
                 'air_conditioning' : False,
                 'projector' : False,
                 'accessibility' : False,
