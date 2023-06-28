@@ -13,3 +13,4 @@ apispec_webframeworks==0.5.2
 flasgger==0.9.5
 gurobipy==10.0.0
 waitress==2.1.2
+Flask-Caching==2.0.2

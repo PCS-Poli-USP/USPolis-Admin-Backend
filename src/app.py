@@ -3,6 +3,7 @@ from flask_cors import CORS
 from flasgger import APISpec, Swagger
 from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec_webframeworks.flask import FlaskPlugin
+from src.common.cache import cache
 
 from src.blueprints.classroom_blueprint import classroom_blueprint
 from src.blueprints.class_blueprint import class_blueprint
@@ -15,8 +16,10 @@ from src.schemas.allocation_schema import AllocatorInputSchema, AllocatorOutputS
 from src.schemas.subject_schema import SubjectSchema
 from src.schemas.class_schema import ClassSchema, HasToBeAllocatedClassesSchema
 
+
 app = Flask(__name__)
 CORS(app)
+cache.init_app(app)
 
 app.register_blueprint(classroom_blueprint)
 app.register_blueprint(class_blueprint)

@@ -1,6 +1,7 @@
 from bson import json_util
 from flask import Blueprint, Response
 from src.common.database import database
+from src.common.cache import cache
 
 mobile_blueprint = Blueprint("mobile", __name__, url_prefix="/api/mobile")
 
@@ -56,6 +57,7 @@ def map_results(results):
     return mapped_results
 
 @mobile_blueprint.route("/classes")
+@cache.cached()
 def get_classes():
   aggregation = [
     {
