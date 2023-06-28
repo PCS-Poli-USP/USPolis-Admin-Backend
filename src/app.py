@@ -8,6 +8,7 @@ from src.blueprints.classroom_blueprint import classroom_blueprint
 from src.blueprints.class_blueprint import class_blueprint
 from src.blueprints.subject_blueprint import subject_blueprint
 from src.blueprints.event_blueprint import event_blueprint
+from src.blueprints.mobile_blueprint import mobile_blueprint
 
 from src.schemas.classroom_schema import ClassroomSchema, AvailableClassroomsQuerySchema
 from src.schemas.allocation_schema import AllocatorInputSchema, AllocatorOutputSchema
@@ -21,6 +22,7 @@ app.register_blueprint(classroom_blueprint)
 app.register_blueprint(class_blueprint)
 app.register_blueprint(subject_blueprint)
 app.register_blueprint(event_blueprint)
+app.register_blueprint(mobile_blueprint)
 
 
 # Swagger
