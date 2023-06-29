@@ -16,7 +16,9 @@ from src.schemas.allocation_schema import AllocatorInputSchema, AllocatorOutputS
 from src.schemas.subject_schema import SubjectSchema
 from src.schemas.class_schema import ClassSchema, HasToBeAllocatedClassesSchema
 
+from dotenv import load_dotenv
 
+load_dotenv()
 app = Flask(__name__)
 CORS(app)
 cache.init_app(app)
