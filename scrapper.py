@@ -3,6 +3,8 @@ import requests
 from bs4 import BeautifulSoup
 import re
 
+from src.common.database import database
+
 def extract_subjects_info(table):
     tr_elements = table.find_all("tr")
 
@@ -85,8 +87,11 @@ def get_programs():
         subjects = extract_subjects_info(target_table)
         data["subjects"] = subjects
 
-    with open('json_data.json', 'w', encoding='utf-8') as outfile:
-        json.dump(tr_data, outfile)
+    # with open('json_data.json', 'w', encoding='utf-8') as outfile:
+    #     json.dump(tr_data, outfile)
+
+    programs = database["programs"]
+    programs.insert_many(tr_data)
 
 if __name__ == "__main__":
     get_programs()
