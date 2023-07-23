@@ -1,8 +1,9 @@
 from datetime import datetime
 import os
 
+from bson import json_util
 from bson.objectid import ObjectId
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, Response, jsonify, request
 from src.common.database import database
 from src.common.cache import cache
 
@@ -128,7 +129,7 @@ def get_classes():
     result = events.aggregate(pipeline=aggregation)
     response = list(result)
     formatted_response = map_results(response)
-    return jsonify(formatted_response)
+    return Response(json_util.dumps(formatted_response), mimetype="application/json")
 
 
 @mobile_blueprint.route("/comments", methods=["POST"])
@@ -192,4 +193,3 @@ def get_classes_by_program_and_period():
         return jsonify(subjects_in_period)
     else:
         return jsonify([])
-    
