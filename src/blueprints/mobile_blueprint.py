@@ -94,8 +94,6 @@ def map_periods(programs):
         del program["_id"]
         del program["program_id"]
 
-        print(program)
-
     return programs
 
 
