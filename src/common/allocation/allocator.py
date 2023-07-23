@@ -148,33 +148,33 @@ def allocate_classrooms(classroom_list, event_list):
         lpSum([y[t] for t in T]),
         "Total_classroom_changes"
     )
-    prob += (
-        100*lpSum([1 - x[s][ao] for (s, ao) in ao_s_tuples ]),
-        "Events_not_allocated"
-    )
+    # prob += (         # Disabled due to unexpected behaviour with class stability
+    #     100*lpSum([1 - x[s][ao] for (s, ao) in ao_s_tuples ]),
+    #     "Events_not_allocated"
+    # ) 
 
-    # One and only one classroom per mandatory event constraint
-    for a in A:
-        if a not in A_optional:
-            prob += (
-                lpSum([x[s][a] for s in S]) == 1,
-                f"Number_of_allocated_classrooms_for_mandatory_event_{a}"
-            )
+    # # One and only one classroom per mandatory event constraint
+    # for a in A:
+    #     if a not in A_optional:
+    #         prob += (
+    #             lpSum([x[s][a] for s in S]) == 1,
+    #             f"Number_of_allocated_classrooms_for_mandatory_event_{a}"
+    #         )
 
-    # One or zero classrooms per optional event constraint
-    for a in A:
-        if a in A_optional:
-            prob += (
-                lpSum([x[s][a] for s in S]) <= 1,
-                f"Number_of_allocated_classrooms_for_optional_event_{a}"
-            )
+    # # One or zero classrooms per optional event constraint
+    # for a in A:
+    #     if a in A_optional:
+    #         prob += (
+    #             lpSum([x[s][a] for s in S]) <= 1,
+    #             f"Number_of_allocated_classrooms_for_optional_event_{a}"
+    #         )
 
     # One classroom per event constraint
-    # for a in A:
-    #     prob += (
-    #         lpSum([x[s][a] for s in S]) == 1,
-    #         f"Number_of_allocated_classrooms_for_event_{a}"
-    #     )
+    for a in A:
+        prob += (
+            lpSum([x[s][a] for s in S]) == 1,
+            f"Number_of_allocated_classrooms_for_event_{a}"
+        )
 
     # Resources/Preferences constraint
     for s in S:
@@ -209,11 +209,13 @@ def allocate_classrooms(classroom_list, event_list):
     ############################## Problem solution ##############################
 
     # The problem data is written to an .lp file
-    prob.writeLP("src/common/allocation/ClassroomAllocationProblem.lp")
+    # prob.writeLP("src/common/allocation/ClassroomAllocationProblem.lp")
 
     # The problem is solved using PuLP's choice of Solver
     solver = get_solver('GUROBI')
+    # solver = get_solver('HiGHS_CMD')
     prob.solve(solver)
+    # prob.solve()
 
     # The status of the solution is printed to the screen
     print("Solution status:", LpStatus[prob.status])
@@ -227,6 +229,10 @@ def allocate_classrooms(classroom_list, event_list):
 
     # The optimised objective function value is printed to the screen
     print("Total classroom changes = ", value(prob.objective))
+
+    # for t in T:
+    #     print(f'Class {t}: {y[t].value()} changes')
+
 
     allocation_list = _process_solution(x, y, classroom_list, event_list)
 
