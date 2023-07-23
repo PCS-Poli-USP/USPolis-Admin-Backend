@@ -1,8 +1,8 @@
 from datetime import datetime
 import os
 
-from bson import json_util
-from flask import Blueprint, Response, jsonify, request
+from bson.objectid import ObjectId
+from flask import Blueprint, jsonify, request
 from src.common.database import database
 from src.common.cache import cache
 
@@ -14,6 +14,7 @@ mobile_blueprint = Blueprint("mobile", __name__, url_prefix="/api/mobile")
 events = database["events"]
 classrooms = database["classrooms"]
 comments = database["comments"]
+programs = database["programs"]
 
 def get_abbreviated_class_code(class_code):
     abbreviated_class_code = class_code[-2:]
@@ -85,7 +86,18 @@ def send_email(comment: str, email: str = None):
         print(f"Erro no envio de email: {err}")
 
 
-@mobile_blueprint.route("/classes")
+def map_periods(programs):
+    for program in programs:
+        program["periods"] = list(set((program.get("periods"))))
+        program["program"] = program.get("_id")
+        program["id"] = str(program.get("program_id")[0])
+        del program["_id"]
+        del program["program_id"]
+
+    return programs
+
+
+@mobile_blueprint.route("/classes", methods=["GET"])
 @cache.cached()
 def get_classes():
     aggregation = [
@@ -116,7 +128,7 @@ def get_classes():
     result = events.aggregate(pipeline=aggregation)
     response = list(result)
     formatted_response = map_results(response)
-    return Response(json_util.dumps(formatted_response), mimetype="application/json")
+    return jsonify(formatted_response)
 
 
 @mobile_blueprint.route("/comments", methods=["POST"])
@@ -140,3 +152,44 @@ def post_comment():
     except Exception as err:
         print(err)
         return jsonify({"detail": "Não foi possível inserir seu comentário!"}), 400
+
+
+@mobile_blueprint.route("/programs", methods=["GET"])
+@cache.cached()
+def get_programs():
+    pipeline = [
+        {
+            "$group": {
+                "_id": "$text",
+                "program_id": {"$addToSet": "$_id"},
+                "periods": {"$addToSet": "$subjects.period"}
+            }
+        },
+        {
+            "$unwind": "$periods"
+        },
+    ]
+
+    results = programs.aggregate(pipeline)
+    mapped_response = map_periods(list(results))
+
+    return jsonify(mapped_response)
+
+
+@mobile_blueprint.route("/programs/classes", methods=["GET"])
+def get_classes_by_program_and_period():
+
+    period = int(request.args.get("period"))
+    try:
+        program = ObjectId(request.args.get("program"))
+    except:
+        return jsonify([])
+
+    document = programs.find_one({"_id": program})
+    
+    if document:
+        subjects_in_period = [subject for subject in document['subjects'] if subject['period'] == period]
+        return jsonify(subjects_in_period)
+    else:
+        return jsonify([])
+    
