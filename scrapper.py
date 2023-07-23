@@ -9,7 +9,7 @@ def extract_subjects_info(table):
     tr_elements = table.find_all("tr")
 
     subject_type = "Obrigatória"
-    period = "1"
+    period = 1
 
     subjects = []
 
@@ -24,7 +24,7 @@ def extract_subjects_info(table):
         # encontra o periodo
         if tr.get("bgcolor") == "#CCCCCC":
             td_text = tr.find("td").get_text(strip=True)
-            period = re.search(r"\d+", td_text).group()
+            period = int(re.search(r"\d+", td_text).group())
 
         # encontra as disciplinas
         if tr.find("a", class_="link_gray"):

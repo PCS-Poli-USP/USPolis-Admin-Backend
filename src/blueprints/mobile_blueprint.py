@@ -14,6 +14,7 @@ mobile_blueprint = Blueprint("mobile", __name__, url_prefix="/api/mobile")
 events = database["events"]
 classrooms = database["classrooms"]
 comments = database["comments"]
+programs = database["programs"]
 
 def get_abbreviated_class_code(class_code):
     abbreviated_class_code = class_code[-2:]
@@ -85,6 +86,15 @@ def send_email(comment: str, email: str = None):
         print(f"Erro no envio de email: {err}")
 
 
+def map_periods(programs):
+    for program in programs:
+        program["periods"] = list(set((program.get("periods"))))
+        program["program"] = program.get("_id")
+        del program["_id"]
+
+    return programs
+
+
 @mobile_blueprint.route("/classes")
 @cache.cached()
 def get_classes():
@@ -116,7 +126,7 @@ def get_classes():
     result = events.aggregate(pipeline=aggregation)
     response = list(result)
     formatted_response = map_results(response)
-    return Response(json_util.dumps(formatted_response), mimetype="application/json")
+    return jsonify(formatted_response)
 
 
 @mobile_blueprint.route("/comments", methods=["POST"])
@@ -140,3 +150,25 @@ def post_comment():
     except Exception as err:
         print(err)
         return jsonify({"detail": "Não foi possível inserir seu comentário!"}), 400
+
+
+@mobile_blueprint.route("/programs")
+@cache.cached()
+def get_programs():
+    pipeline = [
+        {
+            "$group": {
+                "_id": "$text",
+                "periods": {"$addToSet": "$subjects.period"}
+            }
+        },
+        {
+            "$unwind": "$periods"
+        },
+    ]
+
+
+    results = programs.aggregate(pipeline)
+    mapped_response = map_periods(list(results))
+
+    return jsonify(mapped_response)
