@@ -2,7 +2,7 @@ from flask import Blueprint, request
 from bson.json_util import dumps
 from marshmallow import ValidationError
 from pymongo.errors import DuplicateKeyError, PyMongoError
-from datetime import datetime, timedelta
+from datetime import datetime
 from flasgger import swag_from
 
 from src.common.database import database
@@ -134,23 +134,6 @@ def get_available_classrooms():
     except ValidationError as err:
         return {"message": err.messages}, 400
 
-    except Exception as ex:
-        print(ex)
-        return {"message": str(ex)}, 500
-
-
-@classroom_blueprint.route("/update-activeness", methods=["POST"])
-def update_activeness():
-    try:
-        today = datetime.now()
-        for classroom in classrooms:
-            start_interval = datetime.strftime(classroom.start_period) - timedelta(
-                days=14
-            )
-            end_interval = datetime.strftime(classroom.end_period) + timedelta(days=14)
-
-            classroom.is_active = today >= start_interval and today <= end_interval
-        return dumps(classroom)
     except Exception as ex:
         print(ex)
         return {"message": str(ex)}, 500

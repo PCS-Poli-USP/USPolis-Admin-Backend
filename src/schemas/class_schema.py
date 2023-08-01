@@ -28,7 +28,6 @@ class ClassSchema(Schema):
     end_time = fields.List(fields.Str(), data_key="hora_fim")
     week_days = fields.List(fields.Str(), data_key="dia_semana")
     class_type = fields.Str(data_key="tipo")
-    is_active = fields.Bool(data_key="ativo")
     vacancies = ArraySumField(data_key="vagas")
     subscribers = ArraySumField(data_key="inscritos")
     pendings = ArraySumField(data_key="pendentes")
