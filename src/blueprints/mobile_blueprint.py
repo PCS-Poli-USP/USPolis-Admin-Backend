@@ -17,6 +17,33 @@ classrooms = database["classrooms"]
 comments = database["comments"]
 programs = database["programs"]
 
+aggregation = [
+        {
+            "$group": {
+                "_id": {
+                    "class_code": "$class_code",
+                    "subject_code": "$subject_code",
+                    "subject_name": "$subject_name",
+                    "professor": "$professor",
+                    "start_period": "$start_period",
+                    "end_period": "$end_period",
+                    "created_by": "$created_by",
+                    "is_active": "$is_active"
+                },
+                "schedule": {
+                    "$push": {
+                        "id": "$_id",
+                        "week_day": "$week_day",
+                        "start_time": "$start_time",
+                        "end_time": "$end_time",
+                        "building": "$building",
+                        "classroom": "$classroom",
+                    },
+                },
+            },
+        },
+    ]
+
 def get_abbreviated_class_code(class_code):
     abbreviated_class_code = class_code[-2:]
 
@@ -43,8 +70,7 @@ def find_floor(classroom_name, building):
 
 
 def map_results(results):
-    filtered_results = list(filter(lambda element: element.get("_id").get("created_by") == "amelia" or element.get("_id").get("created_by") == "eletrica-manual" or element.get("_id").get("created_by") == "producao-manual" or element.get("_id").get("created_by") == "civil-manual", results))
-    sorted_results = sorted(filtered_results, key=lambda x: (x.get("_id").get("subject_code"), x.get("_id").get("class_code")))
+    sorted_results = sorted(results, key=lambda x: (x.get("_id").get("subject_code"), x.get("_id").get("class_code")))
     
     mapped_results = []
     for result in sorted_results:
@@ -101,32 +127,15 @@ def map_periods(programs):
 @mobile_blueprint.route("/classes", methods=["GET"])
 @cache.cached()
 def get_classes():
-    aggregation = [
+    new_aggregation = [
         {
-            "$group": {
-                "_id": {
-                    "class_code": "$class_code",
-                    "subject_code": "$subject_code",
-                    "subject_name": "$subject_name",
-                    "professor": "$professor",
-                    "start_period": "$start_period",
-                    "end_period": "$end_period",
-                    "created_by": "$created_by"
-                },
-                "schedule": {
-                    "$push": {
-                        "id": "$_id",
-                        "week_day": "$week_day",
-                        "start_time": "$start_time",
-                        "end_time": "$end_time",
-                        "building": "$building",
-                        "classroom": "$classroom",
-                    },
-                },
-            },
+            "$match": {
+                "is_active": True,
+            }
         },
+        aggregation[0]
     ]
-    result = events.aggregate(pipeline=aggregation)
+    result = events.aggregate(pipeline=new_aggregation)
     response = list(result)
     formatted_response = map_results(response)
     return Response(json_util.dumps(formatted_response), mimetype="application/json")
@@ -190,6 +199,22 @@ def get_classes_by_program_and_period():
     
     if document:
         subjects_in_period = [subject for subject in document['subjects'] if subject['period'] == period]
-        return jsonify(subjects_in_period)
+        for subject in subjects_in_period:
+            subject_code = subject.get("code")
+            new_aggregation = [
+                {
+                    "$match": {
+                        "is_active": True,
+                        "subject_code": subject_code
+                    }
+                },
+                aggregation[0]
+            ]
+            result = events.aggregate(pipeline=new_aggregation)
+            response = list(result)
+            formatted_response = map_results(response)
+            subject["classes"] = formatted_response
+
+        return Response(json_util.dumps(subjects_in_period), mimetype="application/json")
     else:
         return jsonify([])
