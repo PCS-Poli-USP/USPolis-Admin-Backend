@@ -121,7 +121,7 @@ def map_periods(programs):
         del program["_id"]
         del program["program_id"]
 
-    return programs
+    return sorted(programs, key=lambda x: (x.get("program")))
 
 
 @mobile_blueprint.route("/classes", methods=["GET"])
