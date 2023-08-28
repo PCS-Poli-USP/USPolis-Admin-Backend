@@ -9,7 +9,7 @@ jobs:
     name: Deploy backend to prod
     runs-on: ubuntu-latest
     steps:
-    - name: executing remote ssh commands using password
+    - name: deploying backend to prod internuvem machine
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: 200.144.244.245
