@@ -1,0 +1,19 @@
+name: Deploy
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Deploy backend
+    runs-on: ubuntu-latest
+    steps:
+    - name: executing remote ssh commands using password
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: 200.144.244.245
+        username: ubuntu
+        password: UHtX8Tw9e
+        port: 2222
+        script: ./start_uspolis_back.sh
