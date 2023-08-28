@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    name: Deploy backend
+    name: Deploy backend to prod
     runs-on: ubuntu-latest
     steps:
     - name: executing remote ssh commands using password
