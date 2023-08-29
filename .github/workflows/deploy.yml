@@ -16,4 +16,4 @@ jobs:
         username: ubuntu
         password: UHtX8Tw9e
         port: 2222
-        script: whoami
+        script: ./start_uspolis_back.sh >> /home/ubuntu/script_log.log 2>&1
