@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy-prod:
-    name: Deploy backend to prod
+    name: Deploy flask backend to prod
     runs-on: ubuntu-latest
     steps:
     - name: deploying backend to prod internuvem machine
