@@ -16,4 +16,4 @@ jobs:
         username: ubuntu
         password: UHtX8Tw9e
         port: 2222
-        script: ./start_uspolis_back.sh &
+        script: ./start_uspolis_back.sh & exit 0
