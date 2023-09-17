@@ -1,6 +1,8 @@
+import os
 from pymongo import MongoClient
 
-mongo_client = MongoClient("mongodb://localhost:27017/")
+uri = os.environ.get("CONN_STR")
+mongo_client = MongoClient(uri, 27017)
 
 # check databases
 # databases = cliente.database_names()
