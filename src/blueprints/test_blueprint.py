@@ -1,0 +1,18 @@
+from flask import Blueprint, request
+from src.common.database import database
+from flasgger import swag_from
+from bson.json_util import dumps
+
+test_blueprint = Blueprint("test", __name__, url_prefix="/api/test")
+
+test_collection = database["test"]
+
+yaml_files = "../swagger/test"
+
+@test_blueprint.route("")
+@swag_from(f"{yaml_files}/get_all_classrooms.yml")
+def get_all_classrooms():
+    # upsert a default value and get it
+    test_collection.update_one({"_id": "test"}, {"$set": {"value": "test"}}, upsert=True)
+    result = test_collection.find_one({"_id": "test"}, {"_id": 0})
+    return dumps(result)
