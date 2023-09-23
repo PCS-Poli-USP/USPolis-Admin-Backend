@@ -16,8 +16,9 @@ events = database["events"]
 classrooms = database["classrooms"]
 comments = database["comments"]
 programs = database["programs"]
+institutional_events = database["institutional_events"]
 
-aggregation = [
+events_aggregation = [
         {
             "$group": {
                 "_id": {
@@ -133,7 +134,7 @@ def get_classes():
                 "is_active": True,
             }
         },
-        aggregation[0]
+        events_aggregation[0]
     ]
     result = events.aggregate(pipeline=new_aggregation)
     response = list(result)
@@ -208,7 +209,7 @@ def get_classes_by_program_and_period():
                         "subject_code": subject_code
                     }
                 },
-                aggregation[0]
+                events_aggregation[0]
             ]
             result = events.aggregate(pipeline=new_aggregation)
             response = list(result)
@@ -218,3 +219,40 @@ def get_classes_by_program_and_period():
         return Response(json_util.dumps(subjects_in_period), mimetype="application/json")
     else:
         return jsonify([])
+
+
+@mobile_blueprint.route("/institutional_events", methods=["POST"])
+def create_institutional_event():
+    try:
+        title = request.json.get("title")
+        description = request.json.get("description")
+        start_datetime = request.json.get("start_datetime")
+        end_datetime = request.json.get("end_datetime")
+        location = request.json.get("location")
+        building = request.json.get("building")
+        classroom = request.json.get("classroom")
+        external_link = request.json.get("external_link")
+        category = request.json.get("category")
+
+        event_doc = {
+            "title": title,
+            "description": description,
+            "start_datetime": start_datetime,
+            "end_datetime": end_datetime,
+            "location": location,
+            "building": building,
+            "classroom": classroom,
+            "external_link": external_link,
+            "category": category,
+            "created_at": datetime.now().isoformat()
+        }
+
+        result = institutional_events.insert_one(event_doc)
+        inserted_id = str(result.inserted_id)
+
+        event_doc["_id"] = inserted_id
+        return jsonify(event_doc)
+
+    except Exception as err:
+        print(err)
+        return jsonify({"detail": "Não foi possível inserir o novo evento!"}), 400
