@@ -1,3 +1,5 @@
+import json
+from bson import ObjectId
 from flask import Flask
 from flask_cors import CORS
 from flasgger import APISpec, Swagger
@@ -20,8 +22,18 @@ from src.schemas.class_schema import ClassSchema, HasToBeAllocatedClassesSchema
 
 from dotenv import load_dotenv
 
+class JSONEncoder(json.JSONEncoder):
+    """
+    JSON Encoder to transform all ObjectIds into strings
+    """
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        return super(JSONEncoder, self).default(o)
+
 load_dotenv()
 app = Flask(__name__)
+app.json_encoder = JSONEncoder
 CORS(app)
 cache.init_app(app)
 

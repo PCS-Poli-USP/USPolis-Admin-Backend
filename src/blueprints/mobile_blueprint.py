@@ -221,38 +221,12 @@ def get_classes_by_program_and_period():
         return jsonify([])
 
 
-@mobile_blueprint.route("/institutional_events", methods=["POST"])
-def create_institutional_event():
+@mobile_blueprint.route("/institutional_events", methods=["GET"])
+def list_institutional_events():
     try:
-        title = request.json.get("title")
-        description = request.json.get("description")
-        start_datetime = request.json.get("start_datetime")
-        end_datetime = request.json.get("end_datetime")
-        location = request.json.get("location")
-        building = request.json.get("building")
-        classroom = request.json.get("classroom")
-        external_link = request.json.get("external_link")
-        category = request.json.get("category")
-
-        event_doc = {
-            "title": title,
-            "description": description,
-            "start_datetime": start_datetime,
-            "end_datetime": end_datetime,
-            "location": location,
-            "building": building,
-            "classroom": classroom,
-            "external_link": external_link,
-            "category": category,
-            "created_at": datetime.now().isoformat()
-        }
-
-        result = institutional_events.insert_one(event_doc)
-        inserted_id = str(result.inserted_id)
-
-        event_doc["_id"] = inserted_id
-        return jsonify(event_doc)
+        response = institutional_events.find()
+        return jsonify(list(response))
 
     except Exception as err:
         print(err)
-        return jsonify({"detail": "Não foi possível inserir o novo evento!"}), 400
+        return jsonify({"detail": "Não foi possível listar os eventos!"}), 400

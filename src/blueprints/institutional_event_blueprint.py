@@ -38,10 +38,7 @@ def create_institutional_event():
             "created_at": datetime.now().isoformat()
         }
 
-        result = institutional_events.insert_one(event_doc)
-        inserted_id = str(result.inserted_id)
-
-        event_doc["_id"] = inserted_id
+        institutional_events.insert_one(event_doc)
         return jsonify(event_doc)
 
     except Exception as err:
