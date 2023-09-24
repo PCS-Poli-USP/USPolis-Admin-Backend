@@ -221,7 +221,7 @@ def get_classes_by_program_and_period():
         return jsonify([])
 
 
-@mobile_blueprint.route("/institutional_events", methods=["GET"])
+@mobile_blueprint.route("/institutional-events", methods=["GET"])
 def list_institutional_events():
     try:
         response = institutional_events.find()

@@ -4,7 +4,7 @@ from flask import Blueprint, jsonify, request
 from src.common.database import database
 
 institutional_event_blueprint = Blueprint(
-    "institutional_event", __name__, url_prefix="/api/institutional_events")
+    "institutional_event", __name__, url_prefix="/api/institutional-events")
 
 institutional_events = database["institutional_events"]
 
