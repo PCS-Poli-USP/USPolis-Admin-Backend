@@ -16,8 +16,9 @@ events = database["events"]
 classrooms = database["classrooms"]
 comments = database["comments"]
 programs = database["programs"]
+institutional_events = database["institutional_events"]
 
-aggregation = [
+events_aggregation = [
         {
             "$group": {
                 "_id": {
@@ -133,7 +134,7 @@ def get_classes():
                 "is_active": True,
             }
         },
-        aggregation[0]
+        events_aggregation[0]
     ]
     result = events.aggregate(pipeline=new_aggregation)
     response = list(result)
@@ -208,7 +209,7 @@ def get_classes_by_program_and_period():
                         "subject_code": subject_code
                     }
                 },
-                aggregation[0]
+                events_aggregation[0]
             ]
             result = events.aggregate(pipeline=new_aggregation)
             response = list(result)
@@ -218,3 +219,14 @@ def get_classes_by_program_and_period():
         return Response(json_util.dumps(subjects_in_period), mimetype="application/json")
     else:
         return jsonify([])
+
+
+@mobile_blueprint.route("/institutional_events", methods=["GET"])
+def list_institutional_events():
+    try:
+        response = institutional_events.find()
+        return jsonify(list(response))
+
+    except Exception as err:
+        print(err)
+        return jsonify({"detail": "Não foi possível listar os eventos!"}), 400
