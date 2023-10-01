@@ -8,11 +8,7 @@ test_blueprint = Blueprint("test", __name__, url_prefix="/api/test")
 
 test_collection = database["test"]
 
-yaml_files = "../swagger/test"
-
-
 @test_blueprint.route("")
-@swag_from(f"{yaml_files}/get_all_classrooms.yml")
 def get_all_classrooms():
     # upsert a default value and get it
     test_collection.update_one({"_id": "test"}, {"$set": {"test": "test"}}, upsert=True)
