@@ -67,3 +67,20 @@ In this folder, we encounter some utilities for our server.
 ### Database
 
 File inside Common folder, it contains the connection instantiation for ```mongodb``` database.
+
+## Guides
+
+This section aims to give the developer some usefull info about how to do some things in the stack being used.
+
+### Schemas
+
+#### Nesting schemas
+
+You might want to use an existing schema as a part of a new schema. For this task, you can use ```fields.Nested(YourSchema)```, like this:
+
+```python
+class AllocatorInputSchema(Schema):
+    # [...]
+    preferences = fields.Nested(PreferencesSchema)
+    # [...]
+```

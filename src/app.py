@@ -8,6 +8,7 @@ from apispec_webframeworks.flask import FlaskPlugin
 from src.common.cache import cache
 
 from src.blueprints.classroom_blueprint import classroom_blueprint
+from src.blueprints.user_blueprint import user_blueprint
 from src.blueprints.class_blueprint import class_blueprint
 from src.blueprints.subject_blueprint import subject_blueprint
 from src.blueprints.event_blueprint import event_blueprint
@@ -44,6 +45,7 @@ app.register_blueprint(subject_blueprint)
 app.register_blueprint(event_blueprint)
 app.register_blueprint(mobile_blueprint)
 app.register_blueprint(institutional_event_blueprint)
+app.register_blueprint(user_blueprint)
 
 
 # Swagger
