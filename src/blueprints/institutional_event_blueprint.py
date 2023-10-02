@@ -86,7 +86,7 @@ def update_institutional_event(event_id):
         if category:
             event["category"] = category
 
-        institutional_events.update_one({"_id": event_id}, {"$set": event})
+        institutional_events.update_one({"_id": ObjectId(event_id)}, {"$set": event})
 
         return jsonify(event)
 
