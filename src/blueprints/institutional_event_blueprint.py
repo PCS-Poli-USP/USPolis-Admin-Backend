@@ -36,7 +36,8 @@ def create_institutional_event():
             "classroom": classroom,
             "external_link": external_link,
             "category": category,
-            "created_at": datetime.now().isoformat()
+            "created_at": datetime.now().isoformat(),
+            "likes": 0
         }
 
         institutional_events.insert_one(event_doc)
