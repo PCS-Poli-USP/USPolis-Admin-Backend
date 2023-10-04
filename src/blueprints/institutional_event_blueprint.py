@@ -36,7 +36,8 @@ def create_institutional_event():
             "classroom": classroom,
             "external_link": external_link,
             "category": category,
-            "created_at": datetime.now().isoformat()
+            "created_at": datetime.now().isoformat(),
+            "likes": 0
         }
 
         institutional_events.insert_one(event_doc)
@@ -112,3 +113,45 @@ def delete_institutional_event(event_id):
     except Exception as err:
         print(err)
         return jsonify({"detail": "Não foi possível deletar o evento!"}), 400
+
+
+@institutional_event_blueprint.route("/<event_id>/like", methods=["PATCH"])
+def like_institutional_event(event_id):
+    """
+    Like institutional event by ID
+    """
+    try:
+        event = institutional_events.find_one({"_id": ObjectId(event_id)})
+        if not event:
+            return jsonify({"detail": "Evento não encontrado!"}), 404
+
+        event["likes"] = event["likes"] + 1
+
+        institutional_events.update_one({"_id": ObjectId(event_id)}, {"$set": event})
+
+        return jsonify(event)
+
+    except Exception as err:
+        print(err)
+        return jsonify({"detail": "Não foi possível curtir o evento!"}), 400
+
+
+@institutional_event_blueprint.route("/<event_id>/remove-like", methods=["PATCH"])
+def remove_like_on_institutional_event(event_id):
+    """
+    Remove like on institutional event by ID
+    """
+    try:
+        event = institutional_events.find_one({"_id": ObjectId(event_id)})
+        if not event:
+            return jsonify({"detail": "Evento não encontrado!"}), 404
+
+        event["likes"] = event["likes"] - 1
+
+        institutional_events.update_one({"_id": ObjectId(event_id)}, {"$set": event})
+
+        return jsonify(event)
+
+    except Exception as err:
+        print(err)
+        return jsonify({"detail": "Não foi possível remover a curtida no evento!"}), 400

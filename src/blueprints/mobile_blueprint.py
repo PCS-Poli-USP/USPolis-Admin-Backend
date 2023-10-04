@@ -223,8 +223,43 @@ def get_classes_by_program_and_period():
 
 @mobile_blueprint.route("/institutional-events", methods=["GET"])
 def list_institutional_events():
+
+    today_date = str(datetime.now().date())
+
     try:
-        response = institutional_events.find()
+        pipeline = [
+            {
+                '$addFields': {
+                    'parsed_start_date': {
+                        '$dateFromString': {
+                            'dateString': {
+                                '$substr': ['$start_datetime', 0, 10]
+                            },
+                            'format': "%Y-%m-%d"
+                        }
+                    }
+                }
+            },
+            {
+                '$match': {
+                    'end_datetime': {
+                        '$gte': today_date
+                    }
+                }
+            },
+            {
+                '$sort': {
+                    'parsed_start_date': 1,
+                    'likes': -1
+                }
+            },
+            {
+                '$project': {
+                    'parsed_start_date': 0
+                }
+            }
+        ]
+        response = institutional_events.aggregate(pipeline)
         return jsonify(list(response))
 
     except Exception as err:
