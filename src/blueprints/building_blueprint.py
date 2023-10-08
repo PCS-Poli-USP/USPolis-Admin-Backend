@@ -5,6 +5,7 @@ from bson.objectid import ObjectId
 from marshmallow import ValidationError
 from pymongo.errors import DuplicateKeyError, PyMongoError
 from src.common.utils.prettify_id import prettify_id
+from src.middlewares.auth_middleware import auth_middleware
 
 from src.common.database import database
 from src.schemas.building_schemas import BuildingInputSchema
@@ -14,6 +15,12 @@ building_input_schema = BuildingInputSchema()
 building_collection = database["building"]
 building_collection.create_index("name", unique=True)
 
+
+@building_blueprint.before_request
+def _():
+    return auth_middleware()
+
+
 @building_blueprint.get("")
 def get_all_buildings():
     buildings_cursor = building_collection.find()
@@ -22,11 +29,13 @@ def get_all_buildings():
         prettify_id(building)
     return dumps(buildings)
 
+
 @building_blueprint.get("/<building_id>")
 def get_building(building_id):
     building = building_collection.find_one({"_id": ObjectId(building_id)})
     prettify_id(building)
     return dumps(building)
+
 
 @building_blueprint.post("")
 def create_building():
@@ -49,6 +58,7 @@ def create_building():
         print(ex)
         return {"message": str(ex)}, 500
 
+
 @building_blueprint.put("/<building_id>")
 def update_building(building_id):
     try:
@@ -58,8 +68,7 @@ def update_building(building_id):
         updated_building["updated_by"] = request.headers.get("username")
 
         result = building_collection.update_one(
-            {"_id": ObjectId(building_id)},
-            {"$set": updated_building}
+            {"_id": ObjectId(building_id)}, {"$set": updated_building}
         )
         return dumps(result.modified_count)
 
@@ -69,6 +78,7 @@ def update_building(building_id):
     except Exception as ex:
         print(ex)
         return {"message": str(ex)}, 500
+
 
 @building_blueprint.delete("/<building_id>")
 def delete_building(building_id):
