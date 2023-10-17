@@ -6,6 +6,7 @@ from flasgger import swag_from
 
 from src.common.database import database
 from src.schemas.subject_schema import SubjectSchema
+from src.middlewares.auth_middleware import auth_middleware
 
 subject_blueprint = Blueprint("subjects", __name__, url_prefix="/api/subjects")
 
@@ -15,6 +16,10 @@ subjects.create_index("subject_code", unique=True)
 subject_schema = SubjectSchema()
 
 yaml_files = "../swagger/subjects"
+
+@subject_blueprint.before_request
+def _():
+    return auth_middleware()
 
 @subject_blueprint.route("", methods=["GET"])
 @swag_from(f"{yaml_files}/get_all_subjects.yml")

@@ -40,7 +40,7 @@ def get_building(building_id):
 @building_blueprint.post("")
 def create_building():
     try:
-        username = request.user["Username"]
+        username = request.user.get("Username")
         new_building = building_input_schema.load(request.json)
         new_building["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
         new_building["created_by"] = username
@@ -64,7 +64,7 @@ def update_building(building_id):
     try:
         updated_building = building_input_schema.load(request.json)
         updated_building["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-        updated_building["updated_by"] = request.headers.get("username")
+        updated_building["updated_by"] = request.user.get("Username")
 
         result = building_collection.update_one(
             {"_id": ObjectId(building_id)}, {"$set": updated_building}

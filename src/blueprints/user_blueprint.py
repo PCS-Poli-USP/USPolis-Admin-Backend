@@ -8,6 +8,7 @@ from src.common.utils.prettify_id import prettify_id
 
 from src.common.database import database
 from src.schemas.user_schemas import UserInputSchema
+from src.middlewares.auth_middleware import auth_middleware
 
 user_blueprint = Blueprint("user", __name__, url_prefix="/api/user")
 user_input_schema = UserInputSchema()
@@ -15,6 +16,9 @@ user_collection = database["user"]
 building_collection = database["building"]
 user_collection.create_index("username", unique=True)
 
+@user_blueprint.before_request
+def _():
+    return auth_middleware()
 
 @user_blueprint.get("")
 def get_all_users():
@@ -35,7 +39,7 @@ def get_user(user_id):
 @user_blueprint.post("")
 def create_user():
     try:
-        username = request.headers.get("username")
+        username = request.user.get("Username")
         new_user = user_input_schema.load(request.json)
         new_user["buildings"] = []
         if new_user.get("building_names") is not None:
@@ -65,10 +69,10 @@ def create_user():
 @user_blueprint.put("/<user_id>")
 def update_user(user_id):
     try:
-        username = request.headers.get("username")
+        username = request.user.get("Username")
         updated_user = user_input_schema.load(request.json)
         updated_user["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-        updated_user["updated_by"] = request.headers.get("username")
+        updated_user["updated_by"] = request.user.get("Username")
 
         result = user_collection.update_one(
             {"_id": ObjectId(user_id)}, {"$set": updated_user}
