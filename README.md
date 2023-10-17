@@ -84,3 +84,21 @@ class AllocatorInputSchema(Schema):
     preferences = fields.Nested(PreferencesSchema)
     # [...]
 ```
+
+## Authentication
+
+### Packages
+
+The API authentication is made through the Cognito service of AWS, using the ```boto3``` python package.
+
+The configuration to connect to the AWS is **not** made on code, but instead on the hosting machine. The machine will need to have the AWS program installed and then connect using secrets.
+
+[This guide](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html) shows how to install both ```boto3``` and ```aws``` packages.
+
+We are using **the regular boto3 package, not the** ```boto3[crt]```, so **do not** install anything on pip, the boto3 is already on ```requirements.tx```
+
+### Auth Middleware
+
+In code, the Authentication is fully implemented on ```auth_middleware```. This middleware ensures the ```Authentication``` header have a valid token, and if so, it sets the ```request.user``` as the user who made the request. Worth noting that the header follow the formatting like ```Bearer {token}```.
+
+It's needed to call the middleware function with the ```before_request``` decorator on each blueprint to be authenticated.
