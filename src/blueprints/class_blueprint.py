@@ -33,7 +33,7 @@ event_schema = EventSchema()
 yaml_files = "../swagger/classes"
 
 
-@class_blueprint.before_request.before_request
+@class_blueprint.before_request
 def _():
     return auth_middleware()
 

@@ -22,7 +22,7 @@ available_classrooms_query_schema = AvailableClassroomsQuerySchema()
 
 yaml_files = "../swagger/classrooms"
 
-@classroom_blueprint.before_request.before_request
+@classroom_blueprint.before_request
 def _():
     return auth_middleware()
 
