@@ -1,7 +1,8 @@
 from flask import Blueprint, request
 from bson.json_util import dumps
 from marshmallow import EXCLUDE
-from pymongo.errors import PyMongoError
+from pymongo.errors import PyMongoError, DuplicateKeyError
+from marshmallow import ValidationError
 from datetime import datetime
 from flasgger import swag_from
 
@@ -71,6 +72,28 @@ def get_all_classes():
     resultList = list(result)
 
     return dumps(resultList)
+
+
+@class_blueprint.route("", methods=["POST"])
+def create_class():
+    try:
+        username = request.user.get("Username")
+        new_event = event_schema.load(request.json)
+        new_event["created_by"] = username
+        new_event["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
+        
+        result = events.insert_one(new_event)
+        return dumps(result.inserted_id)
+    
+    except DuplicateKeyError as err:
+        return {"message": err.details["errmsg"]}, 400
+
+    except ValidationError as err:
+        return {"message": err.messages}, 400
+
+    except Exception as ex:
+        print(ex)
+        return {"message": str(ex)}, 500
 
 
 @class_blueprint.route("many", methods=["POST"])
