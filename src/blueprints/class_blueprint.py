@@ -55,7 +55,7 @@ def get_all_classes():
                     "class_code": {"$first": "$class_code"},
                     "subject_code": {"$first": "$subject_code"},
                     "subject_name": {"$first": "$subject_name"},
-                    "professors": {"$push": "$professor"},
+                    "professors": {"$first": "$professors"},
                     "start_period": {"$first": "$start_period"},
                     "end_period": {"$first": "$end_period"},
                     "start_time": {"$push": "$start_time"},
@@ -77,18 +77,26 @@ def get_all_classes():
 @class_blueprint.route("", methods=["POST"])
 def create_class():
     try:
+        inserted = []
         username = request.user.get("Username")
-        new_event = event_schema.load(request.json)
-        new_event["created_by"] = username
-        new_event["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
+        events_list = request.json
+        print("Dados: ", request.json)
+        for event in events_list:
+            new_event = event_schema.load(event)
+            new_event["created_by"] = username
+            new_event["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
         
-        result = events.insert_one(new_event)
-        return dumps(result.inserted_id)
+            result = events.insert_one(new_event)
+            inserted.append(result.inserted_id)
+
+        return dumps({"inserted" : inserted })
     
     except DuplicateKeyError as err:
+        print(err)
         return {"message": err.details["errmsg"]}, 400
 
     except ValidationError as err:
+        print(err)
         return {"message": err.messages}, 400
 
     except Exception as ex:
