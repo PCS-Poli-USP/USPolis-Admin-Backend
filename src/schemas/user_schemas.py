@@ -3,7 +3,9 @@ from flasgger import Schema, fields
 
 class UserInputSchema(Schema):
   username = fields.Str()
-  building_names = fields.List(fields.Str(), required=False)
+  email = fields.Str()
+  isAdmin = fields.Bool()
+  building_ids = fields.List(fields.Str(), required=False)
 
 class UserOutputSchema(Schema):
   _id = fields.Str()
