@@ -3,12 +3,16 @@ from bson import ObjectId
 
 from flask import Blueprint, jsonify, request
 from src.common.database import database
+from src.middlewares.auth_middleware import auth_middleware
 
 institutional_event_blueprint = Blueprint(
     "institutional_event", __name__, url_prefix="/api/institutional-events")
 
 institutional_events = database["institutional_events"]
 
+@institutional_event_blueprint.before_request
+def _():
+    return auth_middleware()
 
 @institutional_event_blueprint.route("", methods=["POST"])
 def create_institutional_event():

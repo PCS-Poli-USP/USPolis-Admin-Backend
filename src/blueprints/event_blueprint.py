@@ -9,6 +9,7 @@ from src.common.tasks import update_events_activeness
 from src.common.database import database
 from src.schemas.allocation_schema import AllocatorInputSchema, AllocatorOutputSchema
 from src.common.allocation.allocator import allocate_classrooms
+from src.middlewares.auth_middleware import auth_middleware
 
 event_blueprint = Blueprint("events", __name__, url_prefix="/api/events")
 
@@ -24,11 +25,14 @@ allocation_input_schema = AllocatorInputSchema(many=True, unknown=EXCLUDE)
 
 yaml_files = "../swagger/events"
 
+@event_blueprint.before_request
+def _():
+    return auth_middleware()
 
 @event_blueprint.route("")
 @swag_from(f"{yaml_files}/get_events.yml")
 def get_events():
-    username = request.headers.get("username")
+    username = request.user.get("Username")
     result = events.find({"created_by": username}, {"_id": 0})
     resultList = list(result)
 
@@ -39,7 +43,7 @@ def get_events():
 @swag_from(f"{yaml_files}/save_new_allocation.yml")
 def save_new_allocation():
     try:
-        username = request.headers.get("username")
+        username = request.user.get("Username")
         classrooms_list = list(classrooms.find({"created_by": username}, {"_id": 0}))
         events_list = list(events.find({"created_by": username}, {"_id": 0}))
 
@@ -94,7 +98,7 @@ def edit_allocation(subject_code, class_code):
         week_days = request.json
         classroom = request.args["classroom"]
         building = request.args["building"]
-        username = request.headers.get("username")
+        username = request.user.get("Username")
 
         query = {
             "subject_code": subject_code,

@@ -4,6 +4,7 @@ from marshmallow import ValidationError
 from pymongo.errors import DuplicateKeyError, PyMongoError
 from datetime import datetime
 from flasgger import swag_from
+from src.middlewares.auth_middleware import auth_middleware
 
 from src.common.database import database
 from src.schemas.classroom_schema import ClassroomSchema, AvailableClassroomsQuerySchema
@@ -21,11 +22,14 @@ available_classrooms_query_schema = AvailableClassroomsQuerySchema()
 
 yaml_files = "../swagger/classrooms"
 
+@classroom_blueprint.before_request
+def _():
+    return auth_middleware()
 
 @classroom_blueprint.route("")
 @swag_from(f"{yaml_files}/get_all_classrooms.yml")
 def get_all_classrooms():
-    username = request.headers.get("username")
+    username = request.user.get("Username")
     result = classrooms.find({"created_by": username}, {"_id": 0})
     resultList = list(result)
 
@@ -40,7 +44,7 @@ def create_classroom():
         dict_request_body = request.json
 
         dict_request_body["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-        dict_request_body["created_by"] = request.headers.get("username")
+        dict_request_body["created_by"] = request.user.get("Username")
 
         result = classrooms.insert_one(dict_request_body)
 
@@ -61,7 +65,7 @@ def create_classroom():
 @swag_from(f"{yaml_files}/classroom_by_name.yml")
 def classroom_by_name(name):
     try:
-        username = request.headers.get("username")
+        username = request.user.get("Username")
         query = {"classroom_name": name, "created_by": username}
         if request.method == "GET":
             result = classrooms.find_one(query, {"_id": 0})
@@ -73,7 +77,7 @@ def classroom_by_name(name):
             classroom_schema.load(request.json)
             dict_request_body = request.json
             dict_request_body["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-            dict_request_body["created_by"] = request.headers.get("username")
+            dict_request_body["created_by"] = username
 
             update_set = {"$set": dict_request_body}
             result = classrooms.update_one(query, update_set).modified_count
@@ -98,7 +102,7 @@ def classroom_by_name(name):
 @swag_from(f"{yaml_files}/get_available_classrooms.yml")
 def get_available_classrooms():
     try:
-        username = request.headers.get("username")
+        username = request.user.get("Username")
         params = available_classrooms_query_schema.load(request.args)
         unavailable_classrooms = events.find(
             {
@@ -110,7 +114,6 @@ def get_available_classrooms():
             {"classroom": True, "_id": False},
         ).distinct("classroom")
 
-        username = request.headers.get("username")
         classrooms_list = list(
             classrooms.find(
                 {"created_by": username},
