@@ -1,5 +1,4 @@
-def prettify_id(bson_doc):
-    bson_doc["id"] = str(bson_doc["_id"])
-    del bson_doc["_id"]
-
-    return bson_doc
+def prettify_id(obj):
+    obj["id"] = str(obj["_id"])  # Convert _id to id
+    del obj["_id"]
+    return obj

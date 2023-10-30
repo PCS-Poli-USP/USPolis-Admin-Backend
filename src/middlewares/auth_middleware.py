@@ -1,9 +1,9 @@
 from flask import request
 import boto3
 
-client = boto3.client("cognito-idp")
 
 def auth_middleware():
+    client = boto3.client("cognito-idp")
     try:
         authorization = request.headers.get("Authorization")
         token = authorization.split(" ")[1]
@@ -18,3 +18,6 @@ def auth_middleware():
     
     except Exception as e:
         return {"message": "Invalid token"}, 400
+
+    finally:
+        client.close()

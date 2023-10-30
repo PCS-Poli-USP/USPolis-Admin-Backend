@@ -1,19 +1,18 @@
 from flask import Blueprint, request
 from datetime import datetime
-from bson.json_util import dumps
-from bson.objectid import ObjectId
 from marshmallow import ValidationError
 from pymongo.errors import DuplicateKeyError, PyMongoError
-from src.common.utils.prettify_id import prettify_id
 from src.middlewares.auth_middleware import auth_middleware
+from src.repository.building_repository import BuildingRepository
+from bson.json_util import dumps
 
 from src.common.database import database
 from src.schemas.building_schemas import BuildingInputSchema
+from src.common.utils.prettify_id import prettify_id
 
 building_blueprint = Blueprint("building", __name__, url_prefix="/api/building")
 building_input_schema = BuildingInputSchema()
-building_collection = database["building"]
-building_collection.create_index("name", unique=True)
+building_repository = BuildingRepository()
 
 
 @building_blueprint.before_request
@@ -23,8 +22,7 @@ def _():
 
 @building_blueprint.get("")
 def get_all_buildings():
-    buildings_cursor = building_collection.find()
-    buildings = list(buildings_cursor)
+    buildings = building_repository.list()
     for building in buildings:
         prettify_id(building)
     return dumps(buildings)
@@ -32,9 +30,10 @@ def get_all_buildings():
 
 @building_blueprint.get("/<building_id>")
 def get_building(building_id):
-    building = building_collection.find_one({"_id": ObjectId(building_id)})
-    prettify_id(building)
-    return dumps(building)
+    building = building_repository.get_by_id(building_id)
+    if building is None:
+        return {"message": f"Building {building_id} not found found"}, 404
+    return dumps(prettify_id(building))
 
 
 @building_blueprint.post("")
@@ -45,8 +44,7 @@ def create_building():
         new_building["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
         new_building["created_by"] = username
 
-        result = building_collection.insert_one(new_building)
-        return dumps(result.inserted_id)
+        return building_repository.insert(new_building)
 
     except DuplicateKeyError as err:
         return {"message": err.details["errmsg"]}, 400
@@ -66,10 +64,8 @@ def update_building(building_id):
         updated_building["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
         updated_building["updated_by"] = request.user.get("Username")
 
-        result = building_collection.update_one(
-            {"_id": ObjectId(building_id)}, {"$set": updated_building}
-        )
-        return dumps(result.modified_count)
+        result = building_repository.update(building_id, updated_building)
+        return dumps(result)
 
     except ValidationError as err:
         return {"message": err.messages}, 400
@@ -82,8 +78,8 @@ def update_building(building_id):
 @building_blueprint.delete("/<building_id>")
 def delete_building(building_id):
     try:
-        result = building_collection.delete_one({"_id": ObjectId(building_id)})
-        return dumps(result.deleted_count)
+        result = building_repository.delete(building_id)
+        return dumps(result)
 
     except PyMongoError as err:
         return {"message": err.details["errmsg"]}, 400
