@@ -28,8 +28,7 @@ def _():
 
 @user_blueprint.get("")
 def get_all_users():
-    users_cursor = user_collection.find()
-    users = list(users_cursor)
+    users = user_repository.list()
     for user in users:
         prettify_id(user)
     return dumps(users)
@@ -37,7 +36,7 @@ def get_all_users():
 
 @user_blueprint.get("/<user_id>")
 def get_user(user_id):
-    user = user_collection.find_one({"_id": ObjectId(user_id)})
+    user = user_repository.get_by_id(user_id)
     prettify_id(user)
     return dumps(user)
 
@@ -58,8 +57,15 @@ def create_user():
 
         building_ids = new_user.get("building_ids")
         if building_ids is not None:
-            new_user["buildings"] = building_repository.get_by_ids_array(building_ids)
-        new_user.pop("building_ids", None)
+            try:
+                new_user["building_ids"] = building_repository.check_ids_array(
+                    building_ids
+                )
+            except PyMongoError as err:
+                print(err)
+                return {
+                    "message": f"Error checking building ids:\n{err.details['errmsg']}"
+                }, 400
 
         new_user["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
         new_user["created_by"] = username
@@ -82,11 +88,9 @@ def update_user(user_id):
         username = request.user.get("Username")
         updated_user = user_input_schema.load(request.json)
         updated_user["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-        updated_user["updated_by"] = request.user.get("Username")
+        updated_user["updated_by"] = username
 
-        result = user_collection.update_one(
-            {"_id": ObjectId(user_id)}, {"$set": updated_user}
-        )
+        result = user_repository.update(user_id, updated_user)
 
         return dumps(result.modified_count)
 
@@ -101,7 +105,7 @@ def update_user(user_id):
 @user_blueprint.delete("/<user_id>")
 def delete_user(user_id):
     try:
-        result = user_collection.delete_one({"_id": ObjectId(user_id)})
+        result = user_repository.delete(user_id)
         return dumps(result.deleted_count)
 
     except PyMongoError as err:

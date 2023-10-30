@@ -17,14 +17,16 @@ class UserRepository(metaclass=SingletonMeta):
     def list(self):
         with MongoClient(self.__uri, self.__PORT) as client:
             user_collection = client["uspolis"]["user"]
-            users_cursor = user_collection.find()
+            users_cursor = user_collection.find({}, {"cognito_id": 0})
             users = list(users_cursor)
             return users
 
     def get_by_id(self, user_id: str):
         with MongoClient(self.__uri, self.__PORT) as client:
             user_collection = client["uspolis"]["user"]
-            user = user_collection.find_one({"_id": ObjectId(user_id)})
+            user = user_collection.find_one(
+                {"_id": ObjectId(user_id)}, {"cognito_id": 0}
+            )
             return user
 
     def insert(self, user: dict):
