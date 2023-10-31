@@ -46,6 +46,17 @@ class UserRepository(metaclass=SingletonMeta):
             )
             return user
 
+    def is_admin(self, username: str) -> bool:
+        with MongoClient(self.__uri, self.__PORT) as client:
+            user_collection = client["uspolis"]["user"]
+            user = user_collection.find_one({"username": username})
+            if user is None:
+                return False
+            isAdmin = user.get("isAdmin")
+            if isAdmin is None:
+                return False
+            return isAdmin
+
     def insert(self, user: dict):
         with MongoClient(self.__uri, self.__PORT) as client:
             user_collection = client["uspolis"]["user"]

@@ -7,7 +7,7 @@ from pymongo.errors import DuplicateKeyError, PyMongoError
 from src.common.utils.prettify_id import prettify_id, recursive_prettify_id
 from src.common.database import database
 from src.schemas.user_schemas import UserInputSchema
-from src.middlewares.auth_middleware import auth_middleware
+from src.middlewares.auth_middleware import admin_middleware
 from src.repository.user_repository import UserRepository
 from src.repository.building_repository import BuildingRepository
 import src.services.user.user_services as user_services
@@ -23,7 +23,7 @@ building_repository = BuildingRepository()
 
 @user_blueprint.before_request
 def _():
-    return auth_middleware()
+    return admin_middleware()
 
 
 @user_blueprint.get("")
