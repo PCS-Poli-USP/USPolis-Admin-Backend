@@ -5,6 +5,7 @@ from pymongo.errors import PyMongoError, DuplicateKeyError
 from marshmallow import ValidationError
 from datetime import datetime
 from flasgger import swag_from
+from bson.objectid import ObjectId
 
 from src.common.database import database
 from src.common.crawler import get_jupiter_class_infos
@@ -80,9 +81,10 @@ def create_class():
         inserted = []
         username = request.user.get("Username")
         events_list = request.json
-        print("Dados: ", request.json)
         for event in events_list:
             new_event = event_schema.load(event)
+            building_id = new_event["preferences"]["building_id"]
+            new_event["preferences"]["building_id"] = ObjectId(building_id)
             new_event["created_by"] = username
             new_event["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
         
@@ -247,6 +249,7 @@ def edit_class(subject_code, class_code):
                 "subject_code": subject_code,
                 "class_code": class_code,
                 "week_day": event["week_day_id"],
+                "start_time": event["start_time_id"],
                 "created_by": username,
             }
 
@@ -257,7 +260,7 @@ def edit_class(subject_code, class_code):
                         "week_day": event["week_day"],
                         "start_time": event["start_time"],
                         "end_time": event["end_time"],
-                        "professor": event["professor"],
+                        "professors": event["professors"],
                         "subscribers": event["subscribers"],
                         "updated_at": datetime.now().strftime("%d/%m/%Y %H:%M"),
                     }
@@ -269,6 +272,7 @@ def edit_class(subject_code, class_code):
 
     except Exception as ex:
         print(ex)
+        print("Eita")
         return {"message": str(ex)}, 500
 
 
