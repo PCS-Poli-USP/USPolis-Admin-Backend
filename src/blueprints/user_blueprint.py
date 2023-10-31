@@ -124,8 +124,15 @@ def update_user(user_id):
 @user_blueprint.delete("/<user_id>")
 def delete_user(user_id):
     try:
+        logged_username = request.user.get("Username")
+        user = user_repository.get_by_id(user_id)
+
+        if logged_username == user.get("username"):
+            return {"message": "Admins cannot delete themselves"}, 400
+        
+        user_services.cognito_delete_user(user.get("username"))
         result = user_repository.delete(user_id)
-        return dumps(result.deleted_count)
+        return dumps(result)
 
     except PyMongoError as err:
         return {"message": err.details["errmsg"]}, 400
