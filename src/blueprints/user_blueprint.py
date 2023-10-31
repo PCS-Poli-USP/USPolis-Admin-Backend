@@ -4,7 +4,7 @@ from bson.json_util import dumps
 from bson.objectid import ObjectId
 from marshmallow import ValidationError
 from pymongo.errors import DuplicateKeyError, PyMongoError
-from src.common.utils.prettify_id import prettify_id
+from src.common.utils.prettify_id import prettify_id, recursive_prettify_id
 from src.common.database import database
 from src.schemas.user_schemas import UserInputSchema
 from src.middlewares.auth_middleware import auth_middleware
@@ -28,9 +28,8 @@ def _():
 
 @user_blueprint.get("")
 def get_all_users():
-    users = user_repository.list()
-    for user in users:
-        prettify_id(user)
+    users = user_repository.list_with_buildings()
+    recursive_prettify_id(users)
     return dumps(users)
 
 

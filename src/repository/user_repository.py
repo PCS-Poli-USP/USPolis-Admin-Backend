@@ -14,10 +14,27 @@ class UserRepository(metaclass=SingletonMeta):
             user_collection = client["uspolis"]["user"]
             user_collection.create_index("username", unique=True)
 
-    def list(self):
+    def list_with_buildings(self):
         with MongoClient(self.__uri, self.__PORT) as client:
             user_collection = client["uspolis"]["user"]
-            users_cursor = user_collection.find({}, {"cognito_id": 0})
+            users_cursor = user_collection.aggregate(
+                [
+                    {
+                        "$lookup": {
+                            "from": "building",  # name of building collection
+                            "localField": "building_ids",  # name of field in user collection
+                            "foreignField": "_id",  # name of field in building collection
+                            "as": "buildings",  # name of new field in user collection
+                        }
+                    },
+                    {
+                        "$project": {
+                            "cognito_id": 0,  # Exclude the "cognito_id" field
+                            "building_ids": 0,  # Exclude the "building_ids" field
+                        }
+                    },
+                ]
+            )
             users = list(users_cursor)
             return users
 
