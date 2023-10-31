@@ -45,6 +45,14 @@ class UserRepository(metaclass=SingletonMeta):
                 {"_id": ObjectId(user_id)}, {"cognito_id": 0}
             )
             return user
+        
+    def get_by_username(self, username: str):
+        with MongoClient(self.__uri, self.__PORT) as client:
+            user_collection = client["uspolis"]["user"]
+            user = user_collection.find_one(
+                {"username": username}, {"cognito_id": 0}
+            )
+            return user
 
     def is_admin(self, username: str) -> bool:
         with MongoClient(self.__uri, self.__PORT) as client:

@@ -84,14 +84,34 @@ def create_user():
 @user_blueprint.put("/<user_id>")
 def update_user(user_id):
     try:
-        username = request.user.get("Username")
+        logged_username = request.user.get("Username")
+        logged_user = user_repository.get_by_username(logged_username)
+
         updated_user = user_input_schema.load(request.json)
+
+        if user_id == str(logged_user.get("_id")) and (
+            updated_user.get("isAdmin") is None
+            or updated_user.get("isAdmin") is False
+        ):
+            return {"message": "Cannot change your own admin status"}, 400
+
         updated_user["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-        updated_user["updated_by"] = username
+        updated_user["updated_by"] = logged_username
+        building_ids = updated_user.get("building_ids")
+        if building_ids is not None:
+            try:
+                updated_user["building_ids"] = building_repository.check_ids_array(
+                    building_ids
+                )
+            except PyMongoError as err:
+                print(err)
+                return {
+                    "message": f"Error checking building ids:\n{err.details['errmsg']}"
+                }, 400
 
         result = user_repository.update(user_id, updated_user)
 
-        return dumps(result.modified_count)
+        return dumps(result)
 
     except ValidationError as err:
         return {"message": err.messages}, 400
