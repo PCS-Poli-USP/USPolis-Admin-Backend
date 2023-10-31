@@ -192,6 +192,8 @@ def update_preferences(subject_code, class_code):
 
     try:
         preferences_schema_load = preferences_schema.load(request.json)
+        building_id = preferences_schema_load['building_id']
+        preferences_schema_load['building_id'] = ObjectId(building_id)
         has_to_be_allocated = request.json["has_to_be_allocated"]
 
         result = events.update_many(
