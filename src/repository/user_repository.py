@@ -3,6 +3,9 @@ import os
 from pymongo import MongoClient
 from src.common.singleton_meta import SingletonMeta
 from bson.objectid import ObjectId
+import dotenv
+
+dotenv.load_dotenv()
 
 
 class UserRepository(metaclass=SingletonMeta):
