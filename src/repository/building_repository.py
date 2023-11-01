@@ -3,6 +3,9 @@ import os
 from pymongo import MongoClient
 from src.common.singleton_meta import SingletonMeta
 from bson.objectid import ObjectId
+import dotenv
+
+dotenv.load_dotenv()
 
 
 class BuildingRepository(metaclass=SingletonMeta):
@@ -29,7 +32,7 @@ class BuildingRepository(metaclass=SingletonMeta):
             building = building_collection.find_one({"_id": ObjectId(building_id)})
             return building
 
-    def get_by_ids_array(self, building_ids: list[str]):
+    def check_ids_array(self, building_ids: list[str]):
         with MongoClient(self.__uri, self.__PORT) as client:
             database = client["uspolis"]
             building_collection = database["building"]
@@ -42,10 +45,11 @@ class BuildingRepository(metaclass=SingletonMeta):
                             ]
                         }
                     },
-                    {"_id": 1, "name": 1},
+                    {"_id": 1},
                 )
             )
-            return buildings
+            buildings_ids_list = [building["_id"] for building in buildings]
+            return buildings_ids_list
 
     def insert(self, building: dict):
         with MongoClient(self.__uri, self.__PORT) as client:

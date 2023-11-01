@@ -4,10 +4,10 @@ from bson.json_util import dumps
 from bson.objectid import ObjectId
 from marshmallow import ValidationError
 from pymongo.errors import DuplicateKeyError, PyMongoError
-from src.common.utils.prettify_id import prettify_id
+from src.common.utils.prettify_id import prettify_id, recursive_prettify_id
 from src.common.database import database
 from src.schemas.user_schemas import UserInputSchema
-from src.middlewares.auth_middleware import auth_middleware
+from src.middlewares.auth_middleware import admin_middleware
 from src.repository.user_repository import UserRepository
 from src.repository.building_repository import BuildingRepository
 import src.services.user.user_services as user_services
@@ -23,21 +23,19 @@ building_repository = BuildingRepository()
 
 @user_blueprint.before_request
 def _():
-    return auth_middleware()
+    return admin_middleware()
 
 
 @user_blueprint.get("")
 def get_all_users():
-    users_cursor = user_collection.find()
-    users = list(users_cursor)
-    for user in users:
-        prettify_id(user)
+    users = user_repository.list_with_buildings()
+    recursive_prettify_id(users)
     return dumps(users)
 
 
 @user_blueprint.get("/<user_id>")
 def get_user(user_id):
-    user = user_collection.find_one({"_id": ObjectId(user_id)})
+    user = user_repository.get_by_id(user_id)
     prettify_id(user)
     return dumps(user)
 
@@ -58,8 +56,15 @@ def create_user():
 
         building_ids = new_user.get("building_ids")
         if building_ids is not None:
-            new_user["buildings"] = building_repository.get_by_ids_array(building_ids)
-        new_user.pop("building_ids", None)
+            try:
+                new_user["building_ids"] = building_repository.check_ids_array(
+                    building_ids
+                )
+            except PyMongoError as err:
+                print(err)
+                return {
+                    "message": f"Error checking building ids:\n{err.details['errmsg']}"
+                }, 400
 
         new_user["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
         new_user["created_by"] = username
@@ -79,16 +84,36 @@ def create_user():
 @user_blueprint.put("/<user_id>")
 def update_user(user_id):
     try:
-        username = request.user.get("Username")
+        logged_username = request.user.get("Username")
+        logged_user = user_repository.get_by_username(logged_username)
+
         updated_user = user_input_schema.load(request.json)
+
+        if user_id == str(logged_user.get("_id")) and (
+            updated_user.get("isAdmin") is None or updated_user.get("isAdmin") is False
+        ):
+            return {"message": "Cannot change your own admin status"}, 400
+
+        if updated_user.get("isAdmin") is True:
+            updated_user["building_ids"] = []
+
         updated_user["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-        updated_user["updated_by"] = request.user.get("Username")
+        updated_user["updated_by"] = logged_username
+        building_ids = updated_user.get("building_ids")
+        if building_ids is not None:
+            try:
+                updated_user["building_ids"] = building_repository.check_ids_array(
+                    building_ids
+                )
+            except PyMongoError as err:
+                print(err)
+                return {
+                    "message": f"Error checking building ids:\n{err.details['errmsg']}"
+                }, 400
 
-        result = user_collection.update_one(
-            {"_id": ObjectId(user_id)}, {"$set": updated_user}
-        )
+        result = user_repository.update(user_id, updated_user)
 
-        return dumps(result.modified_count)
+        return dumps(result)
 
     except ValidationError as err:
         return {"message": err.messages}, 400
@@ -101,8 +126,15 @@ def update_user(user_id):
 @user_blueprint.delete("/<user_id>")
 def delete_user(user_id):
     try:
-        result = user_collection.delete_one({"_id": ObjectId(user_id)})
-        return dumps(result.deleted_count)
+        logged_username = request.user.get("Username")
+        user = user_repository.get_by_id(user_id)
+
+        if logged_username == user.get("username"):
+            return {"message": "Admins cannot delete themselves"}, 400
+
+        user_services.cognito_delete_user(user.get("username"))
+        result = user_repository.delete(user_id)
+        return dumps(result)
 
     except PyMongoError as err:
         return {"message": err.details["errmsg"]}, 400
