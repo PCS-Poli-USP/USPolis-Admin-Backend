@@ -1,9 +1,11 @@
 from flask import Blueprint, request
 from bson.json_util import dumps
 from marshmallow import EXCLUDE
-from pymongo.errors import PyMongoError
+from pymongo.errors import PyMongoError, DuplicateKeyError
+from marshmallow import ValidationError
 from datetime import datetime
 from flasgger import swag_from
+from bson.objectid import ObjectId
 
 from src.common.database import database
 from src.common.crawler import get_jupiter_class_infos
@@ -54,7 +56,7 @@ def get_all_classes():
                     "class_code": {"$first": "$class_code"},
                     "subject_code": {"$first": "$subject_code"},
                     "subject_name": {"$first": "$subject_name"},
-                    "professors": {"$push": "$professor"},
+                    "professors": {"$first": "$professors"},
                     "start_period": {"$first": "$start_period"},
                     "end_period": {"$first": "$end_period"},
                     "start_time": {"$push": "$start_time"},
@@ -71,6 +73,37 @@ def get_all_classes():
     resultList = list(result)
 
     return dumps(resultList)
+
+
+@class_blueprint.route("", methods=["POST"])
+def create_class():
+    try:
+        inserted = []
+        username = request.user.get("Username")
+        events_list = request.json
+        for event in events_list:
+            new_event = event_schema.load(event)
+            building_id = new_event["preferences"]["building_id"]
+            new_event["preferences"]["building_id"] = ObjectId(building_id)
+            new_event["created_by"] = username
+            new_event["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
+        
+            result = events.insert_one(new_event)
+            inserted.append(result.inserted_id)
+
+        return dumps({"inserted" : inserted })
+    
+    except DuplicateKeyError as err:
+        print(err)
+        return {"message": err.details["errmsg"]}, 400
+
+    except ValidationError as err:
+        print(err)
+        return {"message": err.messages}, 400
+
+    except Exception as ex:
+        print(ex)
+        return {"message": str(ex)}, 500
 
 
 @class_blueprint.route("many", methods=["POST"])
@@ -159,6 +192,8 @@ def update_preferences(subject_code, class_code):
 
     try:
         preferences_schema_load = preferences_schema.load(request.json)
+        building_id = preferences_schema_load['building_id']
+        preferences_schema_load['building_id'] = ObjectId(building_id)
         has_to_be_allocated = request.json["has_to_be_allocated"]
 
         result = events.update_many(
@@ -216,6 +251,7 @@ def edit_class(subject_code, class_code):
                 "subject_code": subject_code,
                 "class_code": class_code,
                 "week_day": event["week_day_id"],
+                "start_time": event["start_time_id"],
                 "created_by": username,
             }
 
@@ -226,7 +262,7 @@ def edit_class(subject_code, class_code):
                         "week_day": event["week_day"],
                         "start_time": event["start_time"],
                         "end_time": event["end_time"],
-                        "professor": event["professor"],
+                        "professors": event["professors"],
                         "subscribers": event["subscribers"],
                         "updated_at": datetime.now().strftime("%d/%m/%Y %H:%M"),
                     }
@@ -238,6 +274,7 @@ def edit_class(subject_code, class_code):
 
     except Exception as ex:
         print(ex)
+        print("Eita")
         return {"message": str(ex)}, 500
 
 
