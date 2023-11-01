@@ -15,6 +15,7 @@ from src.schemas.class_schema import (
     HasToBeAllocatedClassesSchema,
 )
 from src.schemas.event_schema import EventSchema
+from src.common.utils.prettify_preferences import prettify_preferences
 from src.common.mappers.classes_mapper import break_class_into_events
 from src.middlewares.auth_middleware import auth_middleware
 
@@ -65,13 +66,16 @@ def get_all_classes():
                     "preferences": {"$first": "$preferences"},
                     "has_to_be_allocated": {"$first": "$has_to_be_allocated"},
                     "subscribers": {"$first": "$subscribers"},
+                    "vacancies" : {"$first": "$vacancies"},
+                    "pendings" : {"$first": "$pendings"},
                     "classrooms": {"$push": "$classroom"},
                 }
             },
         ]
     )
     resultList = list(result)
-
+    for classes in resultList:
+        prettify_preferences(classes['preferences'])
     return dumps(resultList)
 
 
@@ -202,6 +206,7 @@ def update_preferences(subject_code, class_code):
                 "$set": {
                     "preferences": preferences_schema_load,
                     "has_to_be_allocated": has_to_be_allocated,
+                    "updated_at": datetime.now().strftime("%d/%m/%Y %H:%M"),
                 }
             },
         )
@@ -274,7 +279,6 @@ def edit_class(subject_code, class_code):
 
     except Exception as ex:
         print(ex)
-        print("Eita")
         return {"message": str(ex)}, 500
 
 
