@@ -90,10 +90,12 @@ def update_user(user_id):
         updated_user = user_input_schema.load(request.json)
 
         if user_id == str(logged_user.get("_id")) and (
-            updated_user.get("isAdmin") is None
-            or updated_user.get("isAdmin") is False
+            updated_user.get("isAdmin") is None or updated_user.get("isAdmin") is False
         ):
             return {"message": "Cannot change your own admin status"}, 400
+
+        if updated_user.get("isAdmin") is True:
+            updated_user["building_ids"] = []
 
         updated_user["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
         updated_user["updated_by"] = logged_username
@@ -129,7 +131,7 @@ def delete_user(user_id):
 
         if logged_username == user.get("username"):
             return {"message": "Admins cannot delete themselves"}, 400
-        
+
         user_services.cognito_delete_user(user.get("username"))
         result = user_repository.delete(user_id)
         return dumps(result)
