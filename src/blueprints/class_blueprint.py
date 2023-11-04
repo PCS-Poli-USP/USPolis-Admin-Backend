@@ -15,6 +15,7 @@ from src.schemas.class_schema import (
     HasToBeAllocatedClassesSchema,
 )
 from src.schemas.event_schema import EventSchema
+from src.common.utils.prettify_preferences import prettify_preferences
 from src.common.mappers.classes_mapper import break_class_into_events
 from src.middlewares.auth_middleware import auth_middleware
 
@@ -65,13 +66,16 @@ def get_all_classes():
                     "preferences": {"$first": "$preferences"},
                     "has_to_be_allocated": {"$first": "$has_to_be_allocated"},
                     "subscribers": {"$first": "$subscribers"},
+                    "vacancies" : {"$first": "$vacancies"},
+                    "pendings" : {"$first": "$pendings"},
                     "classrooms": {"$push": "$classroom"},
                 }
             },
         ]
     )
     resultList = list(result)
-
+    for classes in resultList:
+        prettify_preferences(classes['preferences'])
     return dumps(resultList)
 
 
@@ -202,6 +206,7 @@ def update_preferences(subject_code, class_code):
                 "$set": {
                     "preferences": preferences_schema_load,
                     "has_to_be_allocated": has_to_be_allocated,
+                    "updated_at": datetime.now().strftime("%d/%m/%Y %H:%M"),
                 }
             },
         )
@@ -243,38 +248,33 @@ def get_preferences(subject_code, class_code):
 def edit_class(subject_code, class_code):
     try:
         class_events = request.json
-        updated = 0
+        deleted = 0
+        inserted = 0
         username = request.user.get("Username")
 
+        query = {
+            "subject_code" : subject_code,
+            "class_code" : class_code,
+            "created_by": username,
+        }
+
+        result = events.delete_many(query)
+        deleted += result.deleted_count
+
         for event in class_events:
-            query = {
-                "subject_code": subject_code,
-                "class_code": class_code,
-                "week_day": event["week_day_id"],
-                "start_time": event["start_time_id"],
-                "created_by": username,
-            }
+            event = event_schema.load(event)
+            building_id = event["preferences"]["building_id"]
+            event["preferences"]["building_id"] = ObjectId(building_id)
+            event["created_by"] = username
+            event["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
+        
+            result = events.insert_one(event)
+            inserted += 1
 
-            result = events.update_one(
-                query,
-                {
-                    "$set": {
-                        "week_day": event["week_day"],
-                        "start_time": event["start_time"],
-                        "end_time": event["end_time"],
-                        "professors": event["professors"],
-                        "subscribers": event["subscribers"],
-                        "updated_at": datetime.now().strftime("%d/%m/%Y %H:%M"),
-                    }
-                },
-            )
-            updated += result.matched_count
-
-        return dumps({"updated": updated})
+        return dumps({"inserted": inserted, "removed" : deleted})
 
     except Exception as ex:
         print(ex)
-        print("Eita")
         return {"message": str(ex)}, 500
 
 
