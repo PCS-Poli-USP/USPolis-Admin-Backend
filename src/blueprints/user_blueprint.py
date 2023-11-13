@@ -47,6 +47,11 @@ def create_user():
 
         new_user = user_input_schema.load(request.json)
 
+        new_user["username"] = new_user["username"].lower()
+
+        if " " in new_user.get("username"):
+            return {"message": "Username cannot contain spaces"}, 400
+
         try:
             new_user["cognito_id"] = user_services.cognito_create_user(
                 new_user["username"], new_user["email"]

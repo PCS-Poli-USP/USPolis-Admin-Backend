@@ -2,6 +2,7 @@
 from flasgger import Schema, fields
 
 class UserInputSchema(Schema):
+  name = fields.Str()
   username = fields.Str()
   email = fields.Str()
   isAdmin = fields.Bool()
@@ -9,6 +10,7 @@ class UserInputSchema(Schema):
 
 class UserOutputSchema(Schema):
   _id = fields.Str()
+  name = fields.Str()
   username = fields.Str()
   created_by = fields.Str()
   updated_at = fields.Str()
