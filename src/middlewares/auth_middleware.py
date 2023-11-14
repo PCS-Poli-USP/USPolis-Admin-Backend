@@ -18,8 +18,8 @@ def auth_middleware():
             if token is None:
                 return {"message": "Missing authorization header"}, 400
 
-        response = client.get_user(AccessToken=token)
-        request.user = response
+            response = client.get_user(AccessToken=token)
+            request.user = response
 
     except Exception as e:
         return {"message": "Invalid token"}, 400
