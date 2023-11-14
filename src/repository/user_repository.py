@@ -42,6 +42,7 @@ class UserRepository(metaclass=SingletonMeta):
             return users
 
     def get_by_id(self, user_id: str):
+        '''Returns a user by its MONGO ID, not AWS ID!'''
         with MongoClient(self.__uri, self.__PORT) as client:
             user_collection = client["uspolis"]["user"]
             user = user_collection.find_one({"_id": ObjectId(user_id)})
