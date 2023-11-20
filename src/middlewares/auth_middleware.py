@@ -12,14 +12,14 @@ def auth_middleware():
         aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
     )
     try:
-        authorization = request.headers.get("Authorization")
-        token = authorization.split(" ")[1]
-        if token is None:
-            return {"message": "Missing authorization header"}, 400
+        if request.method != 'OPTIONS':
+            authorization = request.headers.get("Authorization")
+            token = authorization.split(" ")[1]
+            if token is None:
+                return {"message": "Missing authorization header"}, 400
 
-        response = client.get_user(AccessToken=token)
-
-        request.user = response
+            response = client.get_user(AccessToken=token)
+            request.user = response
 
     except Exception as e:
         return {"message": "Invalid token"}, 400
