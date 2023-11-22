@@ -39,6 +39,13 @@ def get_events():
     return dumps(resultList)
 
 
+@event_blueprint.route("/<subject_code>/<class_code>", methods=["GET"])
+def get_events_by_class(subject_code, class_code):
+    username = request.user.get("Username")
+    result = events.find({"created_by": username, "subject_code": subject_code, "class_code": class_code })
+    resultList = list(result)
+    return dumps(resultList)
+
 @event_blueprint.route("allocate", methods=["PATCH"])
 @swag_from(f"{yaml_files}/save_new_allocation.yml")
 def save_new_allocation():
@@ -111,6 +118,7 @@ def edit_allocation(subject_code, class_code):
             query,
             {
                 "$set": {
+                    "has_to_be_allocated": False,
                     "classroom": classroom,
                     "building": building,
                     "updated_at": datetime.now().strftime("%d/%m/%Y %H:%M"),
