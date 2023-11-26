@@ -29,12 +29,13 @@ def auth_middleware():
 
 
 def admin_middleware():
-    user_repository = UserRepository()
+    if request.method != 'OPTIONS':
+        user_repository = UserRepository()
 
-    auth_middleware_response = auth_middleware()
-    
-    if auth_middleware_response is not None:
-        return auth_middleware_response
-
-    if not user_repository.is_admin(request.user["Username"]):
-        return {"message": "Unauthorized"}, 401
+        auth_middleware_response = auth_middleware()
+        
+        if auth_middleware_response is not None:
+            return auth_middleware_response
+        
+        if not user_repository.is_admin(request.user["Username"]):
+            return {"message": "Unauthorized"}, 401
