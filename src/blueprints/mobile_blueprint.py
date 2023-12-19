@@ -145,8 +145,8 @@ def get_classes():
 @mobile_blueprint.route("/comments", methods=["POST"])
 def post_comment():
     try:
-        email = request.json["email"]
-        comment = request.json["comment"]
+        email = request.json.get("email")
+        comment = request.json.get("comment")
 
         comment_doc = {
             "email": email,
