@@ -15,6 +15,7 @@ from src.blueprints.event_blueprint import event_blueprint
 from src.blueprints.mobile_blueprint import mobile_blueprint
 from src.blueprints.test_blueprint import test_blueprint
 from src.blueprints.building_blueprint import building_blueprint
+from src.blueprints.self_blueprint import self_blueprint
 from src.blueprints.institutional_event_blueprint import institutional_event_blueprint
 
 from src.schemas.classroom_schema import ClassroomSchema, AvailableClassroomsQuerySchema
@@ -48,6 +49,7 @@ app.register_blueprint(mobile_blueprint)
 app.register_blueprint(institutional_event_blueprint)
 app.register_blueprint(user_blueprint)
 app.register_blueprint(building_blueprint)
+app.register_blueprint(self_blueprint)
 
 
 # Swagger

@@ -10,16 +10,17 @@ dotenv.load_dotenv()
 
 class BuildingRepository(metaclass=SingletonMeta):
     __uri = os.environ.get("CONN_STR")
+    __db = os.environ.get("DB_NAME")
     __PORT: int = 27017
 
     def __init__(self):
         with MongoClient(self.__uri, self.__PORT) as client:
-            building_collection = client["uspolis"]["building"]
+            building_collection = client[self.__db]["building"]
             building_collection.create_index("name", unique=True)
 
     def list(self) -> list[dict]:
         with MongoClient(self.__uri, self.__PORT) as client:
-            database = client["uspolis"]
+            database = client[self.__db]
             building_collection = database["building"]
             buildings_cursor = building_collection.find()
             buildings = list(buildings_cursor)
@@ -27,14 +28,14 @@ class BuildingRepository(metaclass=SingletonMeta):
 
     def get_by_id(self, building_id: str):
         with MongoClient(self.__uri, self.__PORT) as client:
-            database = client["uspolis"]
+            database = client[self.__db]
             building_collection = database["building"]
             building = building_collection.find_one({"_id": ObjectId(building_id)})
             return building
 
     def check_ids_array(self, building_ids: list[str]):
         with MongoClient(self.__uri, self.__PORT) as client:
-            database = client["uspolis"]
+            database = client[self.__db]
             building_collection = database["building"]
             buildings = list(
                 building_collection.find(
@@ -53,7 +54,7 @@ class BuildingRepository(metaclass=SingletonMeta):
 
     def insert(self, building: dict):
         with MongoClient(self.__uri, self.__PORT) as client:
-            database = client["uspolis"]
+            database = client[self.__db]
             building_collection = database["building"]
 
             result = building_collection.insert_one(building)
@@ -61,7 +62,7 @@ class BuildingRepository(metaclass=SingletonMeta):
 
     def update(self, building_id: str, building: dict):
         with MongoClient(self.__uri, self.__PORT) as client:
-            database = client["uspolis"]
+            database = client[self.__db]
             building_collection = database["building"]
 
             result = building_collection.update_one(
@@ -71,7 +72,7 @@ class BuildingRepository(metaclass=SingletonMeta):
 
     def delete(self, building_id: str):
         with MongoClient(self.__uri, self.__PORT) as client:
-            database = client["uspolis"]
+            database = client[self.__db]
             building_collection = database["building"]
 
             result = building_collection.delete_one({"_id": ObjectId(building_id)})

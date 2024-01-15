@@ -1,0 +1,1 @@
+- **Removing a building**: If there are users and classrooms assigned to this building, what should happen?

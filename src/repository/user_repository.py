@@ -10,16 +10,17 @@ dotenv.load_dotenv()
 
 class UserRepository(metaclass=SingletonMeta):
     __uri = os.environ.get("CONN_STR")
+    __db = os.environ.get("DB_NAME")
     __PORT: int = 27017
 
     def __init__(self):
         with MongoClient(self.__uri, self.__PORT) as client:
-            user_collection = client["uspolis"]["user"]
+            user_collection = client[self.__db]["user"]
             user_collection.create_index("username", unique=True)
 
     def list_with_buildings(self):
         with MongoClient(self.__uri, self.__PORT) as client:
-            user_collection = client["uspolis"]["user"]
+            user_collection = client[self.__db]["user"]
             users_cursor = user_collection.aggregate(
                 [
                     {
@@ -42,20 +43,40 @@ class UserRepository(metaclass=SingletonMeta):
             return users
 
     def get_by_id(self, user_id: str):
+        """Returns a user by its MONGO ID, not AWS ID!"""
         with MongoClient(self.__uri, self.__PORT) as client:
-            user_collection = client["uspolis"]["user"]
+            user_collection = client[self.__db]["user"]
             user = user_collection.find_one({"_id": ObjectId(user_id)})
             return user
 
     def get_by_username(self, username: str):
         with MongoClient(self.__uri, self.__PORT) as client:
-            user_collection = client["uspolis"]["user"]
-            user = user_collection.find_one({"username": username}, {"cognito_id": 0})
+            user_collection = client[self.__db]["user"]
+            user_cursor = user_collection.aggregate(
+                [
+                    {"$match": {"username": username}},  # Filter by username
+                    {
+                        "$lookup": {
+                            "from": "building",  # name of building collection
+                            "localField": "building_ids",  # name of field in user collection
+                            "foreignField": "_id",  # name of field in building collection
+                            "as": "buildings",  # name of new field in user collection
+                        }
+                    },
+                    {
+                        "$project": {
+                            "cognito_id": 0,  # Exclude the "cognito_id" field
+                            "building_ids": 0,  # Exclude the "building_ids" field
+                        }
+                    },
+                ]
+            )
+            user = next(user_cursor, None)  # Get the first user (or None if not found)
             return user
 
     def is_admin(self, username: str) -> bool:
         with MongoClient(self.__uri, self.__PORT) as client:
-            user_collection = client["uspolis"]["user"]
+            user_collection = client[self.__db]["user"]
             user = user_collection.find_one({"username": username})
             if user is None:
                 return False
@@ -66,14 +87,14 @@ class UserRepository(metaclass=SingletonMeta):
 
     def insert(self, user: dict):
         with MongoClient(self.__uri, self.__PORT) as client:
-            user_collection = client["uspolis"]["user"]
+            user_collection = client[self.__db]["user"]
 
             result = user_collection.insert_one(user)
             return {"id": str(result.inserted_id)}
 
     def update(self, user_id: str, user: dict):
         with MongoClient(self.__uri, self.__PORT) as client:
-            user_collection = client["uspolis"]["user"]
+            user_collection = client[self.__db]["user"]
 
             result = user_collection.update_one(
                 {"_id": ObjectId(user_id)}, {"$set": user}
@@ -82,7 +103,7 @@ class UserRepository(metaclass=SingletonMeta):
 
     def delete(self, user_id: str):
         with MongoClient(self.__uri, self.__PORT) as client:
-            user_collection = client["uspolis"]["user"]
+            user_collection = client[self.__db]["user"]
 
             result = user_collection.delete_one({"_id": ObjectId(user_id)})
             return result.deleted_count
