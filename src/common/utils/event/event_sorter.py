@@ -11,3 +11,6 @@ def sort_events_by_subject_code(event: dict):
 
 def sort_events_by_time(event: dict):
   return (days_index(event["week_day"]), event["start_time"])
+
+def sort_events_by_class(event: dict):
+  return (event["vacancies"], event["subject_code"])
