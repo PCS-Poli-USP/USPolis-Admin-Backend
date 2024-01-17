@@ -1,4 +1,4 @@
-from src.common.utils.days import days_index
+from src.common.utils.days import days_index, reverse_days_index
     
 def sort_events_by_subscribers(event: dict):
   return event['subscribers']
@@ -14,3 +14,6 @@ def sort_events_by_time(event: dict):
 
 def sort_events_by_class(event: dict):
   return (event["vacancies"], event["subject_code"])
+
+def sort_events_by_class_and_time(event: dict):
+  return (event["vacancies"], event["subject_code"], reverse_days_index(event["week_day"]), event["start_time"])
