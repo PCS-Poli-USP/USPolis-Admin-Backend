@@ -1,6 +1,7 @@
 from flask import Blueprint, request
 from bson.json_util import dumps
 from marshmallow import EXCLUDE, ValidationError
+from pymongo.errors import PyMongoError
 from datetime import datetime, timedelta
 from flasgger import swag_from
 from threading import Thread
@@ -56,39 +57,12 @@ def save_new_allocation():
     try:
         username = request.user.get("Username")
         classroom_list = list(classrooms.find({"created_by": username}, {"_id": 0}))
-        result = events.aggregate(
-            [
-                {"$match": {"created_by": username}},
-                {
-                    "$group": {
-                        "_id": {
-                            "class_code": "$class_code",
-                            "subject_code": "$subject_code",
-                        },
-                        "class_code": {"$first": "$class_code"},
-                        "subject_code": {"$first": "$subject_code"},
-                        "subject_name": {"$first": "$subject_name"},
-                        "professors": {"$first": "$professors"},
-                        "start_period": {"$first": "$start_period"},
-                        "end_period": {"$first": "$end_period"},
-                        "start_time": {"$push": "$start_time"},
-                        "end_time": {"$push": "$end_time"},
-                        "week_days": {"$push": "$week_day"},
-                        "preferences": {"$first": "$preferences"},
-                        "has_to_be_allocated": {"$first": "$has_to_be_allocated"},
-                        "subscribers": {"$first": "$subscribers"},
-                        "vacancies" : {"$first": "$vacancies"},
-                        "pendings" : {"$first": "$pendings"},
-                    }
-                },
-            ]
-        )
-        class_list = list(result)
-        result = allocate_classrooms(classroom_list, class_list)
-        allocated_classes = result[0]
-        unallocated_classes = result[1]
+        event_list = list(events.find({"created_by": username}))
+        result = allocate_classrooms(classroom_list, event_list)
+        allocated_events = result[0]
+        unallocated_events = result[1]
 
-        return {"allocated" : allocated_classes, "unallocated" : unallocated_classes}
+        return {"allocated" : allocated_events, "unallocated" : unallocated_events}
 
     except ValidationError as err:
         return {"message": err.messages}, 400
@@ -130,6 +104,29 @@ def edit_allocation(subject_code, class_code):
     except Exception as ex:
         print(ex)
         return {"message": str(ex)}, 500
+
+@event_blueprint.route("/<subject_code>/<class_code>", methods=["DELETE"])
+def delete_one_allocation(subject_code, class_code):
+    try:
+        username = request.user.get("Username")
+        filter = {"created_by" : username}
+        query = {
+                "$unset" : {
+                    "building" : "", 
+                    "classroom" : "",
+                },
+                "$set": { "has_to_be_allocated": True}
+        }
+        result = events.update_one(filter, query)
+        if not result:
+            raise PyMongoError(f"{subject_code} - {class_code} not found")
+        return dumps(result)
+    
+    except PyMongoError as err:
+        return {"message": err._message}, 404
+    
+    except Exception as ex:
+        return {"message" : str(ex)}, 500
 
 @event_blueprint.route("delete-allocations", methods=["PATCH"])
 def delete_allocations():

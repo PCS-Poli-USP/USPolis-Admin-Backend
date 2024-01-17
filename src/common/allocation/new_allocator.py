@@ -2,73 +2,75 @@ from datetime import datetime
 
 from src.common.database import database
 
-events = database["events"]
+events_collection = database["events"]
 
 from src.common.utils.classes.classes_mapper import get_class_schedule
 from src.common.utils.classroom.classroom_mapper import get_classroom_schedule
+from src.common.utils.event.event_mapper import get_events_by_class
 from src.common.utils.classes.classes_sorter import sort_classes_by_vacancies
 from src.common.utils.classroom.classroom_sorter import sort_classrooms_by_capacity
-from src.common.utils.event.event_sorter import sort_events_by_class
+from src.common.utils.event.event_sorter import sort_events_by_class, sort_events_by_vacancies, sort_events_by_subject_code, sort_events_by_time, sort_events_by_class_and_time
 
-def classroom_capacity_validation(classroom: dict, _class: dict) -> bool:
-  return classroom["capacity"] >= _class["vacancies"]
+def classroom_capacity_validation(classroom: dict, event: dict) -> bool:
+  return classroom["capacity"] >= event["vacancies"]
 
 def classroom_preferences_validation(classroom: dict, preferences: dict) -> bool:
     return preferences["projector"] == classroom["projector"] and \
            preferences["air_conditioning"] == classroom["air_conditioning"] and \
            preferences["accessibility"] == classroom["accessibility"]
 
-def classroom_times_validation(classroom: dict, _class: dict) -> bool:
+def classroom_times_validation(classroom: dict, event: dict) -> bool:
   classroom_schedule = get_classroom_schedule(classroom)
-  class_schedule = get_class_schedule(_class)
-
-  for day, times in class_schedule.items():
-    for time in times:
-      start_validation = datetime.strptime(time[0], "%H:%M").time()
-      end_validation = datetime.strptime(time[1], "%H:%M").time()
-      classroom_times = classroom_schedule[day]
-      for classroom_time in classroom_times:
-        start = datetime.strptime(classroom_time[0], "%H:%M").time()
-        end = datetime.strptime(classroom_time[1], "%H:%M").time()
-        if (start_validation < start and end_validation < end):
-          return False
-        if (start_validation > start and end_validation < end):
-          return False
-        if (start_validation < end and end_validation > end):
-          return False
-        if (start_validation < start and end_validation > end):
-          return False
+  start_validation = datetime.strptime(event["start_time"], "%H:%M").time()
+  end_validation = datetime.strptime(event["end_time"], "%H:%M").time()
+  classroom_times = classroom_schedule[event["week_day"]]
+  for classroom_time in classroom_times:
+    start = datetime.strptime(classroom_time[0], "%H:%M").time()
+    end = datetime.strptime(classroom_time[1], "%H:%M").time()
+    if (start_validation < start and end_validation < end):
+      return False
+    if (start_validation > start and end_validation < end):
+      return False
+    if (start_validation < end and end_validation > end):
+      return False
+    if (start_validation < start and end_validation > end):
+      return False
   return True
 
-def classroom_is_allowed_to_allocate(classroom: dict, _class: dict) -> bool:
-  if classroom_capacity_validation(classroom, _class):
-    if classroom_times_validation(classroom, _class):
+def classroom_is_allowed_to_allocate(classroom: dict, event: dict) -> bool:
+  if classroom_capacity_validation(classroom, event):
+    if classroom_times_validation(classroom, event):
       return True    
   return False
 
-def allocate_classrooms(classroom_list: list, class_list: list):
+def allocate_classrooms(classroom_list: list, event_list: list):
   classroom_list.sort(key=sort_classrooms_by_capacity, reverse=True)
-  class_list.sort(key=sort_classes_by_vacancies, reverse=True)
+  event_list.sort(key=sort_events_by_class_and_time, reverse=True)
 
-  allocated_classes = []
-  unallocated_classes = []
+  events_by_class = get_events_by_class(event_list)
+  allocated_events = []
+  unallocated_events = []
 
-  for _class in class_list:
-      allocated = False
-      for classroom in classroom_list:
-          if classroom_is_allowed_to_allocate(classroom, _class):
-              print("Turma: ", _class["subject_code"], _class["class_code"], "allocada em", classroom["classroom_name"])
-              filter = {"subject_code" : _class["subject_code"], "class_code" : _class["class_code"]}
-              query = {"$set": {"has_to_be_allocated" : False, "classroom" : classroom["classroom_name"], "building" : classroom["building"]}}
-              events.update_many(filter, query)
-              _class["has_to_be_allocated"] = False
-              _class["classrooms"] = [classroom["classroom_name"]]
-              _class["building"] = classroom["building"]
-              allocated_classes.append(_class)
-              allocated = True
-              break
-      if not allocated:
-          print("Não foi possível alocar", _class["subject_code"], _class["class_code"])
-          unallocated_classes.append(_class)
+  for (subject_code, class_code), events in events_by_class.items():
+      partial_allocated = []
+      for event in events:
+        for classroom in classroom_list:
+            if classroom_is_allowed_to_allocate(classroom, event):
+                print("Turma: ", event["subject_code"], event["class_code"], event['week_day'], event['start_time'], "allocada em", classroom["classroom_name"])
+                event["has_to_be_allocated"] = False
+                event["classroom"] = classroom["classroom_name"]
+                event["building"] = classroom["building"]
+                partial_allocated.append(event)
+                break
+      if len(partial_allocated) != len(events):
+        difference = len(events) - len(partial_allocated)
+        print("Não foi possível alocar", subject_code, class_code, "tivemos", difference, "horários não alocados")
+        unallocated_events.extend(events)
+      else:
+        for event in partial_allocated:
+          filter = {"subject_code" : subject_code, "class_code" : class_code, "week_day": event["week_day"], "start_time" : event["start_time"]}
+          query = {"$set": {"has_to_be_allocated" : False, "classroom" : event["classroom"], "building" : event["building"]}}
+          events_collection.update_one(filter, query)
+          allocated_events.append(event)
 
-  return (allocated_classes, unallocated_classes)
+  return (allocated_events, unallocated_events)
