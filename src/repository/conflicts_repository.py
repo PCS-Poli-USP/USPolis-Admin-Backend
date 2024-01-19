@@ -15,4 +15,4 @@ class ConflictRepository(metaclass=SingletonMeta):
     __events_tb = database["events"]
 
     def __get_all_events_list(self) -> list[dict]:
-        return list(self.__events_tb.find())
+        return list(self.__events_tb.find({"has_to_be_allocated": False}))
