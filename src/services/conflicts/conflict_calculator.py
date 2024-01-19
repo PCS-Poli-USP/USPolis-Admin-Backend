@@ -5,6 +5,9 @@ from itertools import groupby
 class ConflictCalculator:
     def __init__(self, events: list[dict]):
         self.__all_events = events
+        self.__conflicts = []
+        self.__event1 = {}
+        self.__event2 = {}
 
     __event1: dict = {}
     __event2: dict = {}
