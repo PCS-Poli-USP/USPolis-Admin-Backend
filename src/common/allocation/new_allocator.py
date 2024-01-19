@@ -19,8 +19,7 @@ def classroom_preferences_validation(classroom: dict, preferences: dict) -> bool
            preferences["air_conditioning"] == classroom["air_conditioning"] and \
            preferences["accessibility"] == classroom["accessibility"]
 
-def classroom_times_validation(classroom: dict, event: dict) -> bool:
-  classroom_schedule = get_classroom_schedule(classroom)
+def classroom_times_validation(classroom: dict, classroom_schedule, event: dict) -> bool:
   start_validation = datetime.strptime(event["start_time"], "%H:%M").time()
   end_validation = datetime.strptime(event["end_time"], "%H:%M").time()
   classroom_times = classroom_schedule[event["week_day"]]
@@ -37,9 +36,9 @@ def classroom_times_validation(classroom: dict, event: dict) -> bool:
       return False
   return True
 
-def classroom_is_allowed_to_allocate(classroom: dict, event: dict) -> bool:
+def classroom_is_allowed_to_allocate(classroom: dict, classroom_schedule, event: dict) -> bool:
   if classroom_capacity_validation(classroom, event):
-    if classroom_times_validation(classroom, event):
+    if classroom_times_validation(classroom, classroom_schedule, event):
       return True    
   return False
 
@@ -55,7 +54,8 @@ def allocate_classrooms(classroom_list: list, event_list: list):
       partial_allocated = []
       for event in events:
         for classroom in classroom_list:
-            if classroom_is_allowed_to_allocate(classroom, event):
+            classroom_schedule = get_classroom_schedule(classroom)
+            if classroom_is_allowed_to_allocate(classroom, classroom_schedule, event):
                 print("Turma: ", event["subject_code"], event["class_code"], event['week_day'], event['start_time'], "allocada em", classroom["classroom_name"])
                 event["has_to_be_allocated"] = False
                 event["classroom"] = classroom["classroom_name"]
