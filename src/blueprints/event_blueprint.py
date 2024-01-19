@@ -10,9 +10,6 @@ from src.common.tasks import update_events_activeness
 from src.common.database import database
 from src.schemas.allocation_schema import AllocatorInputSchema, AllocatorOutputSchema
 from src.common.allocation.new_allocator import allocate_classrooms
-from src.common.utils.classes.classes_sorter import sort_classes_by_vacancies
-from src.common.utils.classroom.classroom_sorter import sort_classrooms_by_capacity
-from src.common.utils.event.event_sorter import sort_events_by_subject_code
 # from src.common.utils.event.events_formatter import clear_event_allocation
 from src.middlewares.auth_middleware import auth_middleware
 
@@ -56,6 +53,16 @@ def get_events_by_class(subject_code, class_code):
 def save_new_allocation():
     try:
         username = request.user.get("Username")
+        result = events.update_many(
+            {"created_by" : username},
+            {
+                "$unset" : {
+                    "building" : "", 
+                    "classroom" : "",
+                },
+                "$set": { "has_to_be_allocated": True}
+            },
+        )
         classroom_list = list(classrooms.find({"created_by": username}, {"_id": 0}))
         event_list = list(events.find({"created_by": username}))
         result = allocate_classrooms(classroom_list, event_list)
@@ -105,11 +112,11 @@ def edit_allocation(subject_code, class_code):
         print(ex)
         return {"message": str(ex)}, 500
 
-@event_blueprint.route("/<subject_code>/<class_code>", methods=["DELETE"])
+@event_blueprint.route("delete/<subject_code>/<class_code>", methods=["PATCH"])
 def delete_one_allocation(subject_code, class_code):
     try:
         username = request.user.get("Username")
-        filter = {"created_by" : username}
+        filter = {"created_by" : username, "subject_code" : subject_code, "class_code": class_code}
         query = {
                 "$unset" : {
                     "building" : "", 
@@ -117,15 +124,16 @@ def delete_one_allocation(subject_code, class_code):
                 },
                 "$set": { "has_to_be_allocated": True}
         }
-        result = events.update_one(filter, query)
+        result = events.update_many(filter, query)
         if not result:
             raise PyMongoError(f"{subject_code} - {class_code} not found")
-        return dumps(result)
+        return dumps(result.matched_count)
     
     except PyMongoError as err:
         return {"message": err._message}, 404
     
     except Exception as ex:
+        print(ex)
         return {"message" : str(ex)}, 500
 
 @event_blueprint.route("delete-allocations", methods=["PATCH"])
