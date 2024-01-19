@@ -13,5 +13,7 @@ def get_conflicts():
     try:
         confclits = conflictRepository.get_all()
         return dumps(confclits), 200
-    except:
-        return "Internal server error", 500
+
+    # TODO: handle exceptions
+    except Exception as e:
+        return {"message": str(e)}, 500
