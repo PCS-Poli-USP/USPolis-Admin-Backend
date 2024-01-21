@@ -27,9 +27,11 @@ allocation_input_schema = AllocatorInputSchema(many=True, unknown=EXCLUDE)
 
 yaml_files = "../swagger/events"
 
+
 @event_blueprint.before_request
 def _():
     return auth_middleware()
+
 
 @event_blueprint.route("")
 @swag_from(f"{yaml_files}/get_events.yml")
@@ -44,9 +46,11 @@ def get_events():
 @event_blueprint.route("/<subject_code>/<class_code>", methods=["GET"])
 def get_events_by_class(subject_code, class_code):
     username = request.user.get("Username")
-    result = events.find({"created_by": username, "subject_code": subject_code, "class_code": class_code })
+    result = events.find(
+        {"created_by": username, "subject_code": subject_code, "class_code": class_code})
     resultList = list(result)
     return dumps(resultList)
+
 
 @event_blueprint.route("allocate", methods=["PATCH"])
 @swag_from(f"{yaml_files}/save_new_allocation.yml")
@@ -54,22 +58,23 @@ def save_new_allocation():
     try:
         username = request.user.get("Username")
         result = events.update_many(
-            {"created_by" : username},
+            {"created_by": username},
             {
-                "$unset" : {
-                    "building" : "", 
-                    "classroom" : "",
+                "$unset": {
+                    "building": "",
+                    "classroom": "",
                 },
-                "$set": { "has_to_be_allocated": True}
+                "$set": {"has_to_be_allocated": True}
             },
         )
-        classroom_list = list(classrooms.find({"created_by": username}, {"_id": 0}))
+        classroom_list = list(classrooms.find(
+            {"created_by": username}, {"_id": 0}))
         event_list = list(events.find({"created_by": username}))
         result = allocate_classrooms(classroom_list, event_list)
         allocated_events = result[0]
         unallocated_events = result[1]
 
-        return {"allocated" : allocated_events, "unallocated" : unallocated_events}
+        return {"allocated": allocated_events, "unallocated": unallocated_events}
 
     except ValidationError as err:
         return {"message": err.messages}, 400
@@ -94,6 +99,7 @@ def edit_allocation(subject_code, class_code):
             "created_by": username,
         }
 
+        now = datetime.now().strftime("%d/%m/%Y %H:%M")
         result = events.update_many(
             query,
             {
@@ -101,7 +107,7 @@ def edit_allocation(subject_code, class_code):
                     "has_to_be_allocated": False,
                     "classroom": classroom,
                     "building": building,
-                    "updated_at": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                    "updated_at": now,
                 }
             },
         )
@@ -112,42 +118,77 @@ def edit_allocation(subject_code, class_code):
         print(ex)
         return {"message": str(ex)}, 500
 
-@event_blueprint.route("delete/<subject_code>/<class_code>", methods=["PATCH"])
-def delete_one_allocation(subject_code, class_code):
+
+@event_blueprint.route("delete/<subject_code>/<class_code>/<week_day>/<start_time>", methods=["PATCH"])
+def delete_one_allocation(subject_code, class_code, week_day, start_time):
     try:
         username = request.user.get("Username")
-        filter = {"created_by" : username, "subject_code" : subject_code, "class_code": class_code}
+        filter = {
+            "created_by": username,
+            "subject_code": subject_code,
+            "class_code": class_code,
+            "week_day": week_day,
+            "start_time": start_time,
+        }
         query = {
-                "$unset" : {
-                    "building" : "", 
-                    "classroom" : "",
-                },
-                "$set": { "has_to_be_allocated": True}
+            "$unset": {
+                "building": "",
+                "classroom": "",
+            },
+            "$set": {"has_to_be_allocated": True}
+        }
+        result = events.update_one(filter, query)
+        if not result:
+            raise PyMongoError(
+                f"{subject_code} - {class_code} at {week_day} - {start_time} not found")
+        return dumps(result.matched_count)
+
+    except PyMongoError as err:
+        return {"message": err._message}, 404
+
+    except Exception as ex:
+        print(ex)
+        return {"message": str(ex)}, 500
+
+
+@event_blueprint.route("delete/<subject_code>/<class_code>", methods=["PATCH"])
+def delete_allocation(subject_code, class_code):
+    try:
+        username = request.user.get("Username")
+        filter = {"created_by": username,
+                  "subject_code": subject_code, "class_code": class_code}
+        query = {
+            "$unset": {
+                "building": "",
+                "classroom": "",
+            },
+            "$set": {"has_to_be_allocated": True}
         }
         result = events.update_many(filter, query)
         if not result:
             raise PyMongoError(f"{subject_code} - {class_code} not found")
         return dumps(result.matched_count)
-    
+
     except PyMongoError as err:
         return {"message": err._message}, 404
-    
+
     except Exception as ex:
         print(ex)
-        return {"message" : str(ex)}, 500
+        return {"message": str(ex)}, 500
+
 
 @event_blueprint.route("delete-allocations", methods=["PATCH"])
-def delete_allocations():
+def delete_all_allocations():
     try:
         username = request.user.get("Username")
         result = events.update_many(
-            {"created_by" : username},
+            {"created_by": username},
             {
-                "$unset" : {
-                    "building" : "", 
-                    "classroom" : "",
+                "$unset": {
+                    "building": "",
+                    "classroom": "",
                 },
-                "$set": { "has_to_be_allocated": True}
+                "$set": {"has_to_be_allocated": True}
             },
         )
         return dumps(result.matched_count)
@@ -155,6 +196,7 @@ def delete_allocations():
     except Exception as ex:
         print(ex)
         return {"message": str(ex)}, 500
+
 
 @event_blueprint.route("/update-activeness", methods=["POST"])
 def update_activeness():
