@@ -21,8 +21,8 @@ class ConflictCalculator:
                 self.__event1 = self.__all_events[j]
                 if self.__check_conflict():
                     self.__add_conflict()
-        grouped_result = self.__group_conflicts()
-        return grouped_result
+        grouped_conflicts = self.__group_conflicts()
+        return grouped_conflicts
 
     def __check_conflict(self) -> bool:
         if (
@@ -83,7 +83,25 @@ class ConflictCalculator:
         return self.__event1.get(field) == self.__event2.get(field)
 
     def __group_events_by_key(self, events: list[dict], key: str) -> dict:
-        events.sort(key=lambda x: x[key])
+        if key == "week_day":
+            events.sort(key=lambda x: self.__week_day_sort_key(x[key]))
+        else:
+            events.sort(key=lambda x: x[key])
         return {
             key: list(group) for key, group in groupby(events, key=lambda x: x[key])
         }
+
+    def __week_day_sort_key(self, week_day: str) -> int:
+        week_days: dict[str, int] = {
+            "seg": 1,
+            "ter": 2,
+            "qua": 3,
+            "qui": 4,
+            "sex": 5,
+            "sab": 6,
+            "dom": 7,
+        }
+        index = week_days.get(week_day)
+        if not index:
+            return 8
+        return index
