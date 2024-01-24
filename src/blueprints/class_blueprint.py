@@ -18,6 +18,7 @@ from src.schemas.event_schema import EventSchema
 from src.common.utils.prettify_preferences import prettify_preferences
 from src.common.mappers.classes_mapper import break_class_into_events
 from src.middlewares.auth_middleware import auth_middleware
+from src.repository.user_repository import UserRepository
 
 class_blueprint = Blueprint("classes", __name__, url_prefix="/api/classes")
 
@@ -32,6 +33,7 @@ class_schema = ClassSchema(unknown=EXCLUDE)
 preferences_schema = PreferencesSchema(unknown=EXCLUDE)
 has_to_be_allocated_schema = HasToBeAllocatedClassesSchema(many=True, unknown=EXCLUDE)
 event_schema = EventSchema()
+user_repository = UserRepository()
 
 yaml_files = "../swagger/classes"
 
@@ -118,10 +120,14 @@ def create_many_classes():
         updated = []
         inserted = []
         username = request.user.get("Username")
+        logged_user = user_repository.get_by_username(username)
 
         for subject_code in subject_codes_list:
-            user = users.find_one({"username": username})
-            preference_building = user["building"]
+            preference_building = None
+            preference_buildings = logged_user.get("buildings")
+            if preference_buildings and len(preference_buildings) > 0:
+                preference_building = str(preference_buildings[0]["_id"])
+
             subject_classes = get_jupiter_class_infos(subject_code)
 
             for class_info in subject_classes:
