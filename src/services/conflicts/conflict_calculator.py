@@ -1,9 +1,10 @@
 from datetime import datetime
 from itertools import groupby
+from typing import List
 
 
 class ConflictCalculator:
-    def __init__(self, events: list[dict]):
+    def __init__(self, events: List[dict]):
         self.__all_events = events
         self.__conflicts = []
         self.__event1 = {}
@@ -11,8 +12,8 @@ class ConflictCalculator:
 
     __event1: dict = {}
     __event2: dict = {}
-    __all_events: list[dict] = []
-    __conflicts: list[dict] = []
+    __all_events: List[dict] = []
+    __conflicts: List[dict] = []
 
     def calculate_conflicts_list(self):
         for i in range(len(self.__all_events)):
@@ -82,7 +83,7 @@ class ConflictCalculator:
     def __check_field_equal(self, field: str) -> bool:
         return self.__event1.get(field) == self.__event2.get(field)
 
-    def __group_events_by_key(self, events: list[dict], key: str) -> dict:
+    def __group_events_by_key(self, events: List[dict], key: str) -> dict:
         if key == "week_day":
             events.sort(key=lambda x: self.__week_day_sort_key(x[key]))
         else:
