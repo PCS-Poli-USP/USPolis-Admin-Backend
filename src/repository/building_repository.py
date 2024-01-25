@@ -10,6 +10,7 @@ from src.common.singleton_meta import SingletonMeta
 
 dotenv.load_dotenv()
 
+from typing import List
 
 class BuildingRepository(metaclass=SingletonMeta):
     __uri = os.environ.get("CONN_STR")
@@ -21,7 +22,7 @@ class BuildingRepository(metaclass=SingletonMeta):
             building_collection = client[self.__db]["building"]
             building_collection.create_index("name", unique=True)
 
-    def list(self) -> list[dict]:
+    def list(self) -> List[dict]:
         with MongoClient(self.__uri, self.__PORT) as client:
             database = client[self.__db]
             building_collection = database["building"]
@@ -36,7 +37,7 @@ class BuildingRepository(metaclass=SingletonMeta):
             building = building_collection.find_one({"_id": ObjectId(building_id)})
             return building
 
-    def check_ids_array(self, building_ids: list[str]):
+    def check_ids_array(self, building_ids: List[str]):
         with MongoClient(self.__uri, self.__PORT) as client:
             database = client[self.__db]
             building_collection = database["building"]

@@ -1,7 +1,7 @@
 from src.common.database import database
 from src.common.singleton_meta import SingletonMeta
 from src.services.conflicts.conflict_calculator import ConflictCalculator
-
+from typing import List
 
 class ConflictRepository(metaclass=SingletonMeta):
     # public members
@@ -14,5 +14,5 @@ class ConflictRepository(metaclass=SingletonMeta):
     # private members
     __events_tb = database["events"]
 
-    def __get_all_events_list(self) -> list[dict]:
+    def __get_all_events_list(self) -> List[dict]:
         return list(self.__events_tb.find({"has_to_be_allocated": False}))
