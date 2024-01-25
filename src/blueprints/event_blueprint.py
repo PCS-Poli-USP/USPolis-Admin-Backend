@@ -17,6 +17,7 @@ event_blueprint = Blueprint("events", __name__, url_prefix="/api/events")
 
 events = database["events"]
 classrooms = database["classrooms"]
+allocations = database["allocations"]
 
 # class id - class_code, subject_code
 # event id - start_time, end_time, week_day
@@ -68,11 +69,21 @@ def save_new_allocation():
             },
         )
         classroom_list = list(classrooms.find(
-            {"created_by": username}, {"_id": 0}))
+            {"created_by": username, "ignore_to_allocate": False}, {"_id": 0}))
         event_list = list(events.find({"created_by": username}))
         result = allocate_classrooms(classroom_list, event_list)
         allocated_events = result[0]
         unallocated_events = result[1]
+
+        filter = {"created_by": username}
+        query = {
+            "$set": {
+                "allocated_events": allocated_events,
+                "unallocated_events": unallocated_events,
+                "updated_at": datetime.now().strftime("%d/%m/%Y %H:%M"),
+            }
+        }
+        allocations.update_one(filter, query, upsert=True)
 
         return {"allocated": allocated_events, "unallocated": unallocated_events}
 
@@ -83,34 +94,115 @@ def save_new_allocation():
         return {"message": "Erro ao calcular alocação", "error": str(ex)}, 500
 
 
+@event_blueprint.route("load", methods=["GET"])
+def load_allocations():
+    try:
+        username = request.user.get("Username")
+        result = allocations.find_one({"created_by": username})
+        allocated_events = result["allocated_events"]
+        unallocated_events = result["unallocated_events"]
+        now = datetime.now().strftime("%d/%m/%Y %H:%M")
+
+        for event in allocated_events:
+            filter = {
+                "subject_code": event["subject_code"],
+                "class_code": event["class_code"],
+                "week_day": event["week_day"],
+                "start_time": event["start_time"],
+                "created_by": username,
+            }
+
+            query = {
+                "$set": {
+                    "classroom": event["classroom"],
+                    "building": event["building"],
+                    "has_to_be_allocated": False,
+                    "updated_at": now
+                }
+            }
+            events.update_one(filter, query)
+
+        for event in unallocated_events:
+            filter = {
+                "subject_code": event["subject_code"],
+                "class_code": event["class_code"],
+                "week_day": event["week_day"],
+                "start_time": event["start_time"],
+                "created_by": username,
+            }
+
+            query = {
+                "$unset": {
+                    "building": "",
+                    "classroom": "",
+                },
+                "$set": {
+                    "has_to_be_allocated": True,
+                    "updated_at": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                },
+            }
+            events.update_one(filter, query)
+
+        return dumps(result)
+
+    except ValidationError as err:
+        return {"message": err.messages}, 400
+
+    except Exception as ex:
+        return {"message": "Erro ao carregar alocação", "error": str(ex)}, 500
+
+
+@event_blueprint.route("edit-allocations", methods=["PATCH"])
+def edit_allocations():
+    try:
+        username = request.user.get("Username")
+        allocated_events = request.json["allocated_events"]
+        unallocated_events = request.json["unallocated_events"]
+
+        filter = {"created_by": username}
+        query = {
+            "$set": {
+                "allocated_events": allocated_events,
+                "unallocated_events": unallocated_events,
+                "updated_at": datetime.now().strftime("%d/%m/%Y %H:%M"),
+            }
+        }
+
+        result = allocations.update_one(filter, query)
+        return dumps(result.matched_count)
+
+    except Exception as ex:
+        print(ex)
+        return {"message": str(ex)}, 500
+
+
 @event_blueprint.route("edit/<subject_code>/<class_code>", methods=["PATCH"])
 @swag_from(f"{yaml_files}/edit_allocation.yml")
-def edit_allocation(subject_code, class_code):
+def edit_class_allocation(subject_code, class_code):
     try:
         week_days = request.json
         classroom = request.args["classroom"]
         building = request.args["building"]
         username = request.user.get("Username")
+        now = datetime.now().strftime("%d/%m/%Y %H:%M")
 
-        query = {
+        filter = {
             "subject_code": subject_code,
             "class_code": class_code,
             "week_day": {"$in": week_days},
             "created_by": username,
         }
 
-        now = datetime.now().strftime("%d/%m/%Y %H:%M")
-        result = events.update_many(
-            query,
-            {
-                "$set": {
-                    "has_to_be_allocated": False,
-                    "classroom": classroom,
-                    "building": building,
-                    "updated_at": now,
-                }
-            },
-        )
+        query = {
+            "$set": {
+                "has_to_be_allocated": False,
+                "classroom": classroom,
+                "building": building,
+                "updated_at": now,
+            }
+        }
+
+        result = events.update_many(filter, query)
 
         return dumps(result.matched_count)
 
@@ -135,9 +227,13 @@ def delete_one_allocation(subject_code, class_code, week_day, start_time):
                 "building": "",
                 "classroom": "",
             },
-            "$set": {"has_to_be_allocated": True}
+            "$set": {
+                "has_to_be_allocated": True,
+                "updated_at": datetime.now().strftime("%d/%m/%Y %H:%M"),
+            },
         }
         result = events.update_one(filter, query)
+
         if not result:
             raise PyMongoError(
                 f"{subject_code} - {class_code} at {week_day} - {start_time} not found")
@@ -162,7 +258,10 @@ def delete_allocation(subject_code, class_code):
                 "building": "",
                 "classroom": "",
             },
-            "$set": {"has_to_be_allocated": True}
+            "$set": {
+                "has_to_be_allocated": True,
+                "updated_at": datetime.now().strftime("%d/%m/%Y %H:%M"),
+            },
         }
         result = events.update_many(filter, query)
         if not result:
@@ -188,7 +287,10 @@ def delete_all_allocations():
                     "building": "",
                     "classroom": "",
                 },
-                "$set": {"has_to_be_allocated": True}
+                "$set": {
+                    "has_to_be_allocated": True,
+                    "updated_at": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                },
             },
         )
         return dumps(result.matched_count)
