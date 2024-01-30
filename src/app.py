@@ -12,6 +12,7 @@ from src.blueprints.building_blueprint import building_blueprint
 from src.blueprints.class_blueprint import class_blueprint
 from src.blueprints.classroom_blueprint import classroom_blueprint
 from src.blueprints.conflict_blueprint import conflict_blueprint
+from src.blueprints.crawler_blueprint import crawler_blueprint
 from src.blueprints.event_blueprint import event_blueprint
 from src.blueprints.institutional_event_blueprint import institutional_event_blueprint
 from src.blueprints.mobile_blueprint import mobile_blueprint
@@ -44,6 +45,7 @@ CORS(app)
 cache.init_app(app)
 
 app.register_blueprint(test_blueprint)
+app.register_blueprint(crawler_blueprint)
 app.register_blueprint(classroom_blueprint)
 app.register_blueprint(class_blueprint)
 app.register_blueprint(subject_blueprint)

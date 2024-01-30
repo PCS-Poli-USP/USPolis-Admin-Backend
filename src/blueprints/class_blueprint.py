@@ -1,24 +1,24 @@
-from flask import Blueprint, request
-from bson.json_util import dumps
-from marshmallow import EXCLUDE
-from pymongo.errors import PyMongoError, DuplicateKeyError
-from marshmallow import ValidationError
 from datetime import datetime
-from flasgger import swag_from
-from bson.objectid import ObjectId
 
-from src.common.database import database
+from bson.json_util import dumps
+from bson.objectid import ObjectId
+from flasgger import swag_from
+from flask import Blueprint, request
+from marshmallow import EXCLUDE, ValidationError
+from pymongo.errors import DuplicateKeyError, PyMongoError
+
 from src.common.crawler import get_jupiter_class_infos
-from src.schemas.class_schema import (
-    ClassSchema,
-    PreferencesSchema,
-    HasToBeAllocatedClassesSchema,
-)
-from src.schemas.event_schema import EventSchema
-from src.common.utils.prettify_preferences import prettify_preferences
+from src.common.database import database
 from src.common.mappers.classes_mapper import break_class_into_events
+from src.common.utils.prettify_preferences import prettify_preferences
 from src.middlewares.auth_middleware import auth_middleware
 from src.repository.user_repository import UserRepository
+from src.schemas.class_schema import (
+    ClassSchema,
+    HasToBeAllocatedClassesSchema,
+    PreferencesSchema,
+)
+from src.schemas.event_schema import EventSchema
 
 class_blueprint = Blueprint("classes", __name__, url_prefix="/api/classes")
 
@@ -68,8 +68,8 @@ def get_all_classes():
                     "preferences": {"$first": "$preferences"},
                     "has_to_be_allocated": {"$first": "$has_to_be_allocated"},
                     "subscribers": {"$first": "$subscribers"},
-                    "vacancies" : {"$first": "$vacancies"},
-                    "pendings" : {"$first": "$pendings"},
+                    "vacancies": {"$first": "$vacancies"},
+                    "pendings": {"$first": "$pendings"},
                     "classrooms": {"$push": "$classroom"},
                 }
             },
@@ -77,7 +77,7 @@ def get_all_classes():
     )
     resultList = list(result)
     for classes in resultList:
-        prettify_preferences(classes['preferences'])
+        prettify_preferences(classes["preferences"])
     return dumps(resultList)
 
 
@@ -93,12 +93,12 @@ def create_class():
             new_event["preferences"]["building_id"] = ObjectId(building_id)
             new_event["created_by"] = username
             new_event["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-        
+
             result = events.insert_one(new_event)
             inserted.append(result.inserted_id)
 
-        return dumps({"inserted" : inserted })
-    
+        return dumps({"inserted": inserted})
+
     except DuplicateKeyError as err:
         print(err)
         return {"message": err.details["errmsg"]}, 400
@@ -202,8 +202,8 @@ def update_preferences(subject_code, class_code):
 
     try:
         preferences_schema_load = preferences_schema.load(request.json)
-        building_id = preferences_schema_load['building_id']
-        preferences_schema_load['building_id'] = ObjectId(building_id)
+        building_id = preferences_schema_load["building_id"]
+        preferences_schema_load["building_id"] = ObjectId(building_id)
         has_to_be_allocated = request.json["has_to_be_allocated"]
 
         result = events.update_many(
@@ -259,8 +259,8 @@ def edit_class(subject_code, class_code):
         username = request.user.get("Username")
 
         query = {
-            "subject_code" : subject_code,
-            "class_code" : class_code,
+            "subject_code": subject_code,
+            "class_code": class_code,
             "created_by": username,
         }
 
@@ -273,11 +273,11 @@ def edit_class(subject_code, class_code):
             event["preferences"]["building_id"] = ObjectId(building_id)
             event["created_by"] = username
             event["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-        
+
             result = events.insert_one(event)
             inserted += 1
 
-        return dumps({"inserted": inserted, "removed" : deleted})
+        return dumps({"inserted": inserted, "removed": deleted})
 
     except Exception as ex:
         print(ex)
