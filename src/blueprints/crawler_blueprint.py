@@ -22,7 +22,9 @@ def crawl_subject():
     if logged_user is None:
         return {"message": "User not found"}, 404
 
-    logged_user_building_ids = logged_user.get("building_ids")
+    logged_user_building_ids = [
+        str(building["_id"]) for building in logged_user["buildings"]
+    ]
     logged_user_is_admin = user_repository.is_admin(username)
 
     payload = request.json
@@ -32,7 +34,7 @@ def crawl_subject():
     building_id = payload["building_id"]
 
     if building_id not in logged_user_building_ids and not logged_user_is_admin:
-        return {"message": "You don't have permission to crawl this building"}, 403
+        return {"message": "You don't have permission to access this building"}, 403
 
     updated = []
     inserted = []

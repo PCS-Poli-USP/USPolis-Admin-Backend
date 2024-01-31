@@ -66,6 +66,7 @@ class UserRepository(metaclass=SingletonMeta):
                     {
                         "$project": {
                             "cognito_id": 0,  # Exclude the "cognito_id" field
+                            "building_ids": 0,  # Exclude the "building_ids" field
                         }
                     },
                 ]
