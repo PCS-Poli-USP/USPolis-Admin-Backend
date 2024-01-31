@@ -53,6 +53,14 @@ class ConflictCalculator:
             or (start_time2 <= start_time1 and end_time2 >= end_time1)
         )
 
+    def __check_time_overlap_with_many(self, events: list, event: dict) -> bool:
+        for e in events:
+            self.__event1 = event
+            self.__event2 = e
+            if not self.__check_time_overlap():
+                return False
+        return True
+
     def __group_conflicts(self) -> dict:
         self.__conflicts.sort(key=lambda x: x["building"])
         grouped_building_data = self.__group_events_by_key(self.__conflicts, "building")
@@ -70,17 +78,12 @@ class ConflictCalculator:
                 )
                 week_days_list = []
                 for week_day, week_day_data in grouped_week_day_data.items():
+                    week_day_data = self.__group_events_by_time(week_day_data)
                     week_days_list.append({"name": week_day, "events": week_day_data})
                 classrooms_list.append({"name": classroom, "week_days": week_days_list})
             buildings_list.append({"name": building, "classrooms": classrooms_list})
         result = {"buildings": buildings_list}
         return result
-
-    def __parse_time(self, time):
-        return datetime.strptime(time, "%H:%M")
-
-    def __check_field_equal(self, field: str) -> bool:
-        return self.__event1.get(field) == self.__event2.get(field)
 
     def __group_events_by_key(self, events: list[dict], key: str) -> dict:
         if key == "week_day":
@@ -90,6 +93,28 @@ class ConflictCalculator:
         return {
             key: list(group) for key, group in groupby(events, key=lambda x: x[key])
         }
+
+    def __group_events_by_time(self, events: list[dict]) -> list:
+        result = []
+        events.sort(key=lambda x: self.__parse_time(x.get("start_time")))
+        group = []
+        for index, event in enumerate(events):
+            if index == 0:
+                group.append(event)
+                continue
+            if self.__check_time_overlap_with_many(group, event):
+                group.append(event)
+            else:
+                result.append(group)
+                group = [event]
+        result.append(group)
+        return result
+
+    def __parse_time(self, time):
+        return datetime.strptime(time, "%H:%M")
+
+    def __check_field_equal(self, field: str) -> bool:
+        return self.__event1.get(field) == self.__event2.get(field)
 
     def __week_day_sort_key(self, week_day: str) -> int:
         week_days: dict[str, int] = {
