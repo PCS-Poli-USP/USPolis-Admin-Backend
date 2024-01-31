@@ -4,8 +4,8 @@ from bson.json_util import dumps
 from flask import request
 
 from src.blueprints.blueprint_builder import build_authenticated_blueprint
+from src.common.crawler import JupiterCrawler
 from src.common.database import database
-from src.common.new_crawler import JupiterCrawler
 from src.repository.user_repository import UserRepository
 
 crawler_blueprint = build_authenticated_blueprint("crawler", "/api/crawl")
