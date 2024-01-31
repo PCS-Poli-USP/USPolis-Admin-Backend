@@ -17,12 +17,22 @@ events_tb = database["events"]
 
 @crawler_blueprint.post("")
 def crawl_subject():
+    username = request.user.get("Username")
+    logged_user = user_repository.get_by_username(username)
+    if logged_user is None:
+        return {"message": "User not found"}, 404
+
+    logged_user_building_ids = logged_user.get("building_ids")
+    logged_user_is_admin = user_repository.is_admin(username)
+
     payload = request.json
     if payload is None:
         return {"message": "body required"}, 400
     subject_codes_list = payload["subject_codes_list"]
     building_id = payload["building_id"]
-    username = request.user.get("Username")
+
+    if building_id not in logged_user_building_ids and not logged_user_is_admin:
+        return {"message": "You don't have permission to crawl this building"}, 403
 
     updated = []
     inserted = []
