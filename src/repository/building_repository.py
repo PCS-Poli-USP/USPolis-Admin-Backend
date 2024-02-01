@@ -1,9 +1,12 @@
 from __future__ import annotations
+
 import os
-from pymongo import MongoClient
-from src.common.singleton_meta import SingletonMeta
-from bson.objectid import ObjectId
+
 import dotenv
+from bson.objectid import ObjectId
+from pymongo import MongoClient
+
+from src.common.singleton_meta import SingletonMeta
 
 dotenv.load_dotenv()
 

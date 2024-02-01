@@ -124,18 +124,6 @@ def classroom_by_name(name):
 def get_available_classrooms():
     try:
         username = request.user.get("Username")
-        params = available_classrooms_query_schema.load(request.args)
-
-        # CONFLICT CHECK : Removed!
-        # unavailable_classrooms = events.find(
-        #     {
-        #         "week_day": params["week_day"],
-        #         "start_time": {"$lte": params["end_time"]},
-        #         "end_time": {"$gte": params["start_time"]},
-        #         "created_by": username,
-        #     },
-        #     {"classroom": True, "_id": False},
-        # ).distinct("classroom")
 
         classrooms_list = list(
             classrooms.find(
@@ -149,12 +137,7 @@ def get_available_classrooms():
             )
         )
 
-        available_classrooms = [
-            c
-            for c in classrooms_list
-            # CONFLICT CHECK : Removed!
-            # if c["classroom_name"] not in unavailable_classrooms
-        ]
+        available_classrooms = [c for c in classrooms_list]
 
         return dumps(available_classrooms)
 
