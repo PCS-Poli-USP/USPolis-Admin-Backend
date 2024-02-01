@@ -15,11 +15,16 @@ class JupiterCrawler:
     classes_divs: ResultSet
     events: list
 
-    def __init__(self):
+    def __reset(self):
         self.events = []
 
+    @staticmethod
+    def crawl_subject_static(subject_code: str):
+        crawler = JupiterCrawler()
+        return crawler.crawl_subject(subject_code)
+
     def crawl_subject(self, subject_code: str):
-        self.__init__()
+        self.__reset()
         self.__build_url(subject_code)
         self.__build_soap()
         self.__find_classes_divs()
@@ -91,16 +96,21 @@ class JupiterCrawler:
             week_day = data[0].get_text(strip=True)
             start_time = data[1].get_text(strip=True)
             end_time = data[2].get_text(strip=True)
-            teacher = data[3].get_text(strip=True)
+            professor = data[3].get_text(strip=True)
 
-            # More than one teacher: only the first row has info, the others only have
-            # the additional teacher
-            if week_day == "" and start_time == "" and end_time == "" and teacher != "":
-                result[index - 1]["teachers"].append(teacher)
+            # More than one professor: only the first row has info, the others only have
+            # the additional professor
+            if (
+                week_day == ""
+                and start_time == ""
+                and end_time == ""
+                and professor != ""
+            ):
+                result[index - 1]["professors"].append(professor)
                 continue
 
             partial_result["week_day"] = week_day
-            partial_result["teachers"] = [teacher]
+            partial_result["professors"] = [professor]
             partial_result["start_time"] = start_time
             partial_result["end_time"] = end_time
 
