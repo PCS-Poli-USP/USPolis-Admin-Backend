@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 
 import requests
@@ -10,8 +11,10 @@ CLASS_DIV_IDENTIFIERS = {
 
 
 class JupiterCrawler:
+    subject_code: str
     url: str
     soup: BeautifulSoup
+    subject_name: str
     classes_divs: ResultSet
     events: list
 
@@ -24,15 +27,17 @@ class JupiterCrawler:
         return crawler.crawl_subject(subject_code)
 
     def crawl_subject(self, subject_code: str):
+        self.subject_code = subject_code
         self.__reset()
-        self.__build_url(subject_code)
+        self.__build_url()
         self.__build_soap()
         self.__find_classes_divs()
         self.__extract_classes_info()
+        self.__add_subject_info_to_events()
         return self.events
 
-    def __build_url(self, subject_class: str):
-        self.url = BASE_URL + subject_class
+    def __build_url(self):
+        self.url = BASE_URL + self.subject_code
 
     def __build_soap(self):
         page = requests.get(self.url)
@@ -148,3 +153,15 @@ class JupiterCrawler:
                 result["enrolled"] += int(enrolled_text)
 
         return result
+
+    def __add_subject_info_to_events(self):
+        self.__get_subject_name()
+        for event in self.events:
+            event["subject_name"] = self.subject_name
+            event["subject_code"] = self.subject_code
+
+    def __get_subject_name(self):
+        subject = self.soup.find_all("b", text=re.compile("Disciplina:(.*)"))[0]
+        self.subject_name = subject.get_text().replace(
+            f"Disciplina: {self.subject_code} - ", ""
+        )
