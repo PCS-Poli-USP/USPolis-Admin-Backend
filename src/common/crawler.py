@@ -126,7 +126,7 @@ class JupiterCrawler:
     def __get_student_numbers_info(self, info_tables) -> dict:
         result = {
             "vacancies": 0,
-            "subscribed": 0,
+            "subscribers": 0,
             "pendings": 0,
             "enrolled": 0,
         }
@@ -139,14 +139,14 @@ class JupiterCrawler:
             data = row.find_all("span", attrs=filter)
 
             vacancies_text = data[1].get_text(strip=True)
-            subscribed_text = data[2].get_text(strip=True)
+            subscribers_text = data[2].get_text(strip=True)
             pendings_text = data[3].get_text(strip=True)
             enrolled_text = data[4].get_text(strip=True)
 
             if vacancies_text != "" and vacancies_text.isdigit():
                 result["vacancies"] += int(vacancies_text)
-            if subscribed_text != "" and subscribed_text.isdigit():
-                result["subscribed"] += int(subscribed_text)
+            if subscribers_text != "" and subscribers_text.isdigit():
+                result["subscribers"] += int(subscribers_text)
             if pendings_text != "" and pendings_text.isdigit():
                 result["pendings"] += int(pendings_text)
             if enrolled_text != "" and enrolled_text.isdigit():
