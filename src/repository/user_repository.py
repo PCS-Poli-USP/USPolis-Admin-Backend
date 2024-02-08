@@ -1,11 +1,18 @@
 from __future__ import annotations
+
 import os
-from pymongo import MongoClient
-from src.common.singleton_meta import SingletonMeta
-from bson.objectid import ObjectId
+
 import dotenv
+from bson.objectid import ObjectId
+from pymongo import MongoClient
+
+from src.common.singleton_meta import SingletonMeta
 
 dotenv.load_dotenv()
+
+
+class UserNotFoundException(Exception):
+    pass
 
 
 class UserRepository(metaclass=SingletonMeta):
@@ -72,6 +79,8 @@ class UserRepository(metaclass=SingletonMeta):
                 ]
             )
             user = next(user_cursor, None)  # Get the first user (or None if not found)
+            if user is None:
+                raise UserNotFoundException(f"User '{username}' not found")
             return user
 
     def is_admin(self, username: str) -> bool:
