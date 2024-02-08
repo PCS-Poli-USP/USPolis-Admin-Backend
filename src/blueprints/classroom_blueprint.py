@@ -114,7 +114,7 @@ def get_available_classrooms_with_conflict_check():
     if body is None:
         return {"message": "Request body is required"}, 400
     building_id = body.get("building_id")
-    event_to_be_checked = body.get("event")
+    events_to_be_checked = body.get("events")
     try:
         building_name = verify_building_permission(username, building_id)
         classrooms_list = classrooms_repository.list_by_building(building_name)
@@ -125,17 +125,17 @@ def get_available_classrooms_with_conflict_check():
         for classroom in classrooms_list:
             classroom["conflicted"] = False
 
-        for classroom, events in grouped_events.items():
-            if ConflictCalculator.check_time_conflict_one_with_many(
-                event_to_be_checked, events
-            ):
-                for c in classrooms_list:
-                    if c.get("classroom_name") == classroom:
-                        c["conflicted"] = True
+        for event_to_be_checked in events_to_be_checked:
+            for classroom, events in grouped_events.items():
+                if ConflictCalculator.check_time_conflict_one_with_many(
+                    event_to_be_checked, events
+                ):
+                    for c in classrooms_list:
+                        if c.get("classroom_name") == classroom:
+                            c["conflicted"] = True
 
         return dumps(classrooms_list)
     except Exception as ex:
-        raise ex
         return {"message": str(ex)}, 500
 
 
