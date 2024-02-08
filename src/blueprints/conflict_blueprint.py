@@ -1,5 +1,4 @@
 from bson.json_util import dumps
-from flask import Blueprint, request
 
 from src.blueprints.blueprint_builder import build_authenticated_blueprint
 from src.common.utils.prettify_id import recursive_prettify_id

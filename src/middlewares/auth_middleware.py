@@ -1,6 +1,8 @@
-from flask import request
-import boto3
 import os
+
+import boto3
+from flask import request
+
 from src.repository.user_repository import UserRepository
 
 
@@ -12,7 +14,7 @@ def auth_middleware():
         aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
     )
     try:
-        if request.method != 'OPTIONS':
+        if request.method != "OPTIONS":
             authorization = request.headers.get("Authorization")
             token = authorization.split(" ")[1]
             if token is None:
@@ -29,13 +31,13 @@ def auth_middleware():
 
 
 def admin_middleware():
-    if request.method != 'OPTIONS':
+    if request.method != "OPTIONS":
         user_repository = UserRepository()
 
         auth_middleware_response = auth_middleware()
-        
+
         if auth_middleware_response is not None:
             return auth_middleware_response
-        
+
         if not user_repository.is_admin(request.user["Username"]):
             return {"message": "Unauthorized"}, 401
