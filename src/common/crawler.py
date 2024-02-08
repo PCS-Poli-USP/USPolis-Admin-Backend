@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 
 import requests
@@ -10,24 +11,33 @@ CLASS_DIV_IDENTIFIERS = {
 
 
 class JupiterCrawler:
+    subject_code: str
     url: str
     soup: BeautifulSoup
+    subject_name: str
     classes_divs: ResultSet
     events: list
 
-    def __init__(self):
+    def __reset(self):
         self.events = []
 
+    @staticmethod
+    def crawl_subject_static(subject_code: str):
+        crawler = JupiterCrawler()
+        return crawler.crawl_subject(subject_code)
+
     def crawl_subject(self, subject_code: str):
-        self.__init__()
-        self.__build_url(subject_code)
+        self.subject_code = subject_code
+        self.__reset()
+        self.__build_url()
         self.__build_soap()
         self.__find_classes_divs()
         self.__extract_classes_info()
+        self.__add_subject_info_to_events()
         return self.events
 
-    def __build_url(self, subject_class: str):
-        self.url = BASE_URL + subject_class
+    def __build_url(self):
+        self.url = BASE_URL + self.subject_code
 
     def __build_soap(self):
         page = requests.get(self.url)
@@ -91,16 +101,21 @@ class JupiterCrawler:
             week_day = data[0].get_text(strip=True)
             start_time = data[1].get_text(strip=True)
             end_time = data[2].get_text(strip=True)
-            teacher = data[3].get_text(strip=True)
+            professor = data[3].get_text(strip=True)
 
-            # More than one teacher: only the first row has info, the others only have
-            # the additional teacher
-            if week_day == "" and start_time == "" and end_time == "" and teacher != "":
-                result[index - 1]["teachers"].append(teacher)
+            # More than one professor: only the first row has info, the others only have
+            # the additional professor
+            if (
+                week_day == ""
+                and start_time == ""
+                and end_time == ""
+                and professor != ""
+            ):
+                result[index - 1]["professors"].append(professor)
                 continue
 
             partial_result["week_day"] = week_day
-            partial_result["teachers"] = [teacher]
+            partial_result["professors"] = [professor]
             partial_result["start_time"] = start_time
             partial_result["end_time"] = end_time
 
@@ -111,7 +126,7 @@ class JupiterCrawler:
     def __get_student_numbers_info(self, info_tables) -> dict:
         result = {
             "vacancies": 0,
-            "subscribed": 0,
+            "subscribers": 0,
             "pendings": 0,
             "enrolled": 0,
         }
@@ -124,17 +139,29 @@ class JupiterCrawler:
             data = row.find_all("span", attrs=filter)
 
             vacancies_text = data[1].get_text(strip=True)
-            subscribed_text = data[2].get_text(strip=True)
+            subscribers_text = data[2].get_text(strip=True)
             pendings_text = data[3].get_text(strip=True)
             enrolled_text = data[4].get_text(strip=True)
 
             if vacancies_text != "" and vacancies_text.isdigit():
                 result["vacancies"] += int(vacancies_text)
-            if subscribed_text != "" and subscribed_text.isdigit():
-                result["subscribed"] += int(subscribed_text)
+            if subscribers_text != "" and subscribers_text.isdigit():
+                result["subscribers"] += int(subscribers_text)
             if pendings_text != "" and pendings_text.isdigit():
                 result["pendings"] += int(pendings_text)
             if enrolled_text != "" and enrolled_text.isdigit():
                 result["enrolled"] += int(enrolled_text)
 
         return result
+
+    def __add_subject_info_to_events(self):
+        self.__get_subject_name()
+        for event in self.events:
+            event["subject_name"] = self.subject_name
+            event["subject_code"] = self.subject_code
+
+    def __get_subject_name(self):
+        subject = self.soup.find_all("b", text=re.compile("Disciplina:(.*)"))[0]
+        self.subject_name = subject.get_text().replace(
+            f"Disciplina: {self.subject_code} - ", ""
+        )

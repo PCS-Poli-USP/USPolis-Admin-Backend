@@ -7,8 +7,7 @@ class ConflictRepository(metaclass=SingletonMeta):
     # public members
     def get_all(self):
         all_events = self.__get_all_events_list()
-        conflictCalculator = ConflictCalculator(all_events)
-        conflicts = conflictCalculator.calculate_conflicts_list()
+        conflicts = ConflictCalculator.calculate_conflicts_list(all_events)
         return conflicts
 
     # private members

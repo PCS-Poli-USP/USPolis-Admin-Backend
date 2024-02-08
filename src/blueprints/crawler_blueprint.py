@@ -11,7 +11,6 @@ from src.repository.user_repository import UserRepository
 crawler_blueprint = build_authenticated_blueprint("crawler", "/api/crawl")
 
 user_repository = UserRepository()
-jupiter_crawler = JupiterCrawler()
 events_tb = database["events"]
 
 
@@ -39,11 +38,10 @@ def crawl_subject():
     updated = []
     inserted = []
     for subject_code in subject_codes_list:
-        events = jupiter_crawler.crawl_subject(subject_code)
+        events = JupiterCrawler.crawl_subject_static(subject_code)
         for event in events:
             event["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
             event["created_by"] = username
-            event["subject_code"] = subject_code
             event["has_to_be_allocated"] = True
 
             event["preferences"] = {
