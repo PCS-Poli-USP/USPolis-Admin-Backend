@@ -12,6 +12,7 @@ class ConflictCalculator:
         self.__event1 = {}
         self.__event2 = {}
 
+    # TODO: event conflicts with itself, because it is in the events list
     @staticmethod
     def check_time_conflict_one_with_many(event: dict, events: list[dict]):
         conflict_calculator = ConflictCalculator()
@@ -19,6 +20,10 @@ class ConflictCalculator:
 
     def __check_time_conflict_one_with_many(self, event: dict, events: list[dict]):
         for e in events:
+            id1 = str(e.get("_id"))
+            id2 = event.get("id")
+            if str(e.get("_id")) == event.get("id"):
+                continue
             self.__event1 = event
             self.__event2 = e
             if self.__check_time_conflict():
