@@ -1,8 +1,9 @@
 def prettify_id(obj):
     if "_id" in obj:
-        obj["id"] = str(obj["_id"])  # Convert _id to id
+        obj["id"] = str(obj["_id"])
         del obj["_id"]
     return obj
+
 
 def recursive_prettify_id(x):
     if isinstance(x, list):

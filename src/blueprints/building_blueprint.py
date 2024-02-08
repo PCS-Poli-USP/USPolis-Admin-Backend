@@ -1,14 +1,15 @@
-from flask import Blueprint, request
 from datetime import datetime
+
+from bson.json_util import dumps
+from flask import Blueprint, request
 from marshmallow import ValidationError
 from pymongo.errors import DuplicateKeyError, PyMongoError
-from src.middlewares.auth_middleware import auth_middleware
-from src.repository.building_repository import BuildingRepository
-from bson.json_util import dumps
 
 from src.common.database import database
-from src.schemas.building_schemas import BuildingInputSchema
 from src.common.utils.prettify_id import prettify_id
+from src.middlewares.auth_middleware import auth_middleware
+from src.repository.building_repository import BuildingRepository
+from src.schemas.building_schemas import BuildingInputSchema
 
 building_blueprint = Blueprint("building", __name__, url_prefix="/api/building")
 building_input_schema = BuildingInputSchema()
