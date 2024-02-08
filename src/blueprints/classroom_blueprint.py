@@ -6,6 +6,8 @@ from flask import Blueprint, request
 from marshmallow import ValidationError
 from pymongo.errors import DuplicateKeyError, PyMongoError
 
+from src.common.utils.classroom.classroom_mapper import get_classroom_schedule
+
 from src.common.database import database
 from src.common.verify_building_permission import verify_building_permission
 from src.middlewares.auth_middleware import auth_middleware
@@ -44,7 +46,23 @@ def get_all_classrooms():
 
     return dumps(resultList)
 
-
+@classroom_blueprint.route("schedules")
+def get_all_classrooms_schedules():
+    try:
+        username = request.user.get("Username")
+        classroom_schedules = []
+        classroom_list = list(classrooms.find({"created_by": username}, {"_id": 0}))
+        for classroom in classroom_list:
+            schedule = get_classroom_schedule(classroom)
+            schedule["classroom"] = classroom["classroom_name"]
+            schedule["capacity"] = classroom["capacity"]
+            classroom_schedules.append(schedule)
+        return {"schedules" : classroom_schedules}
+    
+    except Exception as ex:
+        print(ex)
+        return {"message": str(ex)}, 500
+    
 @classroom_blueprint.route("", methods=["POST"])
 @swag_from(f"{yaml_files}/create_classroom.yml")
 def create_classroom():

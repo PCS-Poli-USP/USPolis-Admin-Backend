@@ -6,6 +6,7 @@ class ClassroomSchema(Schema):
   building = fields.Str()
   floor = fields.Int()
   capacity = fields.Int()
+  ignore_to_allocate = fields.Bool()
   air_conditioning = fields.Bool()
   projector = fields.Bool()
   accessibility = fields.Bool()
