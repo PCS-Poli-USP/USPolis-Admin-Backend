@@ -42,7 +42,6 @@ def crawl_subject():
         for event in events:
             event["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
             event["created_by"] = username
-            event["subject_code"] = subject_code
             event["has_to_be_allocated"] = True
 
             event["preferences"] = {

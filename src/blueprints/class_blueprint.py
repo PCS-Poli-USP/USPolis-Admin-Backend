@@ -68,7 +68,7 @@ def get_all_classes():
                     "subscribers": {"$first": "$subscribers"},
                     "vacancies": {"$first": "$vacancies"},
                     "pendings": {"$first": "$pendings"},
-                    "classrooms": {"$push": "$classroom"},
+                    "classrooms": {"$push": {"$ifNull": ["$classroom", "Não alocado"]}},
                 }
             },
         ]
