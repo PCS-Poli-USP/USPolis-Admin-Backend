@@ -15,8 +15,13 @@ def update_allocations():
     allocationRepository = AllocationRepository()
     try:
         data = validate_body(request.json, schema)
-        events = data.get("events")
-        updated_count = allocationRepository.update_many_allocations(events)
+        events_ids = data.get("events_ids")
+        building_id = data.get("building_id")
+        classroom = data.get("classroom")
+
+        updated_count = allocationRepository.update_many_allocations(
+            events_ids, building_id, classroom
+        )
         return {"message": f"Updated {updated_count} allocations"}, 200
 
     except GeneralError as e:

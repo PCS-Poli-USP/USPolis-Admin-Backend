@@ -1,5 +1,5 @@
-from marshmallow import post_load
 from flasgger import Schema, fields
+from marshmallow import post_load
 
 from src.schemas.class_schema import PreferencesSchema
 
@@ -33,11 +33,7 @@ class AllocatorOutputSchema(Schema):
     building = fields.Str()
 
 
-class EventUpdateSpecificationSchema(Schema):
-    id = fields.String(required=True)
+class UpdateManyAllocationsSchema(Schema):
+    events_ids = fields.List(fields.String(), required=True)
     building_id = fields.String(required=True)
     classroom = fields.String(required=True)
-
-
-class UpdateManyAllocationsSchema(Schema):
-    events = fields.List(fields.Nested(EventUpdateSpecificationSchema), required=True)
