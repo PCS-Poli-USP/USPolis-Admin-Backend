@@ -8,6 +8,10 @@ class EventsRepository(metaclass=SingletonMeta):
     def __init__(self):
         self.__events_tb = database["events"]
 
+    def list_by_ids(self, ids: list[str]) -> list[dict]:
+        query = {"_id": {"$in": [ObjectId(id) for id in ids]}}
+        return list(self.__events_tb.find(query))
+
     def list_by_building_grouped_by_classroom(
         self, building_id
     ) -> dict[str, list[dict]]:

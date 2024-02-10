@@ -25,9 +25,11 @@ allocation_input_schema = AllocatorInputSchema(many=True, unknown=EXCLUDE)
 
 yaml_files = "../swagger/events"
 
+
 @event_blueprint.before_request
 def _():
     return auth_middleware()
+
 
 @event_blueprint.route("")
 @swag_from(f"{yaml_files}/get_events.yml")
@@ -42,9 +44,12 @@ def get_events():
 @event_blueprint.route("/<subject_code>/<class_code>", methods=["GET"])
 def get_events_by_class(subject_code, class_code):
     username = request.user.get("Username")
-    result = events.find({"created_by": username, "subject_code": subject_code, "class_code": class_code })
+    result = events.find(
+        {"created_by": username, "subject_code": subject_code, "class_code": class_code}
+    )
     resultList = list(result)
     return dumps(resultList)
+
 
 @event_blueprint.route("allocate", methods=["PATCH"])
 @swag_from(f"{yaml_files}/save_new_allocation.yml")

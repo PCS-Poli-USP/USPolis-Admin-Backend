@@ -8,6 +8,7 @@ from flasgger import APISpec, Swagger
 from flask import Flask
 from flask_cors import CORS
 
+from src.blueprints.allocation_blueprint import allocation_blueprint
 from src.blueprints.building_blueprint import building_blueprint
 from src.blueprints.class_blueprint import class_blueprint
 from src.blueprints.classroom_blueprint import classroom_blueprint
@@ -49,6 +50,7 @@ app.register_blueprint(crawler_blueprint)
 app.register_blueprint(classroom_blueprint)
 app.register_blueprint(class_blueprint)
 app.register_blueprint(subject_blueprint)
+app.register_blueprint(allocation_blueprint)
 app.register_blueprint(event_blueprint)
 app.register_blueprint(mobile_blueprint)
 app.register_blueprint(institutional_event_blueprint)
