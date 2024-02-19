@@ -20,8 +20,6 @@ class ConflictCalculator:
 
     def __check_time_conflict_one_with_many(self, event: dict, events: list[dict]):
         for e in events:
-            id1 = str(e.get("_id"))
-            id2 = event.get("id")
             if str(e.get("_id")) == event.get("id"):
                 continue
             self.__event1 = event
