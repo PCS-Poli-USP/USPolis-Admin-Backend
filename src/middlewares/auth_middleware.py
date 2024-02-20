@@ -5,14 +5,15 @@ from flask import request
 
 from src.repository.user_repository import UserRepository
 
+client = boto3.client(
+    "cognito-idp",
+    region_name=os.environ.get("AWS_REGION"),
+    aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+)
+
 
 def auth_middleware():
-    client = boto3.client(
-        "cognito-idp",
-        region_name=os.environ.get("AWS_REGION"),
-        aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-        aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-    )
     try:
         if request.method != "OPTIONS":
             authorization = request.headers.get("Authorization")

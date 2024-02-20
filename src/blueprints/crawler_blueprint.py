@@ -1,16 +1,19 @@
 from datetime import datetime
 
 from bson.json_util import dumps
+from bson.objectid import ObjectId
 from flask import request
 
 from src.blueprints.blueprint_builder import build_authenticated_blueprint
 from src.common.crawler import JupiterCrawler
 from src.common.database import database
+from src.repository.building_repository import BuildingRepository
 from src.repository.user_repository import UserRepository
 
 crawler_blueprint = build_authenticated_blueprint("crawler", "/api/crawl")
 
 user_repository = UserRepository()
+buildings_repository = BuildingRepository()
 events_tb = database["events"]
 
 
@@ -34,6 +37,9 @@ def crawl_subject():
 
     if building_id not in logged_user_building_ids and not logged_user_is_admin:
         return {"message": "You don't have permission to access this building"}, 403
+    building = buildings_repository.get_by_id(building_id)
+    if building is None:
+        return {"message": "Building not found"}, 404
 
     updated = []
     inserted = []
@@ -43,9 +49,10 @@ def crawl_subject():
             event["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
             event["created_by"] = username
             event["has_to_be_allocated"] = True
+            event["building"] = building["name"]
 
             event["preferences"] = {
-                "building_id": building_id,
+                "building_id": ObjectId(building_id),
                 "air_conditioning": False,
                 "projector": False,
                 "accessibility": False,
