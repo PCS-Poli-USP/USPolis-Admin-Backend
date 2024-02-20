@@ -1,11 +1,10 @@
 from __future__ import annotations
+from threading import Lock
 
 import dotenv
 from bson.objectid import ObjectId
 
 from src.common.database import database
-from src.common.singleton_meta import SingletonMeta
-
 dotenv.load_dotenv()
 
 
@@ -13,6 +12,17 @@ class UserNotFoundException(Exception):
     pass
 
 
+class SingletonMeta(type):
+    _instances = {}
+
+    _lock: Lock = Lock()
+
+    def __call__(cls, *args, **kwargs):
+        with cls._lock:
+            if cls not in cls._instances:
+                instance = super().__call__(*args, **kwargs)
+                cls._instances[cls] = instance
+        return cls._instances[cls]
 class UserRepository(metaclass=SingletonMeta):
     def __init__(self):
         self._user_collection = database["user"]
