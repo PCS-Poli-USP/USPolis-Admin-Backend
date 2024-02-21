@@ -40,7 +40,8 @@ def create_institutional_event():
             "classroom": classroom,
             "external_link": external_link,
             "category": category,
-            "created_at": datetime.now().isoformat()
+            "created_at": datetime.now().isoformat(),
+            "likes": 0
         }
 
         institutional_events.insert_one(event_doc)
@@ -116,3 +117,23 @@ def delete_institutional_event(event_id):
     except Exception as err:
         print(err)
         return jsonify({"detail": "Não foi possível deletar o evento!"}), 400
+
+@institutional_event_blueprint.route("", methods=["GET"])
+def list_institutional_events():
+    """
+    List institutional events without date filtering
+    """
+    try:
+        pipeline = [
+            {
+                '$sort': {
+                    'start_datetime': -1,
+                }
+            },
+        ]
+        response = institutional_events.aggregate(pipeline)
+        return jsonify(list(response))
+
+    except Exception as err:
+        print(err)
+        return jsonify({"detail": "Não foi possível listar os eventos!"}), 400

@@ -145,8 +145,8 @@ def get_classes():
 @mobile_blueprint.route("/comments", methods=["POST"])
 def post_comment():
     try:
-        email = request.json["email"]
-        comment = request.json["comment"]
+        email = request.json.get("email")
+        comment = request.json.get("comment")
 
         comment_doc = {
             "email": email,
@@ -223,10 +223,88 @@ def get_classes_by_program_and_period():
 
 @mobile_blueprint.route("/institutional-events", methods=["GET"])
 def list_institutional_events():
+
+    today_date = str(datetime.now().date())
+
     try:
-        response = institutional_events.find()
+        pipeline = [
+            {
+                '$addFields': {
+                    'parsed_start_date': {
+                        '$dateFromString': {
+                            'dateString': {
+                                '$substr': ['$start_datetime', 0, 10]
+                            },
+                            'format': "%Y-%m-%d"
+                        }
+                    }
+                }
+            },
+            {
+                '$match': {
+                    'end_datetime': {
+                        '$gte': today_date
+                    }
+                }
+            },
+            {
+                '$sort': {
+                    'parsed_start_date': 1,
+                    'likes': -1
+                }
+            },
+            {
+                '$project': {
+                    'parsed_start_date': 0
+                }
+            }
+        ]
+        response = institutional_events.aggregate(pipeline)
         return jsonify(list(response))
 
     except Exception as err:
         print(err)
         return jsonify({"detail": "Não foi possível listar os eventos!"}), 400
+
+
+
+@mobile_blueprint.route("/institutional-events/<event_id>/like", methods=["PATCH"])
+def like_institutional_event(event_id):
+    """
+    Like institutional event by ID
+    """
+    try:
+        event = institutional_events.find_one({"_id": ObjectId(event_id)})
+        if not event:
+            return jsonify({"detail": "Evento não encontrado!"}), 404
+
+        event["likes"] = event["likes"] + 1
+
+        institutional_events.update_one({"_id": ObjectId(event_id)}, {"$set": event})
+
+        return jsonify(event)
+
+    except Exception as err:
+        print(err)
+        return jsonify({"detail": "Não foi possível curtir o evento!"}), 400
+
+
+@mobile_blueprint.route("/institutional-events/<event_id>/remove-like", methods=["PATCH"])
+def remove_like_on_institutional_event(event_id):
+    """
+    Remove like on institutional event by ID
+    """
+    try:
+        event = institutional_events.find_one({"_id": ObjectId(event_id)})
+        if not event:
+            return jsonify({"detail": "Evento não encontrado!"}), 404
+
+        event["likes"] = event["likes"] - 1
+
+        institutional_events.update_one({"_id": ObjectId(event_id)}, {"$set": event})
+
+        return jsonify(event)
+
+    except Exception as err:
+        print(err)
+        return jsonify({"detail": "Não foi possível remover a curtida no evento!"}), 400
