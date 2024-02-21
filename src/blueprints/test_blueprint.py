@@ -3,10 +3,15 @@ from flasgger import swag_from
 from flask import Blueprint, request
 
 from src.common.database import database
+from src.middlewares.auth_middleware import auth_middleware
 
 test_blueprint = Blueprint("test", __name__, url_prefix="/api/test")
 
 test_collection = database["test"]
+
+@test_blueprint.before_request
+def _():
+    return auth_middleware()
 
 @test_blueprint.route("")
 def get_all_classrooms():

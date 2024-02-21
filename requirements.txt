@@ -18,3 +18,4 @@ Flask-Caching==2.0.2
 sendgrid==6.10.0
 python-dotenv==1.0.0
 html5lib==1.1
+boto3

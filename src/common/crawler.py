@@ -1,105 +1,167 @@
-import requests
-from bs4 import BeautifulSoup
 import re
+from datetime import datetime
+
+import requests
+from bs4 import BeautifulSoup, ResultSet
+
+BASE_URL = "https://uspdigital.usp.br/jupiterweb/obterTurma?nomdis=&sgldis="
+CLASS_DIV_IDENTIFIERS = {
+    "style": "border: 2px solid #658CCF; padding: 5px; border-radius: 5px;"
+}
 
 
-def get_jupiter_class_infos(subject_code):
-    URL = f"https://uspdigital.usp.br/jupiterweb/obterTurma?nomdis=&sgldis={subject_code}"
-    table1_names = ['cod_turma', 'inicio', 'fim', 'tipo', 'obs']
-    table2_names = ['dia_semana', 'hora_inicio', 'hora_fim', 'prof']
-    table3_names = ['tipo_vaga', 'vagas', 'inscritos', 'pendentes', 'matriculados']
+class JupiterCrawler:
+    subject_code: str
+    url: str
+    soup: BeautifulSoup
+    subject_name: str
+    classes_divs: ResultSet
+    events: list
 
-    # attributes used to identify the <div>s containing the classes informations
-    class_div_attr = {
-        "style" : "border: 2px solid #658CCF; padding: 5px; border-radius: 5px;"
-    }
-    table3_filter = {
-        'tag' : 'span',
-        'attrs' : {'class' : 'txt_arial_8pt_black'}
-    }
+    def __reset(self):
+        self.events = []
 
-    out = []
+    @staticmethod
+    def crawl_subject_static(subject_code: str):
+        crawler = JupiterCrawler()
+        return crawler.crawl_subject(subject_code)
 
-    page = requests.get(URL)
-    soup = BeautifulSoup(page.content, "html.parser")
+    def crawl_subject(self, subject_code: str):
+        self.subject_code = subject_code
+        self.__reset()
+        self.__build_url()
+        self.__build_soap()
+        self.__find_classes_divs()
+        self.__extract_classes_info()
+        self.__add_subject_info_to_events()
+        return self.events
 
-    subject = soup.find_all('b', text=re.compile('Disciplina:(.*)'))[0]
-    subject_name = subject.get_text().replace(f'Disciplina: {subject_code} - ', '')
+    def __build_url(self):
+        self.url = BASE_URL + self.subject_code
 
-    class_div = soup.find_all("div", attrs=class_div_attr)
+    def __build_soap(self):
+        page = requests.get(self.url)
+        self.soup = BeautifulSoup(page.content, "html.parser")
 
-    for c_info in class_div:
+    def __find_classes_divs(self):
+        self.classes_divs = self.soup.find_all("div", attrs=CLASS_DIV_IDENTIFIERS)
 
-        info_table = c_info.find_all("table")
+    def __extract_classes_info(self):
+        for class_div in self.classes_divs:
+            result = self.__build_events_from_class_div(class_div)
+            self.events += result
 
-        info1 = parse_table(info_table[0], orientation='hor', labels=table1_names)
-        info2 = parse_table(info_table[1], orientation='vert', labels=table2_names)
-        info3 = parse_table(info_table[2], orientation='vert', labels=table3_names, filter=table3_filter)
+    def __build_events_from_class_div(self, class_div):
+        result = []
+        info_tables = class_div.find_all("table")
+        general_info = self.__get_general_info(info_tables)
+        schedule_info_list = self.__get_schedule_info_list(info_tables)
+        student_numbers_info = self.__get_student_numbers_info(info_tables)
 
-        out.append(
-            {
-                'cod_disciplina' : subject_code,
-                'nome_disciplina' : subject_name,
-                'cod_turma' : info1['cod_turma'][0],
-                'inicio' : info1['inicio'][0],
-                'fim' : info1['fim'][0],
-                'tipo' : info1['tipo'][0],
-                #'obs' : info1['obs'][0],
-                'prof' : info2['prof'],
-                'dia_semana' : info2['dia_semana'],
-                'hora_inicio' : info2['hora_inicio'],
-                'hora_fim' : info2['hora_fim'],
-                'vagas' : list( [int(x) if x.isdigit() else 0 for x in info3['vagas']] ),
-                'inscritos' : list( [int(x) if x.isdigit() else 0 for x in info3['inscritos']] ),
-                'pendentes' : list( [int(x) if x.isdigit() else 0 for x in info3['pendentes']] )
-            }
+        for schedule_info in schedule_info_list:
+            result.append(general_info | schedule_info | student_numbers_info)
+        return result
+
+    def __get_general_info(self, info_tables) -> dict:
+        result = {}
+        general_info_table = info_tables[0]
+        general_info_table_rows = general_info_table.find_all("tr")
+
+        class_code = general_info_table_rows[0].find_all("td")[1].get_text(strip=True)
+        start_period = general_info_table_rows[1].find_all("td")[1].get_text(strip=True)
+        end_period = general_info_table_rows[2].find_all("td")[1].get_text(strip=True)
+        class_type = general_info_table_rows[3].find_all("td")[1].get_text(strip=True)
+        obs = general_info_table_rows[4].find_all("td")[1].get_text(strip=True)
+
+        result["class_code"] = class_code
+        result["start_period"] = start_period
+        result["end_period"] = end_period
+        result["start_period"] = datetime.strptime(start_period, "%d/%m/%Y").strftime(
+            "%Y-%m-%d"
         )
+        result["end_period"] = datetime.strptime(end_period, "%d/%m/%Y").strftime(
+            "%Y-%m-%d"
+        )
+        result["type"] = class_type
+        result["obs"] = obs
 
+        return result
 
-    return out
+    def __get_schedule_info_list(self, info_tables) -> list:
+        result = []
+        schedule_info_table = info_tables[1]
+        schedule_info_rows = schedule_info_table.find_all("tr")
+        schedule_info_rows_dropped = schedule_info_rows[1:]
+        schedule_info_enumerate = enumerate(schedule_info_rows_dropped)
 
-def parse_table(table, orientation='vert', labels=[], filter=None):
-    if orientation == 'vert':
-        return parse_vertical_table(table, labels, filter)
-    elif orientation == 'hor':
-        return parse_horizontal_table(table, labels, filter)
+        for index, row in schedule_info_enumerate:
+            partial_result = {}
+            data = row.find_all("td")
 
+            week_day = data[0].get_text(strip=True)
+            start_time = data[1].get_text(strip=True)
+            end_time = data[2].get_text(strip=True)
+            professor = data[3].get_text(strip=True)
 
-def parse_horizontal_table(table, labels=[], filter=None):
-    out_dict = {}
-    rows = table.find_all("tr")
+            # More than one professor: only the first row has info, the others only have
+            # the additional professor
+            if (
+                week_day == ""
+                and start_time == ""
+                and end_time == ""
+                and professor != ""
+            ):
+                result[index - 1]["professors"].append(professor)
+                continue
 
-    for i in range(len(rows)):
-        if filter == None:
-            data = rows[i].find_all("td")
-        else:
-            data = rows[i].find_all(filter['tag'], attrs=filter['attrs'])
+            partial_result["week_day"] = week_day
+            partial_result["professors"] = [professor]
+            partial_result["start_time"] = start_time
+            partial_result["end_time"] = end_time
 
-        out_dict[labels[i]] = [val.get_text(strip=True) for val in data[1:] if (val.get_text(strip=True) != '')]
+            result.append(partial_result)
 
-    return out_dict
+        return result
 
+    def __get_student_numbers_info(self, info_tables) -> dict:
+        result = {
+            "vacancies": 0,
+            "subscribers": 0,
+            "pendings": 0,
+            "enrolled": 0,
+        }
+        student_numbers_table = info_tables[2]
+        student_numbers_rows = student_numbers_table.find_all("tr")
+        student_numbers_rows_dropped = student_numbers_rows[1:]
 
+        filter = {"class": "txt_arial_8pt_black"}
+        for row in student_numbers_rows_dropped:
+            data = row.find_all("span", attrs=filter)
 
+            vacancies_text = data[1].get_text(strip=True)
+            subscribers_text = data[2].get_text(strip=True)
+            pendings_text = data[3].get_text(strip=True)
+            enrolled_text = data[4].get_text(strip=True)
 
-def parse_vertical_table(table, labels=[], filter=None):
-    out_dict = {}
-    rows = table.find_all("tr")
+            if vacancies_text != "" and vacancies_text.isdigit():
+                result["vacancies"] += int(vacancies_text)
+            if subscribers_text != "" and subscribers_text.isdigit():
+                result["subscribers"] += int(subscribers_text)
+            if pendings_text != "" and pendings_text.isdigit():
+                result["pendings"] += int(pendings_text)
+            if enrolled_text != "" and enrolled_text.isdigit():
+                result["enrolled"] += int(enrolled_text)
 
-    names=[]
-    for col in labels:
-        out_dict[col] = []
+        return result
 
-    for i in range(1, len(rows)): #skip the first row of labels
-        if filter == None:
-            data = rows[i].find_all("td")
-        else:
-            data = rows[i].find_all(filter['tag'], attrs=filter['attrs'])
+    def __add_subject_info_to_events(self):
+        self.__get_subject_name()
+        for event in self.events:
+            event["subject_name"] = self.subject_name
+            event["subject_code"] = self.subject_code
 
-
-        for j in range(len(data)):
-            data_text = data[j].get_text(strip=True)
-            if data_text != '':
-                out_dict[labels[j]].append(data_text)
-
-    return out_dict
+    def __get_subject_name(self):
+        subject = self.soup.find_all("b", text=re.compile("Disciplina:(.*)"))[0]
+        self.subject_name = subject.get_text().replace(
+            f"Disciplina: {self.subject_code} - ", ""
+        )

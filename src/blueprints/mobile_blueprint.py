@@ -25,11 +25,11 @@ events_aggregation = [
                     "class_code": "$class_code",
                     "subject_code": "$subject_code",
                     "subject_name": "$subject_name",
-                    "professor": "$professor",
+                    "professors": "$professors",
                     "start_period": "$start_period",
                     "end_period": "$end_period",
                     "created_by": "$created_by",
-                    "is_active": "$is_active"
+                    "has_to_be_allocated": "$has_to_be_allocated"
                 },
                 "schedule": {
                     "$push": {
@@ -131,7 +131,7 @@ def get_classes():
     new_aggregation = [
         {
             "$match": {
-                "is_active": True,
+                "has_to_be_allocated": False,
             }
         },
         events_aggregation[0]
