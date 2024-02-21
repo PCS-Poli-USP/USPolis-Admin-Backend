@@ -10,6 +10,7 @@ from src.common.tasks import update_events_activeness
 from src.common.database import database
 from src.schemas.allocation_schema import AllocatorInputSchema, AllocatorOutputSchema
 from src.common.allocation.new_allocator import allocate_classrooms
+
 # from src.common.utils.event.events_formatter import clear_event_allocation
 from src.middlewares.auth_middleware import auth_middleware
 
@@ -48,7 +49,8 @@ def get_events():
 def get_events_by_class(subject_code, class_code):
     username = request.user.get("Username")
     result = events.find(
-        {"created_by": username, "subject_code": subject_code, "class_code": class_code})
+        {"created_by": username, "subject_code": subject_code, "class_code": class_code}
+    )
     resultList = list(result)
     return dumps(resultList)
 
@@ -65,11 +67,14 @@ def save_new_allocation():
                     "building": "",
                     "classroom": "",
                 },
-                "$set": {"has_to_be_allocated": True}
+                "$set": {"has_to_be_allocated": True},
             },
         )
-        classroom_list = list(classrooms.find(
-            {"created_by": username, "ignore_to_allocate": False}, {"_id": 0}))
+        classroom_list = list(
+            classrooms.find(
+                {"created_by": username, "ignore_to_allocate": False}, {"_id": 0}
+            )
+        )
         event_list = list(events.find({"created_by": username}))
         result = allocate_classrooms(classroom_list, event_list)
         allocated_events = result[0]
@@ -117,7 +122,7 @@ def load_allocations():
                     "classroom": event["classroom"],
                     "building": event["building"],
                     "has_to_be_allocated": False,
-                    "updated_at": now
+                    "updated_at": now,
                 }
             }
             events.update_one(filter, query)
@@ -211,7 +216,9 @@ def edit_class_allocation(subject_code, class_code):
         return {"message": str(ex)}, 500
 
 
-@event_blueprint.route("delete/<subject_code>/<class_code>/<week_day>/<start_time>", methods=["PATCH"])
+@event_blueprint.route(
+    "delete/<subject_code>/<class_code>/<week_day>/<start_time>", methods=["PATCH"]
+)
 def delete_one_allocation(subject_code, class_code, week_day, start_time):
     try:
         username = request.user.get("Username")
@@ -236,7 +243,8 @@ def delete_one_allocation(subject_code, class_code, week_day, start_time):
 
         if not result:
             raise PyMongoError(
-                f"{subject_code} - {class_code} at {week_day} - {start_time} not found")
+                f"{subject_code} - {class_code} at {week_day} - {start_time} not found"
+            )
         return dumps(result.matched_count)
 
     except PyMongoError as err:
@@ -251,8 +259,11 @@ def delete_one_allocation(subject_code, class_code, week_day, start_time):
 def delete_allocation(subject_code, class_code):
     try:
         username = request.user.get("Username")
-        filter = {"created_by": username,
-                  "subject_code": subject_code, "class_code": class_code}
+        filter = {
+            "created_by": username,
+            "subject_code": subject_code,
+            "class_code": class_code,
+        }
         query = {
             "$unset": {
                 "building": "",

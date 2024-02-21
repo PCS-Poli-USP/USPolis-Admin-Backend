@@ -69,6 +69,7 @@ def get_all_classes():
                     "vacancies": {"$first": "$vacancies"},
                     "pendings": {"$first": "$pendings"},
                     "classrooms": {"$push": {"$ifNull": ["$classroom", "Não alocado"]}},
+                    "events_ids": {"$push": {"$toString": "$_id"}},
                 }
             },
         ]

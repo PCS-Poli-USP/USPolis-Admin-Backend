@@ -9,11 +9,18 @@ from pymongo.errors import DuplicateKeyError, PyMongoError
 from src.common.utils.classroom.classroom_mapper import get_classroom_schedule
 
 from src.common.database import database
+from src.common.general_error import GeneralError
+from src.common.utils.validate_body import validate_body
 from src.common.verify_building_permission import verify_building_permission
 from src.middlewares.auth_middleware import auth_middleware
 from src.repository.classrooms_repository import ClassroomsRepository
 from src.repository.events_repository import EventsRepository
-from src.schemas.classroom_schema import AvailableClassroomsQuerySchema, ClassroomSchema
+from src.schemas.classroom_schema import (
+    AvailableClassroomsQuerySchema,
+    ClassroomSchema,
+    GetAvailableClassroomsSchema,
+)
+from src.services.classrooms.list_available_classrooms import list_available_classrooms
 from src.services.conflicts.conflict_calculator import ConflictCalculator
 
 classroom_blueprint = Blueprint("classrooms", __name__, url_prefix="/api/classrooms")
@@ -128,32 +135,23 @@ def classroom_by_name(name):
 @classroom_blueprint.post("/available-with-conflict-check")
 def get_available_classrooms_with_conflict_check():
     username = request.user.get("Username")
+    schema = GetAvailableClassroomsSchema()
     body = request.json
-    if body is None:
-        return {"message": "Request body is required"}, 400
-    building_id = body.get("building_id")
-    event_to_be_checked = body.get("event")
     try:
+        data = validate_body(body, schema)
+        building_id = data.get("building_id")
+        events_ids = data.get("events_ids")
         building_name = verify_building_permission(username, building_id)
-        classrooms_list = classrooms_repository.list_by_building(building_name)
-        grouped_events = events_repository.list_by_building_grouped_by_classroom(
-            building_id
+
+        classrooms_list = list_available_classrooms(
+            events_ids, building_id, building_name
         )
 
-        for classroom in classrooms_list:
-            classroom["conflicted"] = False
-
-        for classroom, events in grouped_events.items():
-            if ConflictCalculator.check_time_conflict_one_with_many(
-                event_to_be_checked, events
-            ):
-                for c in classrooms_list:
-                    if c.get("classroom_name") == classroom:
-                        c["conflicted"] = True
-
         return dumps(classrooms_list)
+
+    except GeneralError as e:
+        return e.get_tuple()
     except Exception as ex:
-        raise ex
         return {"message": str(ex)}, 500
 
 
