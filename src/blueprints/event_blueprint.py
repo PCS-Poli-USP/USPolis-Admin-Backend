@@ -10,6 +10,7 @@ from src.common.tasks import update_events_activeness
 from src.common.database import database
 from src.schemas.allocation_schema import AllocatorInputSchema, AllocatorOutputSchema
 from src.common.allocation.new_allocator import allocate_classrooms
+from src.common.utils.prettify_id import recursive_prettify_id
 
 # from src.common.utils.event.events_formatter import clear_event_allocation
 from src.middlewares.auth_middleware import auth_middleware
@@ -39,8 +40,9 @@ def _():
 @swag_from(f"{yaml_files}/get_events.yml")
 def get_events():
     username = request.user.get("Username")
-    result = events.find({"created_by": username}, {"_id": 0})
+    result = events.find({"created_by": username})
     resultList = list(result)
+    recursive_prettify_id(resultList)
 
     return dumps(resultList)
 
