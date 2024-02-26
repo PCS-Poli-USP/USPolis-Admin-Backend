@@ -77,7 +77,8 @@ def save_new_allocation():
                 {"created_by": username, "ignore_to_allocate": False}, {"_id": 0}
             )
         )
-        event_list = list(events.find({"created_by": username}))
+        event_list = list(events.find(
+            {"created_by": username, "ignore_to_allocate": False}))
         result = allocate_classrooms(classroom_list, event_list)
         allocated_events = result[0]
         unallocated_events = result[1]
@@ -106,6 +107,18 @@ def load_allocations():
     try:
         username = request.user.get("Username")
         result = allocations.find_one({"created_by": username})
+
+        if not result:
+            new_allocation = {
+                "allocated_events": [],
+                "unallocated_events": [],
+                "updated_at": datetime.now().strftime(
+                    "%d/%m/%Y %H:%M"),
+                "created_by": username
+            }
+            allocations.insert_one(new_allocation)
+            return dumps(new_allocation)
+
         allocated_events = result["allocated_events"]
         unallocated_events = result["unallocated_events"]
         now = datetime.now().strftime("%d/%m/%Y %H:%M")
@@ -156,6 +169,7 @@ def load_allocations():
         return {"message": err.messages}, 400
 
     except Exception as ex:
+        print(str(ex))
         return {"message": "Erro ao carregar alocação", "error": str(ex)}, 500
 
 
