@@ -29,7 +29,8 @@ users = database["users"]
 
 class_schema = ClassSchema(unknown=EXCLUDE)
 preferences_schema = PreferencesSchema(unknown=EXCLUDE)
-has_to_be_allocated_schema = HasToBeAllocatedClassesSchema(many=True, unknown=EXCLUDE)
+has_to_be_allocated_schema = HasToBeAllocatedClassesSchema(
+    many=True, unknown=EXCLUDE)
 event_schema = EventSchema()
 user_repository = UserRepository()
 
@@ -65,6 +66,7 @@ def get_all_classes():
                     "week_days": {"$push": "$week_day"},
                     "preferences": {"$first": "$preferences"},
                     "has_to_be_allocated": {"$first": "$has_to_be_allocated"},
+                    "ignore_to_allocate": {"$first": "$ignore_to_allocate"},
                     "subscribers": {"$first": "$subscribers"},
                     "vacancies": {"$first": "$vacancies"},
                     "pendings": {"$first": "$pendings"},
@@ -145,14 +147,14 @@ def update_preferences(subject_code, class_code):
         preferences_schema_load = preferences_schema.load(request.json)
         building_id = preferences_schema_load["building_id"]
         preferences_schema_load["building_id"] = ObjectId(building_id)
-        has_to_be_allocated = request.json["has_to_be_allocated"]
+        ignore_to_allocate = request.json["ignore_to_allocate"]
 
         result = events.update_many(
             query,
             {
                 "$set": {
                     "preferences": preferences_schema_load,
-                    "has_to_be_allocated": has_to_be_allocated,
+                    "ignore_to_allocate": ignore_to_allocate,
                     "updated_at": datetime.now().strftime("%d/%m/%Y %H:%M"),
                 }
             },
@@ -162,6 +164,9 @@ def update_preferences(subject_code, class_code):
 
     except PyMongoError as err:
         return {"message": err._message}
+    except Exception as ex:
+        print(str(ex))
+        return {"message": "Erro ao atualizar prefrerencias", "error": str(ex)}, 500
 
 
 @class_blueprint.route("/<subject_code>/<class_code>", methods=["GET"])
@@ -230,7 +235,8 @@ def edit_class(subject_code, class_code):
 def update_has_to_be_allocated():
     try:
         username = request.user.get("Username")
-        has_to_be_allocated_schema_load = has_to_be_allocated_schema.load(request.json)
+        has_to_be_allocated_schema_load = has_to_be_allocated_schema.load(
+            request.json)
         updated = 0
 
         for cls in has_to_be_allocated_schema_load:
@@ -240,7 +246,8 @@ def update_has_to_be_allocated():
                 "created_by": username,
             }
             result = events.update_many(
-                query, {"$set": {"has_to_be_allocated": cls["has_to_be_allocated"]}}
+                query, {
+                    "$set": {"has_to_be_allocated": cls["has_to_be_allocated"]}}
             )
 
             updated += result.matched_count

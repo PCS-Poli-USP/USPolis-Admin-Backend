@@ -43,29 +43,39 @@ def crawl_subject():
 
     updated = []
     inserted = []
+    failed = []
+    success = []
     for subject_code in subject_codes_list:
-        events = JupiterCrawler.crawl_subject_static(subject_code)
-        for event in events:
-            event["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-            event["created_by"] = username
-            event["has_to_be_allocated"] = True
-            event["building"] = building["name"]
+        try:
+            events = JupiterCrawler.crawl_subject_static(subject_code)
+            for event in events:
+                event["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
+                event["created_by"] = username
+                event["has_to_be_allocated"] = True
+                event["ignore_to_allocate"] = False
+                event["building"] = building["name"]
 
-            event["preferences"] = {
-                "building_id": ObjectId(building_id),
-                "air_conditioning": False,
-                "projector": False,
-                "accessibility": False,
-            }
+                event["preferences"] = {
+                    "building_id": ObjectId(building_id),
+                    "air_conditioning": False,
+                    "projector": False,
+                    "accessibility": False,
+                }
 
-            query = {
-                "class_code": event["class_code"],
-                "subject_code": event["subject_code"],
-                "week_day": event["week_day"],
-            }
-            result = events_tb.update_one(query, {"$set": event}, upsert=True)
-            updated.append(
-                event["subject_code"]
-            ) if result.matched_count else inserted.append(event["subject_code"])
+                query = {
+                    "class_code": event["class_code"],
+                    "subject_code": event["subject_code"],
+                    "week_day": event["week_day"],
+                }
+                result = events_tb.update_one(
+                    query, {"$set": event}, upsert=True)
+                updated.append(
+                    event["subject_code"]
+                ) if result.matched_count else inserted.append(event["subject_code"])
 
-    return dumps({"updated": updated, "inserted": inserted})
+            success.append(event["subject_code"])
+
+        except Exception as e:
+            failed.append(subject_code)
+
+    return dumps({"updated": updated, "inserted": inserted, "sucess": success, "failed": failed})
