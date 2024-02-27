@@ -4,12 +4,10 @@ from src.common.database import database
 
 events_collection = database["events"]
 
-from src.common.utils.classes.classes_mapper import get_class_schedule
 from src.common.utils.classroom.classroom_mapper import get_classroom_schedule
 from src.common.utils.event.event_mapper import get_events_by_class
-from src.common.utils.classes.classes_sorter import sort_classes_by_vacancies
 from src.common.utils.classroom.classroom_sorter import sort_classrooms_by_capacity
-from src.common.utils.event.event_sorter import sort_events_by_class, sort_events_by_vacancies, sort_events_by_subject_code, sort_events_by_time, sort_events_by_class_and_time
+from src.common.utils.event.event_sorter import sort_events_by_class_and_time
 
 def classroom_capacity_validation(classroom: dict, event: dict) -> bool:
   return classroom["capacity"] >= event["vacancies"]
