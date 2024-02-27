@@ -71,7 +71,10 @@ class JupiterCrawler:
         start_period = general_info_table_rows[1].find_all("td")[1].get_text(strip=True)
         end_period = general_info_table_rows[2].find_all("td")[1].get_text(strip=True)
         class_type = general_info_table_rows[3].find_all("td")[1].get_text(strip=True)
-        obs = general_info_table_rows[4].find_all("td")[1].get_text(strip=True)
+        try:
+            obs = general_info_table_rows[4].find_all("td")[1].get_text(strip=True)
+        except IndexError:
+            obs = ""
 
         result["class_code"] = class_code
         result["start_period"] = start_period
@@ -137,6 +140,12 @@ class JupiterCrawler:
         filter = {"class": "txt_arial_8pt_black"}
         for row in student_numbers_rows_dropped:
             data = row.find_all("span", attrs=filter)
+
+            try:
+                if len(data) != 5:
+                    raise Exception
+            except:
+                continue
 
             vacancies_text = data[1].get_text(strip=True)
             subscribers_text = data[2].get_text(strip=True)
