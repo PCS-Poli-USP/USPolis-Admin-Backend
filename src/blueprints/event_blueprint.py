@@ -63,7 +63,7 @@ def save_new_allocation():
     try:
         username = request.user.get("Username")
         result = events.update_many(
-            {"created_by": username},
+            {"created_by": username, "ignore_to_allocate" : False},
             {
                 "$unset": {
                     "building": "",
