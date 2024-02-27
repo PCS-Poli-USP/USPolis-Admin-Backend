@@ -19,26 +19,26 @@ def classroom_preferences_validation(classroom: dict, preferences: dict) -> bool
            preferences["air_conditioning"] == classroom["air_conditioning"] and \
            preferences["accessibility"] == classroom["accessibility"]
 
-def classroom_times_validation(classroom: dict, classroom_schedule, event: dict) -> bool:
+def classroom_times_validation(classroom_schedule, event: dict) -> bool:
   start_validation = datetime.strptime(event["start_time"], "%H:%M").time()
   end_validation = datetime.strptime(event["end_time"], "%H:%M").time()
   classroom_times = classroom_schedule[event["week_day"]]
   for classroom_time in classroom_times:
     start = datetime.strptime(classroom_time[0], "%H:%M").time()
     end = datetime.strptime(classroom_time[1], "%H:%M").time()
-    if (start_validation < start and end_validation < end):
+    if (start_validation <= start and end_validation <= end):
       return False
-    if (start_validation > start and end_validation < end):
+    if (start_validation >= start and end_validation <= end):
       return False
-    if (start_validation < end and end_validation > end):
+    if (start_validation <= end and end_validation >= end):
       return False
-    if (start_validation < start and end_validation > end):
+    if (start_validation <= start and end_validation >= end):
       return False
   return True
 
 def classroom_is_allowed_to_allocate(classroom: dict, classroom_schedule, event: dict) -> bool:
   if classroom_capacity_validation(classroom, event):
-    if classroom_times_validation(classroom, classroom_schedule, event):
+    if classroom_times_validation(classroom_schedule, event):
       return True    
   return False
 
@@ -56,7 +56,8 @@ def allocate_classrooms(classroom_list: list, event_list: list):
         for classroom in classroom_list:
             classroom_schedule = get_classroom_schedule(classroom)
             if classroom_is_allowed_to_allocate(classroom, classroom_schedule, event):
-                print("Turma: ", event["subject_code"], event["class_code"], event['week_day'], event['start_time'], "allocada em", classroom["classroom_name"])
+                print("Turma: ", event["subject_code"], event["class_code"], event['week_day'], event['start_time'], "ALLOCADA em", classroom["classroom_name"])
+                print()
                 event["has_to_be_allocated"] = False
                 event["classroom"] = classroom["classroom_name"]
                 event["building"] = classroom["building"]
@@ -64,7 +65,7 @@ def allocate_classrooms(classroom_list: list, event_list: list):
                 break
       if len(partial_allocated) != len(events):
         difference = len(events) - len(partial_allocated)
-        print("Não foi possível alocar", subject_code, class_code, "tivemos", difference, "horários não alocados")
+        print("NAO FOI POSSIVEL alocar", subject_code, class_code, "tivemos", difference, "horários não alocados")
         unallocated_events.extend(events)
       else:
         for event in partial_allocated:
