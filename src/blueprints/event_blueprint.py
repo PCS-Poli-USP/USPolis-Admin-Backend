@@ -10,6 +10,7 @@ from src.common.tasks import update_events_activeness
 from src.common.database import database
 from src.schemas.allocation_schema import AllocatorInputSchema, AllocatorOutputSchema
 from src.common.allocation.new_allocator import allocate_classrooms
+from src.common.utils.prettify_id import recursive_prettify_id
 
 # from src.common.utils.event.events_formatter import clear_event_allocation
 from src.middlewares.auth_middleware import auth_middleware
@@ -39,8 +40,9 @@ def _():
 @swag_from(f"{yaml_files}/get_events.yml")
 def get_events():
     username = request.user.get("Username")
-    result = events.find({"created_by": username}, {"_id": 0})
+    result = events.find({"created_by": username})
     resultList = list(result)
+    recursive_prettify_id(resultList)
 
     return dumps(resultList)
 
@@ -61,7 +63,7 @@ def save_new_allocation():
     try:
         username = request.user.get("Username")
         result = events.update_many(
-            {"created_by": username},
+            {"created_by": username, "ignore_to_allocate" : False},
             {
                 "$unset": {
                     "building": "",
@@ -75,7 +77,8 @@ def save_new_allocation():
                 {"created_by": username, "ignore_to_allocate": False}, {"_id": 0}
             )
         )
-        event_list = list(events.find({"created_by": username}))
+        event_list = list(events.find(
+            {"created_by": username, "ignore_to_allocate": False}))
         result = allocate_classrooms(classroom_list, event_list)
         allocated_events = result[0]
         unallocated_events = result[1]
@@ -104,6 +107,18 @@ def load_allocations():
     try:
         username = request.user.get("Username")
         result = allocations.find_one({"created_by": username})
+
+        if not result:
+            new_allocation = {
+                "allocated_events": [],
+                "unallocated_events": [],
+                "updated_at": datetime.now().strftime(
+                    "%d/%m/%Y %H:%M"),
+                "created_by": username
+            }
+            allocations.insert_one(new_allocation)
+            return dumps(new_allocation)
+
         allocated_events = result["allocated_events"]
         unallocated_events = result["unallocated_events"]
         now = datetime.now().strftime("%d/%m/%Y %H:%M")
@@ -154,6 +169,7 @@ def load_allocations():
         return {"message": err.messages}, 400
 
     except Exception as ex:
+        print(str(ex))
         return {"message": "Erro ao carregar alocação", "error": str(ex)}, 500
 
 
