@@ -66,6 +66,7 @@ def crawl_subject():
                     "class_code": event["class_code"],
                     "subject_code": event["subject_code"],
                     "week_day": event["week_day"],
+                    "start_time": event["start_time"],
                 }
                 result = events_tb.update_one(
                     query, {"$set": event}, upsert=True)

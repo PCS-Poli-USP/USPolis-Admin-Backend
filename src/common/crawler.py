@@ -113,7 +113,7 @@ class JupiterCrawler:
             start_time = data[1].get_text(strip=True)
             end_time = data[2].get_text(strip=True)
             professor = data[3].get_text(strip=True)
-       
+
             # More than one professor: only the first row has info, the others only have
             # the additional professor
             if (
@@ -125,11 +125,14 @@ class JupiterCrawler:
                 result[len(result) - 1]["professors"].append(professor)
                 continue
 
+            # More than one hour in same day: only week day is empty
+            if (week_day == "" and start_time != "" and end_time != "" and professor != ""):
+                week_day = result[len(result) - 1]["week_day"]
+
             partial_result["week_day"] = week_day
             partial_result["professors"] = [professor]
             partial_result["start_time"] = start_time
             partial_result["end_time"] = end_time
-
             result.append(partial_result)
 
         return result
