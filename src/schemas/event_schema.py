@@ -21,6 +21,7 @@ class EventSchema(Schema):
     pendings = fields.Int()
     preferences = fields.Nested(PreferencesSchema(unknown=EXCLUDE))
     has_to_be_allocated = fields.Bool()
+    ignore_to_allocate = fields.Bool()
     classroom = fields.Str()
     building = fields.Str()
     updated_at = fields.Str()
