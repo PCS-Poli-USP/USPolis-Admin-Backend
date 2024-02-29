@@ -1,22 +1,15 @@
-from datetime import datetime
-
-from bson.json_util import dumps
-from bson.objectid import ObjectId
-from flasgger import swag_from
 from flask import Blueprint, request
-from marshmallow import EXCLUDE, ValidationError
-from pymongo.errors import DuplicateKeyError, PyMongoError
+from bson.json_util import dumps
+from marshmallow import EXCLUDE
+from pymongo.errors import PyMongoError
+from datetime import datetime
+from flasgger import swag_from
 
 from src.common.database import database
-from src.common.utils.prettify_preferences import prettify_preferences
-from src.middlewares.auth_middleware import auth_middleware
-from src.repository.user_repository import UserRepository
-from src.schemas.class_schema import (
-    ClassSchema,
-    HasToBeAllocatedClassesSchema,
-    PreferencesSchema,
-)
+from src.common.crawler import get_jupiter_class_infos
+from src.schemas.class_schema import ClassSchema, PreferencesSchema, HasToBeAllocatedClassesSchema
 from src.schemas.event_schema import EventSchema
+from src.common.mappers.classes_mapper import break_class_into_events
 
 class_blueprint = Blueprint("classes", __name__, url_prefix="/api/classes")
 
@@ -31,222 +24,182 @@ class_schema = ClassSchema(unknown=EXCLUDE)
 preferences_schema = PreferencesSchema(unknown=EXCLUDE)
 has_to_be_allocated_schema = HasToBeAllocatedClassesSchema(many=True, unknown=EXCLUDE)
 event_schema = EventSchema()
-user_repository = UserRepository()
 
 yaml_files = "../swagger/classes"
-
-
-@class_blueprint.before_request
-def _():
-    return auth_middleware()
-
 
 @class_blueprint.route("", methods=["GET"])
 @swag_from(f"{yaml_files}/get_all_classes.yml")
 def get_all_classes():
-    username = request.user.get("Username")
-    result = events.aggregate(
-        [
-            {"$match": {"created_by": username}},
-            {
-                "$group": {
-                    "_id": {
-                        "class_code": "$class_code",
-                        "subject_code": "$subject_code",
-                    },
-                    "class_code": {"$first": "$class_code"},
-                    "subject_code": {"$first": "$subject_code"},
-                    "subject_name": {"$first": "$subject_name"},
-                    "professors": {"$first": "$professors"},
-                    "start_period": {"$first": "$start_period"},
-                    "end_period": {"$first": "$end_period"},
-                    "start_time": {"$push": "$start_time"},
-                    "end_time": {"$push": "$end_time"},
-                    "week_days": {"$push": "$week_day"},
-                    "preferences": {"$first": "$preferences"},
-                    "has_to_be_allocated": {"$first": "$has_to_be_allocated"},
-                    "subscribers": {"$first": "$subscribers"},
-                    "vacancies": {"$first": "$vacancies"},
-                    "pendings": {"$first": "$pendings"},
-                    "classrooms": {"$push": {"$ifNull": ["$classroom", "Não alocado"]}},
-                    "events_ids": {"$push": {"$toString": "$_id"}},
-                }
-            },
-        ]
-    )
-    resultList = list(result)
-    for classes in resultList:
-        prettify_preferences(classes["preferences"])
-    return dumps(resultList)
+  username = request.headers.get('username')
+  result = events.aggregate([
+    { "$match" : { "created_by" : username } },
+    {
+      "$group" : {
+        "_id" : {"class_code" : "$class_code", "subject_code" : "$subject_code"},
+        "class_code" : {"$first" : "$class_code"},
+        "subject_code" : {"$first" : "$subject_code"},
+        "subject_name" : {"$first" : "$subject_name"},
+        "professors" : {"$push" : "$professor"},
+        "start_period" : {"$first" : "$start_period"},
+        "end_period" : {"$first" : "$end_period"},
+        "start_time" : {"$push" : "$start_time"},
+        "end_time" : {"$push" : "$end_time"},
+        "week_days": {"$push" : "$week_day"},
+        "preferences" : {"$first" : "$preferences"},
+        "has_to_be_allocated" : {"$first" : "$has_to_be_allocated"},
+        "subscribers" : {"$first" : "$subscribers"},
+        "classrooms": {"$push" : "$classroom"}
+      }
+    }
+    ])
+  resultList = list(result)
+
+  return dumps(resultList)
 
 
-@class_blueprint.route("", methods=["POST"])
-def create_class():
-    try:
-        inserted = []
-        username = request.user.get("Username")
-        events_list = request.json
+@class_blueprint.route("many", methods=["POST"])
+@swag_from(f"{yaml_files}/create_many_classes.yml")
+def create_many_classes():
+  try:
+    subject_codes_list = request.json
+    updated = []
+    inserted = []
+    username = request.headers.get('username')
+
+    for subject_code in subject_codes_list:
+      user = users.find_one({ "username" : username })
+      preference_building = user["building"]
+      subject_classes = get_jupiter_class_infos(subject_code)
+
+      for class_info in subject_classes:
+        class_schema_load = class_schema.load(class_info)
+        events_list = break_class_into_events(class_schema_load, preference_building)
+
         for event in events_list:
-            new_event = event_schema.load(event)
-            building_id = new_event["preferences"]["building_id"]
-            new_event["preferences"]["building_id"] = ObjectId(building_id)
-            new_event["created_by"] = username
-            new_event["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
+          event_schema_load = event_schema.load(event)
+          event_schema_load["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
+          event_schema_load["created_by"] = username
 
-            result = events.insert_one(new_event)
-            inserted.append(result.inserted_id)
+          query = { 
+            "class_code" : event_schema_load["class_code"],
+            "subject_code" : event_schema_load["subject_code"],
+            "week_day" : event_schema_load["week_day"],
+            "created_by" : event_schema_load["created_by"]
+          }
+          result = events.update_one(query, { "$set" : event_schema_load }, upsert=True)
+          updated.append(event_schema_load["subject_code"]) if result.matched_count else inserted.append(event_schema_load["subject_code"])
 
-        return dumps({"inserted": inserted})
+    return dumps({ "updated" : updated, "inserted" : inserted })
 
-    except DuplicateKeyError as err:
-        print(err)
-        return {"message": err.details["errmsg"]}, 400
-
-    except ValidationError as err:
-        print(err)
-        return {"message": err.messages}, 400
-
-    except Exception as ex:
-        print(ex)
-        return {"message": str(ex)}, 500
-
+  except Exception as ex:
+    print(ex)
+    return { "message" : f"Erro ao buscar informações das turmas - {subject_code}", "updated" : updated, "inserted" : inserted , "error": str(ex)}, 400
 
 @class_blueprint.route("/<subject_code>/<class_code>", methods=["DELETE"])
 @swag_from(f"{yaml_files}/delete_by_subject_class_code.yml")
 def delete_by_subject_class_code(subject_code, class_code):
-    username = request.user.get("Username")
-    query = {
-        "subject_code": subject_code,
-        "class_code": class_code,
-        "created_by": username,
-    }
+  username = request.headers.get('username')
+  query = { "subject_code" : subject_code, "class_code" : class_code, "created_by" : username }
 
-    try:
-        result = events.delete_many(query).deleted_count
-        if not result:
-            raise PyMongoError(f"{subject_code} - {class_code} not found")
-        return dumps(result)
+  try:
+    result = events.delete_many(query).deleted_count
+    if not result: raise PyMongoError(f"{subject_code} - {class_code} not found")
+    return dumps(result)
 
-    except PyMongoError as err:
-        return {"message": err._message}
-
+  except PyMongoError as err:
+    return { "message" : err._message }
 
 @class_blueprint.route("/preferences/<subject_code>/<class_code>", methods=["PATCH"])
 @swag_from(f"{yaml_files}/update_preferences.yml")
 def update_preferences(subject_code, class_code):
-    username = request.user.get("Username")
-    query = {
-        "subject_code": subject_code,
-        "class_code": class_code,
-        "created_by": username,
-    }
+  username = request.headers.get('username')
+  query = { "subject_code" : subject_code, "class_code" : class_code, "created_by" : username }
 
-    try:
-        preferences_schema_load = preferences_schema.load(request.json)
-        building_id = preferences_schema_load["building_id"]
-        preferences_schema_load["building_id"] = ObjectId(building_id)
-        has_to_be_allocated = request.json["has_to_be_allocated"]
+  try:
+    preferences_schema_load = preferences_schema.load(request.json)
+    has_to_be_allocated = request.json["has_to_be_allocated"]
 
-        result = events.update_many(
-            query,
-            {
-                "$set": {
-                    "preferences": preferences_schema_load,
-                    "has_to_be_allocated": has_to_be_allocated,
-                    "updated_at": datetime.now().strftime("%d/%m/%Y %H:%M"),
-                }
-            },
-        )
+    result = events.update_many(query,
+      { "$set" : { "preferences": preferences_schema_load, "has_to_be_allocated" : has_to_be_allocated } }
+    )
 
-        return dumps(result.modified_count)
+    return dumps(result.modified_count)
 
-    except PyMongoError as err:
-        return {"message": err._message}
-
+  except PyMongoError as err:
+    return { "message" : err._message }
 
 @class_blueprint.route("/<subject_code>/<class_code>", methods=["GET"])
 @swag_from(f"{yaml_files}/get_preferences.yml")
 def get_preferences(subject_code, class_code):
-    username = request.user.get("Username")
-    query = {
-        "subject_code": subject_code,
-        "class_code": class_code,
-        "created_by": username,
-    }
+  username = request.headers.get('username')
+  query = { "subject_code" : subject_code, "class_code" : class_code, "created_by" : username }
 
-    try:
-        result = events.find_one(query, {"_id": 0})
+  try:
+    result = events.find_one(query, { "_id" : 0 })
 
-        if not result:
-            raise PyMongoError(f"{subject_code}/{class_code} not found")
+    if not result: raise PyMongoError(f"{subject_code}/{class_code} not found")
 
-        return dumps(result)
+    return dumps(result)
 
-    except PyMongoError as err:
-        return {"message": err._message}
+  except PyMongoError as err:
+    return { "message" : err._message }
 
-    except Exception as ex:
-        print(ex)
-        return {"message": str(ex)}, 500
-
+  except Exception as ex:
+    print(ex)
+    return { "message" : str(ex) }, 500
 
 @class_blueprint.route("/<subject_code>/<class_code>", methods=["PATCH"])
 @swag_from(f"{yaml_files}/edit_class.yml")
 def edit_class(subject_code, class_code):
-    try:
-        class_events = request.json
-        deleted = 0
-        inserted = 0
-        username = request.user.get("Username")
+  try:
+    class_events = request.json
+    updated = 0
+    username = request.headers.get('username')
 
-        query = {
-            "subject_code": subject_code,
-            "class_code": class_code,
-            "created_by": username,
+    for event in class_events:
+      query = {
+        "subject_code" : subject_code,
+        "class_code" : class_code,
+        "week_day" : event["week_day_id"],
+        "created_by" : username
+      }
+
+      result = events.update_one(query,
+        { "$set" :
+          { "week_day" : event["week_day"],
+            "start_time" : event["start_time"],
+            "end_time": event["end_time"],
+            "professor" : event["professor"],
+            "subscribers": event["subscribers"],
+            "updated_at" : datetime.now().strftime("%d/%m/%Y %H:%M") }
         }
+      )
+      updated += result.matched_count
 
-        result = events.delete_many(query)
-        deleted += result.deleted_count
+    return dumps({ "updated" : updated })
 
-        for event in class_events:
-            event = event_schema.load(event)
-            building_id = event["preferences"]["building_id"]
-            event["preferences"]["building_id"] = ObjectId(building_id)
-            event["created_by"] = username
-            event["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-
-            result = events.insert_one(event)
-            inserted += 1
-
-        return dumps({"inserted": inserted, "removed": deleted})
-
-    except Exception as ex:
-        print(ex)
-        return {"message": str(ex)}, 500
-
+  except Exception as ex:
+    print(ex)
+    return { "message" : str(ex) }, 500
 
 @class_blueprint.route("has-to-be-allocated", methods=["PATCH"])
 @swag_from(f"{yaml_files}/update_has_to_be_allocated.yml")
 def update_has_to_be_allocated():
-    try:
-        username = request.user.get("Username")
-        has_to_be_allocated_schema_load = has_to_be_allocated_schema.load(request.json)
-        updated = 0
+  try:
+    username = request.headers.get('username')
+    has_to_be_allocated_schema_load = has_to_be_allocated_schema.load(request.json)
+    updated = 0
 
-        for cls in has_to_be_allocated_schema_load:
-            query = {
-                "subject_code": cls["subject_code"],
-                "class_code": cls["class_code"],
-                "created_by": username,
-            }
-            result = events.update_many(
-                query, {"$set": {"has_to_be_allocated": cls["has_to_be_allocated"]}}
-            )
+    for cls in has_to_be_allocated_schema_load:
+      query = { "subject_code" : cls["subject_code"], "class_code" : cls["class_code"], "created_by" : username }
+      result = events.update_many(query, {
+        "$set" : { "has_to_be_allocated" : cls["has_to_be_allocated"] }
+        })
 
-            updated += result.matched_count
+      updated += result.matched_count
 
-        return dumps({"updated": updated})
+    return dumps({ "updated" : updated })
 
-    except Exception as ex:
-        print(ex)
-        return {"message": str(ex)}, 500
+  except Exception as ex:
+    print(ex)
+    return { "message" : str(ex) }, 500

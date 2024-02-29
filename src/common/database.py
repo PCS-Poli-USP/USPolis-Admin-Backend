@@ -1,12 +1,11 @@
 import os
-
-from dotenv import load_dotenv
-from pymongo.mongo_client import MongoClient
-
-load_dotenv()
+from pymongo import MongoClient
 
 uri = os.environ.get("CONN_STR")
-db_name = os.environ.get("DB_NAME") or "uspolis"
 mongo_client = MongoClient(uri, 27017)
 
-database = mongo_client[db_name]
+# check databases
+# databases = cliente.database_names()
+# collections = database.collection_names()
+
+database = mongo_client["uspolis"]

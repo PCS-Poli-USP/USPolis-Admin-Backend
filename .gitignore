@@ -11,5 +11,3 @@ env_uspolis
 
 # solver generated data
 *.lp
-
-canvas/

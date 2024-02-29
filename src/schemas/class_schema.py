@@ -11,7 +11,7 @@ class ArraySumField(fields.Field):
 
 
 class PreferencesSchema(Schema):
-    building_id = fields.Str(required=True)
+    building = fields.Str(required=True)
     air_conditioning = fields.Bool()
     projector = fields.Bool()
     accessibility = fields.Bool()
