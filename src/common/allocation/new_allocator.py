@@ -50,22 +50,26 @@ def allocate_classrooms(classroom_list: list, event_list: list):
 
   for (subject_code, class_code), events in events_by_class.items():
       partial_allocated = []
-      for event in events:
-        for classroom in classroom_list:
-            classroom_schedule = get_classroom_schedule(classroom)
-            if classroom_is_allowed_to_allocate(classroom, classroom_schedule, event):
-                event["has_to_be_allocated"] = False
-                event["classroom"] = classroom["classroom_name"]
-                event["building"] = classroom["building"]
-                partial_allocated.append(event)
-                break
-      if len(partial_allocated) != len(events):
+      try:
+        for event in events:
+          for classroom in classroom_list:
+              classroom_schedule = get_classroom_schedule(classroom)
+              if classroom_is_allowed_to_allocate(classroom, classroom_schedule, event):
+                  event["has_to_be_allocated"] = False
+                  event["classroom"] = classroom["classroom_name"]
+                  event["building"] = classroom["building"]
+                  partial_allocated.append(event)
+                  break
+        if len(partial_allocated) != len(events):
+          unallocated_events.extend(events)
+        else:
+          for event in partial_allocated:
+            filter = {"subject_code" : subject_code, "class_code" : class_code, "week_day": event["week_day"], "start_time" : event["start_time"]}
+            query = {"$set": {"has_to_be_allocated" : False, "classroom" : event["classroom"], "building" : event["building"]}}
+            events_collection.update_one(filter, query)
+            allocated_events.append(event)
+      except Exception as ex:
+        print(str(ex))
         unallocated_events.extend(events)
-      else:
-        for event in partial_allocated:
-          filter = {"subject_code" : subject_code, "class_code" : class_code, "week_day": event["week_day"], "start_time" : event["start_time"]}
-          query = {"$set": {"has_to_be_allocated" : False, "classroom" : event["classroom"], "building" : event["building"]}}
-          events_collection.update_one(filter, query)
-          allocated_events.append(event)
 
   return (allocated_events, unallocated_events)
