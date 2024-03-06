@@ -63,7 +63,7 @@ def save_new_allocation():
     try:
         username = request.user.get("Username")
         result = events.update_many(
-            {"created_by": username, "ignore_to_allocate" : False},
+            {"created_by": username, "ignore_to_allocate": False},
             {
                 "$unset": {
                     "building": "",
@@ -96,10 +96,12 @@ def save_new_allocation():
         return {"allocated": allocated_events, "unallocated": unallocated_events}
 
     except ValidationError as err:
+        print(err)
         return {"message": err.messages}, 400
 
     except Exception as ex:
-        return {"message": "Erro ao calcular alocação", "error": str(ex)}, 500
+        print(str(ex))
+        return {"message": str(ex)}, 500
 
 
 @event_blueprint.route("load", methods=["GET"])
@@ -226,6 +228,19 @@ def edit_class_allocation(subject_code, class_code):
         result = events.update_many(filter, query)
 
         return dumps(result.matched_count)
+
+    except Exception as ex:
+        print(ex)
+        return {"message": str(ex)}, 500
+
+
+@event_blueprint.route("delete-all-events", methods=["DELETE"])
+def delete_all_events():
+    try:
+        username = request.user.get("Username")
+        filter = {"created_by": username}
+        result = events.delete_many(filter)
+        return dumps(result.deleted_count)
 
     except Exception as ex:
         print(ex)
