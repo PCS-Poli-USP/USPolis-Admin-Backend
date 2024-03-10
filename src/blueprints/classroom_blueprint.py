@@ -5,6 +5,8 @@ from flasgger import swag_from
 from flask import Blueprint, request
 from marshmallow import ValidationError
 from pymongo.errors import DuplicateKeyError, PyMongoError
+from src.repository.building_repository import BuildingRepository
+from src.repository.user_repository import UserRepository
 
 from src.common.utils.classroom.classroom_mapper import get_classroom_schedule
 
@@ -29,6 +31,8 @@ classrooms = database["classrooms"]
 events = database["events"]
 classrooms_repository = ClassroomsRepository()
 events_repository = EventsRepository()
+user_repository = UserRepository()
+building_repository = BuildingRepository()
 
 # classroom_name not unique
 # classrooms.create_index({ "classroom_name" : 1, "building" : 1 }, unique=True)
@@ -74,13 +78,31 @@ def get_all_classrooms_schedules():
 @swag_from(f"{yaml_files}/create_classroom.yml")
 def create_classroom():
     try:
+        username = request.user.get("Username")
+        logged_user = user_repository.get_by_username(username)
+        if logged_user is None:
+            return {"message": "User not found"}, 404
+
+        logged_user_building_ids = [
+            str(building["_id"]) for building in logged_user["buildings"]
+        ]
+        logged_user_is_admin = user_repository.is_admin(username)
+
         classroom_schema.load(request.json)
-        dict_request_body = request.json
+        payload = request.json
 
-        dict_request_body["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-        dict_request_body["created_by"] = request.user.get("Username")
+        building_name = payload["building"]
+        building = building_repository.get_by_name(building_name)
+        if building is None:
+            return {"message": "Building not found"}, 404
+        building_id = str(building["_id"])
+        if building_id not in logged_user_building_ids and not logged_user_is_admin:
+            return {"message": "You don't have permission to access this building"}, 403
 
-        result = classrooms.insert_one(dict_request_body)
+        payload["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
+        payload["created_by"] = request.user.get("Username")
+
+        result = classrooms.insert_one(payload)
 
         return dumps(result.inserted_id)
 
