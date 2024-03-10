@@ -311,8 +311,276 @@
             "subject_code": "PEA3301"
         }
     ],
-    "PEA3306": [],
-    "PEA3311": [],
+    "PEA3306": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "(R) Viviane Cristine Silva"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 82,
+            "subscribers": 70,
+            "pendings": 2,
+            "enrolled": 63,
+            "subject_name": "Conversão Eletromecânica de Energia",
+            "subject_code": "PEA3306"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "(R) Viviane Cristine Silva"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 82,
+            "subscribers": 70,
+            "pendings": 2,
+            "enrolled": 63,
+            "subject_name": "Conversão Eletromecânica de Energia",
+            "subject_code": "PEA3306"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "(R) Luiz Lebensztajn"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 77,
+            "subscribers": 71,
+            "pendings": 6,
+            "enrolled": 65,
+            "subject_name": "Conversão Eletromecânica de Energia",
+            "subject_code": "PEA3306"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "(R) Luiz Lebensztajn"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 77,
+            "subscribers": 71,
+            "pendings": 6,
+            "enrolled": 65,
+            "subject_name": "Conversão Eletromecânica de Energia",
+            "subject_code": "PEA3306"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "Luiz Natal Rossi"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 73,
+            "subscribers": 71,
+            "pendings": 4,
+            "enrolled": 65,
+            "subject_name": "Conversão Eletromecânica de Energia",
+            "subject_code": "PEA3306"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "Luiz Natal Rossi"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 73,
+            "subscribers": 71,
+            "pendings": 4,
+            "enrolled": 65,
+            "subject_name": "Conversão Eletromecânica de Energia",
+            "subject_code": "PEA3306"
+        }
+    ],
+    "PEA3311": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "Maurício Barbosa de Camargo Salles"
+            ],
+            "start_time": "09:20",
+            "end_time": "12:00",
+            "vacancies": 20,
+            "subscribers": 17,
+            "pendings": 0,
+            "enrolled": 17,
+            "subject_name": "Laboratório de Conversão Eletromecânica de Energia",
+            "subject_code": "PEA3311"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "Cicero Couto de Moraes"
+            ],
+            "start_time": "09:20",
+            "end_time": "12:00",
+            "vacancies": 20,
+            "subscribers": 16,
+            "pendings": 0,
+            "enrolled": 16,
+            "subject_name": "Laboratório de Conversão Eletromecânica de Energia",
+            "subject_code": "PEA3311"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "(R) Viviane Cristine Silva"
+            ],
+            "start_time": "15:00",
+            "end_time": "17:40",
+            "vacancies": 20,
+            "subscribers": 15,
+            "pendings": 0,
+            "enrolled": 15,
+            "subject_name": "Laboratório de Conversão Eletromecânica de Energia",
+            "subject_code": "PEA3311"
+        },
+        {
+            "class_code": "2024105",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "Ivan Eduardo Chabu"
+            ],
+            "start_time": "15:00",
+            "end_time": "17:40",
+            "vacancies": 20,
+            "subscribers": 17,
+            "pendings": 3,
+            "enrolled": 14,
+            "subject_name": "Laboratório de Conversão Eletromecânica de Energia",
+            "subject_code": "PEA3311"
+        },
+        {
+            "class_code": "2024106",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "Juan Carlos Cebrian Amasifen"
+            ],
+            "start_time": "15:00",
+            "end_time": "17:40",
+            "vacancies": 20,
+            "subscribers": 15,
+            "pendings": 0,
+            "enrolled": 15,
+            "subject_name": "Laboratório de Conversão Eletromecânica de Energia",
+            "subject_code": "PEA3311"
+        },
+        {
+            "class_code": "2024107",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "Maurício Barbosa de Camargo Salles"
+            ],
+            "start_time": "15:00",
+            "end_time": "17:40",
+            "vacancies": 20,
+            "subscribers": 16,
+            "pendings": 1,
+            "enrolled": 15,
+            "subject_name": "Laboratório de Conversão Eletromecânica de Energia",
+            "subject_code": "PEA3311"
+        },
+        {
+            "class_code": "2024108",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "(R) Luiz Lebensztajn"
+            ],
+            "start_time": "15:00",
+            "end_time": "17:40",
+            "vacancies": 20,
+            "subscribers": 17,
+            "pendings": 1,
+            "enrolled": 16,
+            "subject_name": "Laboratório de Conversão Eletromecânica de Energia",
+            "subject_code": "PEA3311"
+        },
+        {
+            "class_code": "2024109",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "Maurício Barbosa de Camargo Salles"
+            ],
+            "start_time": "15:00",
+            "end_time": "17:40",
+            "vacancies": 20,
+            "subscribers": 16,
+            "pendings": 4,
+            "enrolled": 12,
+            "subject_name": "Laboratório de Conversão Eletromecânica de Energia",
+            "subject_code": "PEA3311"
+        }
+    ],
     "PEA3388": [
         {
             "class_code": "2024101",
@@ -1611,8 +1879,219 @@
             "subject_code": "PTC3578"
         }
     ],
-    "0323201": [],
-    "PSI3211": [],
+    "0323201": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática",
+            "obs": "EC3",
+            "week_day": "qua",
+            "professors": [
+                "(R) Ronaldo Domingues Mansano"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 27,
+            "subscribers": 8,
+            "pendings": 0,
+            "enrolled": 7,
+            "subject_name": "Laboratório de Projetos em Eletricidade e Eletrônica",
+            "subject_code": "0323201"
+        }
+    ],
+    "PSI3211": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "seg",
+            "professors": [
+                "Miguel Arjona Ramirez"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 71,
+            "subscribers": 69,
+            "pendings": 0,
+            "enrolled": 69,
+            "subject_name": "Circuitos Elétricos I",
+            "subject_code": "PSI3211"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "qua",
+            "professors": [
+                "Miguel Arjona Ramirez"
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 71,
+            "subscribers": 69,
+            "pendings": 0,
+            "enrolled": 69,
+            "subject_name": "Circuitos Elétricos I",
+            "subject_code": "PSI3211"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "seg",
+            "professors": [
+                "Wagner Luiz Zucchi"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 86,
+            "subscribers": 76,
+            "pendings": 1,
+            "enrolled": 73,
+            "subject_name": "Circuitos Elétricos I",
+            "subject_code": "PSI3211"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "qua",
+            "professors": [
+                "Wagner Luiz Zucchi"
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 86,
+            "subscribers": 76,
+            "pendings": 1,
+            "enrolled": 73,
+            "subject_name": "Circuitos Elétricos I",
+            "subject_code": "PSI3211"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "seg",
+            "professors": [
+                "Elisabete Galeazzo"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 77,
+            "subscribers": 76,
+            "pendings": 1,
+            "enrolled": 75,
+            "subject_name": "Circuitos Elétricos I",
+            "subject_code": "PSI3211"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "qua",
+            "professors": [
+                "Elisabete Galeazzo"
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 77,
+            "subscribers": 76,
+            "pendings": 1,
+            "enrolled": 75,
+            "subject_name": "Circuitos Elétricos I",
+            "subject_code": "PSI3211"
+        },
+        {
+            "class_code": "2024104",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "seg",
+            "professors": [
+                ""
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 0,
+            "subscribers": 0,
+            "pendings": 0,
+            "enrolled": 0,
+            "subject_name": "Circuitos Elétricos I",
+            "subject_code": "PSI3211"
+        },
+        {
+            "class_code": "2024104",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "qua",
+            "professors": [
+                ""
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 0,
+            "subscribers": 0,
+            "pendings": 0,
+            "enrolled": 0,
+            "subject_name": "Circuitos Elétricos I",
+            "subject_code": "PSI3211"
+        },
+        {
+            "class_code": "2024105",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "(R) Magno Teófilo Madeira da Silva"
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 85,
+            "subscribers": 86,
+            "pendings": 0,
+            "enrolled": 84,
+            "subject_name": "Circuitos Elétricos I",
+            "subject_code": "PSI3211"
+        },
+        {
+            "class_code": "2024105",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "(R) Magno Teófilo Madeira da Silva"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 85,
+            "subscribers": 86,
+            "pendings": 0,
+            "enrolled": 84,
+            "subject_name": "Circuitos Elétricos I",
+            "subject_code": "PSI3211"
+        }
+    ],
     "PSI3213": [
         {
             "class_code": "2024101",
@@ -1653,7 +2132,122 @@
             "subject_code": "PSI3213"
         }
     ],
-    "PSI3321": [],
+    "PSI3321": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "ter",
+            "professors": [
+                "(R) Antonio Carlos Seabra"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 64,
+            "subscribers": 59,
+            "pendings": 4,
+            "enrolled": 55,
+            "subject_name": "Eletrônica I",
+            "subject_code": "PSI3321"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "sex",
+            "professors": [
+                "(R) Antonio Carlos Seabra"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 64,
+            "subscribers": 59,
+            "pendings": 4,
+            "enrolled": 55,
+            "subject_name": "Eletrônica I",
+            "subject_code": "PSI3321"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "ter",
+            "professors": [
+                "(R) Armando Antonio Maria Lagana"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 63,
+            "subscribers": 45,
+            "pendings": 1,
+            "enrolled": 44,
+            "subject_name": "Eletrônica I",
+            "subject_code": "PSI3321"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "sex",
+            "professors": [
+                "(R) Armando Antonio Maria Lagana"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 63,
+            "subscribers": 45,
+            "pendings": 1,
+            "enrolled": 44,
+            "subject_name": "Eletrônica I",
+            "subject_code": "PSI3321"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "ter",
+            "professors": [
+                "Marcelo Knorich Zuffo"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 63,
+            "subscribers": 40,
+            "pendings": 2,
+            "enrolled": 38,
+            "subject_name": "Eletrônica I",
+            "subject_code": "PSI3321"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "sex",
+            "professors": [
+                "Marcelo Knorich Zuffo"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 63,
+            "subscribers": 40,
+            "pendings": 2,
+            "enrolled": 38,
+            "subject_name": "Eletrônica I",
+            "subject_code": "PSI3321"
+        }
+    ],
     "PSI3322": [
         {
             "class_code": "2024101",

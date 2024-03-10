@@ -1,0 +1,118 @@
+{
+    "PSI3321": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "ter",
+            "professors": [
+                "(R) Antonio Carlos Seabra"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 64,
+            "subscribers": 59,
+            "pendings": 4,
+            "enrolled": 55,
+            "subject_name": "Eletrônica I",
+            "subject_code": "PSI3321"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "sex",
+            "professors": [
+                "(R) Antonio Carlos Seabra"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 64,
+            "subscribers": 59,
+            "pendings": 4,
+            "enrolled": 55,
+            "subject_name": "Eletrônica I",
+            "subject_code": "PSI3321"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "ter",
+            "professors": [
+                "(R) Armando Antonio Maria Lagana"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 63,
+            "subscribers": 45,
+            "pendings": 1,
+            "enrolled": 44,
+            "subject_name": "Eletrônica I",
+            "subject_code": "PSI3321"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "sex",
+            "professors": [
+                "(R) Armando Antonio Maria Lagana"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 63,
+            "subscribers": 45,
+            "pendings": 1,
+            "enrolled": 44,
+            "subject_name": "Eletrônica I",
+            "subject_code": "PSI3321"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "ter",
+            "professors": [
+                "Marcelo Knorich Zuffo"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 63,
+            "subscribers": 40,
+            "pendings": 2,
+            "enrolled": 38,
+            "subject_name": "Eletrônica I",
+            "subject_code": "PSI3321"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "sex",
+            "professors": [
+                "Marcelo Knorich Zuffo"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 63,
+            "subscribers": 40,
+            "pendings": 2,
+            "enrolled": 38,
+            "subject_name": "Eletrônica I",
+            "subject_code": "PSI3321"
+        }
+    ]
+}

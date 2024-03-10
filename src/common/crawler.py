@@ -54,6 +54,8 @@ class JupiterCrawler:
     def __build_events_from_class_div(self, class_div):
         result = []
         info_tables = class_div.find_all("table")
+        if len(info_tables) == 4:
+            info_tables.pop(2)
         if len(info_tables) != 3:
             return []
         general_info = self.__get_general_info(info_tables)
@@ -145,18 +147,22 @@ class JupiterCrawler:
         }
         student_numbers_table = info_tables[2]
         student_numbers_rows = student_numbers_table.find_all("tr")
+        
+        # drop the first row, which is the header:
         student_numbers_rows_dropped = student_numbers_rows[1:]
 
         filter = {"class": "txt_arial_8pt_black"}
         for row in student_numbers_rows_dropped:
             data = row.find_all("span", attrs=filter)
 
-            try:
-                if len(data) != 5:
-                    raise Exception
-
-            except:
+            # The filter is of black text. If the data is empty, it means that the text on
+            # the row is not black, so it should be ignored
+            if data == []:
                 continue
+            
+            if len(data) == 6:
+                # drop the first column, which is an empty one:
+                data.pop(0)
 
             vacancies_text = data[1].get_text(strip=True)
             subscribers_text = data[2].get_text(strip=True)
@@ -185,3 +191,8 @@ class JupiterCrawler:
         self.subject_name = subject.get_text().replace(
             f"Disciplina: {self.subject_code} - ", ""
         )
+
+if __name__ == "__main__":
+    # result = JupiterCrawler.crawl_subject_static("PEA3306")
+    result = JupiterCrawler.crawl_subject_static("PSI3321")
+    print(result)
