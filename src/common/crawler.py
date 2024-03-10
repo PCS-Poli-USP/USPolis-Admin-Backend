@@ -193,6 +193,5 @@ class JupiterCrawler:
         )
 
 if __name__ == "__main__":
-    # result = JupiterCrawler.crawl_subject_static("PEA3306")
-    result = JupiterCrawler.crawl_subject_static("PSI3321")
+    result = JupiterCrawler.crawl_subject_static("PEA3306")
     print(result)
