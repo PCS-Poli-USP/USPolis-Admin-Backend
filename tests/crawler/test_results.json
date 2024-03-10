@@ -1,0 +1,4411 @@
+{
+    "PCS3111": [
+        {
+            "class_code": "2024109",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática",
+            "obs": "RE-OF",
+            "week_day": "qua",
+            "professors": [
+                "(R) Fabio Levy Siqueira",
+                "(R) Jaime Simão Sichman"
+            ],
+            "start_time": "08:20",
+            "end_time": "11:00",
+            "vacancies": 22,
+            "subscribers": 10,
+            "pendings": 0,
+            "enrolled": 10,
+            "subject_name": "Laboratório de Programação Orientada a Objetos para Engenharia Elétrica",
+            "subject_code": "PCS3111"
+        },
+        {
+            "class_code": "2024110",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática",
+            "obs": "RE-OF",
+            "week_day": "sex",
+            "professors": [
+                "(R) Fabio Levy Siqueira",
+                "(R) Jaime Simão Sichman"
+            ],
+            "start_time": "08:20",
+            "end_time": "11:00",
+            "vacancies": 22,
+            "subscribers": 9,
+            "pendings": 0,
+            "enrolled": 9,
+            "subject_name": "Laboratório de Programação Orientada a Objetos para Engenharia Elétrica",
+            "subject_code": "PCS3111"
+        }
+    ],
+    "PEA3100": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "Jose Aquiles Baesso Grimoni"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 94,
+            "subscribers": 52,
+            "pendings": 0,
+            "enrolled": 52,
+            "subject_name": "Energia, Meio Ambiente e Sustentabilidade",
+            "subject_code": "PEA3100"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "Jose Aquiles Baesso Grimoni"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 94,
+            "subscribers": 52,
+            "pendings": 0,
+            "enrolled": 52,
+            "subject_name": "Energia, Meio Ambiente e Sustentabilidade",
+            "subject_code": "PEA3100"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "Sérgio Luiz Pereira"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 127,
+            "subscribers": 69,
+            "pendings": 0,
+            "enrolled": 69,
+            "subject_name": "Energia, Meio Ambiente e Sustentabilidade",
+            "subject_code": "PEA3100"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "Sérgio Luiz Pereira"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 127,
+            "subscribers": 69,
+            "pendings": 0,
+            "enrolled": 69,
+            "subject_name": "Energia, Meio Ambiente e Sustentabilidade",
+            "subject_code": "PEA3100"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "Juan Carlos Cebrian Amasifen"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 127,
+            "subscribers": 48,
+            "pendings": 0,
+            "enrolled": 46,
+            "subject_name": "Energia, Meio Ambiente e Sustentabilidade",
+            "subject_code": "PEA3100"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "Juan Carlos Cebrian Amasifen"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 127,
+            "subscribers": 48,
+            "pendings": 0,
+            "enrolled": 46,
+            "subject_name": "Energia, Meio Ambiente e Sustentabilidade",
+            "subject_code": "PEA3100"
+        }
+    ],
+    "PEA3301": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "(R) Silvio Giuseppe Di Santo"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 63,
+            "subscribers": 63,
+            "pendings": 3,
+            "enrolled": 55,
+            "subject_name": "Introdução aos Sistemas de Potência",
+            "subject_code": "PEA3301"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "(R) Silvio Giuseppe Di Santo"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 63,
+            "subscribers": 63,
+            "pendings": 3,
+            "enrolled": 55,
+            "subject_name": "Introdução aos Sistemas de Potência",
+            "subject_code": "PEA3301"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "Carlos Eduardo de Morais Pereira"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 60,
+            "subscribers": 65,
+            "pendings": 2,
+            "enrolled": 54,
+            "subject_name": "Introdução aos Sistemas de Potência",
+            "subject_code": "PEA3301"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "Carlos Eduardo de Morais Pereira"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 60,
+            "subscribers": 65,
+            "pendings": 2,
+            "enrolled": 54,
+            "subject_name": "Introdução aos Sistemas de Potência",
+            "subject_code": "PEA3301"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "(R) Giovanni Manassero Junior"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 67,
+            "subscribers": 64,
+            "pendings": 0,
+            "enrolled": 63,
+            "subject_name": "Introdução aos Sistemas de Potência",
+            "subject_code": "PEA3301"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "(R) Giovanni Manassero Junior"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 67,
+            "subscribers": 64,
+            "pendings": 0,
+            "enrolled": 63,
+            "subject_name": "Introdução aos Sistemas de Potência",
+            "subject_code": "PEA3301"
+        },
+        {
+            "class_code": "2024104",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "(R) Eduardo Lorenzetti Pellini"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 69,
+            "subscribers": 69,
+            "pendings": 1,
+            "enrolled": 63,
+            "subject_name": "Introdução aos Sistemas de Potência",
+            "subject_code": "PEA3301"
+        },
+        {
+            "class_code": "2024104",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "(R) Eduardo Lorenzetti Pellini"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 69,
+            "subscribers": 69,
+            "pendings": 1,
+            "enrolled": 63,
+            "subject_name": "Introdução aos Sistemas de Potência",
+            "subject_code": "PEA3301"
+        }
+    ],
+    "PEA3306": [],
+    "PEA3311": [],
+    "PEA3388": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "Renato Machado Monaro"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 101,
+            "subscribers": 75,
+            "pendings": 0,
+            "enrolled": 72,
+            "subject_name": "Eletricidade Geral IV",
+            "subject_code": "PEA3388"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "Renato Machado Monaro"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 101,
+            "subscribers": 75,
+            "pendings": 0,
+            "enrolled": 72,
+            "subject_name": "Eletricidade Geral IV",
+            "subject_code": "PEA3388"
+        }
+    ],
+    "PEA3390": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "(R) Giovanni Manassero Junior"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 95,
+            "subscribers": 76,
+            "pendings": 0,
+            "enrolled": 76,
+            "subject_name": "Eletricidade Aplicada I",
+            "subject_code": "PEA3390"
+        }
+    ],
+    "PEA3391": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "Gleison Elias da Silva"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 30,
+            "subscribers": 25,
+            "pendings": 0,
+            "enrolled": 24,
+            "subject_name": "Eletricidade II",
+            "subject_code": "PEA3391"
+        }
+    ],
+    "PEA3395": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "(R) Milana Lima dos Santos"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 69,
+            "subscribers": 54,
+            "pendings": 0,
+            "enrolled": 54,
+            "subject_name": "Eletrotécnica Geral",
+            "subject_code": "PEA3395"
+        }
+    ],
+    "PEA3400": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "(R) Ivan Eduardo Chabu"
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 62,
+            "subscribers": 23,
+            "pendings": 0,
+            "enrolled": 23,
+            "subject_name": "Máquinas Elétricas I",
+            "subject_code": "PEA3400"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "(R) Ivan Eduardo Chabu"
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 62,
+            "subscribers": 23,
+            "pendings": 0,
+            "enrolled": 23,
+            "subject_name": "Máquinas Elétricas I",
+            "subject_code": "PEA3400"
+        }
+    ],
+    "PEA3402": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "(R) Jose Aquiles Baesso Grimoni"
+            ],
+            "start_time": "16:50",
+            "end_time": "18:30",
+            "vacancies": 66,
+            "subscribers": 50,
+            "pendings": 1,
+            "enrolled": 47,
+            "subject_name": "Instalações Elétricas",
+            "subject_code": "PEA3402"
+        }
+    ],
+    "PEA3410": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "(R) Luiz Cera Zanetta Junior"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 70,
+            "subscribers": 26,
+            "pendings": 0,
+            "enrolled": 20,
+            "subject_name": "Sistemas de Potência I",
+            "subject_code": "PEA3410"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "(R) Luiz Cera Zanetta Junior"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 70,
+            "subscribers": 26,
+            "pendings": 0,
+            "enrolled": 20,
+            "subject_name": "Sistemas de Potência I",
+            "subject_code": "PEA3410"
+        }
+    ],
+    "PEA3411": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "(R) Eduardo Lorenzetti Pellini"
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 65,
+            "subscribers": 36,
+            "pendings": 3,
+            "enrolled": 30,
+            "subject_name": "Introdução à Automação de Sistemas Elétricos",
+            "subject_code": "PEA3411"
+        }
+    ],
+    "PEA3413": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "(R) Cicero Couto de Moraes"
+            ],
+            "start_time": "16:50",
+            "end_time": "18:30",
+            "vacancies": 66,
+            "subscribers": 52,
+            "pendings": 2,
+            "enrolled": 48,
+            "subject_name": "Automação de Sistemas Industriais",
+            "subject_code": "PEA3413"
+        }
+    ],
+    "PEA3420": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "André Luiz Veiga Gimenes"
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 58,
+            "subscribers": 41,
+            "pendings": 1,
+            "enrolled": 37,
+            "subject_name": "Produção de Energia",
+            "subject_code": "PEA3420"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "André Luiz Veiga Gimenes"
+            ],
+            "start_time": "16:50",
+            "end_time": "18:30",
+            "vacancies": 58,
+            "subscribers": 41,
+            "pendings": 1,
+            "enrolled": 37,
+            "subject_name": "Produção de Energia",
+            "subject_code": "PEA3420"
+        }
+    ],
+    "PEA3450": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "(R) André Luiz Veiga Gimenes",
+                "(R) Jose Aquiles Baesso Grimoni",
+                "Juan Carlos Cebrian Amasifen"
+            ],
+            "start_time": "08:10",
+            "end_time": "10:00",
+            "vacancies": 90,
+            "subscribers": 26,
+            "pendings": 1,
+            "enrolled": 3,
+            "subject_name": "Coleta e Armazenamento de Energia",
+            "subject_code": "PEA3450"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "(R) Jose Aquiles Baesso Grimoni"
+            ],
+            "start_time": "08:10",
+            "end_time": "10:00",
+            "vacancies": 90,
+            "subscribers": 26,
+            "pendings": 1,
+            "enrolled": 3,
+            "subject_name": "Coleta e Armazenamento de Energia",
+            "subject_code": "PEA3450"
+        }
+    ],
+    "PEA3489": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática Vinculada",
+            "obs": "2024150",
+            "week_day": "ter",
+            "professors": [
+                "(R) Lourenço Matakas Junior",
+                "(R) Walter Kaiser",
+                "(R) Wilson Komatsu"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 19,
+            "subscribers": 15,
+            "pendings": 1,
+            "enrolled": 14,
+            "subject_name": "Eletrônica de Potência I",
+            "subject_code": "PEA3489"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática Vinculada",
+            "obs": "2024150",
+            "week_day": "ter",
+            "professors": [
+                "(R) Lourenço Matakas Junior",
+                "(R) Walter Kaiser",
+                "(R) Wilson Komatsu"
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 19,
+            "subscribers": 11,
+            "pendings": 0,
+            "enrolled": 11,
+            "subject_name": "Eletrônica de Potência I",
+            "subject_code": "PEA3489"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática Vinculada",
+            "obs": "2024150",
+            "week_day": "ter",
+            "professors": [
+                "(R) Lourenço Matakas Junior",
+                "(R) Walter Kaiser",
+                "(R) Wilson Komatsu"
+            ],
+            "start_time": "16:50",
+            "end_time": "18:30",
+            "vacancies": 17,
+            "subscribers": 5,
+            "pendings": 1,
+            "enrolled": 4,
+            "subject_name": "Eletrônica de Potência I",
+            "subject_code": "PEA3489"
+        },
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica Vinculada",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "(R) Lourenço Matakas Junior",
+                "(R) Wilson Komatsu"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 60,
+            "subscribers": 30,
+            "pendings": 2,
+            "enrolled": 28,
+            "subject_name": "Eletrônica de Potência I",
+            "subject_code": "PEA3489"
+        }
+    ],
+    "PEA3496": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                ""
+            ],
+            "start_time": "13:10",
+            "end_time": "15:50",
+            "vacancies": 57,
+            "subscribers": 59,
+            "pendings": 0,
+            "enrolled": 51,
+            "subject_name": "Energia e Meio Ambiente: Sistemas Energéticos e seus Efeitos Ambientais",
+            "subject_code": "PEA3496"
+        }
+    ],
+    "PEA3503": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "(R) Luiz Cera Zanetta Junior"
+            ],
+            "start_time": "10:10",
+            "end_time": "11:50",
+            "vacancies": 52,
+            "subscribers": 9,
+            "pendings": 0,
+            "enrolled": 9,
+            "subject_name": "Subestações e Equipamentos",
+            "subject_code": "PEA3503"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "(R) Luiz Cera Zanetta Junior"
+            ],
+            "start_time": "10:10",
+            "end_time": "11:50",
+            "vacancies": 52,
+            "subscribers": 9,
+            "pendings": 0,
+            "enrolled": 9,
+            "subject_name": "Subestações e Equipamentos",
+            "subject_code": "PEA3503"
+        }
+    ],
+    "PTC3307": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "2 vagas alunos intercâmbio Poli",
+            "week_day": "seg",
+            "professors": [
+                "Juan Luis Poletti Soto"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 84,
+            "subscribers": 78,
+            "pendings": 2,
+            "enrolled": 75,
+            "subject_name": "Sistemas e Sinais",
+            "subject_code": "PTC3307"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "2 vagas alunos intercâmbio Poli",
+            "week_day": "qua",
+            "professors": [
+                "Juan Luis Poletti Soto"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 84,
+            "subscribers": 78,
+            "pendings": 2,
+            "enrolled": 75,
+            "subject_name": "Sistemas e Sinais",
+            "subject_code": "PTC3307"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "(R) Henrique Takachi Moriya"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 88,
+            "subscribers": 81,
+            "pendings": 1,
+            "enrolled": 77,
+            "subject_name": "Sistemas e Sinais",
+            "subject_code": "PTC3307"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "(R) Henrique Takachi Moriya"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 88,
+            "subscribers": 81,
+            "pendings": 1,
+            "enrolled": 77,
+            "subject_name": "Sistemas e Sinais",
+            "subject_code": "PTC3307"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "Murilo Hiroaki Seko"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 88,
+            "subscribers": 80,
+            "pendings": 4,
+            "enrolled": 76,
+            "subject_name": "Sistemas e Sinais",
+            "subject_code": "PTC3307"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "Murilo Hiroaki Seko"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 88,
+            "subscribers": 80,
+            "pendings": 4,
+            "enrolled": 76,
+            "subject_name": "Sistemas e Sinais",
+            "subject_code": "PTC3307"
+        }
+    ],
+    "PTC3405": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "(R) Marcio Eisencraft"
+            ],
+            "start_time": "14:00",
+            "end_time": "15:40",
+            "vacancies": 48,
+            "subscribers": 27,
+            "pendings": 0,
+            "enrolled": 27,
+            "subject_name": "Processos Estocásticos",
+            "subject_code": "PTC3405"
+        },
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "(R) Marcio Eisencraft"
+            ],
+            "start_time": "15:50",
+            "end_time": "17:30",
+            "vacancies": 48,
+            "subscribers": 27,
+            "pendings": 0,
+            "enrolled": 27,
+            "subject_name": "Processos Estocásticos",
+            "subject_code": "PTC3405"
+        }
+    ],
+    "PTC3424": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "(R) Maria das Dores dos Santos Miranda"
+            ],
+            "start_time": "15:50",
+            "end_time": "17:30",
+            "vacancies": 45,
+            "subscribers": 21,
+            "pendings": 0,
+            "enrolled": 21,
+            "subject_name": "Processamento Digital de Sinais",
+            "subject_code": "PTC3424"
+        },
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "(R) Maria das Dores dos Santos Miranda"
+            ],
+            "start_time": "14:00",
+            "end_time": "15:40",
+            "vacancies": 45,
+            "subscribers": 21,
+            "pendings": 0,
+            "enrolled": 21,
+            "subject_name": "Processamento Digital de Sinais",
+            "subject_code": "PTC3424"
+        }
+    ],
+    "PTC3432": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "(R) Cristiano Magalhaes Panazio"
+            ],
+            "start_time": "15:50",
+            "end_time": "17:30",
+            "vacancies": 45,
+            "subscribers": 26,
+            "pendings": 2,
+            "enrolled": 24,
+            "subject_name": "Teoria das Comunicações",
+            "subject_code": "PTC3432"
+        },
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "(R) Cristiano Magalhaes Panazio"
+            ],
+            "start_time": "15:50",
+            "end_time": "17:30",
+            "vacancies": 45,
+            "subscribers": 26,
+            "pendings": 2,
+            "enrolled": 24,
+            "subject_name": "Teoria das Comunicações",
+            "subject_code": "PTC3432"
+        }
+    ],
+    "PTC3444": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "(R) Luiz Cezar Trintinalia",
+                "Murilo Hiroaki Seko"
+            ],
+            "start_time": "14:00",
+            "end_time": "15:40",
+            "vacancies": 47,
+            "subscribers": 18,
+            "pendings": 1,
+            "enrolled": 17,
+            "subject_name": "Antenas e Propagação",
+            "subject_code": "PTC3444"
+        },
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "(R) Luiz Cezar Trintinalia",
+                "Murilo Hiroaki Seko"
+            ],
+            "start_time": "15:50",
+            "end_time": "17:30",
+            "vacancies": 47,
+            "subscribers": 18,
+            "pendings": 1,
+            "enrolled": 17,
+            "subject_name": "Antenas e Propagação",
+            "subject_code": "PTC3444"
+        }
+    ],
+    "PTC3450": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "(R) Marcio Eisencraft"
+            ],
+            "start_time": "14:00",
+            "end_time": "15:40",
+            "vacancies": 46,
+            "subscribers": 27,
+            "pendings": 2,
+            "enrolled": 25,
+            "subject_name": "Redes de Comunicação",
+            "subject_code": "PTC3450"
+        },
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "(R) Marcio Eisencraft"
+            ],
+            "start_time": "14:00",
+            "end_time": "15:40",
+            "vacancies": 46,
+            "subscribers": 27,
+            "pendings": 2,
+            "enrolled": 25,
+            "subject_name": "Redes de Comunicação",
+            "subject_code": "PTC3450"
+        }
+    ],
+    "PTC3527": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "Juan Luis Poletti Soto"
+            ],
+            "start_time": "08:30",
+            "end_time": "11:00",
+            "vacancies": 40,
+            "subscribers": 7,
+            "pendings": 0,
+            "enrolled": 7,
+            "subject_name": "Anteprojeto de Formatura em Telecomunicações",
+            "subject_code": "PTC3527"
+        }
+    ],
+    "PTC3545": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "(R) Phillip Mark Seymour Burt"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 45,
+            "subscribers": 4,
+            "pendings": 1,
+            "enrolled": 3,
+            "subject_name": "Processamento Digital de Sinais II",
+            "subject_code": "PTC3545"
+        },
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "(R) Phillip Mark Seymour Burt"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 45,
+            "subscribers": 4,
+            "pendings": 1,
+            "enrolled": 3,
+            "subject_name": "Processamento Digital de Sinais II",
+            "subject_code": "PTC3545"
+        }
+    ],
+    "PTC3547": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "(R) Guido Stolfi"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 46,
+            "subscribers": 5,
+            "pendings": 0,
+            "enrolled": 5,
+            "subject_name": "Codificação e Transmissão Multimídia",
+            "subject_code": "PTC3547"
+        },
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                ""
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 46,
+            "subscribers": 5,
+            "pendings": 0,
+            "enrolled": 5,
+            "subject_name": "Codificação e Transmissão Multimídia",
+            "subject_code": "PTC3547"
+        }
+    ],
+    "PTC3548": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "SÓ SE MATRICULE NESTA DISCIPLINA DE SEU CURSO FOR TELECOMUNICAÇÕES (PTC), ESTA DISCIPLINA PODE SER CANCELADA EM MARÇO! FIQUEM ATENTOS!",
+            "week_day": "ter",
+            "professors": [
+                "(R) Luiz Cezar Trintinalia"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 35,
+            "subscribers": 2,
+            "pendings": 0,
+            "enrolled": 2,
+            "subject_name": "Introdução à Compatibilidade Eletromagnética",
+            "subject_code": "PTC3548"
+        },
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "SÓ SE MATRICULE NESTA DISCIPLINA DE SEU CURSO FOR TELECOMUNICAÇÕES (PTC), ESTA DISCIPLINA PODE SER CANCELADA EM MARÇO! FIQUEM ATENTOS!",
+            "week_day": "qui",
+            "professors": [
+                "(R) Luiz Cezar Trintinalia"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 35,
+            "subscribers": 2,
+            "pendings": 0,
+            "enrolled": 2,
+            "subject_name": "Introdução à Compatibilidade Eletromagnética",
+            "subject_code": "PTC3548"
+        }
+    ],
+    "PTC3007": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-01-08",
+            "end_period": "2024-04-19",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "(R) Maria das Dores dos Santos Miranda"
+            ],
+            "start_time": "10:20",
+            "end_time": "12:00",
+            "vacancies": 78,
+            "subscribers": 65,
+            "pendings": 0,
+            "enrolled": 64,
+            "subject_name": "Sistemas e Sinais",
+            "subject_code": "PTC3007"
+        },
+        {
+            "class_code": "2024150",
+            "start_period": "2024-01-08",
+            "end_period": "2024-04-19",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "(R) Maria das Dores dos Santos Miranda"
+            ],
+            "start_time": "10:20",
+            "end_time": "12:00",
+            "vacancies": 78,
+            "subscribers": 65,
+            "pendings": 0,
+            "enrolled": 64,
+            "subject_name": "Sistemas e Sinais",
+            "subject_code": "PTC3007"
+        }
+    ],
+    "PTC3413": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "Átila Madureira Bueno"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 52,
+            "subscribers": 44,
+            "pendings": 2,
+            "enrolled": 42,
+            "subject_name": "Controle Multivariável",
+            "subject_code": "PTC3413"
+        },
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "Átila Madureira Bueno"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 52,
+            "subscribers": 44,
+            "pendings": 2,
+            "enrolled": 42,
+            "subject_name": "Controle Multivariável",
+            "subject_code": "PTC3413"
+        }
+    ],
+    "PTC3415": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "(R) Claudio Garcia"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 52,
+            "subscribers": 47,
+            "pendings": 0,
+            "enrolled": 45,
+            "subject_name": "Modelagem e Simulação",
+            "subject_code": "PTC3415"
+        },
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "(R) Claudio Garcia"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 52,
+            "subscribers": 47,
+            "pendings": 0,
+            "enrolled": 45,
+            "subject_name": "Modelagem e Simulação",
+            "subject_code": "PTC3415"
+        }
+    ],
+    "PTC3419": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "(R) Ricardo Paulino Marques"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 53,
+            "subscribers": 47,
+            "pendings": 0,
+            "enrolled": 45,
+            "subject_name": "Controle Digital",
+            "subject_code": "PTC3419"
+        },
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "(R) Ricardo Paulino Marques"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 53,
+            "subscribers": 47,
+            "pendings": 0,
+            "enrolled": 45,
+            "subject_name": "Controle Digital",
+            "subject_code": "PTC3419"
+        }
+    ],
+    "PTC3422": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "(R) Luiz Henrique Alves Monteiro"
+            ],
+            "start_time": "14:00",
+            "end_time": "17:40",
+            "vacancies": 35,
+            "subscribers": 16,
+            "pendings": 1,
+            "enrolled": 13,
+            "subject_name": "Modelos de Sistemas Biológicos",
+            "subject_code": "PTC3422"
+        }
+    ],
+    "PTC3440": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "(R) Oswaldo Luiz do Valle Costa"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 52,
+            "subscribers": 34,
+            "pendings": 1,
+            "enrolled": 33,
+            "subject_name": "Modelos Probabilísticos",
+            "subject_code": "PTC3440"
+        },
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "(R) Oswaldo Luiz do Valle Costa"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 52,
+            "subscribers": 34,
+            "pendings": 1,
+            "enrolled": 33,
+            "subject_name": "Modelos Probabilísticos",
+            "subject_code": "PTC3440"
+        }
+    ],
+    "PTC3441": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "(R) Fabio de Oliveira Fialho"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 50,
+            "subscribers": 13,
+            "pendings": 0,
+            "enrolled": 13,
+            "subject_name": "Modelagem e Controle de Manipuladores Robóticos",
+            "subject_code": "PTC3441"
+        },
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "(R) Fabio de Oliveira Fialho"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 50,
+            "subscribers": 13,
+            "pendings": 0,
+            "enrolled": 13,
+            "subject_name": "Modelagem e Controle de Manipuladores Robóticos",
+            "subject_code": "PTC3441"
+        }
+    ],
+    "PTC3575": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "(R) José Roberto Castilho Piqueira"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 50,
+            "subscribers": 4,
+            "pendings": 1,
+            "enrolled": 3,
+            "subject_name": "Dinâmica não Linear",
+            "subject_code": "PTC3575"
+        },
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "(R) José Roberto Castilho Piqueira"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 50,
+            "subscribers": 4,
+            "pendings": 1,
+            "enrolled": 3,
+            "subject_name": "Dinâmica não Linear",
+            "subject_code": "PTC3575"
+        }
+    ],
+    "PTC3520": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "(R) Diego Colón"
+            ],
+            "start_time": "09:20",
+            "end_time": "12:50",
+            "vacancies": 50,
+            "subscribers": 27,
+            "pendings": 0,
+            "enrolled": 26,
+            "subject_name": "Automação da Manufatura",
+            "subject_code": "PTC3520"
+        }
+    ],
+    "PTC3566": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "(R) Felipe Miguel Pait",
+                "Bruno Augusto Angelico"
+            ],
+            "start_time": "09:20",
+            "end_time": "12:50",
+            "vacancies": 50,
+            "subscribers": 24,
+            "pendings": 1,
+            "enrolled": 23,
+            "subject_name": "Tópicos de Controle Avançado",
+            "subject_code": "PTC3566"
+        }
+    ],
+    "PTC3578": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "(R) Ricardo Paulino Marques"
+            ],
+            "start_time": "08:20",
+            "end_time": "12:00",
+            "vacancies": 45,
+            "subscribers": 15,
+            "pendings": 0,
+            "enrolled": 15,
+            "subject_name": "Segurança e licenciamento de instalações nucleares",
+            "subject_code": "PTC3578"
+        }
+    ],
+    "0323201": [],
+    "PSI3211": [],
+    "PSI3213": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3\r\nReof.",
+            "week_day": "seg",
+            "professors": [
+                "João Francisco Justo Filho"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 65,
+            "subscribers": 62,
+            "pendings": 7,
+            "enrolled": 55,
+            "subject_name": "Circuitos Elétricos II",
+            "subject_code": "PSI3213"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3\r\nReof.",
+            "week_day": "qua",
+            "professors": [
+                "João Francisco Justo Filho"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 65,
+            "subscribers": 62,
+            "pendings": 7,
+            "enrolled": 55,
+            "subject_name": "Circuitos Elétricos II",
+            "subject_code": "PSI3213"
+        }
+    ],
+    "PSI3321": [],
+    "PSI3322": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "Reof.",
+            "week_day": "seg",
+            "professors": [
+                "(R) Sebastião Gomes dos Santos Filho"
+            ],
+            "start_time": "18:00",
+            "end_time": "19:40",
+            "vacancies": 69,
+            "subscribers": 70,
+            "pendings": 2,
+            "enrolled": 67,
+            "subject_name": "Eletrônica II",
+            "subject_code": "PSI3322"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "Reof.",
+            "week_day": "qua",
+            "professors": [
+                "(R) Sebastião Gomes dos Santos Filho"
+            ],
+            "start_time": "18:00",
+            "end_time": "19:40",
+            "vacancies": 69,
+            "subscribers": 70,
+            "pendings": 2,
+            "enrolled": 67,
+            "subject_name": "Eletrônica II",
+            "subject_code": "PSI3322"
+        }
+    ],
+    "PSI3421": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-05-03",
+            "type": "Teórica",
+            "obs": "Oferecimento em turma sequencial:\r\n-PSI3421 Será oferecida de Fevereiro a Maio\r\n-PSI3441 Será oferecida de Maio a Julho",
+            "week_day": "ter",
+            "professors": [
+                "(R) João Antonio Martino"
+            ],
+            "start_time": "08:20",
+            "end_time": "10:00",
+            "vacancies": 57,
+            "subscribers": 60,
+            "pendings": 0,
+            "enrolled": 57,
+            "subject_name": "Eletrônica III",
+            "subject_code": "PSI3421"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-05-03",
+            "type": "Teórica",
+            "obs": "Oferecimento em turma sequencial:\r\n-PSI3421 Será oferecida de Fevereiro a Maio\r\n-PSI3441 Será oferecida de Maio a Julho",
+            "week_day": "ter",
+            "professors": [
+                "(R) João Antonio Martino"
+            ],
+            "start_time": "10:10",
+            "end_time": "11:50",
+            "vacancies": 57,
+            "subscribers": 60,
+            "pendings": 0,
+            "enrolled": 57,
+            "subject_name": "Eletrônica III",
+            "subject_code": "PSI3421"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-05-03",
+            "type": "Teórica",
+            "obs": "Oferecimento em turma sequencial:\r\n-PSI3421 Será oferecida de Fevereiro a Maio\r\n-PSI3441 Será oferecida de Maio a Julho",
+            "week_day": "sex",
+            "professors": [
+                "(R) João Antonio Martino"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 57,
+            "subscribers": 60,
+            "pendings": 0,
+            "enrolled": 57,
+            "subject_name": "Eletrônica III",
+            "subject_code": "PSI3421"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-05-03",
+            "type": "Teórica",
+            "obs": "Oferecimento em turma sequencial:\r\n-PSI3421 Será oferecida de Fevereiro a Maio\r\n-PSI3441 Será oferecida de Maio a Julho",
+            "week_day": "sex",
+            "professors": [
+                "(R) João Antonio Martino"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 57,
+            "subscribers": 60,
+            "pendings": 0,
+            "enrolled": 57,
+            "subject_name": "Eletrônica III",
+            "subject_code": "PSI3421"
+        }
+    ],
+    "PSI3431": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "seg",
+            "professors": [
+                "(R) Vitor Heloiz Nascimento"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 66,
+            "subscribers": 62,
+            "pendings": 0,
+            "enrolled": 61,
+            "subject_name": "Processamento Estatístico de Sinais",
+            "subject_code": "PSI3431"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "qua",
+            "professors": [
+                "(R) Vitor Heloiz Nascimento"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 66,
+            "subscribers": 62,
+            "pendings": 0,
+            "enrolled": 61,
+            "subject_name": "Processamento Estatístico de Sinais",
+            "subject_code": "PSI3431"
+        }
+    ],
+    "PSI3441": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-05-04",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "Oferecimento em turma sequencial:\r\n-PSI3421 Será oferecida de Fevereiro a Maio\r\n-PSI3441 Será oferecida de Maio a Julho",
+            "week_day": "ter",
+            "professors": [
+                "(R) Gustavo Pamplona Rehder"
+            ],
+            "start_time": "08:20",
+            "end_time": "10:00",
+            "vacancies": 59,
+            "subscribers": 50,
+            "pendings": 0,
+            "enrolled": 48,
+            "subject_name": "Arquitetura de Sistemas Embarcados",
+            "subject_code": "PSI3441"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-05-04",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "Oferecimento em turma sequencial:\r\n-PSI3421 Será oferecida de Fevereiro a Maio\r\n-PSI3441 Será oferecida de Maio a Julho",
+            "week_day": "ter",
+            "professors": [
+                "(R) Gustavo Pamplona Rehder"
+            ],
+            "start_time": "10:10",
+            "end_time": "11:50",
+            "vacancies": 59,
+            "subscribers": 50,
+            "pendings": 0,
+            "enrolled": 48,
+            "subject_name": "Arquitetura de Sistemas Embarcados",
+            "subject_code": "PSI3441"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-05-04",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "Oferecimento em turma sequencial:\r\n-PSI3421 Será oferecida de Fevereiro a Maio\r\n-PSI3441 Será oferecida de Maio a Julho",
+            "week_day": "sex",
+            "professors": [
+                "(R) Gustavo Pamplona Rehder"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 59,
+            "subscribers": 50,
+            "pendings": 0,
+            "enrolled": 48,
+            "subject_name": "Arquitetura de Sistemas Embarcados",
+            "subject_code": "PSI3441"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-05-04",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "Oferecimento em turma sequencial:\r\n-PSI3421 Será oferecida de Fevereiro a Maio\r\n-PSI3441 Será oferecida de Maio a Julho",
+            "week_day": "sex",
+            "professors": [
+                "(R) Gustavo Pamplona Rehder"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 59,
+            "subscribers": 50,
+            "pendings": 0,
+            "enrolled": 48,
+            "subject_name": "Arquitetura de Sistemas Embarcados",
+            "subject_code": "PSI3441"
+        }
+    ],
+    "PSI3451": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "(R) Ariana Maria da Conceição Lacorte Caniato Serrano",
+                "Bruno Cavalcante de Souza Sanches"
+            ],
+            "start_time": "08:20",
+            "end_time": "12:00",
+            "vacancies": 31,
+            "subscribers": 29,
+            "pendings": 0,
+            "enrolled": 29,
+            "subject_name": "Projeto de Circuitos Lógicos Integrados",
+            "subject_code": "PSI3451"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "(R) Ariana Maria da Conceição Lacorte Caniato Serrano",
+                "Bruno Cavalcante de Souza Sanches"
+            ],
+            "start_time": "13:30",
+            "end_time": "16:50",
+            "vacancies": 30,
+            "subscribers": 30,
+            "pendings": 0,
+            "enrolled": 30,
+            "subject_name": "Projeto de Circuitos Lógicos Integrados",
+            "subject_code": "PSI3451"
+        }
+    ],
+    "PSI3471": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "seg",
+            "professors": [
+                "(R) Hae Yong Kim",
+                "Magno Teófilo Madeira da Silva"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 94,
+            "subscribers": 91,
+            "pendings": 1,
+            "enrolled": 87,
+            "subject_name": "Fundamentos de Sistemas Eletrônicos Inteligentes",
+            "subject_code": "PSI3471"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "qua",
+            "professors": [
+                "(R) Hae Yong Kim",
+                "Magno Teófilo Madeira da Silva"
+            ],
+            "start_time": "11:10",
+            "end_time": "12:50",
+            "vacancies": 94,
+            "subscribers": 91,
+            "pendings": 1,
+            "enrolled": 87,
+            "subject_name": "Fundamentos de Sistemas Eletrônicos Inteligentes",
+            "subject_code": "PSI3471"
+        }
+    ],
+    "PSI3481": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "qua",
+            "professors": [
+                "(R) Fatima Salete Correra",
+                "(R) Walter Jaimes Salcedo"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 69,
+            "subscribers": 64,
+            "pendings": 0,
+            "enrolled": 63,
+            "subject_name": "Sistemas Ópticos e de Micro-ondas",
+            "subject_code": "PSI3481"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "EC-3",
+            "week_day": "sex",
+            "professors": [
+                "(R) Fatima Salete Correra",
+                "(R) Walter Jaimes Salcedo"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 69,
+            "subscribers": 64,
+            "pendings": 0,
+            "enrolled": 63,
+            "subject_name": "Sistemas Ópticos e de Micro-ondas",
+            "subject_code": "PSI3481"
+        }
+    ],
+    "PSI3531": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "(R) Magno Teófilo Madeira da Silva",
+                "(R) Vitor Heloiz Nascimento"
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 33,
+            "subscribers": 13,
+            "pendings": 0,
+            "enrolled": 11,
+            "subject_name": "Processamento de Sinais Aplicado",
+            "subject_code": "PSI3531"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "(R) Magno Teófilo Madeira da Silva",
+                "(R) Vitor Heloiz Nascimento"
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 33,
+            "subscribers": 13,
+            "pendings": 0,
+            "enrolled": 11,
+            "subject_name": "Processamento de Sinais Aplicado",
+            "subject_code": "PSI3531"
+        }
+    ],
+    "PSI3541": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "(R) Sergio Takeo Kofuji"
+            ],
+            "start_time": "16:50",
+            "end_time": "18:30",
+            "vacancies": 51,
+            "subscribers": 30,
+            "pendings": 0,
+            "enrolled": 28,
+            "subject_name": "Sistemas Embarcados Distribuídos",
+            "subject_code": "PSI3541"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "(R) Sergio Takeo Kofuji"
+            ],
+            "start_time": "16:50",
+            "end_time": "18:30",
+            "vacancies": 51,
+            "subscribers": 30,
+            "pendings": 0,
+            "enrolled": 28,
+            "subject_name": "Sistemas Embarcados Distribuídos",
+            "subject_code": "PSI3541"
+        }
+    ],
+    "PSI3552": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "(R) Fernando Josepetti Fonseca"
+            ],
+            "start_time": "13:30",
+            "end_time": "17:10",
+            "vacancies": 22,
+            "subscribers": 10,
+            "pendings": 1,
+            "enrolled": 9,
+            "subject_name": "Processos e Caracterização de Dispositivos Nanoeletrônicos",
+            "subject_code": "PSI3552"
+        }
+    ],
+    "PSI3560": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "Oferecimento em inglês.",
+            "week_day": "ter",
+            "professors": [
+                "(R) Marcio Lobo Netto"
+            ],
+            "start_time": "07:30",
+            "end_time": "11:00",
+            "vacancies": 44,
+            "subscribers": 13,
+            "pendings": 0,
+            "enrolled": 13,
+            "subject_name": "Sistemas Cognitivos",
+            "subject_code": "PSI3560"
+        }
+    ],
+    "PSI3561": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "(R) Armando Antonio Maria Lagana",
+                "(R) Leopoldo Rideki Yoshioka"
+            ],
+            "start_time": "07:30",
+            "end_time": "11:00",
+            "vacancies": 53,
+            "subscribers": 26,
+            "pendings": 1,
+            "enrolled": 25,
+            "subject_name": "Eletrônica Automotiva",
+            "subject_code": "PSI3561"
+        }
+    ],
+    "PSI3581": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "(R) Fatima Salete Correra"
+            ],
+            "start_time": "15:00",
+            "end_time": "18:30",
+            "vacancies": 46,
+            "subscribers": 17,
+            "pendings": 0,
+            "enrolled": 17,
+            "subject_name": "Circuitos de Micro-Ondas",
+            "subject_code": "PSI3581"
+        }
+    ],
+    "PCS3100": [
+        {
+            "class_code": "2024151",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "(R) Edson Satoshi Gomi"
+            ],
+            "start_time": "13:10",
+            "end_time": "16:40",
+            "vacancies": 73,
+            "subscribers": 40,
+            "pendings": 0,
+            "enrolled": 40,
+            "subject_name": "Introdução à Engenharia de Computação",
+            "subject_code": "PCS3100"
+        },
+        {
+            "class_code": "2024152",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "Bruno Abrantes Basseto"
+            ],
+            "start_time": "13:10",
+            "end_time": "16:40",
+            "vacancies": 66,
+            "subscribers": 33,
+            "pendings": 0,
+            "enrolled": 33,
+            "subject_name": "Introdução à Engenharia de Computação",
+            "subject_code": "PCS3100"
+        }
+    ],
+    "PCS3225": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "(R) Edson Satoshi Gomi"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 45,
+            "subscribers": 44,
+            "pendings": 0,
+            "enrolled": 44,
+            "subject_name": "Sistemas Digitais II",
+            "subject_code": "PCS3225"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "(R) Edson Satoshi Gomi"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 45,
+            "subscribers": 44,
+            "pendings": 0,
+            "enrolled": 44,
+            "subject_name": "Sistemas Digitais II",
+            "subject_code": "PCS3225"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "(R) Bruno de Carvalho Albertini"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 45,
+            "subscribers": 45,
+            "pendings": 0,
+            "enrolled": 45,
+            "subject_name": "Sistemas Digitais II",
+            "subject_code": "PCS3225"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "(R) Bruno de Carvalho Albertini"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 45,
+            "subscribers": 45,
+            "pendings": 0,
+            "enrolled": 45,
+            "subject_name": "Sistemas Digitais II",
+            "subject_code": "PCS3225"
+        }
+    ],
+    "PCS3115": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "(R) Glauber De Bona"
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 98,
+            "subscribers": 97,
+            "pendings": 0,
+            "enrolled": 97,
+            "subject_name": "Sistemas Digitais I",
+            "subject_code": "PCS3115"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "(R) Glauber De Bona"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 98,
+            "subscribers": 97,
+            "pendings": 0,
+            "enrolled": 97,
+            "subject_name": "Sistemas Digitais I",
+            "subject_code": "PCS3115"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "(R) Marcos Antonio Simplicio Junior"
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 94,
+            "subscribers": 95,
+            "pendings": 0,
+            "enrolled": 95,
+            "subject_name": "Sistemas Digitais I",
+            "subject_code": "PCS3115"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "(R) Marcos Antonio Simplicio Junior"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 94,
+            "subscribers": 95,
+            "pendings": 0,
+            "enrolled": 95,
+            "subject_name": "Sistemas Digitais I",
+            "subject_code": "PCS3115"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "Bruno Abrantes Basseto"
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 97,
+            "subscribers": 98,
+            "pendings": 0,
+            "enrolled": 97,
+            "subject_name": "Sistemas Digitais I",
+            "subject_code": "PCS3115"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "Bruno Abrantes Basseto"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 97,
+            "subscribers": 98,
+            "pendings": 0,
+            "enrolled": 97,
+            "subject_name": "Sistemas Digitais I",
+            "subject_code": "PCS3115"
+        }
+    ],
+    "PCS3528": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "(R) João Batista Camargo Júnior"
+            ],
+            "start_time": "08:20",
+            "end_time": "12:00",
+            "vacancies": 18,
+            "subscribers": 14,
+            "pendings": 0,
+            "enrolled": 12,
+            "subject_name": "Análise de Desempenho de Sistemas Computacionais",
+            "subject_code": "PCS3528"
+        }
+    ],
+    "PCS3544": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "(R) Marcos Antonio Simplicio Junior"
+            ],
+            "start_time": "14:00",
+            "end_time": "17:40",
+            "vacancies": 26,
+            "subscribers": 22,
+            "pendings": 0,
+            "enrolled": 22,
+            "subject_name": "Segurança da Informação",
+            "subject_code": "PCS3544"
+        }
+    ],
+    "PCS3519": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "Período de oferecimento: JANEIRO a ABRIL.",
+            "week_day": "ter",
+            "professors": [
+                "(R) Jorge Luis Risco Becerra"
+            ],
+            "start_time": "08:20",
+            "end_time": "12:00",
+            "vacancies": 16,
+            "subscribers": 11,
+            "pendings": 0,
+            "enrolled": 11,
+            "subject_name": "Aplicações e Tecnologias em Automação",
+            "subject_code": "PCS3519"
+        }
+    ],
+    "PCS3818": [
+        {
+            "class_code": "2024151",
+            "start_period": "2024-01-08",
+            "end_period": "2024-04-19",
+            "type": "Teórica",
+            "obs": "Período de oferecimento: JANEIRO A ABRIL.",
+            "week_day": "sex",
+            "professors": [
+                "(R) Selma Shin Shimizu Melnikoff"
+            ],
+            "start_time": "08:20",
+            "end_time": "12:00",
+            "vacancies": 31,
+            "subscribers": 25,
+            "pendings": 0,
+            "enrolled": 25,
+            "subject_name": "Engenharia de Sistema de Computação",
+            "subject_code": "PCS3818"
+        },
+        {
+            "class_code": "2024152",
+            "start_period": "2024-01-08",
+            "end_period": "2024-04-19",
+            "type": "Teórica",
+            "obs": "Período de oferecimento: JANEIRO a ABRIL.",
+            "week_day": "sex",
+            "professors": [
+                "(R) Jorge Luis Risco Becerra"
+            ],
+            "start_time": "08:20",
+            "end_time": "12:00",
+            "vacancies": 31,
+            "subscribers": 29,
+            "pendings": 0,
+            "enrolled": 29,
+            "subject_name": "Engenharia de Sistema de Computação",
+            "subject_code": "PCS3818"
+        }
+    ],
+    "PCS3548": [
+        {
+            "class_code": "2024151",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "Período de oferecimento: JANEIRO a ABRIL.",
+            "week_day": "sex",
+            "professors": [
+                "(R) Bruno de Carvalho Albertini"
+            ],
+            "start_time": "14:00",
+            "end_time": "17:40",
+            "vacancies": 11,
+            "subscribers": 9,
+            "pendings": 0,
+            "enrolled": 8,
+            "subject_name": "Sistemas Embarcados",
+            "subject_code": "PCS3548"
+        },
+        {
+            "class_code": "2024152",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "Período de oferecimento: JANEIRO a ABRIL.",
+            "week_day": "sex",
+            "professors": [
+                "Moacyr Martucci Junior"
+            ],
+            "start_time": "14:00",
+            "end_time": "17:40",
+            "vacancies": 3,
+            "subscribers": 1,
+            "pendings": 0,
+            "enrolled": 1,
+            "subject_name": "Sistemas Embarcados",
+            "subject_code": "PCS3548"
+        }
+    ],
+    "PCS3539": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "(R) Romero Tori"
+            ],
+            "start_time": "18:50",
+            "end_time": "20:30",
+            "vacancies": 48,
+            "subscribers": 48,
+            "pendings": 0,
+            "enrolled": 48,
+            "subject_name": "Tecnologia de Computação Gráfica",
+            "subject_code": "PCS3539"
+        },
+        {
+            "class_code": "2024150",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "(R) Ricardo Nakamura"
+            ],
+            "start_time": "20:50",
+            "end_time": "22:30",
+            "vacancies": 48,
+            "subscribers": 48,
+            "pendings": 0,
+            "enrolled": 48,
+            "subject_name": "Tecnologia de Computação Gráfica",
+            "subject_code": "PCS3539"
+        }
+    ],
+    "PCS3563": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "Solange Nice Alves de Souza"
+            ],
+            "start_time": "14:00",
+            "end_time": "17:40",
+            "vacancies": 14,
+            "subscribers": 14,
+            "pendings": 0,
+            "enrolled": 13,
+            "subject_name": "Gerência e Qualidade de Software",
+            "subject_code": "PCS3563"
+        }
+    ],
+    "PCS3623": [
+        {
+            "class_code": "2024151",
+            "start_period": "2024-01-08",
+            "end_period": "2024-04-19",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "(R) Jorge Rady de Almeida Junior"
+            ],
+            "start_time": "16:00",
+            "end_time": "17:40",
+            "vacancies": 37,
+            "subscribers": 34,
+            "pendings": 0,
+            "enrolled": 34,
+            "subject_name": "Banco de Dados I",
+            "subject_code": "PCS3623"
+        },
+        {
+            "class_code": "2024151",
+            "start_period": "2024-01-08",
+            "end_period": "2024-04-19",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "(R) Jorge Rady de Almeida Junior"
+            ],
+            "start_time": "16:00",
+            "end_time": "17:40",
+            "vacancies": 37,
+            "subscribers": 34,
+            "pendings": 0,
+            "enrolled": 34,
+            "subject_name": "Banco de Dados I",
+            "subject_code": "PCS3623"
+        },
+        {
+            "class_code": "2024152",
+            "start_period": "2024-01-08",
+            "end_period": "2024-04-19",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "(R) Solange Nice Alves de Souza"
+            ],
+            "start_time": "16:00",
+            "end_time": "17:40",
+            "vacancies": 35,
+            "subscribers": 31,
+            "pendings": 0,
+            "enrolled": 31,
+            "subject_name": "Banco de Dados I",
+            "subject_code": "PCS3623"
+        },
+        {
+            "class_code": "2024152",
+            "start_period": "2024-01-08",
+            "end_period": "2024-04-19",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "(R) Solange Nice Alves de Souza"
+            ],
+            "start_time": "16:00",
+            "end_time": "17:40",
+            "vacancies": 35,
+            "subscribers": 31,
+            "pendings": 0,
+            "enrolled": 31,
+            "subject_name": "Banco de Dados I",
+            "subject_code": "PCS3623"
+        }
+    ],
+    "PCS3616": [
+        {
+            "class_code": "2024150",
+            "start_period": "2024-01-08",
+            "end_period": "2024-04-19",
+            "type": "Teórica Vinculada",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "(R) João José Neto"
+            ],
+            "start_time": "14:00",
+            "end_time": "15:40",
+            "vacancies": 75,
+            "subscribers": 69,
+            "pendings": 0,
+            "enrolled": 69,
+            "subject_name": "Sistemas de Programação",
+            "subject_code": "PCS3616"
+        },
+        {
+            "class_code": "2024150",
+            "start_period": "2024-01-08",
+            "end_period": "2024-04-19",
+            "type": "Teórica Vinculada",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "(R) João José Neto"
+            ],
+            "start_time": "14:00",
+            "end_time": "15:40",
+            "vacancies": 75,
+            "subscribers": 69,
+            "pendings": 0,
+            "enrolled": 69,
+            "subject_name": "Sistemas de Programação",
+            "subject_code": "PCS3616"
+        },
+        {
+            "class_code": "2024151",
+            "start_period": "2024-01-08",
+            "end_period": "2024-04-19",
+            "type": "Prática Vinculada",
+            "obs": "2024150",
+            "week_day": "seg",
+            "professors": [
+                "Artur Jordão Lima Correia"
+            ],
+            "start_time": "14:00",
+            "end_time": "15:40",
+            "vacancies": 27,
+            "subscribers": 26,
+            "pendings": 0,
+            "enrolled": 26,
+            "subject_name": "Sistemas de Programação",
+            "subject_code": "PCS3616"
+        },
+        {
+            "class_code": "2024152",
+            "start_period": "2024-01-08",
+            "end_period": "2024-04-19",
+            "type": "Prática Vinculada",
+            "obs": "2024150",
+            "week_day": "qua",
+            "professors": [
+                "Artur Jordão Lima Correia"
+            ],
+            "start_time": "14:00",
+            "end_time": "15:40",
+            "vacancies": 25,
+            "subscribers": 25,
+            "pendings": 0,
+            "enrolled": 25,
+            "subject_name": "Sistemas de Programação",
+            "subject_code": "PCS3616"
+        },
+        {
+            "class_code": "2024153",
+            "start_period": "2024-01-08",
+            "end_period": "2024-04-19",
+            "type": "Prática Vinculada",
+            "obs": "2024150",
+            "week_day": "seg",
+            "professors": [
+                "Artur Jordão Lima Correia"
+            ],
+            "start_time": "10:20",
+            "end_time": "12:00",
+            "vacancies": 27,
+            "subscribers": 18,
+            "pendings": 0,
+            "enrolled": 18,
+            "subject_name": "Sistemas de Programação",
+            "subject_code": "PCS3616"
+        }
+    ],
+    "MAP3122": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-01-08",
+            "end_period": "2024-04-19",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "Alexandre Megiorin Roma"
+            ],
+            "start_time": "08:20",
+            "end_time": "10:00",
+            "vacancies": 79,
+            "subscribers": 69,
+            "pendings": 0,
+            "enrolled": 69,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3122"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-01-08",
+            "end_period": "2024-04-19",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "Alexandre Megiorin Roma"
+            ],
+            "start_time": "08:20",
+            "end_time": "10:00",
+            "vacancies": 79,
+            "subscribers": 69,
+            "pendings": 0,
+            "enrolled": 69,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3122"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-01-08",
+            "end_period": "2024-04-19",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "Alexandre Megiorin Roma"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 77,
+            "subscribers": 66,
+            "pendings": 0,
+            "enrolled": 65,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3122"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-01-08",
+            "end_period": "2024-04-19",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "Alexandre Megiorin Roma"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 77,
+            "subscribers": 66,
+            "pendings": 0,
+            "enrolled": 65,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3122"
+        }
+    ],
+    "PEF3208": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "Guilherme Rosa Franzini"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 87,
+            "subscribers": 84,
+            "pendings": 0,
+            "enrolled": 84,
+            "subject_name": "Fundamentos de Mecânica das Estruturas",
+            "subject_code": "PEF3208"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "Henrique Campelo Gomes"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 86,
+            "subscribers": 79,
+            "pendings": 0,
+            "enrolled": 79,
+            "subject_name": "Fundamentos de Mecânica das Estruturas",
+            "subject_code": "PEF3208"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "Daniel Miranda dos Santos"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 71,
+            "subscribers": 44,
+            "pendings": 1,
+            "enrolled": 43,
+            "subject_name": "Fundamentos de Mecânica das Estruturas",
+            "subject_code": "PEF3208"
+        },
+        {
+            "class_code": "2024104",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "Alfredo Gay Neto"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 93,
+            "subscribers": 87,
+            "pendings": 0,
+            "enrolled": 87,
+            "subject_name": "Fundamentos de Mecânica das Estruturas",
+            "subject_code": "PEF3208"
+        }
+    ],
+    "MAP3121": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "Nelson Mugayar Kuhl"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 93,
+            "subscribers": 93,
+            "pendings": 1,
+            "enrolled": 92,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3121"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "Nelson Mugayar Kuhl"
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 93,
+            "subscribers": 93,
+            "pendings": 1,
+            "enrolled": 92,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3121"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "Claudia Monteiro Peixoto"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 93,
+            "subscribers": 93,
+            "pendings": 2,
+            "enrolled": 91,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3121"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "Claudia Monteiro Peixoto"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 93,
+            "subscribers": 93,
+            "pendings": 2,
+            "enrolled": 91,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3121"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "Pedro da Silva Peixoto"
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 72,
+            "subscribers": 72,
+            "pendings": 2,
+            "enrolled": 70,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3121"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "Pedro da Silva Peixoto"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 72,
+            "subscribers": 72,
+            "pendings": 2,
+            "enrolled": 70,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3121"
+        },
+        {
+            "class_code": "2024104",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "Fabio Armando Tal"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 116,
+            "subscribers": 116,
+            "pendings": 0,
+            "enrolled": 116,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3121"
+        },
+        {
+            "class_code": "2024104",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "Fabio Armando Tal"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 116,
+            "subscribers": 116,
+            "pendings": 0,
+            "enrolled": 116,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3121"
+        },
+        {
+            "class_code": "2024105",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "Clodoaldo Grotta Ragazzo"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 80,
+            "subscribers": 72,
+            "pendings": 0,
+            "enrolled": 72,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3121"
+        },
+        {
+            "class_code": "2024105",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "Clodoaldo Grotta Ragazzo"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 80,
+            "subscribers": 72,
+            "pendings": 0,
+            "enrolled": 72,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3121"
+        },
+        {
+            "class_code": "2024106",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "Clodoaldo Grotta Ragazzo"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 72,
+            "subscribers": 60,
+            "pendings": 0,
+            "enrolled": 60,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3121"
+        },
+        {
+            "class_code": "2024106",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "Clodoaldo Grotta Ragazzo"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 72,
+            "subscribers": 60,
+            "pendings": 0,
+            "enrolled": 60,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3121"
+        },
+        {
+            "class_code": "2024107",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "Gabriel Haeser"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 73,
+            "subscribers": 53,
+            "pendings": 1,
+            "enrolled": 52,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3121"
+        },
+        {
+            "class_code": "2024107",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "Gabriel Haeser"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 73,
+            "subscribers": 53,
+            "pendings": 1,
+            "enrolled": 52,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3121"
+        },
+        {
+            "class_code": "2024108",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "Claudio Hirofume Asano"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 85,
+            "subscribers": 85,
+            "pendings": 0,
+            "enrolled": 85,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3121"
+        },
+        {
+            "class_code": "2024108",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "Claudio Hirofume Asano"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 85,
+            "subscribers": 85,
+            "pendings": 0,
+            "enrolled": 85,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3121"
+        },
+        {
+            "class_code": "2024109",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "docente provisório.",
+            "week_day": "ter",
+            "professors": [
+                "Claudio Hirofume Asano"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 100,
+            "subscribers": 76,
+            "pendings": 2,
+            "enrolled": 74,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3121"
+        },
+        {
+            "class_code": "2024109",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "docente provisório.",
+            "week_day": "qui",
+            "professors": [
+                "Claudio Hirofume Asano"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 100,
+            "subscribers": 76,
+            "pendings": 2,
+            "enrolled": 74,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3121"
+        },
+        {
+            "class_code": "2024110",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "Henrique Von Dreifus"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 75,
+            "subscribers": 60,
+            "pendings": 1,
+            "enrolled": 59,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3121"
+        },
+        {
+            "class_code": "2024110",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "Henrique Von Dreifus"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 75,
+            "subscribers": 60,
+            "pendings": 1,
+            "enrolled": 59,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3121"
+        },
+        {
+            "class_code": "2024111",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "Fabio Armando Tal"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 80,
+            "subscribers": 71,
+            "pendings": 0,
+            "enrolled": 71,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3121"
+        },
+        {
+            "class_code": "2024111",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "Fabio Armando Tal"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 80,
+            "subscribers": 71,
+            "pendings": 0,
+            "enrolled": 71,
+            "subject_name": "Métodos Numéricos e Aplicações",
+            "subject_code": "MAP3121"
+        }
+    ],
+    "PMT3131": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica Vinculada",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "(R) Hercilio Gomes de Melo"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 494,
+            "subscribers": 75,
+            "pendings": 0,
+            "enrolled": 73,
+            "subject_name": "Química dos Materiais Aplicada à Engenharia Elétrica",
+            "subject_code": "PMT3131"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica Vinculada",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "(R) Hercilio Gomes de Melo"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 492,
+            "subscribers": 74,
+            "pendings": 0,
+            "enrolled": 70,
+            "subject_name": "Química dos Materiais Aplicada à Engenharia Elétrica",
+            "subject_code": "PMT3131"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica Vinculada",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "(R) Hercilio Gomes de Melo"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 459,
+            "subscribers": 77,
+            "pendings": 0,
+            "enrolled": 75,
+            "subject_name": "Química dos Materiais Aplicada à Engenharia Elétrica",
+            "subject_code": "PMT3131"
+        },
+        {
+            "class_code": "2024104",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica Vinculada",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "(R) Hercilio Gomes de Melo"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 495,
+            "subscribers": 72,
+            "pendings": 0,
+            "enrolled": 66,
+            "subject_name": "Química dos Materiais Aplicada à Engenharia Elétrica",
+            "subject_code": "PMT3131"
+        },
+        {
+            "class_code": "2024111",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática Vinculada",
+            "obs": "2024101",
+            "week_day": "seg",
+            "professors": [
+                "(R) Hercilio Gomes de Melo"
+            ],
+            "start_time": "07:30",
+            "end_time": "11:00",
+            "vacancies": 191,
+            "subscribers": 34,
+            "pendings": 0,
+            "enrolled": 33,
+            "subject_name": "Química dos Materiais Aplicada à Engenharia Elétrica",
+            "subject_code": "PMT3131"
+        },
+        {
+            "class_code": "2024112",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática Vinculada",
+            "obs": "2024101",
+            "week_day": "seg",
+            "professors": [
+                "(R) Hercilio Gomes de Melo"
+            ],
+            "start_time": "07:30",
+            "end_time": "11:00",
+            "vacancies": 187,
+            "subscribers": 29,
+            "pendings": 0,
+            "enrolled": 28,
+            "subject_name": "Química dos Materiais Aplicada à Engenharia Elétrica",
+            "subject_code": "PMT3131"
+        },
+        {
+            "class_code": "2024113",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática Vinculada",
+            "obs": "2024101",
+            "week_day": "seg",
+            "professors": [
+                "(R) Hercilio Gomes de Melo"
+            ],
+            "start_time": "07:30",
+            "end_time": "11:00",
+            "vacancies": 95,
+            "subscribers": 12,
+            "pendings": 0,
+            "enrolled": 12,
+            "subject_name": "Química dos Materiais Aplicada à Engenharia Elétrica",
+            "subject_code": "PMT3131"
+        },
+        {
+            "class_code": "2024121",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática Vinculada",
+            "obs": "2024102",
+            "week_day": "qua",
+            "professors": [
+                "Francisco Rolando Valenzuela Diaz"
+            ],
+            "start_time": "07:30",
+            "end_time": "11:00",
+            "vacancies": 230,
+            "subscribers": 43,
+            "pendings": 0,
+            "enrolled": 40,
+            "subject_name": "Química dos Materiais Aplicada à Engenharia Elétrica",
+            "subject_code": "PMT3131"
+        },
+        {
+            "class_code": "2024122",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática Vinculada",
+            "obs": "2024102",
+            "week_day": "qua",
+            "professors": [
+                "Francisco Rolando Valenzuela Diaz"
+            ],
+            "start_time": "07:30",
+            "end_time": "11:00",
+            "vacancies": 231,
+            "subscribers": 33,
+            "pendings": 0,
+            "enrolled": 32,
+            "subject_name": "Química dos Materiais Aplicada à Engenharia Elétrica",
+            "subject_code": "PMT3131"
+        },
+        {
+            "class_code": "2024131",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática Vinculada",
+            "obs": "2024103",
+            "week_day": "qua",
+            "professors": [
+                "(R) Hercilio Gomes de Melo"
+            ],
+            "start_time": "13:10",
+            "end_time": "16:40",
+            "vacancies": 213,
+            "subscribers": 40,
+            "pendings": 0,
+            "enrolled": 39,
+            "subject_name": "Química dos Materiais Aplicada à Engenharia Elétrica",
+            "subject_code": "PMT3131"
+        },
+        {
+            "class_code": "2024132",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática Vinculada",
+            "obs": "2024103",
+            "week_day": "qua",
+            "professors": [
+                "(R) Hercilio Gomes de Melo"
+            ],
+            "start_time": "13:10",
+            "end_time": "16:40",
+            "vacancies": 196,
+            "subscribers": 37,
+            "pendings": 0,
+            "enrolled": 36,
+            "subject_name": "Química dos Materiais Aplicada à Engenharia Elétrica",
+            "subject_code": "PMT3131"
+        },
+        {
+            "class_code": "2024141",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática Vinculada",
+            "obs": "2024104",
+            "week_day": "sex",
+            "professors": [
+                "Elizabeth Grillo Fernandes"
+            ],
+            "start_time": "13:10",
+            "end_time": "16:40",
+            "vacancies": 195,
+            "subscribers": 39,
+            "pendings": 0,
+            "enrolled": 35,
+            "subject_name": "Química dos Materiais Aplicada à Engenharia Elétrica",
+            "subject_code": "PMT3131"
+        },
+        {
+            "class_code": "2024142",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Prática Vinculada",
+            "obs": "2024104",
+            "week_day": "sex",
+            "professors": [
+                "Elizabeth Grillo Fernandes"
+            ],
+            "start_time": "13:10",
+            "end_time": "16:40",
+            "vacancies": 160,
+            "subscribers": 34,
+            "pendings": 0,
+            "enrolled": 32,
+            "subject_name": "Química dos Materiais Aplicada à Engenharia Elétrica",
+            "subject_code": "PMT3131"
+        }
+    ],
+    "PMT3100": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "Wang Shu Hui"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 287,
+            "subscribers": 65,
+            "pendings": 0,
+            "enrolled": 64,
+            "subject_name": "Fundamentos de Ciência e Engenharia dos Materiais",
+            "subject_code": "PMT3100"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "Andre Luiz da Silva"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 282,
+            "subscribers": 54,
+            "pendings": 0,
+            "enrolled": 54,
+            "subject_name": "Fundamentos de Ciência e Engenharia dos Materiais",
+            "subject_code": "PMT3100"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "Patrícia Schmid Calvão"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 287,
+            "subscribers": 63,
+            "pendings": 0,
+            "enrolled": 61,
+            "subject_name": "Fundamentos de Ciência e Engenharia dos Materiais",
+            "subject_code": "PMT3100"
+        },
+        {
+            "class_code": "2024104",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "Antonio Carlos Vieira Coelho"
+            ],
+            "start_time": "09:20",
+            "end_time": "11:00",
+            "vacancies": 218,
+            "subscribers": 35,
+            "pendings": 0,
+            "enrolled": 27,
+            "subject_name": "Fundamentos de Ciência e Engenharia dos Materiais",
+            "subject_code": "PMT3100"
+        },
+        {
+            "class_code": "2024105",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "Ticiane Sanches Valera"
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 269,
+            "subscribers": 69,
+            "pendings": 0,
+            "enrolled": 62,
+            "subject_name": "Fundamentos de Ciência e Engenharia dos Materiais",
+            "subject_code": "PMT3100"
+        }
+    ],
+    "PRO3811": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "Ana Cristina Limongi Franca"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 42,
+            "subscribers": 35,
+            "pendings": 0,
+            "enrolled": 34,
+            "subject_name": "Fundamentos de Administração",
+            "subject_code": "PRO3811"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "(R) André Leme Fleury"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 42,
+            "subscribers": 27,
+            "pendings": 0,
+            "enrolled": 25,
+            "subject_name": "Fundamentos de Administração",
+            "subject_code": "PRO3811"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "Erik Eduardo Rego"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 56,
+            "subscribers": 77,
+            "pendings": 0,
+            "enrolled": 53,
+            "subject_name": "Fundamentos de Administração",
+            "subject_code": "PRO3811"
+        },
+        {
+            "class_code": "2024104",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "sex",
+            "professors": [
+                "Davi Noboru Nakano"
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 82,
+            "subscribers": 65,
+            "pendings": 0,
+            "enrolled": 64,
+            "subject_name": "Fundamentos de Administração",
+            "subject_code": "PRO3811"
+        }
+    ],
+    "PRO3821": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "(R) Reinaldo Pacheco da Costa"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 65,
+            "subscribers": 65,
+            "pendings": 0,
+            "enrolled": 63,
+            "subject_name": "Fundamentos de Economia",
+            "subject_code": "PRO3821"
+        },
+        {
+            "class_code": "2024190",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "Regina Meyer Branski"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 87,
+            "subscribers": 46,
+            "pendings": 0,
+            "enrolled": 44,
+            "subject_name": "Fundamentos de Economia",
+            "subject_code": "PRO3821"
+        }
+    ],
+    "4323101": [
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "Barbara Lopes Amaral"
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 86,
+            "subscribers": 86,
+            "pendings": 1,
+            "enrolled": 85,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024101",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "Barbara Lopes Amaral"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:00",
+            "vacancies": 86,
+            "subscribers": 86,
+            "pendings": 1,
+            "enrolled": 85,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                ""
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 90,
+            "subscribers": 72,
+            "pendings": 0,
+            "enrolled": 72,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024102",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                ""
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 90,
+            "subscribers": 72,
+            "pendings": 0,
+            "enrolled": 72,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "Barbara Lopes Amaral"
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 66,
+            "subscribers": 66,
+            "pendings": 0,
+            "enrolled": 66,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024103",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "Barbara Lopes Amaral"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:00",
+            "vacancies": 66,
+            "subscribers": 66,
+            "pendings": 0,
+            "enrolled": 66,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024104",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "Renato Higa"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 70,
+            "subscribers": 64,
+            "pendings": 0,
+            "enrolled": 64,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024104",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "Renato Higa"
+            ],
+            "start_time": "15:00",
+            "end_time": "15:50",
+            "vacancies": 70,
+            "subscribers": 64,
+            "pendings": 0,
+            "enrolled": 64,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024105",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "Renato Higa"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 70,
+            "subscribers": 70,
+            "pendings": 0,
+            "enrolled": 69,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024105",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "Renato Higa"
+            ],
+            "start_time": "15:00",
+            "end_time": "15:50",
+            "vacancies": 70,
+            "subscribers": 70,
+            "pendings": 0,
+            "enrolled": 69,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024106",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "Euzi Conceicao Fernandes da Silva"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 75,
+            "subscribers": 71,
+            "pendings": 0,
+            "enrolled": 71,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024106",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "Euzi Conceicao Fernandes da Silva"
+            ],
+            "start_time": "08:20",
+            "end_time": "09:10",
+            "vacancies": 75,
+            "subscribers": 71,
+            "pendings": 0,
+            "enrolled": 71,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024107",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "Adriane Reis Brugnago"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 86,
+            "subscribers": 86,
+            "pendings": 0,
+            "enrolled": 86,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024107",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "Adriane Reis Brugnago"
+            ],
+            "start_time": "09:20",
+            "end_time": "10:10",
+            "vacancies": 86,
+            "subscribers": 86,
+            "pendings": 0,
+            "enrolled": 86,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024108",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "seg",
+            "professors": [
+                "Adriane Reis Brugnago"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 63,
+            "subscribers": 59,
+            "pendings": 0,
+            "enrolled": 59,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024108",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "Adriane Reis Brugnago"
+            ],
+            "start_time": "09:20",
+            "end_time": "10:10",
+            "vacancies": 63,
+            "subscribers": 59,
+            "pendings": 0,
+            "enrolled": 59,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024109",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "Luis Gregorio Godoy de Vasconcellos Dias da Silva"
+            ],
+            "start_time": "07:30",
+            "end_time": "09:10",
+            "vacancies": 68,
+            "subscribers": 68,
+            "pendings": 0,
+            "enrolled": 68,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024109",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qua",
+            "professors": [
+                "Luis Gregorio Godoy de Vasconcellos Dias da Silva"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:00",
+            "vacancies": 68,
+            "subscribers": 68,
+            "pendings": 0,
+            "enrolled": 68,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024110",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "Luana Sucupira Pedroza"
+            ],
+            "start_time": "09:20",
+            "end_time": "10:10",
+            "vacancies": 70,
+            "subscribers": 67,
+            "pendings": 0,
+            "enrolled": 67,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024110",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "Luana Sucupira Pedroza"
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 70,
+            "subscribers": 67,
+            "pendings": 0,
+            "enrolled": 67,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024111",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "Euzi Conceicao Fernandes da Silva"
+            ],
+            "start_time": "09:20",
+            "end_time": "10:10",
+            "vacancies": 57,
+            "subscribers": 54,
+            "pendings": 0,
+            "enrolled": 54,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024111",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "Euzi Conceicao Fernandes da Silva"
+            ],
+            "start_time": "13:10",
+            "end_time": "14:50",
+            "vacancies": 57,
+            "subscribers": 54,
+            "pendings": 0,
+            "enrolled": 54,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024112",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "ter",
+            "professors": [
+                "Luana Sucupira Pedroza"
+            ],
+            "start_time": "09:20",
+            "end_time": "10:10",
+            "vacancies": 76,
+            "subscribers": 76,
+            "pendings": 0,
+            "enrolled": 76,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024112",
+            "start_period": "2024-02-26",
+            "end_period": "2024-07-02",
+            "type": "Teórica",
+            "obs": "",
+            "week_day": "qui",
+            "professors": [
+                "Luana Sucupira Pedroza"
+            ],
+            "start_time": "15:00",
+            "end_time": "16:40",
+            "vacancies": 76,
+            "subscribers": 76,
+            "pendings": 0,
+            "enrolled": 76,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024151",
+            "start_period": "2024-01-29",
+            "end_period": "2024-02-23",
+            "type": "Teórica",
+            "obs": "turma exclusiva para alunos que já cursaram essa disciplina",
+            "week_day": "seg",
+            "professors": [
+                "Euzi Conceicao Fernandes da Silva"
+            ],
+            "start_time": "07:30",
+            "end_time": "11:00",
+            "vacancies": 130,
+            "subscribers": 120,
+            "pendings": 0,
+            "enrolled": 120,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024151",
+            "start_period": "2024-01-29",
+            "end_period": "2024-02-23",
+            "type": "Teórica",
+            "obs": "turma exclusiva para alunos que já cursaram essa disciplina",
+            "week_day": "ter",
+            "professors": [
+                "Euzi Conceicao Fernandes da Silva"
+            ],
+            "start_time": "07:30",
+            "end_time": "11:00",
+            "vacancies": 130,
+            "subscribers": 120,
+            "pendings": 0,
+            "enrolled": 120,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024151",
+            "start_period": "2024-01-29",
+            "end_period": "2024-02-23",
+            "type": "Teórica",
+            "obs": "turma exclusiva para alunos que já cursaram essa disciplina",
+            "week_day": "qui",
+            "professors": [
+                "Euzi Conceicao Fernandes da Silva"
+            ],
+            "start_time": "07:30",
+            "end_time": "11:00",
+            "vacancies": 130,
+            "subscribers": 120,
+            "pendings": 0,
+            "enrolled": 120,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024152",
+            "start_period": "2024-01-29",
+            "end_period": "2024-02-23",
+            "type": "Teórica",
+            "obs": "turma exclusiva para alunos que já cursaram essa disciplina",
+            "week_day": "seg",
+            "professors": [
+                "Euzi Conceicao Fernandes da Silva"
+            ],
+            "start_time": "13:10",
+            "end_time": "16:40",
+            "vacancies": 121,
+            "subscribers": 114,
+            "pendings": 0,
+            "enrolled": 114,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024152",
+            "start_period": "2024-01-29",
+            "end_period": "2024-02-23",
+            "type": "Teórica",
+            "obs": "turma exclusiva para alunos que já cursaram essa disciplina",
+            "week_day": "ter",
+            "professors": [
+                "Euzi Conceicao Fernandes da Silva"
+            ],
+            "start_time": "13:10",
+            "end_time": "16:40",
+            "vacancies": 121,
+            "subscribers": 114,
+            "pendings": 0,
+            "enrolled": 114,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        },
+        {
+            "class_code": "2024152",
+            "start_period": "2024-01-29",
+            "end_period": "2024-02-23",
+            "type": "Teórica",
+            "obs": "turma exclusiva para alunos que já cursaram essa disciplina",
+            "week_day": "qui",
+            "professors": [
+                "Euzi Conceicao Fernandes da Silva"
+            ],
+            "start_time": "13:10",
+            "end_time": "16:40",
+            "vacancies": 121,
+            "subscribers": 114,
+            "pendings": 0,
+            "enrolled": 114,
+            "subject_name": "Física I",
+            "subject_code": "4323101"
+        }
+    ]
+}
