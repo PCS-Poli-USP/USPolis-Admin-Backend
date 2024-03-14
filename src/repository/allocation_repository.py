@@ -49,6 +49,29 @@ class AllocationRepository(metaclass=SingletonMeta):
         result = self.__events_collection.bulk_write(update_operations)
         return result.modified_count
 
+    def update_many_allocations_in_many_buildings(
+        self, events_ids: list, buildings_ids: list, classrooms: list
+    ) -> int:
+        update_operations = []
+        now = datetime.now().strftime("%d/%m/%Y %H:%M")
+        for i in range(len(events_ids)):
+            building = self._building_repository.get_by_id(buildings_ids[i])
+            update_operations.append(UpdateOne(
+                {"_id": ObjectId(events_ids[i])},
+                {
+                    "$set": {
+                        "preferences.building_id": ObjectId(buildings_ids[i]),
+                        "building": building["name"],
+                        "classroom": classrooms[i],
+                        "has_to_be_allocated": False,
+                        "updated_at": now,
+                    }
+                },
+            ))
+
+        result = self.__events_collection.bulk_write(update_operations)
+        return result.modified_count
+
     def delete_many_allocations(
             self, events_ids: list) -> int:
 

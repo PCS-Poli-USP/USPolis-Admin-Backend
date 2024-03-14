@@ -37,3 +37,8 @@ class UpdateManyAllocationsSchema(Schema):
     events_ids = fields.List(fields.String(), required=True)
     building_id = fields.String(required=True)
     classroom = fields.String(required=True)
+
+class UpdateManyAllocationsInManyBuildingsSchema(Schema):
+    events_ids = fields.List(fields.String(), required=True)
+    buildings_ids = fields.List(fields.String(), required=True)
+    classrooms = fields.List(fields.String(), required=True)
