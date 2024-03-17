@@ -31,6 +31,7 @@ class TestCrawler(unittest.TestCase):
                             del item1[key]
                         if key in item2:
                             del item2[key]
+                    self.assertEqual(item1, item2)
 
 if __name__ == "__main__":
     unittest.main()
