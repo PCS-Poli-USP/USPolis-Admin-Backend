@@ -6,6 +6,7 @@ from flask import request
 
 from src.blueprints.blueprint_builder import build_admin_blueprint
 from src.common.database import database
+from src.common.utils.prettify_id import recursive_prettify_id
 from src.schemas.classroom_schema import ClassroomSchema
 
 admin_classroom_blueprint = build_admin_blueprint(
@@ -13,6 +14,14 @@ admin_classroom_blueprint = build_admin_blueprint(
 )
 
 classrooms_collection = database["classrooms"]
+
+
+@admin_classroom_blueprint.get("")
+def get_all_classrooms():
+    result = classrooms_collection.find()
+    result = list(result)
+    result = recursive_prettify_id(result)
+    return dumps(result)
 
 
 @admin_classroom_blueprint.put("<id>")
