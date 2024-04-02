@@ -70,6 +70,7 @@ def get_classrooms_schedules_by_building(building):
         schedule = get_classroom_schedule(classroom)
         schedule["classroom_name"] = classroom["classroom_name"]
         schedule["capacity"] = classroom["capacity"]
+        schedule["building"] = building
         schedules.append(schedule)
 
     return dumps(schedules)
@@ -85,6 +86,7 @@ def get_all_classrooms_schedules():
             schedule = get_classroom_schedule(classroom)
             schedule["classroom_name"] = classroom["classroom_name"]
             schedule["capacity"] = classroom["capacity"]
+            schedule["building"] = classroom["building"]
             classroom_schedules.append(schedule)
         return {"schedules": classroom_schedules}
 
@@ -104,6 +106,7 @@ def get_one_classroom_schedule():
         schedule = get_classroom_schedule(classroom)
         schedule["classroom_name"] = classroom_name
         schedule["capacity"] = classroom["capacity"]
+        schedule["building"] = building
         return dumps(schedule)
 
     except Exception as ex:
@@ -122,6 +125,7 @@ def get_many_classrooms_schedules():
                 {"classroom_name": classrooms_list[i], "building": buildings_list[i]})
             schedule = get_classroom_schedule(list(result)[0])
             schedule["classroom_name"] = classrooms_list[i]
+            schedule["building"] = buildings_list[i]
             schedules_list.append(schedule)
 
         return dumps(schedules_list)
