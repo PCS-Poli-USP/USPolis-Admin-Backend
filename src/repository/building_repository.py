@@ -35,6 +35,11 @@ class BuildingRepository(metaclass=SingletonMeta):
         self._building_collection = database["building"]
         building = self._building_collection.find_one({"_id": ObjectId(building_id)})
         return building
+    
+    def get_by_name(self, building_name: str):
+        self._building_collection = database["building"]
+        building = self._building_collection.find_one({"name": building_name})
+        return building
 
     def check_ids_array(self, building_ids: list[str]):
         self._building_collection = database["building"]

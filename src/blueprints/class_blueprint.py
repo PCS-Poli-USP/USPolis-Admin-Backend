@@ -29,8 +29,7 @@ users = database["users"]
 
 class_schema = ClassSchema(unknown=EXCLUDE)
 preferences_schema = PreferencesSchema(unknown=EXCLUDE)
-has_to_be_allocated_schema = HasToBeAllocatedClassesSchema(
-    many=True, unknown=EXCLUDE)
+has_to_be_allocated_schema = HasToBeAllocatedClassesSchema(many=True, unknown=EXCLUDE)
 event_schema = EventSchema()
 user_repository = UserRepository()
 
@@ -72,6 +71,7 @@ def get_all_classes():
                     "pendings": {"$first": "$pendings"},
                     "classrooms": {"$push": {"$ifNull": ["$classroom", "Não alocado"]}},
                     "buildings" : {"$push" : {"$ifNull": ["$building", "Não alocado"]}},
+
                     "events_ids": {"$push": {"$toString": "$_id"}},
                 }
             },
@@ -236,8 +236,7 @@ def edit_class(subject_code, class_code):
 def update_has_to_be_allocated():
     try:
         username = request.user.get("Username")
-        has_to_be_allocated_schema_load = has_to_be_allocated_schema.load(
-            request.json)
+        has_to_be_allocated_schema_load = has_to_be_allocated_schema.load(request.json)
         updated = 0
 
         for cls in has_to_be_allocated_schema_load:
@@ -247,8 +246,7 @@ def update_has_to_be_allocated():
                 "created_by": username,
             }
             result = events.update_many(
-                query, {
-                    "$set": {"has_to_be_allocated": cls["has_to_be_allocated"]}}
+                query, {"$set": {"has_to_be_allocated": cls["has_to_be_allocated"]}}
             )
 
             updated += result.matched_count

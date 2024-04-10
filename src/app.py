@@ -8,6 +8,7 @@ from flasgger import APISpec, Swagger
 from flask import Flask
 from flask_cors import CORS
 
+from src.blueprints.admin_classroom_blueprints import admin_classroom_blueprint
 from src.blueprints.allocation_blueprint import allocation_blueprint
 from src.blueprints.building_blueprint import building_blueprint
 from src.blueprints.class_blueprint import class_blueprint
@@ -45,6 +46,7 @@ app.json_encoder = JSONEncoder
 CORS(app)
 cache.init_app(app)
 
+app.register_blueprint(admin_classroom_blueprint)
 app.register_blueprint(test_blueprint)
 app.register_blueprint(crawler_blueprint)
 app.register_blueprint(classroom_blueprint)
