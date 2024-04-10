@@ -25,7 +25,8 @@ from src.schemas.classroom_schema import (
 from src.services.classrooms.list_available_classrooms import list_available_classrooms
 from src.services.conflicts.conflict_calculator import ConflictCalculator
 
-classroom_blueprint = Blueprint("classrooms", __name__, url_prefix="/api/classrooms")
+classroom_blueprint = Blueprint(
+    "classrooms", __name__, url_prefix="/api/classrooms")
 
 classrooms = database["classrooms"]
 events = database["events"]
@@ -59,18 +60,80 @@ def get_all_classrooms():
     return dumps(resultList)
 
 
+@classroom_blueprint.route("/<building>")
+def get_classrooms_by_building(building):
+    result = classrooms.find({"building": building}, {"_id": 0})
+    resultList = list(result)
+
+    return dumps(resultList)
+
+@classroom_blueprint.route("/<building>/classrooms-schedules")
+def get_classrooms_schedules_by_building(building):
+    classrooms_list = list(classrooms.find({"building": building}, {"_id": 0}))
+    schedules = []
+    for classroom in classrooms_list:
+        schedule = get_classroom_schedule(classroom)
+        schedule["classroom_name"] = classroom["classroom_name"]
+        schedule["capacity"] = classroom["capacity"]
+        schedule["building"] = building
+        schedules.append(schedule)
+
+    return dumps(schedules)
+
 @classroom_blueprint.route("schedules")
 def get_all_classrooms_schedules():
     try:
         username = request.user.get("Username")
         classroom_schedules = []
-        classroom_list = list(classrooms.find({"created_by": username}, {"_id": 0}))
+        classroom_list = list(classrooms.find(
+            {"created_by": username}, {"_id": 0}))
         for classroom in classroom_list:
             schedule = get_classroom_schedule(classroom)
-            schedule["classroom"] = classroom["classroom_name"]
+            schedule["classroom_name"] = classroom["classroom_name"]
             schedule["capacity"] = classroom["capacity"]
+            schedule["building"] = classroom["building"]
             classroom_schedules.append(schedule)
         return {"schedules": classroom_schedules}
+
+    except Exception as ex:
+        print(ex)
+        return {"message": str(ex)}, 500
+
+
+@classroom_blueprint.route("classroom-schedule", methods=["GET"])
+def get_one_classroom_schedule():
+    try:
+        classroom_name = request.args["classroom"]
+        building = request.args["building"]
+        result = classrooms.find(
+            {"classroom_name": classroom_name, "building": building})
+        classroom = list(result)[0]
+        schedule = get_classroom_schedule(classroom)
+        schedule["classroom_name"] = classroom_name
+        schedule["capacity"] = classroom["capacity"]
+        schedule["building"] = building
+        return dumps(schedule)
+
+    except Exception as ex:
+        print(ex)
+        return {"message": str(ex)}, 500
+
+
+@classroom_blueprint.route("many-classrooms-schedules", methods=["GET"])
+def get_many_classrooms_schedules():
+    try:
+        classrooms_list = request.args.getlist("classrooms[]")
+        buildings_list = request.args.getlist("buildings[]")
+        schedules_list = []
+        for i in range(len(classrooms_list)):
+            result = classrooms.find(
+                {"classroom_name": classrooms_list[i], "building": buildings_list[i]})
+            schedule = get_classroom_schedule(list(result)[0])
+            schedule["classroom_name"] = classrooms_list[i]
+            schedule["building"] = buildings_list[i]
+            schedules_list.append(schedule)
+
+        return dumps(schedules_list)
 
     except Exception as ex:
         print(ex)
