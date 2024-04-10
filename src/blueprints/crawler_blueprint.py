@@ -68,15 +68,18 @@ def crawl_subject():
                     "week_day": event["week_day"],
                     "start_time": event["start_time"],
                 }
-                result = events_tb.update_one(
-                    query, {"$set": event}, upsert=True)
-                updated.append(
-                    event["subject_code"]
-                ) if result.matched_count else inserted.append(event["subject_code"])
+                result = events_tb.update_one(query, {"$set": event}, upsert=True)
+                (
+                    updated.append(event["subject_code"])
+                    if result.matched_count
+                    else inserted.append(event["subject_code"])
+                )
 
             success.append(event["subject_code"])
 
         except Exception as e:
             failed.append(subject_code)
 
-    return dumps({"updated": updated, "inserted": inserted, "sucess": success, "failed": failed})
+    return dumps(
+        {"updated": updated, "inserted": inserted, "sucess": success, "failed": failed}
+    )

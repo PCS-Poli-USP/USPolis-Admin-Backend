@@ -6,15 +6,17 @@ from flask import Blueprint, request
 from marshmallow import ValidationError
 from pymongo.errors import DuplicateKeyError, PyMongoError
 
-from src.common.utils.classroom.classroom_mapper import get_classroom_schedule
-
 from src.common.database import database
 from src.common.general_error import GeneralError
+from src.common.utils.classroom.classroom_mapper import get_classroom_schedule
+from src.common.utils.prettify_id import prettify_id, recursive_prettify_id
 from src.common.utils.validate_body import validate_body
 from src.common.verify_building_permission import verify_building_permission
 from src.middlewares.auth_middleware import auth_middleware
+from src.repository.building_repository import BuildingRepository
 from src.repository.classrooms_repository import ClassroomsRepository
 from src.repository.events_repository import EventsRepository
+from src.repository.user_repository import UserRepository
 from src.schemas.classroom_schema import (
     AvailableClassroomsQuerySchema,
     ClassroomSchema,
@@ -29,6 +31,8 @@ classrooms = database["classrooms"]
 events = database["events"]
 classrooms_repository = ClassroomsRepository()
 events_repository = EventsRepository()
+user_repository = UserRepository()
+building_repository = BuildingRepository()
 
 # classroom_name not unique
 # classrooms.create_index({ "classroom_name" : 1, "building" : 1 }, unique=True)
@@ -48,10 +52,12 @@ def _():
 @swag_from(f"{yaml_files}/get_all_classrooms.yml")
 def get_all_classrooms():
     username = request.user.get("Username")
-    result = classrooms.find({"created_by": username}, {"_id": 0})
+    result = classrooms.find({"created_by": username})
     resultList = list(result)
+    resultList = recursive_prettify_id(resultList)
 
     return dumps(resultList)
+
 
 @classroom_blueprint.route("schedules")
 def get_all_classrooms_schedules():
@@ -64,23 +70,42 @@ def get_all_classrooms_schedules():
             schedule["classroom"] = classroom["classroom_name"]
             schedule["capacity"] = classroom["capacity"]
             classroom_schedules.append(schedule)
-        return {"schedules" : classroom_schedules}
-    
+        return {"schedules": classroom_schedules}
+
     except Exception as ex:
         print(ex)
         return {"message": str(ex)}, 500
-    
+
+
 @classroom_blueprint.route("", methods=["POST"])
 @swag_from(f"{yaml_files}/create_classroom.yml")
 def create_classroom():
     try:
+        username = request.user.get("Username")
+        logged_user = user_repository.get_by_username(username)
+        if logged_user is None:
+            return {"message": "User not found"}, 404
+
+        logged_user_building_ids = [
+            str(building["_id"]) for building in logged_user["buildings"]
+        ]
+        logged_user_is_admin = user_repository.is_admin(username)
+
         classroom_schema.load(request.json)
-        dict_request_body = request.json
+        payload = request.json
 
-        dict_request_body["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-        dict_request_body["created_by"] = request.user.get("Username")
+        building_name = payload["building"]
+        building = building_repository.get_by_name(building_name)
+        if building is None:
+            return {"message": "Building not found"}, 404
+        building_id = str(building["_id"])
+        if building_id not in logged_user_building_ids and not logged_user_is_admin:
+            return {"message": "You don't have permission to access this building"}, 403
 
-        result = classrooms.insert_one(dict_request_body)
+        payload["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
+        payload["created_by"] = request.user.get("Username")
+
+        result = classrooms.insert_one(payload)
 
         return dumps(result.inserted_id)
 
@@ -102,7 +127,8 @@ def classroom_by_name(name):
         username = request.user.get("Username")
         query = {"classroom_name": name, "created_by": username}
         if request.method == "GET":
-            result = classrooms.find_one(query, {"_id": 0})
+            result = classrooms.find_one(query)
+            result = recursive_prettify_id(result)
 
         if request.method == "DELETE":
             result = classrooms.delete_one(query).deleted_count
@@ -111,7 +137,6 @@ def classroom_by_name(name):
             classroom_schema.load(request.json)
             dict_request_body = request.json
             dict_request_body["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-            dict_request_body["created_by"] = username
 
             update_set = {"$set": dict_request_body}
             result = classrooms.update_one(query, update_set).modified_count
