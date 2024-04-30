@@ -24,8 +24,8 @@ class Class(Document):
     subscribers: int
     pendings: int
     preferences: Preferences
-    ignore_to_allocate: Optional[bool]
-    full_allocated: Optional[bool]
+    ignore_to_allocate: Optional[bool] = None
+    full_allocated: Optional[bool] = None
     updated_at: datetime
     creted_by: Link[User]
     schedule: Link[Schedule]
