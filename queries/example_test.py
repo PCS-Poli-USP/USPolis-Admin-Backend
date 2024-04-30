@@ -1,3 +1,7 @@
+from database.mongo import Database
+from database.models.user_building import Building, User
+from database.models.subject import Subject
+
 import asyncio
 import sys
 import os
@@ -8,14 +12,23 @@ parent_directory = os.path.abspath(os.path.join(current_directory, ".."))
 sys.path.append(parent_directory)
 
 
-from database.models.subject import Subject
-from database.mongo import Database
-
 async def example():
     client = await Database.get_client()
 
+    user = User(
+        cognito_id='COGNITO_ID_SAMPLE',
+        username='usernameTest',
+        name='Nome de Teste',
+        email='Email@test.br',
+        is_admin=True,
+        updated_at=datetime.now())
+
+    building_test = Building(name='Prédio Teste', created_by=user,
+                             updated_at=datetime.now())
+
     portuguese = Subject(
-        subject_code="Teste",
+        code="Teste",
+        buildings=[building_test],
         name="Portugues",
         professors=["Eu"],
         type="pratica",
@@ -25,6 +38,8 @@ async def example():
         desactivation=datetime(2025, 2, 2),
     )
 
+    await user.create()
+    await building_test.create()
     await portuguese.create()
 
 if __name__ == "__main__":

@@ -1,9 +1,9 @@
 from beanie import Document, Link
 from datetime import datetime
 
-from schedule import Schedule
-from classroom import Classroom
-from user import User
+from database.models.schedule import Schedule
+from database.models.classroom import Classroom
+from database.models.user_building import User
 
 
 class Reservation(Document):

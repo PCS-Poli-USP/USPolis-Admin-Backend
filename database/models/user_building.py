@@ -1,9 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 from beanie import Document, Link, Indexed
-from pydantic import BaseModel
 
-from .building import Building
 
 class User(Document):
     cognito_id: str
@@ -11,9 +9,19 @@ class User(Document):
     email: str
     name: str
     is_admin: bool
-    created_by_id: Link["User"]
-    buildings_id: List[Link[Building]]
+    created_by: Optional[Link["User"]] = None
+    buildings: Optional[List[Link["Building"]]] = None
     updated_at: datetime
 
     class Settings:
         name = "users"
+        keep_nulls = False
+
+
+class Building(Document):
+    name: Indexed(str, unique=True)
+    created_by: Link[User]
+    updated_at: datetime
+
+    class Settings:
+        name = "buildings"
