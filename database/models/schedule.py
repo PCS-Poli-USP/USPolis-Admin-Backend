@@ -10,6 +10,11 @@ from database.models.holiday_category import HolidayCategory
 class WeekDay(Enum):
     MONDAY = "Monday"
     TUESDAY = "Tuesday"
+    WEDNESDAY = "Wednesday"
+    THURSDAY = "Thurday"
+    FRIDAY = "Friday"
+    SATURDAY = "Saturday"
+    SUNDAY = "Sunday"
 
 
 class Recurrence(Enum):
