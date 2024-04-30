@@ -15,10 +15,11 @@ class User(Document):
 
     class Settings:
         name = "users"
+        keep_nulls = False
 
 
 class Building(Document):
-    name: str
+    name: Indexed(str, unique=True)
     created_by: Link[User]
     updated_at: datetime
 

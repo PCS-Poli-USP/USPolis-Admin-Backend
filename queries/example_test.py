@@ -27,7 +27,7 @@ async def example():
                              updated_at=datetime.now())
 
     portuguese = Subject(
-        subject_code="Teste",
+        code="Teste",
         buildings=[building_test],
         name="Portugues",
         professors=["Eu"],

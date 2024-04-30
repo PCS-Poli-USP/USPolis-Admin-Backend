@@ -7,7 +7,7 @@ from database.models.user_building import Building
 
 class Subject(Document):
     buildings: List[Link[Building]]
-    subject_code: str
+    code: str
     name: str
     professors: List[str]
     type: str

@@ -4,6 +4,8 @@ from beanie import Document, Link
 from pydantic import BaseModel
 
 from database.models.subject import Subject
+from database.models.user_building import User
+from database.models.schedule import Schedule
 
 
 class Preferences(BaseModel):
@@ -25,8 +27,9 @@ class Class(Document):
     ignore_to_allocate: Optional[bool]
     full_allocated: Optional[bool]
     updated_at: datetime
-    # creted_by: Link[User]
-    # schedule: Link[Schedule]
+    creted_by: Link[User]
+    schedule: Link[Schedule]
 
     class Settings:
         name = "classes"  # Colletion Name
+        keep_nulls = False
