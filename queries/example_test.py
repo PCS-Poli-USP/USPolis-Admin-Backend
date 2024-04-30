@@ -1,8 +1,5 @@
 import asyncio
 from datetime import datetime
-from motor.motor_asyncio import AsyncIOMotorClient
-
-from beanie import Document, Indexed, init_beanie
 
 from database.models.subject import Subject
 from database.mongo import Database

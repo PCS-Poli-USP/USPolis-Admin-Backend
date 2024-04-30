@@ -1,0 +1,13 @@
+annotated-types==0.6.0
+beanie==1.25.0
+click==8.1.7
+colorama==0.4.6
+dnspython==2.6.1
+lazy-model==0.2.0
+motor==3.4.0
+pydantic==2.7.1
+pydantic_core==2.18.2
+pymongo==4.7.0
+python-dotenv==1.0.1
+toml==0.10.2
+typing_extensions==4.11.0
