@@ -1,5 +1,12 @@
 import asyncio
+import sys
+import os
 from datetime import datetime
+
+current_directory = os.getcwd()
+parent_directory = os.path.abspath(os.path.join(current_directory, ".."))
+sys.path.append(parent_directory)
+
 
 from database.models.subject import Subject
 from database.mongo import Database
