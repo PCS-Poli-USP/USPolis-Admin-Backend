@@ -5,10 +5,12 @@ from pydantic import BaseModel
 
 from database.models.subject import Subject
 
+
 class Preferences(BaseModel):
     air_conditionating: bool
     accessibility: bool
     projector: bool
+
 
 class Class(Document):
     subject: Link[Subject]
@@ -25,3 +27,6 @@ class Class(Document):
     updated_at: datetime
     # creted_by: Link[User]
     # schedule: Link[Schedule]
+
+    class Settings:
+        name = "classes"  # Colletion Name

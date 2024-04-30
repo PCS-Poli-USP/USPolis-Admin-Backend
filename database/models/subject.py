@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List
 from beanie import Document
 
+
 class Subject(Document):
     subject_code: str
     name: str
@@ -11,3 +12,6 @@ class Subject(Document):
     work_credit: int
     activation: datetime
     desactivation: datetime
+
+    class Settings:
+        name = "subjects"  # Colletion Name
