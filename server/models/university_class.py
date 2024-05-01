@@ -13,8 +13,8 @@ class Preferences(BaseModel):
 class Class(Document):
     subject: Link[Subject]
     period: List[str]
-    start_period: datetime
-    end_period: datetime
+    start_date: datetime
+    end_date: datetime
     class_type: str
     vacancies: int
     subscribers: int

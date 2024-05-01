@@ -3,6 +3,7 @@ from typing import List
 from beanie import Document
 
 class Subject(Document):
+    __collection__ = "subjects"
     subject_code: str
     name: str
     professors: List[str]

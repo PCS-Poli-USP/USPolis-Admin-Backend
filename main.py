@@ -1,5 +1,5 @@
 import asyncio
 
-from queries import example_test
+from queries import create_subject
 
-asyncio.run(example_test.example())
+asyncio.run(create_subject.create_subject())
