@@ -12,5 +12,4 @@ embed = Body(..., embed=True)
 
 @router.get("")
 async def test(user: User = Depends(current_user)) -> Any:
-    print(user)
     return {"hello": "world"}
