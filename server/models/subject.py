@@ -1,10 +1,13 @@
 from datetime import datetime
 from typing import List
-from beanie import Document
+from beanie import Document, Link
+
+from database.models.user_building import Building
+
 
 class Subject(Document):
-    __collection__ = "subjects"
-    subject_code: str
+    buildings: List[Link[Building]]
+    code: str
     name: str
     professors: List[str]
     type: str
@@ -12,3 +15,6 @@ class Subject(Document):
     work_credit: int
     activation: datetime
     desactivation: datetime
+
+    class Settings:
+        name = "subjects"  # Colletion Name

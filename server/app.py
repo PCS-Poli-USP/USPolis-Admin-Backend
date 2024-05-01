@@ -2,14 +2,13 @@
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
 from beanie import init_beanie
+from fastapi import FastAPI
 from motor.motor_asyncio import AsyncIOMotorClient
 from starlette.middleware.cors import CORSMiddleware
 
 from server.config import CONFIG
-from server.models.user import User
-
+from server.models.user_building import User
 
 DESCRIPTION = """
 This API powers whatever I want to make
@@ -25,25 +24,16 @@ It supports:
 async def lifespan(app: FastAPI):  # type: ignore
     """Initialize application services."""
     app.db = AsyncIOMotorClient(CONFIG.mongo_uri).account  # type: ignore[attr-defined]
-    await init_beanie(app.db, document_models=[User])  # type: ignore[arg-type,attr-defined]
+    await init_beanie(app.db, document_models=[User])  # type: ignore[attr-defined]
     print("Startup complete")
     yield
     print("Shutdown complete")
 
 
 app = FastAPI(
-    title="My Server",
+    title="USPolis Server",
     description=DESCRIPTION,
     version="0.1.0",
-    contact={
-        "name": "Hello World Jr",
-        "url": "https://myserver.dev",
-        "email": "helloworld@myserver.dev",
-    },
-    license_info={
-        "name": "MIT",
-        "url": "https://github.com/flyinactor91/fastapi-beanie-jwt/blob/main/LICENSE",
-    },
     lifespan=lifespan,
 )
 
