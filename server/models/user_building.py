@@ -1,25 +1,36 @@
 from datetime import datetime
-from typing import List, Optional
-from beanie import Document, Link, Indexed
+from typing import Annotated
+
+from beanie import Document, Indexed, Link
+from pydantic import BaseModel
 
 
-class User(Document):
-    cognito_id: str
-    username: Indexed(str, unique=True)
+class UserRegister(BaseModel):
+    username: str
     email: str
     name: str
     is_admin: bool
-    created_by: Optional[Link["User"]] = None
-    buildings: Optional[List[Link["Building"]]] = None
+    buildings: list[Link["Building"]] | None = None
+
+class User(Document):
+    cognito_id: str
+    username: Annotated[str, Indexed(unique=True)]
+    email: str
+    name: str
+    is_admin: bool
+    created_by: Link["User"] | None = None
+    buildings: list[Link["Building"]] | None = None
     updated_at: datetime
 
     class Settings:
         name = "users"
         keep_nulls = False
 
+class BuildingRegister(BaseModel):
+    name: str
 
-class Building(Document):
-    name: Indexed(str, unique=True)
+class Building(Document, BuildingRegister):
+    name: Annotated[str, Indexed(unique=True)]
     created_by: Link[User]
     updated_at: datetime
 

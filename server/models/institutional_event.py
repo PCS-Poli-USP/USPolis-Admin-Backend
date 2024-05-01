@@ -1,13 +1,13 @@
-from beanie import Document
 from datetime import datetime
-from typing import Optional
+
+from beanie import Document
 
 
 class InstitutionalEvent(Document):
     title = str
     description = str
     start = datetime
-    end = Optional[datetime] = None
+    end = datetime | None
     location = str
     external_link = str
     likes = int
@@ -16,5 +16,5 @@ class InstitutionalEvent(Document):
     building = str
 
     class Settings:
-        name = 'institutional_events'
+        name = "institutional_events"
         keep_nulls = False

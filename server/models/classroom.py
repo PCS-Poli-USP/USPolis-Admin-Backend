@@ -1,7 +1,8 @@
-from beanie import Document, Link
 from datetime import datetime
 
-from database.models.user_building import Building, User
+from beanie import Document, Link
+
+from server.models.user_building import Building, User
 
 
 class Classroom(Document):
