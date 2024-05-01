@@ -10,7 +10,8 @@ class UserRegister(BaseModel):
     email: str
     name: str
     is_admin: bool
-    buildings: list[Link["Building"]] | None = None
+    buildings: list[Link["Building"]] | None = None  # type: ignore # noqa: F821
+
 
 class User(Document):
     cognito_id: str
@@ -19,20 +20,9 @@ class User(Document):
     name: str
     is_admin: bool
     created_by: Link["User"] | None = None
-    buildings: list[Link["Building"]] | None = None
+    buildings: list[Link["Building"]] | None = None  # type: ignore # noqa: F821
     updated_at: datetime
 
     class Settings:
         name = "users"
         keep_nulls = False
-
-class BuildingRegister(BaseModel):
-    name: str
-
-class Building(Document, BuildingRegister):
-    name: Annotated[str, Indexed(unique=True)]
-    created_by: Link[User]
-    updated_at: datetime
-
-    class Settings:
-        name = "buildings"

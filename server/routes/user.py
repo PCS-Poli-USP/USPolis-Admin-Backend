@@ -2,7 +2,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, Body
 
-from server.models.user_building import User, UserRegister
+from server.models.user import User, UserRegister
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -15,10 +15,10 @@ async def create_user(user_input: UserRegister) -> User:
         buildings=None,
         cognito_id="x",
         created_by=None,
-        email="x.com",
-        is_admin=True,
-        name="Henrique Duran",
-        username="hfduran",
+        email=user_input.email,
+        is_admin=user_input.is_admin,
+        name=user_input.name,
+        username=user_input.username,
         updated_at=datetime.now()
     )
     await new_user.create()

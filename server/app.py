@@ -8,7 +8,8 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from starlette.middleware.cors import CORSMiddleware
 
 from server.config import CONFIG
-from server.models.user_building import User
+from server.models.building import Building
+from server.models.user import User
 
 DESCRIPTION = """
 This API powers whatever I want to make
@@ -24,7 +25,7 @@ It supports:
 async def lifespan(app: FastAPI):  # type: ignore
     """Initialize application services."""
     app.db = AsyncIOMotorClient(CONFIG.mongo_uri).account  # type: ignore[attr-defined]
-    await init_beanie(app.db, document_models=[User])  # type: ignore[attr-defined]
+    await init_beanie(app.db, document_models=[User, Building])  # type: ignore[attr-defined]
     print("Startup complete")
     yield
     print("Shutdown complete")
