@@ -5,17 +5,20 @@ from beanie import Document, Indexed, Link
 from pydantic import BaseModel, EmailStr, field_validator
 
 
-class UserRegister(BaseModel):
-    username: str
-    email: EmailStr
-    name: str
+class UserUpdate(BaseModel):
     is_admin: bool
+    name: str
     buildings: list[str] | None = None
 
-    @field_validator('username')
+
+class UserRegister(UserUpdate):
+    username: str
+    email: EmailStr
+
+    @field_validator("username")
     @classmethod
     def check_no_spaces(cls, v: str) -> str:
-        if ' ' in v:
+        if " " in v:
             raise ValueError("Username must not contain spaces")
         return v
 
@@ -30,7 +33,7 @@ class User(Document, UserRegister):
     class Settings:
         name = "users"
         keep_nulls = False
-    
+
     @classmethod
     async def by_username(cls, username: str) -> Optional["User"]:
         return await cls.find_one(cls.username == username)

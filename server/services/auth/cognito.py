@@ -15,7 +15,7 @@ aws_client = boto3.client(
 )
 
 
-async def current_user(
+async def get_current_user(
     auth: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ) -> User:
     token = auth.credentials
@@ -30,7 +30,7 @@ async def current_user(
     return user
 
 
-async def current_admin_user(user: User = Depends(current_user)) -> User:
+async def get_current_admin_user(user: User = Depends(get_current_user)) -> User:
     if user.is_admin:
         return user
     raise HTTPException(403, "Admin access is required")
