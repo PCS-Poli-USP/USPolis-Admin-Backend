@@ -11,4 +11,4 @@ class Holiday(Document):
     updated_at = datetime
 
     class Settings:
-        name = 'holidays'
+        name = "holidays"

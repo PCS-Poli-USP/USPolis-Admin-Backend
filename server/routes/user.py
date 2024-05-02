@@ -8,6 +8,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 embed = Body(..., embed=True)
 
+
 @router.post("")
 async def create_user(user_input: UserRegister) -> User:
     """Create new user."""
@@ -19,7 +20,7 @@ async def create_user(user_input: UserRegister) -> User:
         is_admin=user_input.is_admin,
         name=user_input.name,
         username=user_input.username,
-        updated_at=datetime.now()
+        updated_at=datetime.now(),
     )
     await new_user.create()
     return new_user
