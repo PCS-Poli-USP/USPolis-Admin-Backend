@@ -42,24 +42,11 @@ async def create_user(
     return str(new_user.id)
 
 
-@router.delete("/{user_id}")
-async def delete_user(
-    user_id: str, current_user: User = Depends(get_current_admin_user)
-) -> int:
-    user_to_delete = await get_user_by_id(user_id)
-    if current_user.id == user_to_delete.id:
-        raise HTTPException(400, "Cannot delete self")
-
-    delete_cognito_user(user_to_delete.cognito_id)
-    x = await user_to_delete.delete()
-    if x is None:
-        raise HTTPException(500, "No user deleted")
-    return x.deleted_count
-
-
 @router.put("/{user_id}")
 async def update_user(
-    user_id: str, user_input: UserUpdate, current_user: User = Depends(get_current_admin_user)
+    user_id: str,
+    user_input: UserUpdate,
+    current_user: User = Depends(get_current_admin_user),
 ) -> str:
     user_to_update = await get_user_by_id(user_id)
 
@@ -76,3 +63,18 @@ async def update_user(
     user_to_update.updated_at = datetime.now()
     await user_to_update.save()
     return str(user_to_update.id)
+
+
+@router.delete("/{user_id}")
+async def delete_user(
+    user_id: str, current_user: User = Depends(get_current_admin_user)
+) -> int:
+    user_to_delete = await get_user_by_id(user_id)
+    if current_user.id == user_to_delete.id:
+        raise HTTPException(400, "Cannot delete self")
+
+    delete_cognito_user(user_to_delete.username)
+    x = await user_to_delete.delete()
+    if x is None:
+        raise HTTPException(500, "No user deleted")
+    return x.deleted_count
