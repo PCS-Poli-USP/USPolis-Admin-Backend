@@ -34,3 +34,23 @@ async def current_admin_user(user: User = Depends(current_user)) -> User:
     if user.is_admin:
         return user
     raise HTTPException(403, "Admin access is required")
+
+
+def create_cognito_user(username: str, email: str) -> str:
+    try:
+        response = aws_client.admin_create_user(
+            UserPoolId=CONFIG.aws_user_pool_id,
+            Username=username,
+            UserAttributes=[{"Name": "email", "Value": email}],
+        )
+        cognito_id: str = response["User"]["Attributes"][0]["Value"]
+        return cognito_id
+    except aws_client.exceptions.UsernameExistsException:
+        raise HTTPException(409, "Username already exists")
+
+
+def delete_cognito_user(username: str) -> None:
+    aws_client.admin_delete_user(
+        UserPoolId=CONFIG.aws_user_pool_id,
+        Username=username,
+    )

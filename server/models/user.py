@@ -2,15 +2,22 @@ from datetime import datetime
 from typing import Annotated, Optional
 
 from beanie import Document, Indexed, Link
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, field_validator
 
 
 class UserRegister(BaseModel):
     username: str
-    email: str
+    email: EmailStr
     name: str
     is_admin: bool
     buildings: list[str] | None = None
+
+    @field_validator('username')
+    @classmethod
+    def check_no_spaces(cls, v: str) -> str:
+        if ' ' in v:
+            raise ValueError("Username must not contain spaces")
+        return v
 
 
 class User(Document, UserRegister):
