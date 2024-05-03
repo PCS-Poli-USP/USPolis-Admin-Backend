@@ -2,7 +2,8 @@ from datetime import datetime
 
 from fastapi import APIRouter, Body
 
-from server.models.user import User, UserRegister
+from server.models.database.user_db_model import User
+from server.models.http.requests.user_request_models import UserRegister
 
 router = APIRouter(prefix="/users", tags=["Users"])
 

@@ -15,6 +15,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 embed = Body(..., embed=True)
 
+
 @router.post("")
 async def create_user(
     user_input: UserRegister, user: User = Depends(get_current_admin_user)
@@ -56,7 +57,7 @@ async def update_user(
     buildings = None
     if user_input.buildings is not None:
         buildings = await get_buildings_by_ids(user_input.buildings)
-    user_to_update.buildings = buildings # type: ignore [assignment]
+    user_to_update.buildings = buildings  # type: ignore [assignment]
     user_to_update.is_admin = user_input.is_admin
     user_to_update.name = user_input.name
     user_to_update.updated_at = datetime.now()
