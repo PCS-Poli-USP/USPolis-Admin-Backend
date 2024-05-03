@@ -39,7 +39,7 @@ class CognitoClient:
             raise UsernameAlreadyExists(username)
 
 
-    def delete_cognito_user(self, username: str) -> None:
+    def delete_user(self, username: str) -> None:
         self._aws_client.admin_delete_user(
             UserPoolId=CONFIG.aws_user_pool_id,
             Username=username,
