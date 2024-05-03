@@ -2,9 +2,9 @@ from datetime import datetime
 from beanie import Document, Link
 from pydantic import BaseModel
 
-from server.models.subject import Subject
-from server.models.user import User
-from server.models.schedule import Schedule
+from server.models.database.subject_db_model import Subject
+from server.models.database.user_db_model import User
+from server.models.database.schedule_db_model import Schedule
 
 
 class Preferences(BaseModel):

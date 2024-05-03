@@ -1,8 +1,8 @@
 from beanie import Document, Link
 from datetime import datetime
 
-from server.models.classroom import Classroom
-from server.models.schedule import Schedule
+from server.models.database.classroom_db_model import Classroom
+from server.models.database.schedule_db_model import Schedule
 
 
 class Ocurrence(Document):

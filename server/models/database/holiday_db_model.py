@@ -1,7 +1,7 @@
 from beanie import Document, Link
 from datetime import datetime
 
-from server.models.holiday_category import HolidayCategory
+from server.models.database.holiday_category_db_model import HolidayCategory
 
 
 class Holiday(Document):

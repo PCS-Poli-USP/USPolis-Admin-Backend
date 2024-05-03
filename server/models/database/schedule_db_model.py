@@ -2,8 +2,8 @@ from datetime import datetime
 from enum import Enum
 from beanie import Document, Link
 
-from server.models.university_class import Class
-from server.models.holiday_category import HolidayCategory
+from server.models.database.university_class_db_model import Class
+from server.models.database.holiday_category_db_model import HolidayCategory
 
 
 class WeekDay(Enum):

@@ -17,11 +17,7 @@ class User(Document):
     class Settings:
         name = "users"
         keep_nulls = False
-<<<<<<< HEAD:server/models/user.py
-=======
 
     @classmethod
     async def by_username(cls, username: str) -> Optional["User"]:
         return await cls.find_one(cls.username == username)
-    
->>>>>>> main:server/models/database/user_db_model.py
