@@ -2,14 +2,10 @@
 
 from contextlib import asynccontextmanager
 
-from beanie import init_beanie
 from fastapi import FastAPI
-from motor.motor_asyncio import AsyncIOMotorClient
 from starlette.middleware.cors import CORSMiddleware
 
-from server.config import CONFIG
-from server.models.building import Building
-from server.models.user import User
+from server.connections.mongo import database_singleton
 
 DESCRIPTION = """
 This API powers whatever I want to make
@@ -20,12 +16,11 @@ It supports:
 - Something really cool that will blow your socks off
 """
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # type: ignore
     """Initialize application services."""
-    app.db = AsyncIOMotorClient(CONFIG.mongo_uri).account  # type: ignore[attr-defined]
-    await init_beanie(app.db, document_models=[User, Building])  # type: ignore[attr-defined]
+    await database_singleton.init_connection()
+    app.db = database_singleton.get_instance() # type: ignore [attr-defined]
     print("Startup complete")
     yield
     print("Shutdown complete")

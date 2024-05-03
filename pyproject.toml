@@ -15,6 +15,7 @@ dependencies = [
     "fastapi-mail~=1.4",
     "python-decouple~=3.8",
     "uvicorn~=0.24",
+    "boto3"
 ]
 
 [project.optional-dependencies]

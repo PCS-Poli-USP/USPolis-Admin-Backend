@@ -11,6 +11,13 @@ class Settings(BaseModel):
 
     # Mongo Engine settings
     mongo_uri: str = config("MONGO_URI")
+    mongo_db_name: str = config("MONGO_DB_NAME")
+
+    # AWS
+    aws_region_name: str = config("AWS_REGION")
+    aws_access_key_id: str = config("AWS_ACCESS_KEY_ID")
+    aws_secret_access_key: str = config("AWS_SECRET_ACCESS_KEY")
+    aws_user_pool_id: str = config("AWS_USER_POOL_ID")
 
     testing: bool = config("TESTING", default=False, cast=bool)
 
