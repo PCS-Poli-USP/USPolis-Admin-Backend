@@ -4,20 +4,21 @@ from fastapi import APIRouter, Body, Depends, HTTPException
 
 from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister, UserUpdate
+from server.services.auth.authenticate import admin_authenticate
 from server.services.cognito.cognito import create_cognito_user, delete_cognito_user
-from server.services.current_user.current_user import (
-    get_current_admin_user,
-)
 from server.services.queries.building.get_buildings_by_ids import get_buildings_by_ids
 from server.services.queries.user.get_user_by_id import get_user_by_id
 
-router = APIRouter(prefix="/users", tags=["Users"])
-
 embed = Body(..., embed=True)
+
+router = APIRouter(
+    prefix="/users", tags=["Users"], dependencies=[Depends(admin_authenticate)]
+)
+
 
 @router.post("")
 async def create_user(
-    user_input: UserRegister, user: User = Depends(get_current_admin_user)
+    user_input: UserRegister, user: User = Depends(admin_authenticate)
 ) -> str:
     """Create new user."""
 
@@ -45,7 +46,7 @@ async def create_user(
 async def update_user(
     user_id: str,
     user_input: UserUpdate,
-    current_user: User = Depends(get_current_admin_user),
+    current_user: User = Depends(admin_authenticate),
 ) -> str:
     user_to_update = await get_user_by_id(user_id)
 
@@ -56,7 +57,7 @@ async def update_user(
     buildings = None
     if user_input.buildings is not None:
         buildings = await get_buildings_by_ids(user_input.buildings)
-    user_to_update.buildings = buildings # type: ignore [assignment]
+    user_to_update.buildings = buildings  # type: ignore [assignment]
     user_to_update.is_admin = user_input.is_admin
     user_to_update.name = user_input.name
     user_to_update.updated_at = datetime.now()
@@ -66,7 +67,7 @@ async def update_user(
 
 @router.delete("/{user_id}")
 async def delete_user(
-    user_id: str, current_user: User = Depends(get_current_admin_user)
+    user_id: str, current_user: User = Depends(admin_authenticate)
 ) -> int:
     user_to_delete = await get_user_by_id(user_id)
     if current_user.id == user_to_delete.id:
