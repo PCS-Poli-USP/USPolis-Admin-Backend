@@ -2,10 +2,10 @@ from datetime import datetime
 
 from fastapi import APIRouter, Body, Depends, HTTPException
 
-from server.models.user import User, UserRegister, UserUpdate
-from server.services.auth.cognito import (
-    create_cognito_user,
-    delete_cognito_user,
+from server.models.database.user_db_model import User
+from server.models.http.requests.user_request_models import UserRegister, UserUpdate
+from server.services.cognito.cognito import create_cognito_user, delete_cognito_user
+from server.services.current_user.current_user import (
     get_current_admin_user,
 )
 from server.services.queries.building.get_buildings_by_ids import get_buildings_by_ids
@@ -15,7 +15,6 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 embed = Body(..., embed=True)
 
-
 @router.post("")
 async def create_user(
     user_input: UserRegister, user: User = Depends(get_current_admin_user)
@@ -24,12 +23,12 @@ async def create_user(
 
     buildings = None
     if user_input.buildings is not None:
-        buildings = get_buildings_by_ids(user_input.buildings)
+        buildings = await get_buildings_by_ids(user_input.buildings)
 
     cognito_id = create_cognito_user(user_input.username, user_input.email)
 
     new_user = User(
-        buildings=buildings,  # type: ignore [arg-type]
+        buildings=buildings,
         cognito_id=cognito_id,
         created_by=user,
         email=user_input.email,
@@ -57,7 +56,7 @@ async def update_user(
     buildings = None
     if user_input.buildings is not None:
         buildings = await get_buildings_by_ids(user_input.buildings)
-    user_to_update.buildings = buildings
+    user_to_update.buildings = buildings # type: ignore [assignment]
     user_to_update.is_admin = user_input.is_admin
     user_to_update.name = user_input.name
     user_to_update.updated_at = datetime.now()

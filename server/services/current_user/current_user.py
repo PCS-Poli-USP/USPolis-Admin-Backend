@@ -3,7 +3,7 @@ from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from server.config import CONFIG
-from server.models.user import User
+from server.models.database.user_db_model import User
 
 bearer_scheme = HTTPBearer()
 
@@ -24,7 +24,7 @@ async def get_current_user(
     except Exception as e:
         print(e)
         raise HTTPException(401, "Error on authentication")
-    user = await User.by_username(cognito_user["Username"])
+    user: User = await User.by_username(cognito_user["Username"])
     if user is None:
         raise HTTPException(404, "User not found")
     return user
@@ -34,23 +34,3 @@ async def get_current_admin_user(user: User = Depends(get_current_user)) -> User
     if user.is_admin:
         return user
     raise HTTPException(403, "Admin access is required")
-
-
-def create_cognito_user(username: str, email: str) -> str:
-    try:
-        response = aws_client.admin_create_user(
-            UserPoolId=CONFIG.aws_user_pool_id,
-            Username=username,
-            UserAttributes=[{"Name": "email", "Value": email}],
-        )
-        cognito_id: str = response["User"]["Attributes"][0]["Value"]
-        return cognito_id
-    except aws_client.exceptions.UsernameExistsException:
-        raise HTTPException(409, "Username already exists")
-
-
-def delete_cognito_user(username: str) -> None:
-    aws_client.admin_delete_user(
-        UserPoolId=CONFIG.aws_user_pool_id,
-        Username=username,
-    )

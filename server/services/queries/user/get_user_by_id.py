@@ -1,5 +1,6 @@
 from fastapi import HTTPException
-from server.models.user import User
+
+from server.models.database.user_db_model import User
 
 
 async def get_user_by_id(user_id: str) -> User:

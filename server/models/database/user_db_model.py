@@ -2,29 +2,13 @@ from datetime import datetime
 from typing import Annotated, Optional
 
 from beanie import Document, Indexed, Link
-from pydantic import BaseModel, EmailStr, field_validator
 
 
-class UserUpdate(BaseModel):
+class User(Document):
+    username: Annotated[str, Indexed(unique=True)]
+    email: str
     is_admin: bool
     name: str
-    buildings: list[str] | None = None
-
-
-class UserRegister(UserUpdate):
-    username: str
-    email: EmailStr
-
-    @field_validator("username")
-    @classmethod
-    def check_no_spaces(cls, v: str) -> str:
-        if " " in v:
-            raise ValueError("Username must not contain spaces")
-        return v
-
-
-class User(Document, UserRegister):
-    username: Annotated[str, Indexed(unique=True)]
     cognito_id: str
     created_by: Link["User"] | None = None
     buildings: list[Link["Building"]] | None = None  # type: ignore # noqa: F821
@@ -37,3 +21,4 @@ class User(Document, UserRegister):
     @classmethod
     async def by_username(cls, username: str) -> Optional["User"]:
         return await cls.find_one(cls.username == username)
+    
