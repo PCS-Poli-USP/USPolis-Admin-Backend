@@ -21,3 +21,4 @@ class User(Document):
     @classmethod
     async def by_username(cls, username: str) -> Optional["User"]:
         return await cls.find_one(cls.username == username)
+    

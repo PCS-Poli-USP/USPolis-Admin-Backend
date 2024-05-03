@@ -16,12 +16,11 @@ It supports:
 - Something really cool that will blow your socks off
 """
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # type: ignore
     """Initialize application services."""
     await database_singleton.init_connection()
-    app.db = database_singleton.get_instance()  # type: ignore [attr-defined]
+    app.db = database_singleton.get_instance() # type: ignore [attr-defined]
     print("Startup complete")
     yield
     print("Shutdown complete")
