@@ -8,7 +8,6 @@ from server.models.http.requests.user_request_models import UserRegister, UserUp
 from server.services.auth.authenticate import admin_authenticate
 from server.services.cognito.cognito_client import CognitoClient
 from server.services.queries.building.get_buildings_by_ids import get_buildings_by_ids
-from server.services.queries.user.get_user_by_id import get_user_by_id
 
 embed = Body(..., embed=True)
 
@@ -51,7 +50,7 @@ async def update_user(
     user_input: UserUpdate,
     current_user: Annotated[User, Depends(admin_authenticate)],
 ) -> str:
-    user_to_update = await get_user_by_id(user_id)
+    user_to_update = await User.by_id(user_id)
 
     if user_id == current_user.id:
         if current_user.is_admin != user_input.is_admin:
@@ -60,7 +59,7 @@ async def update_user(
     buildings = None
     if user_input.buildings is not None:
         buildings = await get_buildings_by_ids(user_input.buildings)
-    user_to_update.buildings = buildings  # type: ignore [assignment]
+    user_to_update.buildings = buildings
     user_to_update.is_admin = user_input.is_admin
     user_to_update.name = user_input.name
     user_to_update.updated_at = datetime.now()
@@ -74,12 +73,12 @@ async def delete_user(
     current_user: Annotated[User, Depends(admin_authenticate)],
     cognito_client: Annotated[CognitoClient, Depends()],
 ) -> int:
-    user_to_delete = await get_user_by_id(user_id)
+    user_to_delete = await User.by_id(user_id)
     if current_user.id == user_to_delete.id:
         raise HTTPException(400, "Cannot delete self")
 
     cognito_client.delete_user(user_to_delete.username)
-    x = await user_to_delete.delete()
-    if x is None:
+    response = await user_to_delete.delete()
+    if response is None:
         raise HTTPException(500, "No user deleted")
-    return x.deleted_count
+    return int(response.deleted_count)
