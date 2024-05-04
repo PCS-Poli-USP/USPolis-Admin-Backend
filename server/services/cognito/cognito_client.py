@@ -1,6 +1,6 @@
 from typing import Annotated, Any
 
-import boto3
+import boto3  # type: ignore [import-untyped]
 from fastapi import HTTPException, status
 
 from server.config import CONFIG
