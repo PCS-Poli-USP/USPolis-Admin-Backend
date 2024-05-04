@@ -1,6 +1,6 @@
 """FastAPI server configuration."""
 
-from decouple import config
+from decouple import config  # type: ignore [import-untyped]
 from pydantic import BaseModel
 
 

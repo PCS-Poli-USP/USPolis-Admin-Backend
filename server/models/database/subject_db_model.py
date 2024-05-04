@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from beanie import Document, Link
 
 from server.models.database.building_db_model import Building

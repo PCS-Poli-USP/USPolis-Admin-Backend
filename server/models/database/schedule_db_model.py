@@ -1,8 +1,9 @@
 from datetime import datetime
 from enum import Enum
+
 from beanie import Document, Link
 
-from server.models.database.university_class_db_model import Class
+from server.models.database.class_db_model import Class
 from server.models.database.holiday_category_db_model import HolidayCategory
 
 

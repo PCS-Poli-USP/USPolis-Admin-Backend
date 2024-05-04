@@ -1,8 +1,9 @@
-from beanie import Document, Link
 from datetime import datetime
 
-from server.models.database.schedule_db_model import Schedule
+from beanie import Document, Link
+
 from server.models.database.classroom_db_model import Classroom
+from server.models.database.schedule_db_model import Schedule
 from server.models.database.user_db_model import User
 
 
