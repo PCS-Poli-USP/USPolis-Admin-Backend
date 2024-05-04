@@ -1,15 +1,15 @@
 from datetime import datetime
-from typing import List
+
 from beanie import Document, Link
 
-from database.models.user_building import Building
+from server.models.database.building_db_model import Building
 
 
 class Subject(Document):
-    buildings: List[Link[Building]]
+    buildings: list[Link[Building]]
     code: str
     name: str
-    professors: List[str]
+    professors: list[str]
     type: str
     class_credit: int
     work_credit: int
