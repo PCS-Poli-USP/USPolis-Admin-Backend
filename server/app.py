@@ -9,6 +9,8 @@ from starlette.middleware.cors import CORSMiddleware
 from server.connections.mongo import database_singleton
 from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
+from server.models.database.subject_db_model import Subject
+from server.models.database.classroom_db_model import Classroom
 
 DESCRIPTION = """
 This API powers whatever I want to make
@@ -26,7 +28,7 @@ async def lifespan(app: FastAPI):  # type: ignore
 
     database_singleton.init_connection()
     db = database_singleton.get_instance()
-    await init_beanie(db, document_models=[User, Building])
+    await init_beanie(db, document_models=[User, Building, Subject, Classroom])
     app.db = db  # type: ignore [attr-defined]
 
     print("Startup complete")
