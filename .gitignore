@@ -1,6 +1,9 @@
 # build
 build/
 
+# aux
+access_token.txt
+
 # Beany migrations
 migrations/
 
