@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 from server.connections.mongo import database_singleton
+from server.mocks.dependency_overrides import overrides
 from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
 from server.models.database.subject_db_model import Subject
@@ -51,3 +52,5 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.dependency_overrides = overrides

@@ -19,7 +19,13 @@ class Settings(BaseModel):
     aws_secret_access_key: str = config("AWS_SECRET_ACCESS_KEY")
     aws_user_pool_id: str = config("AWS_USER_POOL_ID")
 
+    # Testing / Development:
     testing: bool = config("TESTING", default=False, cast=bool)
+    override_auth: bool = config("OVERRIDE_AUTH", default=False, cast=bool)
+
+    mock_username: str = config(
+        "MOCK_USERNAME", default=""
+    )  # TODO: implement as non required
 
 
 CONFIG = Settings()
