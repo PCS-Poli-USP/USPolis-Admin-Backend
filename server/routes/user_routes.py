@@ -28,7 +28,8 @@ async def create_user(
     if user_input.buildings is not None:
         buildings = await get_buildings_by_ids(user_input.buildings)
 
-    cognito_id = cognito_client.create_user(user_input.username, user_input.email)
+    cognito_id = cognito_client.create_user(
+        user_input.username, user_input.email)
 
     new_user = User(
         buildings=buildings,
