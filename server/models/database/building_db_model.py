@@ -1,8 +1,8 @@
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Self
 
 from beanie import Document, Indexed, Link
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 
 
 class Building(Document):
@@ -13,7 +13,16 @@ class Building(Document):
     class Settings:
         name = "buildings"
 
+    @classmethod
+    async def by_name(cls, name: str) -> Self | None:
+        return await cls.find_one(cls.name == name)
 
-class BuildingNotFound(HTTPException):
-    def __init__(self, detail: str) -> None:
-        super().__init__(404, detail)
+    @classmethod
+    async def by_id(cls, id: str) -> Self | None:
+        return await cls.get(id)
+
+
+class BuildingNameAlreadyExists(HTTPException):
+    def __init__(self, building_name: str) -> None:
+        super().__init__(status.HTTP_409_CONFLICT,
+                         f"Building {building_name} already exists")
