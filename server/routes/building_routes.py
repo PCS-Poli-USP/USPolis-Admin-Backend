@@ -17,15 +17,14 @@ router = APIRouter(
 
 @router.get("")
 async def get_all_buildings() -> list[Building]:
+    """Get all buildings"""
     return await Building.find_all().to_list()
 
 
 @router.get("/{building_id}")
 async def get_building(building_id: str) -> Building:
-    building = await Building.by_id(building_id)
-    if building is None:
-        raise BuildingNotFound(building_id)
-    return building
+    """Get a building"""
+    return await Building.by_id(building_id)
 
 
 @router.post("")
@@ -47,9 +46,6 @@ async def create_building(building_input: BuildingRegister, user: Annotated[User
 async def update_building(building_id: str, building_input: BuildingUpdate, user: Annotated[User, Depends(admin_authenticate)]) -> str:
     """Update a building"""
     building = await Building.by_id(building_id)
-    if building is None:
-        raise BuildingNotFound(building_input.id)
-
     building.name = building_input.name
     building.updated_at = datetime.now()
     await building.save()
@@ -58,21 +54,13 @@ async def update_building(building_id: str, building_input: BuildingUpdate, user
 
 @router.delete("/{building_id}")
 async def delete_building(building_id: str, user: Annotated[User, Depends(admin_authenticate)]) -> int:
+    """Delete a building"""
     building = await Building.by_id(building_id)
-    if building is None:
-        raise BuildingNotFound(building_id)
-
     response = await building.delete()
     if response is None:
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR, "No building deleted")
     return int(response.deleted_count)
-
-
-class BuildingNotFound(HTTPException):
-    def __init__(self, building_info: str) -> None:
-        super().__init__(status.HTTP_404_NOT_FOUND,
-                         f"Building {building_info} not found")
 
 
 class BuildingNameAlreadyExists(HTTPException):

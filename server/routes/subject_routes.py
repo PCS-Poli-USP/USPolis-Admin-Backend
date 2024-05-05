@@ -1,9 +1,7 @@
-from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Body, Depends, status
 
 from server.services.auth.authenticate import authenticate
-from server.models.database.user_db_model import User
 from server.models.database.subject_db_model import Subject
 from server.models.http.requests.subject_request_models import SubjectRegister
 
@@ -16,19 +14,19 @@ router = APIRouter(
 
 @router.get("")
 async def get_all_subjects() -> list[Subject]:
+    """Get all subjects"""
     return await Subject.find_all().to_list()
 
 
 @router.get("/{subject_id}")
 async def get_subject(subject_id: str) -> Subject:
-    subject = await Subject.by_id(subject_id)
-    if subject is None:
-        raise SubjectNotFound(subject_id)
-    return subject
+    """Get a subject"""
+    return await Subject.by_id(subject_id)
 
 
 @router.post("")
 async def create_subject(subject_input: SubjectRegister) -> str:
+    """Create a subject"""
     if await Subject.by_code(subject_input.code):
         raise SubjectCodeAlreadyExists(subject_input.code)
 
@@ -47,31 +45,22 @@ async def create_subject(subject_input: SubjectRegister) -> str:
 
 
 @router.patch("/{subject_id}")
-async def update_subject(subject_id: str, subject_input: SubjectRegister, user: Annotated[User, Depends(authenticate)]) -> str:
+async def update_subject(subject_id: str, subject_input: SubjectRegister) -> str:
+    """Update a subject"""
     new_subject = await Subject.by_id(subject_id)
-    if new_subject is None:
-        raise SubjectNotFound(subject_id)
-
     await new_subject.update({"$set": subject_input})
     return str(new_subject.id)
 
 
 @router.delete("/{subject_id}")
 async def delete_subject(subject_id: str) -> int:
+    """Delete a subject"""
     subject = await Subject.by_id(subject_id)
-    if subject is None:
-        raise SubjectNotFound(subject_id)
     response = await subject.delete()
     if response is None:
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR, "No subject deleted")
     return int(response.deleted_count)
-
-
-class SubjectNotFound(HTTPException):
-    def __init__(self, subject_info: str) -> None:
-        super().__init__(status.HTTP_404_NOT_FOUND,
-                         f"Subject {subject_info} not found")
 
 
 class SubjectCodeAlreadyExists(HTTPException):

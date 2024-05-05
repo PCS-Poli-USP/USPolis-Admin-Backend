@@ -15,14 +15,20 @@ class Building(Document):
 
     @classmethod
     async def by_name(cls, name: str) -> Self | None:
-        return await cls.find_one(cls.name == name)
+        building = await cls.find_one(cls.name == name)
+        if building is None:
+            raise BuildingNotFound(name)
+        return building
 
     @classmethod
     async def by_id(cls, id: str) -> Self | None:
-        return await cls.get(id)
+        building = await cls.get(id)
+        if building is None:
+            raise BuildingNotFound(id)
+        return building
 
 
-class BuildingNameAlreadyExists(HTTPException):
-    def __init__(self, building_name: str) -> None:
-        super().__init__(status.HTTP_409_CONFLICT,
-                         f"Building {building_name} already exists")
+class BuildingNotFound(HTTPException):
+    def __init__(self, building_info: str) -> None:
+        super().__init__(status.HTTP_404_NOT_FOUND,
+                         f"Building {building_info} not found")
