@@ -3,13 +3,13 @@ from typing import Any
 from fastapi import APIRouter, Body, Depends
 
 from server.models.database.user_db_model import User
-from server.services.current_user.current_user import get_current_user
+from server.services.auth.authenticate import authenticate
 
-router = APIRouter(prefix="/test", tags=["Test"])
+router = APIRouter(prefix="/test", tags=["Test"], dependencies=[Depends(authenticate)])
 
 embed = Body(..., embed=True)
 
 
 @router.get("")
-async def test(user: User = Depends(get_current_user)) -> Any:
+async def test(user: User = Depends(authenticate)) -> Any:
     return {"hello": "world"}

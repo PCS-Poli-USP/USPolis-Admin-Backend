@@ -1,7 +1,8 @@
-from beanie import Document, Link
 from datetime import datetime
 
-from database.models.holiday_category import HolidayCategory
+from beanie import Document, Link
+
+from server.models.database.holiday_category_db_model import HolidayCategory
 
 
 class Holiday(Document):
@@ -11,4 +12,4 @@ class Holiday(Document):
     updated_at = datetime
 
     class Settings:
-        name = 'holidays'
+        name = "holidays"

@@ -31,10 +31,10 @@ test = [
 
 [tool.mypy]
 check_untyped_defs = true
-disallow_any_unimported = false
+disallow_any_unimported = true
 disallow_untyped_defs = true
 explicit_package_bases = true
-ignore_missing_imports = true
+ignore_missing_imports = false
 no_implicit_optional = true
 show_error_codes = true
 strict_equality = true

@@ -1,7 +1,8 @@
 from datetime import datetime
-from typing import Annotated, Optional
+from typing import Annotated, Self
 
 from beanie import Document, Indexed, Link
+from fastapi import HTTPException, status
 
 
 class User(Document):
@@ -19,6 +20,19 @@ class User(Document):
         keep_nulls = False
 
     @classmethod
-    async def by_username(cls, username: str) -> Optional["User"]:
-        return await cls.find_one(cls.username == username)
+    async def by_username(cls, username: str) -> Self:
+        user = await cls.find_one(cls.username == username)
+        if (user is None):
+            raise UserNotFound(username)
+        return user
     
+    @classmethod
+    async def by_id(cls, id: str) -> Self:
+        user = await cls.get(id)
+        if user is None:
+            raise UserNotFound(id)
+        return user
+
+class UserNotFound(HTTPException):
+    def __init__(self, user_info: str):
+        super().__init__(status.HTTP_404_NOT_FOUND, f"User '{user_info}' not found")

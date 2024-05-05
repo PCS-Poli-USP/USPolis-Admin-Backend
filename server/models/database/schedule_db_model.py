@@ -1,10 +1,10 @@
 from datetime import datetime
 from enum import Enum
-from typing import List
+
 from beanie import Document, Link
 
-from database.models.university_class import Class
-from database.models.holiday_category import HolidayCategory
+from server.models.database.class_db_model import Class
+from server.models.database.holiday_category_db_model import HolidayCategory
 
 
 class WeekDay(Enum):
@@ -36,7 +36,7 @@ class Schedule(Document):
     allocated: bool
     recurrence: Recurrence
     all_day: bool
-    holiday_categories = List[Link[HolidayCategory]]
+    holiday_categories = list[Link[HolidayCategory]]
 
     class Settings:
         name = "schedules"  # Colletion Name

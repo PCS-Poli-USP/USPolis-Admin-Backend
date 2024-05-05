@@ -1,11 +1,11 @@
 from datetime import datetime
-from typing import List, Optional
+
 from beanie import Document, Link
 from pydantic import BaseModel
 
-from database.models.subject import Subject
-from database.models.user_building import User
-from database.models.schedule import Schedule
+from server.models.database.schedule_db_model import Schedule
+from server.models.database.subject_db_model import Subject
+from server.models.database.user_db_model import User
 
 
 class Preferences(BaseModel):
@@ -16,7 +16,7 @@ class Preferences(BaseModel):
 
 class Class(Document):
     subject: Link[Subject]
-    period: List[str]
+    period: list[str]
     start_period: datetime
     end_period: datetime
     class_type: str
@@ -24,8 +24,8 @@ class Class(Document):
     subscribers: int
     pendings: int
     preferences: Preferences
-    ignore_to_allocate: Optional[bool] = None
-    full_allocated: Optional[bool] = None
+    ignore_to_allocate: bool | None = None
+    full_allocated: bool | None = None
     updated_at: datetime
     creted_by: Link[User]
     schedule: Link[Schedule]
