@@ -96,7 +96,7 @@ class JupiterCrawler:
         return result
 
     def __get_schedule_info_list(self, info_tables: Any) -> list:
-        result = []
+        result: list = []
         schedule_info_table = info_tables[1]
         schedule_info_rows = schedule_info_table.find_all("tr")
         schedule_info_rows_dropped = schedule_info_rows[1:]
