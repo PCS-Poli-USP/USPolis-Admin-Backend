@@ -5,4 +5,4 @@ class HolidayCategory(Document):
     category: str
 
     class Settings:
-        name = 'holiday_categories'
+        name = "holiday_categories"

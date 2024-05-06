@@ -50,8 +50,8 @@ warn_return_any = true
 warn_unused_ignores = true
 
 [tool.ruff]
-extend-select = [
+lint.extend-select = [
     "UP"
 ]
-ignore = [
+lint.ignore = [
 ]

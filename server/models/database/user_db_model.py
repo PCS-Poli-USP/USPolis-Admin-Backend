@@ -25,7 +25,7 @@ class User(Document):
         if (user is None):
             raise UserNotFound(username)
         return user
-    
+
     @classmethod
     async def by_id(cls, id: str) -> Self:
         user = await cls.get(id)
@@ -33,6 +33,8 @@ class User(Document):
             raise UserNotFound(id)
         return user
 
+
 class UserNotFound(HTTPException):
     def __init__(self, user_info: str):
-        super().__init__(status.HTTP_404_NOT_FOUND, f"User '{user_info}' not found")
+        super().__init__(status.HTTP_404_NOT_FOUND,
+                         f"User '{user_info}' not found")
