@@ -15,11 +15,18 @@ dependencies = [
     "fastapi-mail~=1.4",
     "python-decouple~=3.8",
     "uvicorn~=0.24",
-    "boto3"
+    "boto3",
+    "requests",
+    "beautifulsoup4"
 ]
 
 [project.optional-dependencies]
-dev = ["mypy", "ruff"]
+dev = [
+    "mypy",
+    "ruff",
+    "types-requests",
+    "types-beautifulsoup4"
+]
 test = [
     "asgi-lifespan~=2.1",
     "httpx~=0.25",

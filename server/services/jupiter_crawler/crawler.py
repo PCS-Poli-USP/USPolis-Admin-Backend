@@ -1,8 +1,6 @@
-# type: ignore
-# TODO: correct types in this file
-
 import re
 from datetime import datetime
+from typing import Any
 
 import requests
 from bs4 import BeautifulSoup, ResultSet
@@ -25,11 +23,11 @@ class JupiterCrawler:
         self.events = []
 
     @staticmethod
-    def crawl_subject_static(subject_code: str):
+    def crawl_subject_static(subject_code: str) -> Any:
         crawler = JupiterCrawler()
         return crawler.crawl_subject(subject_code)
 
-    def crawl_subject(self, subject_code: str):
+    def crawl_subject(self, subject_code: str) -> Any:
         self.subject_code = subject_code
         self.__reset()
         self.__build_url()
@@ -39,22 +37,22 @@ class JupiterCrawler:
         self.__add_subject_info_to_events()
         return self.events
 
-    def __build_url(self):
+    def __build_url(self) -> Any:
         self.url = BASE_URL + self.subject_code
 
-    def __build_soap(self):
+    def __build_soap(self) -> Any:
         page = requests.get(self.url)
         self.soup = BeautifulSoup(page.content, "html.parser")
 
-    def __find_classes_divs(self):
+    def __find_classes_divs(self) -> Any:
         self.classes_divs = self.soup.find_all("div", attrs=CLASS_DIV_IDENTIFIERS)
 
-    def __extract_classes_info(self):
+    def __extract_classes_info(self) -> Any:
         for class_div in self.classes_divs:
             result = self.__build_events_from_class_div(class_div)
             self.events += result
 
-    def __build_events_from_class_div(self, class_div):
+    def __build_events_from_class_div(self, class_div: Any) -> Any:
         result = []
         info_tables = class_div.find_all("table")
         if len(info_tables) == 4:
@@ -69,7 +67,7 @@ class JupiterCrawler:
             result.append(general_info | schedule_info | student_numbers_info)
         return result
 
-    def __get_general_info(self, info_tables) -> dict:
+    def __get_general_info(self, info_tables: Any) -> dict:
         result = {}
         general_info_table = info_tables[0]
         general_info_table_rows = general_info_table.find_all("tr")
@@ -97,8 +95,8 @@ class JupiterCrawler:
 
         return result
 
-    def __get_schedule_info_list(self, info_tables) -> list:
-        result = []
+    def __get_schedule_info_list(self, info_tables: Any) -> list:
+        result: list = []
         schedule_info_table = info_tables[1]
         schedule_info_rows = schedule_info_table.find_all("tr")
         schedule_info_rows_dropped = schedule_info_rows[1:]
@@ -141,7 +139,7 @@ class JupiterCrawler:
 
         return result
 
-    def __get_student_numbers_info(self, info_tables) -> dict:
+    def __get_student_numbers_info(self, info_tables: Any) -> dict:
         result = {
             "vacancies": 0,
             "subscribers": 0,
@@ -183,13 +181,13 @@ class JupiterCrawler:
 
         return result
 
-    def __add_subject_info_to_events(self):
+    def __add_subject_info_to_events(self) -> Any:
         self.__get_subject_name()
         for event in self.events:
             event["subject_name"] = self.subject_name
             event["subject_code"] = self.subject_code
 
-    def __get_subject_name(self):
+    def __get_subject_name(self) -> Any:
         subject = self.soup.find_all("b", text=re.compile("Disciplina:(.*)"))[0]
         self.subject_name = subject.get_text().replace(
             f"Disciplina: {self.subject_code} - ", ""

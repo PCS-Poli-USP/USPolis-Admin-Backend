@@ -1,28 +1,12 @@
 from datetime import datetime
-from enum import Enum
 
 from beanie import Document, Link
 
 from server.models.database.class_db_model import Class
 from server.models.database.holiday_category_db_model import HolidayCategory
-
-
-class WeekDay(Enum):
-    MONDAY = "Monday"
-    TUESDAY = "Tuesday"
-    WEDNESDAY = "Wednesday"
-    THURSDAY = "Thurday"
-    FRIDAY = "Friday"
-    SATURDAY = "Saturday"
-    SUNDAY = "Sunday"
-
-
-class Recurrence(Enum):
-    DAILY = "Daily"
-    WEEKLY = "Weekly"
-    BIWEEKLY = "Biweekly"
-    MONTHLY = "Monthly"
-    CUSTOM = "Custom"
+from server.utils.day_time import DayTime
+from server.utils.recurrence import Recurrence
+from server.utils.week_day import WeekDay
 
 
 class Schedule(Document):
@@ -30,8 +14,8 @@ class Schedule(Document):
     week_day: WeekDay
     start_date: datetime
     end_date: datetime
-    start_time: str
-    end_time: str
+    start_time: DayTime
+    end_time: DayTime
     skip_exceptions: bool
     allocated: bool
     recurrence: Recurrence

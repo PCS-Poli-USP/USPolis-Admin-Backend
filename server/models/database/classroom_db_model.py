@@ -11,7 +11,7 @@ class Classroom(Document):
     name: str
     capacity: int
     floor: int
-    ignore_to_allocate: bool
+    ignore_to_allocate: bool | None
     accessibility: bool
     projector: bool
     air_conditioning: bool
