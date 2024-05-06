@@ -17,4 +17,4 @@ class Reservation(Document):
     updated_at = datetime
 
     class Settings:
-        name = 'reservations'
+        name = "reservations"
