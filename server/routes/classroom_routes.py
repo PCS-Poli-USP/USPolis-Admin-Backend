@@ -35,7 +35,7 @@ async def create_classroom(classroom_input: ClassroomRegister, user: Annotated[U
 
     building_id = classroom_input.building_id
     classroom_name = classroom_input.name
-    if await Classroom.by_building_and_classroom(building_id, classroom_name):
+    if await Classroom.check_classroom_name_exists(building_id, classroom_name):
         raise ClassroomInBuildingAlredyExists(building_id)
 
     classroom = Classroom(
@@ -59,13 +59,10 @@ async def update_classroom(classroom_id: str, classroom_input: ClassroomRegister
     """Update a classroom, not allowing two classrooms with same name in same building"""
     building_id = classroom_input.building_id
     classroom_name = classroom_input.name
-    new_classroom = await Classroom.by_building_and_classroom(building_id, classroom_name)
-    if new_classroom:
-        if (str(new_classroom.id) != classroom_id):
-          raise ClassroomInBuildingAlredyExists(classroom_name, building_id)
-    else:
-        new_classroom = await Classroom.by_id(classroom_id)
+    if await Classroom.check_new_classroom_name_exists(building_id, classroom_id, classroom_name):
+        raise ClassroomInBuildingAlredyExists(classroom_name, building_id)
 
+    new_classroom = await Classroom.by_id(classroom_id)
     new_classroom.name = classroom_input.name
     new_classroom.capacity = classroom_input.capacity
     new_classroom.floor = classroom_input.floor
@@ -82,6 +79,9 @@ async def update_classroom(classroom_id: str, classroom_input: ClassroomRegister
 async def delete_classroom(classroom_id: str) -> int:
     classroom = await Classroom.by_id(classroom_id)
     response = await classroom.delete()
+    if response is None:
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR, "No classroom deleted")
     return int(response.deleted_count)
 
 

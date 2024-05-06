@@ -30,7 +30,7 @@ async def get_building(building_id: str) -> Building:
 @router.post("")
 async def create_building(building_input: BuildingRegister, user: Annotated[User, Depends(admin_authenticate)]) -> str:
     """Create new building"""
-    if await Building.by_name(building_input.name):
+    if await Building.check_name_exits(building_input.name):
         raise BuildingNameAlreadyExists(building_input.name)
 
     new_building = Building(
@@ -38,7 +38,7 @@ async def create_building(building_input: BuildingRegister, user: Annotated[User
         created_by=user,
         updated_at=datetime.now()
     )
-    await new_building.insert_one()
+    await new_building.create()
     return str(new_building.id)
 
 

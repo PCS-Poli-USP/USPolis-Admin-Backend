@@ -27,6 +27,10 @@ class Building(Document):
             raise BuildingNotFound(id)
         return building
 
+    @classmethod
+    async def check_name_exits(cls, name: str) -> bool:
+        return await cls.find_one(cls.name == name) is not None
+
 
 class BuildingNotFound(HTTPException):
     def __init__(self, building_info: str) -> None:
