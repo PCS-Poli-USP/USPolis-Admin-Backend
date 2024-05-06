@@ -31,6 +31,16 @@ class Building(Document):
     async def check_name_exits(cls, name: str) -> bool:
         return await cls.find_one(cls.name == name) is not None
 
+    @classmethod
+    async def by_ids(cls, ids: list[str]) -> list[Self]:
+        async def get_building_by_id(id: str) -> Building:
+            building = await Building.get(id)
+            if not building:
+                raise BuildingNotFound(id)
+            return building
+
+        return [await get_building_by_id(id) for id in ids]
+
 
 class BuildingNotFound(HTTPException):
     def __init__(self, building_info: str) -> None:

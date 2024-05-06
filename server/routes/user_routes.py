@@ -3,11 +3,11 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, HTTPException
 
+from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister, UserUpdate
 from server.services.auth.authenticate import admin_authenticate
 from server.services.cognito.cognito_client import CognitoClient
-from server.services.queries.building.get_buildings_by_ids import get_buildings_by_ids
 
 embed = Body(..., embed=True)
 
@@ -26,7 +26,7 @@ async def create_user(
 
     buildings = None
     if user_input.buildings is not None:
-        buildings = await get_buildings_by_ids(user_input.buildings)
+        buildings = await Building.by_ids(user_input.buildings)
 
     cognito_id = cognito_client.create_user(
         user_input.username, user_input.email)
@@ -59,7 +59,7 @@ async def update_user(
 
     buildings = None
     if user_input.buildings is not None:
-        buildings = await get_buildings_by_ids(user_input.buildings)
+        buildings = await Building.by_ids(user_input.buildings)
     user_to_update.buildings = buildings
     user_to_update.is_admin = user_input.is_admin
     user_to_update.name = user_input.name

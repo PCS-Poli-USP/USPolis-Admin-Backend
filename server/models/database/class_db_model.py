@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from server.models.database.schedule_db_model import Schedule
 from server.models.database.subject_db_model import Subject
 from server.models.database.user_db_model import User
+from server.utils.enums.class_type import ClassType
 
 
 class Preferences(BaseModel):
@@ -19,7 +20,7 @@ class Class(Document):
     period: list[str]
     start_date: datetime
     end_date: datetime
-    class_type: str
+    class_type: ClassType
     vacancies: int
     subscribers: int
     pendings: int

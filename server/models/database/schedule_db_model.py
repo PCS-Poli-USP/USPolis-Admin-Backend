@@ -5,8 +5,8 @@ from beanie import Document, Link
 from server.models.database.class_db_model import Class
 from server.models.database.holiday_category_db_model import HolidayCategory
 from server.utils.day_time import DayTime
-from server.utils.recurrence import Recurrence
-from server.utils.week_day import WeekDay
+from server.utils.enums.recurrence import Recurrence
+from server.utils.enums.week_day import WeekDay
 
 
 class Schedule(Document):

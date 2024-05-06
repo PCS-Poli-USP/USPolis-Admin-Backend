@@ -4,7 +4,7 @@ from collections.abc import AsyncIterator
 
 import pytest_asyncio
 from asgi_lifespan import LifespanManager
-from decouple import config
+from decouple import config  # type: ignore [import-untyped]
 from fastapi import FastAPI
 from httpx import AsyncClient
 
