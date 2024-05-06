@@ -49,9 +49,24 @@ warn_redundant_casts = true
 warn_return_any = true
 warn_unused_ignores = true
 
+[tool.pyright]
+include = ["server", "tests"]
+exclude = ["**/node_modules",
+    "**/__pycache__",
+]
+ignore = ["server/oldstuff"]
+
+reportMissingImports = true
+reportMissingTypeStubs = false
+
+pythonVersion = "3.11"
+pythonPlatform = "Linux"
+
 [tool.ruff]
 lint.extend-select = [
     "UP"
 ]
 lint.ignore = [
 ]
+line-length = 88
+indent-width = 4

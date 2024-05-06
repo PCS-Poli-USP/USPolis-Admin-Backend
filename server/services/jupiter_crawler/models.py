@@ -7,30 +7,44 @@ from server.utils.enums.class_type import ClassType
 from server.utils.enums.week_day import WeekDay
 
 
-class CrawledSchedule(BaseModel):
-    week_day: WeekDay
+class GeneralInfo(BaseModel):
+    class_code: str
     start_date: datetime
     end_date: datetime
+    class_type: ClassType
+    obs: str | None
+
+
+class ScheduleInfo(BaseModel):
+    week_day: WeekDay
+    professors: list[str]
     start_time: DayTime
     end_time: DayTime
 
 
-class CrawledCass(BaseModel):
-    schedules: list[CrawledSchedule]
-    start_date: datetime
-    end_date: datetime
-    class_type: ClassType
+class StudentNumbersInfo(BaseModel):
     vacancies: int
     subscribers: int
     pendings: int
+    enrolled: int
+
+
+class CrawledSchedule(ScheduleInfo):
+    start_date: datetime
+    end_date: datetime
+
+
+class CrawledClass(GeneralInfo, StudentNumbersInfo):
+    schedules: list[CrawledSchedule]
+    professors: list[str]
 
 
 class CrawledSubject(BaseModel):
-    classes: list[CrawledCass]
+    classes: list[CrawledClass]
     code: str
     name: str
     professors: list[str]
-    type: str
+    class_type: ClassType
     class_credit: int
     work_credit: int
     activation: datetime
