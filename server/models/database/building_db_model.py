@@ -14,14 +14,14 @@ class Building(Document):
         name = "buildings"
 
     @classmethod
-    async def by_name(cls, name: str) -> Self | None:
+    async def by_name(cls, name: str) -> Self:
         building = await cls.find_one(cls.name == name)
         if building is None:
             raise BuildingNotFound(name)
         return building
 
     @classmethod
-    async def by_id(cls, id: str) -> Self | None:
+    async def by_id(cls, id: str) -> Self:
         building = await cls.get(id)
         if building is None:
             raise BuildingNotFound(id)

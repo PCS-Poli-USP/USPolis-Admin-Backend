@@ -43,7 +43,7 @@ async def create_building(building_input: BuildingRegister, user: Annotated[User
 
 
 @router.patch("/{building_id}")
-async def update_building(building_id: str, building_input: BuildingUpdate, user: Annotated[User, Depends(admin_authenticate)]) -> str:
+async def update_building(building_id: str, building_input: BuildingUpdate) -> str:
     """Update a building"""
     building = await Building.by_id(building_id)
     building.name = building_input.name
@@ -53,7 +53,7 @@ async def update_building(building_id: str, building_input: BuildingUpdate, user
 
 
 @router.delete("/{building_id}")
-async def delete_building(building_id: str, user: Annotated[User, Depends(admin_authenticate)]) -> int:
+async def delete_building(building_id: str) -> int:
     """Delete a building"""
     building = await Building.by_id(building_id)
     response = await building.delete()
