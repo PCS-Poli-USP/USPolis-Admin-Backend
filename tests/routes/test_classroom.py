@@ -1,20 +1,21 @@
 import pytest
-from httpx import AsyncClient
 from fastapi import status
-
-from tests.utils.user_test_utils import get_test_admin_user
-from tests.utils.building_test_utils import get_testing_building
-from tests.utils.classroom_test_utils import make_classroom_register_input, add_classroom
-
-from tests.utils.enums.test_classroom_enum import ClassroomDefaultValues
+from httpx import AsyncClient
 
 from server.models.database.classroom_db_model import Classroom
+from tests.utils.building_test_utils import get_testing_building
+from tests.utils.classroom_test_utils import (
+    add_classroom,
+    make_classroom_register_input,
+)
+from tests.utils.enums.test_classroom_enum import ClassroomDefaultValues
+from tests.utils.user_test_utils import get_test_admin_user
 
 MAX_CLASSROOM_COUNT = 5
 
 
 @pytest.mark.asyncio
-async def test_classroom_get_all(client: AsyncClient):
+async def test_classroom_get_all(client: AsyncClient) -> None:
     user = await get_test_admin_user()
     building = await get_testing_building()
 
@@ -29,7 +30,7 @@ async def test_classroom_get_all(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_classroom_get(client: AsyncClient):
+async def test_classroom_get(client: AsyncClient) -> None:
     user = await get_test_admin_user()
     building = await get_testing_building()
 
@@ -45,13 +46,12 @@ async def test_classroom_get(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_classroom_create(client: AsyncClient):
+async def test_classroom_create(client: AsyncClient) -> None:
     user = await get_test_admin_user()
     building = await get_testing_building()
 
     building_id = str(building.id)
-    register = make_classroom_register_input(
-        ClassroomDefaultValues.NAME, building_id)
+    register = make_classroom_register_input(ClassroomDefaultValues.NAME, building_id)
     classroom_input = dict(register)
 
     response = await client.post("/classrooms", json=classroom_input)
@@ -71,14 +71,15 @@ async def test_classroom_create(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_classroom_update(client: AsyncClient):
+async def test_classroom_update(client: AsyncClient) -> None:
     user = await get_test_admin_user()
     building = await get_testing_building()
     building_id = str(building.id)
     classroom_id = await add_classroom(ClassroomDefaultValues.NAME, building, user)
 
     register = make_classroom_register_input(
-        f"{ClassroomDefaultValues.NAME} Updated", building_id)
+        f"{ClassroomDefaultValues.NAME} Updated", building_id
+    )
     classroom_input = dict(register)
 
     response = await client.patch(f"/classrooms/{classroom_id}", json=classroom_input)
@@ -92,7 +93,7 @@ async def test_classroom_update(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_classroom_delete(client: AsyncClient):
+async def test_classroom_delete(client: AsyncClient) -> None:
     user = await get_test_admin_user()
     building = await get_testing_building()
     classroom_id = await add_classroom(ClassroomDefaultValues.NAME, building, user)
@@ -104,4 +105,6 @@ async def test_classroom_delete(client: AsyncClient):
     assert data == 1
 
     building_id = str(building.id)
-    assert not await Classroom.check_classroom_name_exists(building_id, ClassroomDefaultValues.NAME)
+    assert not await Classroom.check_classroom_name_exists(
+        building_id, ClassroomDefaultValues.NAME
+    )
