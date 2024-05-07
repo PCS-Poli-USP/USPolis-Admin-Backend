@@ -58,12 +58,16 @@ async def test_classroom_create(client: AsyncClient):
     assert response.status_code == status.HTTP_200_OK
 
     classroom_id = response.json()
-    classroom = await Classroom.get(classroom_id, fetch_links=True)
+    assert isinstance(classroom_id, str)
 
-    user_id = str(user.id)
-    assert str(classroom.building.id) == building_id
-    assert str(classroom.created_by.id) == user_id
-    assert classroom.name == register.name
+    classroom = await Classroom.get(classroom_id, fetch_links=True)
+    assert classroom is not None
+
+    if classroom:
+        user_id = str(user.id)
+        assert str(classroom.building.id) == building_id
+        assert str(classroom.created_by.id) == user_id
+        assert classroom.name == register.name
 
 
 @pytest.mark.asyncio
