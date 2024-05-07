@@ -44,5 +44,6 @@ class Building(Document):
 
 class BuildingNotFound(HTTPException):
     def __init__(self, building_info: str) -> None:
-        super().__init__(status.HTTP_404_NOT_FOUND,
-                         f"Building {building_info} not found")
+        super().__init__(
+            status.HTTP_404_NOT_FOUND, f"Building {building_info} not found"
+        )

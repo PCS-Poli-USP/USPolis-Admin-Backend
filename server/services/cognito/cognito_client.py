@@ -38,12 +38,12 @@ class CognitoClient:
         except self._aws_client.exceptions.UsernameExistsException:
             raise UsernameAlreadyExists(username)
 
-
     def delete_user(self, username: str) -> None:
         self._aws_client.admin_delete_user(
             UserPoolId=CONFIG.aws_user_pool_id,
             Username=username,
         )
+
 
 class AuthenticationError(HTTPException):
     def __init__(self) -> None:

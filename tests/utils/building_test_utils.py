@@ -1,20 +1,17 @@
 from datetime import datetime
 
-from server.models.database.user_db_model import User
 from server.models.database.building_db_model import Building
+from server.models.database.user_db_model import User
 from server.routes.building_routes import BuildingNameAlreadyExists
-
-from tests.utils.default_values.test_building_default_values import BuildingDefaultValues
+from tests.utils.default_values.test_building_default_values import (
+    BuildingDefaultValues,
+)
 from tests.utils.user_test_utils import get_test_admin_user
 
 
 def make_building(name: str, user: User) -> Building:
     """Make a building created by user"""
-    building = Building(
-        name=name,
-        created_by=user,
-        updated_at=datetime.now()
-    )
+    building = Building(name=name, created_by=user, updated_at=datetime.now())
     return building
 
 

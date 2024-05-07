@@ -30,7 +30,9 @@ async def get_classroom(classroom_id: str) -> Classroom:
 
 
 @router.post("")
-async def create_classroom(classroom_input: ClassroomRegister, user: Annotated[User, Depends(authenticate)]) -> str:
+async def create_classroom(
+    classroom_input: ClassroomRegister, user: Annotated[User, Depends(authenticate)]
+) -> str:
     building = await Building.by_id(classroom_input.building_id)
 
     building_id = classroom_input.building_id
@@ -48,18 +50,22 @@ async def create_classroom(classroom_input: ClassroomRegister, user: Annotated[U
         air_conditioning=classroom_input.air_conditioning,
         ignore_to_allocate=classroom_input.ignore_to_allocate,
         created_by=user,
-        updated_at=datetime.now()
+        updated_at=datetime.now(),
     )
     await classroom.save()
     return str(classroom.id)
 
 
 @router.patch("/{classroom_id}")
-async def update_classroom(classroom_id: str, classroom_input: ClassroomRegister) -> str:
+async def update_classroom(
+    classroom_id: str, classroom_input: ClassroomRegister
+) -> str:
     """Update a classroom, not allowing two classrooms with same name in same building"""
     building_id = classroom_input.building_id
     classroom_name = classroom_input.name
-    if await Classroom.check_new_classroom_name_exists(building_id, classroom_id, classroom_name):
+    if await Classroom.check_new_classroom_name_exists(
+        building_id, classroom_id, classroom_name
+    ):
         raise ClassroomInBuildingAlredyExists(classroom_name, building_id)
 
     new_classroom = await Classroom.by_id(classroom_id)
@@ -81,11 +87,14 @@ async def delete_classroom(classroom_id: str) -> int:
     response = await classroom.delete()
     if response is None:
         raise HTTPException(
-            status.HTTP_500_INTERNAL_SERVER_ERROR, "No classroom deleted")
+            status.HTTP_500_INTERNAL_SERVER_ERROR, "No classroom deleted"
+        )
     return int(response.deleted_count)
 
 
 class ClassroomInBuildingAlredyExists(HTTPException):
     def __init__(self, classroom_info: str, building_info: str) -> None:
-        super().__init__(status.HTTP_409_CONFLICT,
-                         f"Classroom {classroom_info} in Building {building_info} already exists")
+        super().__init__(
+            status.HTTP_409_CONFLICT,
+            f"Classroom {classroom_info} in Building {building_info} already exists",
+        )
