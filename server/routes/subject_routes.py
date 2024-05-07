@@ -27,7 +27,7 @@ async def get_subject(subject_id: str) -> Subject:
 @router.post("")
 async def create_subject(subject_input: SubjectRegister) -> str:
     """Create a subject"""
-    if await Subject.by_code(subject_input.code):
+    if await Subject.check_code_exists(subject_input.code):
         raise SubjectCodeAlreadyExists(subject_input.code)
 
     subject = Subject(
