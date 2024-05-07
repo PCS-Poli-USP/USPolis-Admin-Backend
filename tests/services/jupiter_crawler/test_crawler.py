@@ -19,10 +19,8 @@ async def test_crawler(subject_code: str) -> None:
 
     assert result_json == reference_result_json
 
-# Define your test cases as a list of subject codes
 test_cases = JupiterCrawlerTestUtils.retrieve_subject_codes_to_test()
 
-# Parametrize the test function with the list of test cases
 @pytest.mark.parametrize("subject_code", test_cases)
 def test_crawler_parametrized(subject_code: str) -> None:
     pytest.mark.asyncio(test_crawler(subject_code))
