@@ -5,6 +5,7 @@ from fastapi import status
 
 from tests.utils.user_test_utils import get_test_admin_user
 from tests.utils.building_test_utils import make_building, add_building
+from tests.utils.default_values.test_building_default_values import BuildingDefaultValues
 
 from server.models.database.building_db_model import Building
 from server.models.http.requests.building_request_models import BuildingUpdate, BuildingRegister
@@ -17,7 +18,7 @@ async def test_building_get_all(client: AsyncClient) -> None:
     user = await get_test_admin_user()
     building_ids = []
     for i in range(MAX_BUILDINGS_COUNT):
-        building_id = await add_building(f"Test Get All {i}", user)
+        building_id = await add_building(f"{BuildingDefaultValues.NAME} {i}", user)
         building_ids.append(building_id)
 
     response = await client.get("/buildings")
@@ -47,28 +48,31 @@ async def test_building_get(client: AsyncClient) -> None:
 @pytest.mark.asyncio
 async def test_building_create(client: AsyncClient) -> None:
     user = await get_test_admin_user()
-    building_input = BuildingRegister(name="Test Create")
+    building_input = BuildingRegister(name=BuildingDefaultValues.NAME)
 
-    response = await client.post("/buildings", json={"name": "Test Create"})
+    response = await client.post("/buildings", json={"name": BuildingDefaultValues.NAME})
     assert response.status_code == status.HTTP_200_OK
 
     data = response.json()
     building = await Building.get(data, fetch_links=True)
+    assert building is not None
 
-    assert building.name == building_input.name
-    assert str(building.created_by.id) == str(user.id)
+    if building:
+        assert building.name == building_input.name
+        assert str(building.created_by.id) == str(user.id)
 
 
 @pytest.mark.asyncio
 async def test_building_update(client: AsyncClient) -> None:
     user = await get_test_admin_user()
-    building_id = await add_building("Test", user)
+    building_id = await add_building(BuildingDefaultValues.NAME, user)
 
-    building_input = BuildingUpdate(name="Test Update")
-    response = await client.patch(f"/buildings/{building_id}", json={"name": "Test Update"})
+    building_input = BuildingUpdate(name=f"{BuildingDefaultValues.NAME} Updated")
+    response = await client.patch(f"/buildings/{building_id}", json={"name": building_input.name})
     assert response.status_code == status.HTTP_200_OK
 
     data = response.json()
+    assert isinstance(data, str)
     assert data == building_id
 
     updated_building = await Building.by_id(building_id)
@@ -78,7 +82,7 @@ async def test_building_update(client: AsyncClient) -> None:
 @pytest.mark.asyncio
 async def test_building_delete(client: AsyncClient) -> None:
     user = await get_test_admin_user()
-    building_id = await add_building("Test Delete", user)
+    building_id = await add_building(BuildingDefaultValues.NAME, user)
 
     response = await client.delete(f"/buildings/{building_id}")
     assert response.status_code == status.HTTP_200_OK
@@ -86,4 +90,4 @@ async def test_building_delete(client: AsyncClient) -> None:
     data = response.json()
     assert data == 1
 
-    assert not await Building.check_name_exits("Test Delete")
+    assert not await Building.check_name_exits(BuildingDefaultValues.NAME)
