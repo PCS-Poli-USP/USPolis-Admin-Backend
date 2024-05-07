@@ -4,6 +4,9 @@ from server.models.database.user_db_model import User
 from server.models.database.building_db_model import Building
 from server.routes.building_routes import BuildingNameAlreadyExists
 
+from tests.utils.enums.test_building_enum import BuildingDefaultValues
+from tests.utils.user_test_utils import get_test_admin_user
+
 
 def make_building(name: str, user: User) -> Building:
     """Make a building created by user"""
@@ -12,6 +15,15 @@ def make_building(name: str, user: User) -> Building:
         created_by=user,
         updated_at=datetime.now()
     )
+    return building
+
+
+async def get_testing_building() -> Building:
+    if await Building.check_name_exits(BuildingDefaultValues.NAME):
+        return await Building.by_name(BuildingDefaultValues.NAME)
+    user = await get_test_admin_user()
+    building = make_building(BuildingDefaultValues.NAME, user)
+    await building.create()
     return building
 
 
