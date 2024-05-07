@@ -15,11 +15,18 @@ dependencies = [
     "fastapi-mail~=1.4",
     "python-decouple~=3.8",
     "uvicorn~=0.24",
-    "boto3"
+    "boto3",
+    "requests",
+    "beautifulsoup4"
 ]
 
 [project.optional-dependencies]
-dev = ["mypy", "ruff"]
+dev = [
+    "mypy",
+    "ruff",
+    "types-requests",
+    "types-beautifulsoup4"
+]
 test = [
     "asgi-lifespan~=2.1",
     "httpx~=0.25",
@@ -30,6 +37,7 @@ test = [
 "Source" = "https://github.com/flyinactor91/fastapi-beanie-jwt"
 
 [tool.mypy]
+exclude = ['build']
 check_untyped_defs = true
 disallow_any_unimported = true
 disallow_untyped_defs = true
@@ -42,9 +50,25 @@ warn_redundant_casts = true
 warn_return_any = true
 warn_unused_ignores = true
 
+[tool.pyright]
+include = ["server", "tests"]
+exclude = ["**/node_modules",
+    "**/__pycache__",
+    "**/build"
+]
+ignore = ["server/oldstuff"]
+
+reportMissingImports = true
+reportMissingTypeStubs = false
+
+pythonVersion = "3.11"
+pythonPlatform = "Linux"
+
 [tool.ruff]
-extend-select = [
+lint.extend-select = [
     "UP"
 ]
-ignore = [
+lint.ignore = [
 ]
+line-length = 88
+indent-width = 4
