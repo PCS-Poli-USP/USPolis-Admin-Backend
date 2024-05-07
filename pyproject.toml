@@ -37,6 +37,7 @@ test = [
 "Source" = "https://github.com/flyinactor91/fastapi-beanie-jwt"
 
 [tool.mypy]
+exclude = ['build']
 check_untyped_defs = true
 disallow_any_unimported = true
 disallow_untyped_defs = true
@@ -53,6 +54,7 @@ warn_unused_ignores = true
 include = ["server", "tests"]
 exclude = ["**/node_modules",
     "**/__pycache__",
+    "**/build"
 ]
 ignore = ["server/oldstuff"]
 
