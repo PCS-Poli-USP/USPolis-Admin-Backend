@@ -33,6 +33,11 @@ class User(Document):
             raise UserNotFound(id)
         return user
 
+    @classmethod
+    async def check_username_exists(cls, username: str) -> bool:
+        """Check if a username already exists"""
+        return await cls.find_one(cls.username == username) is not None
+
 
 class UserNotFound(HTTPException):
     def __init__(self, user_info: str):
