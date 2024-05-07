@@ -5,7 +5,7 @@ from fastapi import status
 
 from tests.utils.user_test_utils import get_test_admin_user
 from tests.utils.building_test_utils import make_building, add_building
-from tests.utils.enums.test_building_enum import BuildingDefaultValues
+from tests.utils.default_values.test_building_default_values import BuildingDefaultValues
 
 from server.models.database.building_db_model import Building
 from server.models.http.requests.building_request_models import BuildingUpdate, BuildingRegister
@@ -55,9 +55,11 @@ async def test_building_create(client: AsyncClient) -> None:
 
     data = response.json()
     building = await Building.get(data, fetch_links=True)
+    assert building is not None
 
-    assert building.name == building_input.name
-    assert str(building.created_by.id) == str(user.id)
+    if building:
+        assert building.name == building_input.name
+        assert str(building.created_by.id) == str(user.id)
 
 
 @pytest.mark.asyncio
@@ -70,6 +72,7 @@ async def test_building_update(client: AsyncClient) -> None:
     assert response.status_code == status.HTTP_200_OK
 
     data = response.json()
+    assert isinstance(data, str)
     assert data == building_id
 
     updated_building = await Building.by_id(building_id)

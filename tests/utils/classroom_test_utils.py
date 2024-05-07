@@ -5,7 +5,7 @@ from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
 from server.models.http.requests.classroom_request_models import ClassroomRegister
 
-from tests.utils.enums.test_classroom_enum import ClassroomDefaultValues
+from tests.utils.default_values.test_classroom_default_values import ClassroomDefaultValues
 
 from server.routes.classroom_routes import ClassroomInBuildingAlredyExists
 
