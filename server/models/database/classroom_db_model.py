@@ -54,7 +54,6 @@ class Classroom(Document):
         classroom = await cls.find_one({"building.$id": ObjectId(building_id), "name": new_name})
         if classroom is None:
             return False
-        print(str(classroom.id), classroom_id)
         return str(classroom.id) != classroom_id
 
 
