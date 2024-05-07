@@ -9,7 +9,8 @@ from fastapi import FastAPI
 from httpx import AsyncClient
 
 from server.config import CONFIG
-from tests.utils.user_test_utils import add_admin_user
+from server.models.database.user_db_model import User
+from tests.utils.user_test_utils import get_test_admin_user
 
 # Override config settings before loading the app
 CONFIG.testing = True
@@ -38,4 +39,12 @@ async def client() -> AsyncIterator[AsyncClient]:
                 print(exc)
             finally:
                 await clear_database(app)
-                await add_admin_user()
+
+@pytest_asyncio.fixture()
+async def user() -> User:
+    user = await get_test_admin_user()
+    yield user
+
+@pytest_asyncio.fixture(autouse=True)
+async def setup(client, user):
+    yield
