@@ -23,14 +23,14 @@ class Subject(Document):
         keep_nulls = False
 
     @classmethod
-    async def by_id(cls, id: str) -> Self:
+    async def by_id(cls, id: str) -> "Subject":
         subject = await Subject.get(id)
         if subject is None:
             raise SubjectNotFound(id)
         return subject
 
     @classmethod
-    async def by_code(cls, code: str) -> Self:
+    async def by_code(cls, code: str) -> "Subject":
         subject = await Subject.find_one(cls.code == code)
         if subject is None:
             raise SubjectNotFound(code)

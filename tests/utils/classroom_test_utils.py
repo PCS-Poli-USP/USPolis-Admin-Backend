@@ -47,3 +47,5 @@ async def add_classroom(name: str, building: Building, user: User) -> str:
     classroom = make_classroom(name, building, user)
     await classroom.create()
     return str(classroom.id)
+
+    

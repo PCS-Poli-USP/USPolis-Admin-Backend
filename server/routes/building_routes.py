@@ -27,7 +27,8 @@ async def get_all_buildings() -> list[Building]:
 @router.get("/{building_id}")
 async def get_building(building_id: str) -> Building:
     """Get a building"""
-    return await Building.by_id(building_id)
+    building: Building = await Building.by_id(building_id)
+    return building
 
 
 @router.post("")
@@ -39,7 +40,7 @@ async def create_building(
         raise BuildingNameAlreadyExists(building_input.name)
 
     new_building = Building(
-        name=building_input.name, created_by=user, updated_at=datetime.now()
+        name=building_input.name, created_by=user, updated_at=datetime.now() # type: ignore
     )
     await new_building.create()
     return str(new_building.id)
@@ -51,7 +52,7 @@ async def update_building(building_id: str, building_input: BuildingUpdate) -> s
     building = await Building.by_id(building_id)
     building.name = building_input.name
     building.updated_at = datetime.now()
-    await building.save()
+    await building.save() # type: ignore
     return building_id
 
 
@@ -59,7 +60,7 @@ async def update_building(building_id: str, building_input: BuildingUpdate) -> s
 async def delete_building(building_id: str) -> int:
     """Delete a building"""
     building = await Building.by_id(building_id)
-    response = await building.delete()
+    response = await building.delete() # type: ignore
     if response is None:
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR, "No building deleted"

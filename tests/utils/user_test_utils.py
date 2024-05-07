@@ -16,7 +16,7 @@ def make_admin_user(username: str) -> User:
     return user
 
 
-async def add_admin_user(username) -> str:
+async def add_admin_user(username: str) -> str:
     user = await User.by_username(username)
     if user:
         return str(user.id)
@@ -27,11 +27,12 @@ async def add_admin_user(username) -> str:
 
 async def get_test_admin_user() -> User:
     if await User.check_username_exists(CONFIG.mock_username):
-        return await User.by_username(CONFIG.mock_username)
+        user: User = await User.by_username(CONFIG.mock_username)
+        return user
     user = make_admin_user(CONFIG.mock_username)
     await user.create()
     return user
 
 
 async def add_empty_user() -> str:
-    pass
+    return ""

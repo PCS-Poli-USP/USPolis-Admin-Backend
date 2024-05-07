@@ -1,11 +1,11 @@
 import os
 from dotenv import load_dotenv
-import boto3
+import boto3 # type: ignore
 
 load_dotenv()
 
 
-def write_access_token():
+def write_access_token() -> None:
     client = boto3.client(
         "cognito-idp",
         region_name=os.getenv("AWS_REGION"),

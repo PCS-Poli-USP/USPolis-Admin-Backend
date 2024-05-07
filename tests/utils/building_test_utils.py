@@ -11,13 +11,15 @@ from tests.utils.user_test_utils import get_test_admin_user
 
 def make_building(name: str, user: User) -> Building:
     """Make a building created by user"""
-    building = Building(name=name, created_by=user, updated_at=datetime.now())
+    building = Building(name=name, created_by=user, # type: ignore
+                        updated_at=datetime.now())
     return building
 
 
 async def get_testing_building() -> Building:
     if await Building.check_name_exits(BuildingDefaultValues.NAME):
-        return await Building.by_name(BuildingDefaultValues.NAME)
+        building: Building = await Building.by_name(BuildingDefaultValues.NAME)
+        return building
     user = await get_test_admin_user()
     building = make_building(BuildingDefaultValues.NAME, user)
     await building.create()
@@ -26,7 +28,7 @@ async def get_testing_building() -> Building:
 
 async def add_building(name: str, user: User) -> str:
     if await Building.check_name_exits(name):
-        raise BuildingNameAlreadyExists
+        raise BuildingNameAlreadyExists(name)
     building = make_building(name, user)
     await building.create()
     return str(building.id)
@@ -34,4 +36,4 @@ async def add_building(name: str, user: User) -> str:
 
 async def remove_building(id: str) -> None:
     building = await Building.by_id(id)
-    await building.delete()
+    await building.delete()  # type: ignore

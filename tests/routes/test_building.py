@@ -3,6 +3,7 @@ from fastapi import status
 from httpx import AsyncClient
 
 from server.models.database.building_db_model import Building
+from server.models.database.user_db_model import User
 from server.models.http.requests.building_request_models import (
     BuildingRegister,
     BuildingUpdate,
@@ -32,8 +33,7 @@ async def test_building_get_all(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_building_get(client: AsyncClient) -> None:
-    user = await get_test_admin_user()
+async def test_building_get(client: AsyncClient, user: User) -> None:
     building = make_building("Test Get", user)
     await building.create()
 

@@ -3,7 +3,7 @@ from server.models.database.subject_db_model import Subject
 from server.models.http.requests.subject_request_models import SubjectRegister
 from server.routes.subject_routes import SubjectCodeAlreadyExists
 
-from tests.utils.enums.test_subject_enum import SubjectDefaultValues
+from tests.utils.default_values.test_subject_default_values import SubjectDefaultValues
 
 
 def make_subject(code: str) -> Subject:

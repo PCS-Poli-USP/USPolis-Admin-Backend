@@ -1,6 +1,9 @@
 # build
 build/
 
+# vscode
+.vscode/
+
 # aux
 access_token.txt
 
