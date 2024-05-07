@@ -15,18 +15,11 @@ dependencies = [
     "fastapi-mail~=1.4",
     "python-decouple~=3.8",
     "uvicorn~=0.24",
-    "boto3",
-    "requests",
-    "beautifulsoup4"
+    "boto3"
 ]
 
 [project.optional-dependencies]
-dev = [
-    "mypy",
-    "ruff",
-    "types-requests",
-    "types-beautifulsoup4"
-]
+dev = ["mypy", "ruff"]
 test = [
     "asgi-lifespan~=2.1",
     "httpx~=0.25",
@@ -50,8 +43,8 @@ warn_return_any = true
 warn_unused_ignores = true
 
 [tool.ruff]
-lint.extend-select = [
+extend-select = [
     "UP"
 ]
-lint.ignore = [
+ignore = [
 ]
