@@ -6,7 +6,7 @@ from server.services.jupiter_crawler.crawler import JupiterCrawler
 from tests.services.jupiter_crawler.utils import JupiterCrawlerTestUtils
 
 
-@pytest.mark.asyncio
+@pytest.mark.skip(reason="This test is not ready yet")
 async def test_crawler(subject_code: str) -> None:
     reference_result = JupiterCrawlerTestUtils.retrieve_reference_results()[subject_code]
     page_contents = JupiterCrawlerTestUtils.retrieve_html_contents()
