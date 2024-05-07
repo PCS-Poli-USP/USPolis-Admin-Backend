@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from server.models.database.user_db_model import User
-from server.models.database.building_db_model import Building, BuildingNotFound
+from server.models.database.building_db_model import Building
 from server.routes.building_routes import BuildingNameAlreadyExists
 
 
@@ -22,7 +22,7 @@ async def add_building(name: str, user: User) -> str:
     await building.create()
     return str(building.id)
 
+
 async def remove_building(id: str) -> None:
     building = await Building.by_id(id)
     await building.delete()
-

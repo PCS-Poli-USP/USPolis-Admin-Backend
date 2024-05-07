@@ -4,7 +4,7 @@ from httpx import AsyncClient
 from fastapi import status
 
 from tests.utils.user_test_utils import get_test_admin_user
-from tests.utils.building_test_utils import make_building, add_building, remove_building
+from tests.utils.building_test_utils import make_building, add_building
 
 from server.models.database.building_db_model import Building
 from server.models.http.requests.building_request_models import BuildingUpdate, BuildingRegister
@@ -26,9 +26,6 @@ async def test_building_get_all(client: AsyncClient) -> None:
     data = response.json()
     assert len(data) == MAX_BUILDINGS_COUNT
 
-    for i in range(MAX_BUILDINGS_COUNT):
-        await remove_building(building_ids[i])
-
 
 @pytest.mark.asyncio
 async def test_building_get(client: AsyncClient) -> None:
@@ -45,7 +42,6 @@ async def test_building_get(client: AsyncClient) -> None:
 
     user_id = str(user.id)
     assert data["created_by"]["id"] == user_id
-    await building.delete()
 
 
 @pytest.mark.asyncio
@@ -62,8 +58,6 @@ async def test_building_create(client: AsyncClient) -> None:
     assert building.name == building_input.name
     assert str(building.created_by.id) == str(user.id)
 
-    await building.delete()
-
 
 @pytest.mark.asyncio
 async def test_building_update(client: AsyncClient) -> None:
@@ -79,8 +73,6 @@ async def test_building_update(client: AsyncClient) -> None:
 
     updated_building = await Building.by_id(building_id)
     assert updated_building.name == building_input.name
-
-    await updated_building.delete()
 
 
 @pytest.mark.asyncio
