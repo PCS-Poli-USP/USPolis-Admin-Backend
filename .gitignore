@@ -1,7 +1,5 @@
-# tests
-tests/services/jupiter_crawler/html_contents
-tests/services/jupiter_crawler/new_results.json
-tests/services/jupiter_crawler/results.json
+# tests data
+tests/data
 
 # build
 build/

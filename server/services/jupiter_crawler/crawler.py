@@ -24,11 +24,10 @@ CLASS_DIV_IDENTIFIERS = {
 
 
 class JupiterCrawler:
-    __subject_code: str
-    __soup: BeautifulSoup
-    __subject_professors: set[str] = set()
-
     def __init__(self, subject_code: str):
+        self.__subject_code: str
+        self.__soup: BeautifulSoup
+        self.__subject_professors: set[str] = set()
         self.__subject_code = subject_code
 
     @staticmethod
@@ -38,9 +37,7 @@ class JupiterCrawler:
         crawler = JupiterCrawler(subject_code)
         return await crawler.crawl_subject(page_content)
 
-    async def crawl_subject(
-        self, page_content: bytes | None = None
-    ) -> CrawledSubject:
+    async def crawl_subject(self, page_content: bytes | None = None) -> CrawledSubject:
         if page_content is None:
             page_content = await self.request_html()
         self.__soup = self.__build_soap(page_content)
@@ -54,7 +51,7 @@ class JupiterCrawler:
             work_credit=0,
             activation=crawled_classes[0].start_date,
             deactivation=crawled_classes[0].end_date,
-            professors=list(self.__subject_professors),
+            professors=sorted(list(self.__subject_professors)),
         )
 
     async def request_html(self) -> bytes:
@@ -106,7 +103,7 @@ class JupiterCrawler:
                     class_professors_set.update(schedule_info.professors)
                     self.__subject_professors.update(schedule_info.professors)
 
-                crawled_class.professors = list(class_professors_set)
+                crawled_class.professors = sorted(list(class_professors_set))
                 crawled_classes.append(crawled_class)
             except Exception as e:
                 print(
@@ -155,6 +152,7 @@ class JupiterCrawler:
             ):
                 previous_schedule_info = schedules_infos[len(schedules_infos) - 1]
                 previous_schedule_info.professors.append(professor)
+                previous_schedule_info.professors = sorted(previous_schedule_info.professors)
                 continue
 
             # More than one hour in same day - only week day is empty
