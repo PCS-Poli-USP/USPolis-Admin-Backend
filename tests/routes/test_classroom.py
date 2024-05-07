@@ -8,7 +8,7 @@ from tests.utils.classroom_test_utils import (
     add_classroom,
     make_classroom_register_input,
 )
-from tests.utils.enums.test_classroom_enum import ClassroomDefaultValues
+from tests.utils.default_values.test_classroom_default_values import ClassroomDefaultValues
 from tests.utils.user_test_utils import get_test_admin_user
 
 MAX_CLASSROOM_COUNT = 5

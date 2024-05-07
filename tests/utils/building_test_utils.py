@@ -4,7 +4,7 @@ from server.models.database.user_db_model import User
 from server.models.database.building_db_model import Building
 from server.routes.building_routes import BuildingNameAlreadyExists
 
-from tests.utils.enums.test_building_enum import BuildingDefaultValues
+from tests.utils.default_values.test_building_default_values import BuildingDefaultValues
 from tests.utils.user_test_utils import get_test_admin_user
 
 

@@ -5,7 +5,7 @@ from fastapi import status
 
 from tests.utils.user_test_utils import get_test_admin_user
 from tests.utils.building_test_utils import make_building, add_building
-from tests.utils.enums.test_building_enum import BuildingDefaultValues
+from tests.utils.default_values.test_building_default_values import BuildingDefaultValues
 
 from server.models.database.building_db_model import Building
 from server.models.http.requests.building_request_models import BuildingUpdate, BuildingRegister
