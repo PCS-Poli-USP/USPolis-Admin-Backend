@@ -41,12 +41,7 @@ async def client() -> AsyncIterator[AsyncClient]:
                 await clear_database(app)
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture(autouse=False)
 async def user() -> AsyncIterator[User]:
     user = await get_test_admin_user()
     yield user
-
-
-@pytest_asyncio.fixture(autouse=True)
-async def setup(client: AsyncClient, user: User) -> AsyncIterator[None]:
-    yield

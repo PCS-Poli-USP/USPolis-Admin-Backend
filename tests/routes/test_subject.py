@@ -1,6 +1,7 @@
 import pytest
 from httpx import AsyncClient
 from fastapi import status
+from json import loads
 
 from tests.utils.subject_test_utils import add_subject, make_subject_register_input
 from tests.utils.default_values.test_subject_default_values import SubjectDefaultValues
@@ -13,7 +14,7 @@ UPDATED_SUBJECT_CODE = "DEF000U"
 
 
 @pytest.mark.asyncio
-async def test_subject_get_all(client: AsyncClient) -> None:
+async def test_subject_get_all(client: AsyncClient, user: User) -> None:
     for i in range(MAX_SUBJECT_COUNT):
         await add_subject(f"DEF000{i}")
 
@@ -25,7 +26,7 @@ async def test_subject_get_all(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_subject_get(client: AsyncClient) -> None:
+async def test_subject_get(client: AsyncClient, user: User) -> None:
     subject_id = await add_subject(SubjectDefaultValues.CODE)
     response = await client.get(f"/subjects/{subject_id}")
 
@@ -33,11 +34,11 @@ async def test_subject_get(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_subject_create(client: AsyncClient) -> None:
+async def test_subject_create(client: AsyncClient, user: User) -> None:
     register = make_subject_register_input()
     subject_input = register.model_dump_json()
 
-    response = await client.post("/subjects", json=subject_input)
+    response = await client.post("/subjects", json=loads(subject_input))
     assert response.status_code == status.HTTP_200_OK
 
     subject_id = response.json()
@@ -55,7 +56,7 @@ async def test_subject_update(client: AsyncClient, user: User) -> None:
     register.code = UPDATED_SUBJECT_CODE
     subject_input = register.model_dump_json()
 
-    response = await client.patch(f"/subjects/{subject_id}", json=subject_input)
+    response = await client.patch(f"/subjects/{subject_id}", json=loads(subject_input))
     assert response.status_code == status.HTTP_200_OK
 
     updated_id = response.json()
@@ -66,7 +67,7 @@ async def test_subject_update(client: AsyncClient, user: User) -> None:
 
 
 @pytest.mark.asyncio
-async def test_subject_delete(client: AsyncClient) -> None:
+async def test_subject_delete(client: AsyncClient, user: User) -> None:
     subject_id = await add_subject(SubjectDefaultValues.CODE)
 
     response = await client.delete(f"/subjects/{subject_id}")
