@@ -1,4 +1,3 @@
-
 class ClassroomDefaultValues:
     NAME: str = "Default name"
     CAPACITY: int = 10

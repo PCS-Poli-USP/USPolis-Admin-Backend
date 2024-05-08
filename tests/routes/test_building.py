@@ -1,14 +1,18 @@
-
 import pytest
-from httpx import AsyncClient
 from fastapi import status
-
-from tests.utils.user_test_utils import get_test_admin_user
-from tests.utils.building_test_utils import make_building, add_building
-from tests.utils.default_values.test_building_default_values import BuildingDefaultValues
+from httpx import AsyncClient
 
 from server.models.database.building_db_model import Building
-from server.models.http.requests.building_request_models import BuildingUpdate, BuildingRegister
+from server.models.database.user_db_model import User
+from server.models.http.requests.building_request_models import (
+    BuildingRegister,
+    BuildingUpdate,
+)
+from tests.utils.building_test_utils import add_building, make_building
+from tests.utils.default_values.test_building_default_values import (
+    BuildingDefaultValues,
+)
+from tests.utils.user_test_utils import get_test_admin_user
 
 MAX_BUILDINGS_COUNT = 5
 
@@ -29,8 +33,7 @@ async def test_building_get_all(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_building_get(client: AsyncClient) -> None:
-    user = await get_test_admin_user()
+async def test_building_get(client: AsyncClient, user: User) -> None:
     building = make_building("Test Get", user)
     await building.create()
 
@@ -50,7 +53,9 @@ async def test_building_create(client: AsyncClient) -> None:
     user = await get_test_admin_user()
     building_input = BuildingRegister(name=BuildingDefaultValues.NAME)
 
-    response = await client.post("/buildings", json={"name": BuildingDefaultValues.NAME})
+    response = await client.post(
+        "/buildings", json={"name": BuildingDefaultValues.NAME}
+    )
     assert response.status_code == status.HTTP_200_OK
 
     data = response.json()
@@ -59,6 +64,7 @@ async def test_building_create(client: AsyncClient) -> None:
 
     if building:
         assert building.name == building_input.name
+        assert isinstance(building.created_by, User)
         assert str(building.created_by.id) == str(user.id)
 
 
@@ -68,7 +74,9 @@ async def test_building_update(client: AsyncClient) -> None:
     building_id = await add_building(BuildingDefaultValues.NAME, user)
 
     building_input = BuildingUpdate(name=f"{BuildingDefaultValues.NAME} Updated")
-    response = await client.patch(f"/buildings/{building_id}", json={"name": building_input.name})
+    response = await client.patch(
+        f"/buildings/{building_id}", json={"name": building_input.name}
+    )
     assert response.status_code == status.HTTP_200_OK
 
     data = response.json()

@@ -1,3 +1,9 @@
+# vscode
+.vscode/
+
+# tests data
+tests/data
+
 # build
 build/
 

@@ -1,4 +1,3 @@
-
 class UserDefaultValues:
     USERNAME = "default username"
     NAME = "default name"
