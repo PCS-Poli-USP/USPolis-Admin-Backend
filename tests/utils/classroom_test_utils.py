@@ -5,7 +5,9 @@ from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
 from server.models.http.requests.classroom_request_models import ClassroomRegister
 
-from tests.utils.default_values.test_classroom_default_values import ClassroomDefaultValues
+from tests.utils.default_values.test_classroom_default_values import (
+    ClassroomDefaultValues,
+)
 
 from server.routes.classroom_routes import ClassroomInBuildingAlredyExists
 
@@ -13,15 +15,15 @@ from server.routes.classroom_routes import ClassroomInBuildingAlredyExists
 def make_classroom(name: str, building: Building, user: User) -> Classroom:
     classroom = Classroom(
         name=name,
-        building=building,
+        building=building, # type: ignore
         capacity=ClassroomDefaultValues.CAPACITY,
         floor=ClassroomDefaultValues.FLOOR,
         ignore_to_allocate=ClassroomDefaultValues.IGNORE_TO_ALLOCATE,
         accessibility=ClassroomDefaultValues.ACCESSIBILITY,
         projector=ClassroomDefaultValues.PROJECTOR,
         air_conditioning=ClassroomDefaultValues.AIR_CONDITIONING,
-        created_by=user,
-        updated_at=datetime.now()
+        created_by=user, # type: ignore
+        updated_at=datetime.now(),
     )
     return classroom
 
@@ -47,5 +49,3 @@ async def add_classroom(name: str, building: Building, user: User) -> str:
     classroom = make_classroom(name, building, user)
     await classroom.create()
     return str(classroom.id)
-
-    

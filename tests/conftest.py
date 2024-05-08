@@ -25,14 +25,14 @@ from server import app  # noqa: E402
 async def clear_database(server: FastAPI) -> None:
     """Empty the test database."""
     async for collection in await server.db.list_collections():  # type: ignore[attr-defined]
-        await server.db[collection["name"]].delete_many({})  # type: ignore[attr-defined]
+        await server.db[collection["name"]].delete_many({})  # type: ignore
 
 
 @pytest_asyncio.fixture()
 async def client() -> AsyncIterator[AsyncClient]:
     """Async server client that handles lifespan and teardown."""
     async with LifespanManager(app):
-        async with AsyncClient(app=app, base_url="http://test") as _client: #type: ignore
+        async with AsyncClient(app=app, base_url="http://test") as _client:  # type: ignore
             try:
                 yield _client
             except Exception as exc:
@@ -48,5 +48,5 @@ async def user() -> AsyncIterator[User]:
 
 
 @pytest_asyncio.fixture(autouse=True)
-async def setup(client: AsyncClient, user: User) -> AsyncIterator[None]:  
+async def setup(client: AsyncClient, user: User) -> AsyncIterator[None]:
     yield

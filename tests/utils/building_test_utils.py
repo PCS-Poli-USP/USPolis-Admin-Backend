@@ -11,8 +11,11 @@ from tests.utils.user_test_utils import get_test_admin_user
 
 def make_building(name: str, user: User) -> Building:
     """Make a building created by user"""
-    building = Building(name=name, created_by=user, # type: ignore
-                        updated_at=datetime.now())
+    building = Building(
+        name=name,
+        created_by=user,  # type: ignore
+        updated_at=datetime.now(),
+    )
     return building
 
 

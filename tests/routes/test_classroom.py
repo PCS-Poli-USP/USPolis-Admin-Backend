@@ -2,13 +2,17 @@ import pytest
 from fastapi import status
 from httpx import AsyncClient
 
+from server.models.database.user_db_model import User
+from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
 from tests.utils.building_test_utils import get_testing_building
 from tests.utils.classroom_test_utils import (
     add_classroom,
     make_classroom_register_input,
 )
-from tests.utils.default_values.test_classroom_default_values import ClassroomDefaultValues
+from tests.utils.default_values.test_classroom_default_values import (
+    ClassroomDefaultValues,
+)
 from tests.utils.user_test_utils import get_test_admin_user
 
 MAX_CLASSROOM_COUNT = 5
@@ -65,6 +69,8 @@ async def test_classroom_create(client: AsyncClient) -> None:
 
     if classroom:
         user_id = str(user.id)
+        assert isinstance(classroom.building, Building)
+        assert isinstance(classroom.created_by, User)
         assert str(classroom.building.id) == building_id
         assert str(classroom.created_by.id) == user_id
         assert classroom.name == register.name

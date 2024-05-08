@@ -11,7 +11,7 @@ def make_admin_user(username: str) -> User:
         email=f"{username}@admin.com",
         is_admin=True,
         cognito_id=f"{username}-cognito-id",
-        updated_at=datetime.now()
+        updated_at=datetime.now(),
     )
     return user
 

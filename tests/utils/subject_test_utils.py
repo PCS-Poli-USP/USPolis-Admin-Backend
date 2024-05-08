@@ -1,4 +1,3 @@
-
 from server.models.database.subject_db_model import Subject
 from server.models.http.requests.subject_request_models import SubjectRegister
 from server.routes.subject_routes import SubjectCodeAlreadyExists
@@ -14,7 +13,7 @@ def make_subject(code: str) -> Subject:
         type=SubjectDefaultValues.TYPE,
         class_credit=SubjectDefaultValues.CLASS_CREDIT,
         work_credit=SubjectDefaultValues.WORK_CREDIT,
-        activation=SubjectDefaultValues.ACTIVATION
+        activation=SubjectDefaultValues.ACTIVATION,
     )
     return subject
 

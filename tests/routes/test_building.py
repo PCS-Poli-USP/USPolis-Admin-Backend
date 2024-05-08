@@ -64,6 +64,7 @@ async def test_building_create(client: AsyncClient) -> None:
 
     if building:
         assert building.name == building_input.name
+        assert isinstance(building.created_by, User)
         assert str(building.created_by.id) == str(user.id)
 
 
