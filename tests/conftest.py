@@ -28,7 +28,7 @@ async def clear_database(server: FastAPI) -> None:
         await server.db[collection["name"]].delete_many({})  # type: ignore
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture(autouse=False)
 async def client() -> AsyncIterator[AsyncClient]:
     """Async server client that handles lifespan and teardown."""
     async with LifespanManager(app):
