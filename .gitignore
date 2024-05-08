@@ -1,8 +1,11 @@
-# build
-build/
-
 # vscode
 .vscode/
+
+# tests data
+tests/data
+
+# build
+build/
 
 # aux
 access_token.txt
