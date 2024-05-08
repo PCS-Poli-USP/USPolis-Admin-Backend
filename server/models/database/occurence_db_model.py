@@ -8,11 +8,11 @@ from server.utils.day_time import DayTime
 
 
 class Ocurrence(Document):
-    classroom = Link[Classroom]
-    schedule = Link[Schedule]
-    start_time = DayTime
-    end_time = DayTime
-    date = datetime
+    classroom: Link[Classroom]
+    schedule: Link[Schedule]
+    start_time: DayTime
+    end_time: DayTime
+    date: datetime
 
     class Settings:
         name = "occurrences"
