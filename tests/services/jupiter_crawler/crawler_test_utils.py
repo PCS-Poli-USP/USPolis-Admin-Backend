@@ -5,9 +5,9 @@ from server.services.jupiter_crawler.models import CrawledSubject
 
 
 class JupiterCrawlerTestUtils:
-    _test_cases_file_path = "tests/test_cases/crawler_test_cases.txt"
-    _contents_file_path = "tests/data/jupiter_crawler/html_contents"
-    _reference_results_file_path = "tests/data/jupiter_crawler/reference_results"
+    _test_cases_file_path = "tests/data/test_cases/crawler_test_cases.txt"
+    _contents_file_path = "tests/data/results/crawler_html_contents"
+    _reference_results_file_path = "tests/data/results/crawler_reference_results"
 
     @classmethod
     def retrieve_subject_codes_to_test(cls) -> list[str]:

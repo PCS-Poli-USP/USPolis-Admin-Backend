@@ -72,3 +72,6 @@ lint.ignore = [
 ]
 line-length = 88
 indent-width = 4
+
+[tool.setuptools]
+packages = ["server", "tests"]
