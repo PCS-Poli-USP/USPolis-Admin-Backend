@@ -32,7 +32,7 @@ class Building(Document):
         return await cls.find_one(cls.name == name) is not None
 
     @classmethod
-    async def by_ids(cls, ids: list[str]) -> list[Self]:
+    async def by_ids(cls, ids: list[str]) -> list["Building"]:
         async def get_building_by_id(id: str) -> Building:
             building = await Building.get(id)
             if not building:
@@ -44,5 +44,6 @@ class Building(Document):
 
 class BuildingNotFound(HTTPException):
     def __init__(self, building_info: str) -> None:
-        super().__init__(status.HTTP_404_NOT_FOUND,
-                         f"Building {building_info} not found")
+        super().__init__(
+            status.HTTP_404_NOT_FOUND, f"Building {building_info} not found"
+        )
