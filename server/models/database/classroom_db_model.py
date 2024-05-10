@@ -60,12 +60,12 @@ class Classroom(Document):
         )
 
     @classmethod
-    async def check_new_classroom_name_exists(
-        cls, building_id: str, classroom_id: str, new_name: str
+    async def check_classroom_name_is_valid(
+        cls, building_id: str, classroom_id: str, name: str
     ) -> bool:
-        """Check if the new classroom name existis in a building"""
+        """Check if the classroom name is not used by other classroom in a building"""
         classroom = await cls.find_one(
-            {"building.$id": ObjectId(building_id), "name": new_name}
+            {"building.$id": ObjectId(building_id), "name": name}
         )
         if classroom is None:
             return False

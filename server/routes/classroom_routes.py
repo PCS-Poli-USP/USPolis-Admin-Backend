@@ -63,7 +63,7 @@ async def update_classroom(
     """Update a classroom, not allowing two classrooms with same name in same building"""
     building_id = classroom_input.building_id
     classroom_name = classroom_input.name
-    if await Classroom.check_new_classroom_name_exists(
+    if await Classroom.check_classroom_name_is_valid(
         building_id, classroom_id, classroom_name
     ):
         raise ClassroomInBuildingAlredyExists(classroom_name, building_id)

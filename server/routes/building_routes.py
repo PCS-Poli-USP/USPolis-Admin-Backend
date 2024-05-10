@@ -40,7 +40,7 @@ async def create_building(
         raise BuildingNameAlreadyExists(building_input.name)
 
     new_building = Building(
-        name=building_input.name, created_by=user, updated_at=datetime.now() # type: ignore
+        name=building_input.name, created_by=user, updated_at=datetime.now()  # type: ignore
     )
     await new_building.create()
     return str(new_building.id)
@@ -49,10 +49,12 @@ async def create_building(
 @router.patch("/{building_id}")
 async def update_building(building_id: str, building_input: BuildingUpdate) -> str:
     """Update a building"""
+    if not await Building.check_name_is_valid(building_id, building_input.name):
+        raise BuildingNameAlreadyExists(building_input.name)
     building = await Building.by_id(building_id)
     building.name = building_input.name
     building.updated_at = datetime.now()
-    await building.save() # type: ignore
+    await building.save()  # type: ignore
     return building_id
 
 
@@ -60,7 +62,7 @@ async def update_building(building_id: str, building_input: BuildingUpdate) -> s
 async def delete_building(building_id: str) -> int:
     """Delete a building"""
     building = await Building.by_id(building_id)
-    response = await building.delete() # type: ignore
+    response = await building.delete()  # type: ignore
     if response is None:
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR, "No building deleted"
