@@ -1,14 +1,13 @@
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Body, Depends, status
+from fastapi import APIRouter, Body, Depends, HTTPException, status
 
-from server.services.auth.authenticate import authenticate
-from server.models.database.user_db_model import User
-from server.models.database.classroom_db_model import Classroom
 from server.models.database.building_db_model import Building
+from server.models.database.classroom_db_model import Classroom
+from server.models.database.user_db_model import User
 from server.models.http.requests.classroom_request_models import ClassroomRegister
-
+from server.services.auth.authenticate import authenticate
 
 embed = Body(..., embed=True)
 
@@ -38,6 +37,7 @@ async def create_classroom(
     building_id = classroom_input.building_id
     classroom_name = classroom_input.name
     if await Classroom.check_classroom_name_exists(building_id, classroom_name):
+        raise ClassroomInBuildingAlredyExists(classroom_name, building_id)
         raise ClassroomInBuildingAlredyExists(classroom_name, building_id)
 
     classroom = Classroom(
@@ -78,7 +78,7 @@ async def update_classroom(
     new_classroom.air_conditioning = classroom_input.air_conditioning
     new_classroom.updated_at = datetime.now()
     await new_classroom.save()  # type: ignore
-    return classroom_id
+    return str(new_classroom.id)
 
 
 @router.delete("/{classroom_id}")

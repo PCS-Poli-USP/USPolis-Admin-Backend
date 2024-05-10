@@ -59,13 +59,15 @@ async def delete_subject(subject_id: str) -> int:
     subject = await Subject.by_id(subject_id)
     response = await subject.delete()  # type: ignore
     if response is None:
-        raise HTTPException(
-            status.HTTP_500_INTERNAL_SERVER_ERROR, "No subject deleted")
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "No subject deleted")
     return int(response.deleted_count)
 
 
 class SubjectCodeAlreadyExists(HTTPException):
     def __init__(self, subject_code: str) -> None:
+        super().__init__(
+            status.HTTP_409_CONFLICT, f"Subject {subject_code} already exists"
+        )
         super().__init__(
             status.HTTP_409_CONFLICT, f"Subject {subject_code} already exists"
         )
