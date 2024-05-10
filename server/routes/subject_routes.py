@@ -1,9 +1,7 @@
 from fastapi import APIRouter, Body, Depends, HTTPException, status
-from fastapi import APIRouter, Body, Depends, HTTPException, status
 
 from server.models.database.subject_db_model import Subject
 from server.models.http.requests.subject_request_models import SubjectRegister
-from server.services.auth.authenticate import authenticate
 from server.services.auth.authenticate import authenticate
 
 embed = Body(..., embed=True)
