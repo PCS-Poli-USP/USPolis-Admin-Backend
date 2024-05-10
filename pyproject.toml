@@ -65,20 +65,6 @@ reportMissingTypeStubs = false
 pythonVersion = "3.11"
 pythonPlatform = "Linux"
 
-[tool.pyright]
-include = ["server", "tests"]
-exclude = ["**/node_modules",
-    "**/__pycache__",
-    "**/build"
-]
-ignore = ["server/oldstuff"]
-
-reportMissingImports = true
-reportMissingTypeStubs = false
-
-pythonVersion = "3.11"
-pythonPlatform = "Linux"
-
 [tool.ruff]
 lint.extend-select = [
     "UP"
