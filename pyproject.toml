@@ -5,7 +5,8 @@ description = "Refactoring of USPolis backend repository"
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [
-    {name = "Henrique Duran", email="henriquefduran@usp.br"}
+    {name = "Henrique Duran", email="henriquefduran@usp.br"},
+    {name = "Gabriel Di Vanna Camargo", email="gabriel_camargo@usp.br"}
 ]
 dependencies = [
     "bcrypt~=4.0",
@@ -37,7 +38,6 @@ test = [
 "Source" = "https://github.com/flyinactor91/fastapi-beanie-jwt"
 
 [tool.mypy]
-exclude = ['build']
 exclude = ['build']
 check_untyped_defs = true
 disallow_any_unimported = true
