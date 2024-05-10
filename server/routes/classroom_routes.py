@@ -25,14 +25,10 @@ async def get_all_classrooms() -> list[Classroom]:
 @router.get("/{classroom_id}")
 async def get_classroom(classroom_id: str) -> Classroom:
     """Get a classroom"""
-    return await Classroom.by_id(classroom_id) # type: ignore
-    return await Classroom.by_id(classroom_id) # type: ignore
+    return await Classroom.by_id(classroom_id)  # type: ignore
 
 
 @router.post("")
-async def create_classroom(
-    classroom_input: ClassroomRegister, user: Annotated[User, Depends(authenticate)]
-) -> str:
 async def create_classroom(
     classroom_input: ClassroomRegister, user: Annotated[User, Depends(authenticate)]
 ) -> str:
@@ -45,7 +41,7 @@ async def create_classroom(
         raise ClassroomInBuildingAlredyExists(classroom_name, building_id)
 
     classroom = Classroom(
-        building=building, # type: ignore
+        building=building,  # type: ignore
         name=classroom_input.name,
         capacity=classroom_input.capacity,
         floor=classroom_input.floor,
@@ -53,7 +49,7 @@ async def create_classroom(
         projector=classroom_input.projector,
         air_conditioning=classroom_input.air_conditioning,
         ignore_to_allocate=classroom_input.ignore_to_allocate,
-        created_by=user, # type: ignore
+        created_by=user,  # type: ignore
         updated_at=datetime.now(),
     )
     await classroom.save()  # type: ignore
@@ -61,9 +57,6 @@ async def create_classroom(
 
 
 @router.patch("/{classroom_id}")
-async def update_classroom(
-    classroom_id: str, classroom_input: ClassroomRegister
-) -> str:
 async def update_classroom(
     classroom_id: str, classroom_input: ClassroomRegister
 ) -> str:
@@ -84,18 +77,16 @@ async def update_classroom(
     new_classroom.projector = classroom_input.projector
     new_classroom.air_conditioning = classroom_input.air_conditioning
     new_classroom.updated_at = datetime.now()
-    await new_classroom.save() # type: ignore
+    await new_classroom.save()  # type: ignore
     return str(new_classroom.id)
 
 
 @router.delete("/{classroom_id}")
 async def delete_classroom(classroom_id: str) -> int:
     classroom = await Classroom.by_id(classroom_id)
-    response = await classroom.delete() # type: ignore
+    response = await classroom.delete()  # type: ignore
     if response is None:
         raise HTTPException(
-            status.HTTP_500_INTERNAL_SERVER_ERROR, "No classroom deleted"
-        )
             status.HTTP_500_INTERNAL_SERVER_ERROR, "No classroom deleted"
         )
     return int(response.deleted_count)
@@ -103,10 +94,6 @@ async def delete_classroom(classroom_id: str) -> int:
 
 class ClassroomInBuildingAlredyExists(HTTPException):
     def __init__(self, classroom_info: str, building_info: str) -> None:
-        super().__init__(
-            status.HTTP_409_CONFLICT,
-            f"Classroom {classroom_info} in Building {building_info} already exists",
-        )
         super().__init__(
             status.HTTP_409_CONFLICT,
             f"Classroom {classroom_info} in Building {building_info} already exists",
