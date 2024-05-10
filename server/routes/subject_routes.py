@@ -23,13 +23,11 @@ async def get_all_subjects() -> list[Subject]:
 async def get_subject(subject_id: str) -> Subject:
     """Get a subject"""
     return await Subject.by_id(subject_id)  # type: ignore
-    return await Subject.by_id(subject_id)  # type: ignore
 
 
 @router.post("")
 async def create_subject(subject_input: SubjectRegister) -> str:
     """Create a subject"""
-    if await Subject.check_code_exists(subject_input.code):
     if await Subject.check_code_exists(subject_input.code):
         raise SubjectCodeAlreadyExists(subject_input.code)
 
@@ -52,8 +50,6 @@ async def update_subject(subject_id: str, subject_input: SubjectRegister) -> str
     """Update a subject"""
     if not await Subject.check_code_is_valid(subject_id, subject_input.code):
         raise SubjectCodeAlreadyExists(subject_input.code)
-    if not await Subject.check_code_is_valid(subject_id, subject_input.code):
-        raise SubjectCodeAlreadyExists(subject_input.code)
     new_subject = await Subject.by_id(subject_id)
     await new_subject.update({"$set": subject_input})
     return str(new_subject.id)
@@ -64,17 +60,14 @@ async def delete_subject(subject_id: str) -> int:
     """Delete a subject"""
     subject = await Subject.by_id(subject_id)
     response = await subject.delete()  # type: ignore
-    response = await subject.delete()  # type: ignore
     if response is None:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "No subject deleted")
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR, "No subject deleted")
     return int(response.deleted_count)
 
 
 class SubjectCodeAlreadyExists(HTTPException):
     def __init__(self, subject_code: str) -> None:
-        super().__init__(
-            status.HTTP_409_CONFLICT, f"Subject {subject_code} already exists"
-        )
         super().__init__(
             status.HTTP_409_CONFLICT, f"Subject {subject_code} already exists"
         )
