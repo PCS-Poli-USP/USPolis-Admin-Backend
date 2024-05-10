@@ -38,7 +38,6 @@ async def create_classroom(
     classroom_name = classroom_input.name
     if await Classroom.check_classroom_name_exists(building_id, classroom_name):
         raise ClassroomInBuildingAlredyExists(classroom_name, building_id)
-        raise ClassroomInBuildingAlredyExists(classroom_name, building_id)
 
     classroom = Classroom(
         building=building,  # type: ignore
