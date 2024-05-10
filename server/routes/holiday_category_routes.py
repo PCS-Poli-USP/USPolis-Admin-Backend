@@ -12,18 +12,18 @@ embed = Body(..., embed=True)
 
 
 @router.get("")
-async def get_all_holidays_caregories() -> list[HolidayCategory]:
+async def get_all_holidays_categories() -> list[HolidayCategory]:
     return await HolidayCategory.find_all().to_list()
 
 
 @router.get("/{holiday_category_id}")
-async def get_holiday_caregory(holiday_category_id: str) -> HolidayCategory:
+async def get_holiday_category(holiday_category_id: str) -> HolidayCategory:
     holiday_category: HolidayCategory = await HolidayCategory.by_id(holiday_category_id)
     return holiday_category
 
 
 @router.post("")
-async def create_holiday_caregory(holiday_category_input: HolidayCategoryRegister) -> str:
+async def create_holiday_category(holiday_category_input: HolidayCategoryRegister) -> str:
     category = holiday_category_input.category
     if await HolidayCategory.check_category_exists(category):
         raise HolidayCategoryAlreadyExists(category)
