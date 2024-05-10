@@ -52,6 +52,7 @@ async def create_classroom(
         updated_at=datetime.now(),
     )
     await classroom.save()  # type: ignore
+    await classroom.save()  # type: ignore
     return str(classroom.id)
 
 

@@ -43,6 +43,12 @@ class Classroom(Document):
         classroom = await cls.find_one(
             {"building.$id": ObjectId(building_id), "name": classroom_name}
         )
+    async def by_building_and_classroom(
+        cls, building_id: str, classroom_name: str
+    ) -> Self:
+        classroom = await cls.find_one(
+            {"building.$id": ObjectId(building_id), "name": classroom_name}
+        )
         if classroom is None:
             raise ClassroomInBuildingNotFound(classroom_name, building_id)
         return classroom
@@ -51,7 +57,16 @@ class Classroom(Document):
     async def check_classroom_name_exists(
         cls, building_id: str, classroom_name: str
     ) -> bool:
+    async def check_classroom_name_exists(
+        cls, building_id: str, classroom_name: str
+    ) -> bool:
         """Check if a classroom name exist in a building"""
+        return (
+            await cls.find_one(
+                {"building.$id": ObjectId(building_id), "name": classroom_name}
+            )
+            is not None
+        )
         return (
             await cls.find_one(
                 {"building.$id": ObjectId(building_id), "name": classroom_name}
@@ -77,10 +92,17 @@ class ClassroomNotFound(HTTPException):
         super().__init__(
             status.HTTP_404_NOT_FOUND, f"Classroom {classroom_info} not found"
         )
+        super().__init__(
+            status.HTTP_404_NOT_FOUND, f"Classroom {classroom_info} not found"
+        )
 
 
 class ClassroomInBuildingNotFound(HTTPException):
     def __init__(self, classroom_info: str, building_info: str) -> None:
+        super().__init__(
+            status.HTTP_404_NOT_FOUND,
+            f"Classroom {classroom_info} in Building {building_info} not found",
+        )
         super().__init__(
             status.HTTP_404_NOT_FOUND,
             f"Classroom {classroom_info} in Building {building_info} not found",

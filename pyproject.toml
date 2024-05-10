@@ -38,6 +38,7 @@ test = [
 
 [tool.mypy]
 exclude = ['build']
+exclude = ['build']
 check_untyped_defs = true
 disallow_any_unimported = true
 disallow_untyped_defs = true
@@ -49,6 +50,20 @@ strict_equality = true
 warn_redundant_casts = true
 warn_return_any = true
 warn_unused_ignores = true
+
+[tool.pyright]
+include = ["server", "tests"]
+exclude = ["**/node_modules",
+    "**/__pycache__",
+    "**/build"
+]
+ignore = ["server/oldstuff"]
+
+reportMissingImports = true
+reportMissingTypeStubs = false
+
+pythonVersion = "3.11"
+pythonPlatform = "Linux"
 
 [tool.pyright]
 include = ["server", "tests"]
