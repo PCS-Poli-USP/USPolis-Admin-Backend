@@ -2,7 +2,7 @@
 .vscode/
 
 # tests data
-tests/data
+tests/data/results
 
 # build
 build/

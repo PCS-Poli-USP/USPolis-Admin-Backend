@@ -1,14 +1,13 @@
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Body, Depends, status
+from fastapi import APIRouter, Body, Depends, HTTPException, status
 
-from server.services.auth.authenticate import authenticate
-from server.models.database.user_db_model import User
-from server.models.database.classroom_db_model import Classroom
 from server.models.database.building_db_model import Building
+from server.models.database.classroom_db_model import Classroom
+from server.models.database.user_db_model import User
 from server.models.http.requests.classroom_request_models import ClassroomRegister
-
+from server.services.auth.authenticate import authenticate
 
 embed = Body(..., embed=True)
 
@@ -27,9 +26,13 @@ async def get_all_classrooms() -> list[Classroom]:
 async def get_classroom(classroom_id: str) -> Classroom:
     """Get a classroom"""
     return await Classroom.by_id(classroom_id) # type: ignore
+    return await Classroom.by_id(classroom_id) # type: ignore
 
 
 @router.post("")
+async def create_classroom(
+    classroom_input: ClassroomRegister, user: Annotated[User, Depends(authenticate)]
+) -> str:
 async def create_classroom(
     classroom_input: ClassroomRegister, user: Annotated[User, Depends(authenticate)]
 ) -> str:
@@ -38,6 +41,7 @@ async def create_classroom(
     building_id = classroom_input.building_id
     classroom_name = classroom_input.name
     if await Classroom.check_classroom_name_exists(building_id, classroom_name):
+        raise ClassroomInBuildingAlredyExists(classroom_name, building_id)
         raise ClassroomInBuildingAlredyExists(classroom_name, building_id)
 
     classroom = Classroom(
@@ -57,6 +61,9 @@ async def create_classroom(
 
 
 @router.patch("/{classroom_id}")
+async def update_classroom(
+    classroom_id: str, classroom_input: ClassroomRegister
+) -> str:
 async def update_classroom(
     classroom_id: str, classroom_input: ClassroomRegister
 ) -> str:
@@ -89,11 +96,17 @@ async def delete_classroom(classroom_id: str) -> int:
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR, "No classroom deleted"
         )
+            status.HTTP_500_INTERNAL_SERVER_ERROR, "No classroom deleted"
+        )
     return int(response.deleted_count)
 
 
 class ClassroomInBuildingAlredyExists(HTTPException):
     def __init__(self, classroom_info: str, building_info: str) -> None:
+        super().__init__(
+            status.HTTP_409_CONFLICT,
+            f"Classroom {classroom_info} in Building {building_info} already exists",
+        )
         super().__init__(
             status.HTTP_409_CONFLICT,
             f"Classroom {classroom_info} in Building {building_info} already exists",

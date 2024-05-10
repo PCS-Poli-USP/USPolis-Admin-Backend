@@ -2,8 +2,20 @@ import re
 from datetime import datetime
 from typing import Any
 
-import requests
-from bs4 import BeautifulSoup, ResultSet
+from bs4 import BeautifulSoup
+from httpx import AsyncClient
+
+from server.services.jupiter_crawler.models import (
+    CrawledClass,
+    CrawledSchedule,
+    CrawledSubject,
+    GeneralInfo,
+    ScheduleInfo,
+    StudentNumbersInfo,
+)
+from server.utils.day_time import DayTime
+from server.utils.enums.class_type import ClassType
+from server.utils.enums.week_day import WeekDay
 
 BASE_URL = "https://uspdigital.usp.br/jupiterweb/obterTurma?nomdis=&sgldis="
 CLASS_DIV_IDENTIFIERS = {
@@ -12,106 +24,125 @@ CLASS_DIV_IDENTIFIERS = {
 
 
 class JupiterCrawler:
-    subject_code: str
-    url: str
-    soup: BeautifulSoup
-    subject_name: str
-    classes_divs: ResultSet
-    events: list
-
-    def __reset(self) -> None:
-        self.events = []
+    def __init__(self, subject_code: str):
+        self.__subject_code: str
+        self.__soup: BeautifulSoup
+        self.__subject_professors: set[str] = set()
+        self.__subject_code = subject_code
 
     @staticmethod
-    def crawl_subject_static(subject_code: str) -> Any:
-        crawler = JupiterCrawler()
-        return crawler.crawl_subject(subject_code)
+    async def crawl_subject_static(
+        subject_code: str, page_content: bytes | None = None
+    ) -> CrawledSubject:
+        crawler = JupiterCrawler(subject_code)
+        return await crawler.crawl_subject(page_content)
 
-    def crawl_subject(self, subject_code: str) -> Any:
-        self.subject_code = subject_code
-        self.__reset()
-        self.__build_url()
-        self.__build_soap()
-        self.__find_classes_divs()
-        self.__extract_classes_info()
-        self.__add_subject_info_to_events()
-        return self.events
+    async def crawl_subject(self, page_content: bytes | None = None) -> CrawledSubject:
+        if page_content is None:
+            page_content = await self.request_html()
+        self.__soup = self.__build_soap(page_content)
+        crawled_classes = self.__extract_classes_info()
+        return CrawledSubject(
+            code=self.__subject_code,
+            name=self.__get_subject_name(),
+            classes=crawled_classes,
+            class_type=crawled_classes[0].class_type,
+            class_credit=0,
+            work_credit=0,
+            activation=crawled_classes[0].start_date,
+            deactivation=crawled_classes[0].end_date,
+            professors=sorted(list(self.__subject_professors)),
+        )
 
-    def __build_url(self) -> Any:
-        self.url = BASE_URL + self.subject_code
+    async def request_html(self) -> bytes:
+        async with AsyncClient() as client:
+            page = await client.get(BASE_URL + self.__subject_code)
+            return page.content
 
-    def __build_soap(self) -> Any:
-        page = requests.get(self.url)
-        self.soup = BeautifulSoup(page.content, "html.parser")
+    def __build_soap(self, content: bytes) -> BeautifulSoup:
+        return BeautifulSoup(content, "html.parser")
 
-    def __find_classes_divs(self) -> Any:
-        self.classes_divs = self.soup.find_all("div", attrs=CLASS_DIV_IDENTIFIERS)
+    def __get_subject_name(self) -> Any:
+        subject = self.__soup.find_all("b", text=re.compile("Disciplina:(.*)"))[0]
+        return subject.get_text().replace(f"Disciplina: {self.__subject_code} - ", "")
 
-    def __extract_classes_info(self) -> Any:
-        for class_div in self.classes_divs:
-            result = self.__build_events_from_class_div(class_div)
-            self.events += result
+    def __extract_classes_info(self) -> list[CrawledClass]:
+        classes_soups = self.__soup.find_all("div", attrs=CLASS_DIV_IDENTIFIERS)
+        crawled_classes: list[CrawledClass] = []
+        for index, class_soup in enumerate(classes_soups):
+            try:
+                class_professors_set: set[str] = set()
+                tables = class_soup.find_all("table")
+                if len(tables) == 4:
+                    tables.pop(2)
+                if len(tables) != 3:
+                    raise Exception("Not valid class format")
+                general_info_table_rows = tables[0].find_all("tr")
+                schedules_table_rows = tables[1].find_all("tr")
+                student_numbers_table_rows = tables[2].find_all("tr")
 
-    def __build_events_from_class_div(self, class_div: Any) -> Any:
-        result = []
-        info_tables = class_div.find_all("table")
-        if len(info_tables) == 4:
-            info_tables.pop(2)
-        if len(info_tables) != 3:
-            return []
-        general_info = self.__get_general_info(info_tables)
-        schedule_info_list = self.__get_schedule_info_list(info_tables)
-        student_numbers_info = self.__get_student_numbers_info(info_tables)
+                general_info = self.__get_general_info(general_info_table_rows)
+                schedules_infos = self.__get_schedules_infos(schedules_table_rows)
+                student_numbers_info = self.__get_student_numbers_info(
+                    student_numbers_table_rows
+                )
 
-        for schedule_info in schedule_info_list:
-            result.append(general_info | schedule_info | student_numbers_info)
-        return result
+                crawled_class = CrawledClass(
+                    **general_info.model_dump(),
+                    **student_numbers_info.model_dump(),
+                    professors=[],
+                    schedules=[],
+                )
+                for schedule_info in schedules_infos:
+                    crawled_schedule = CrawledSchedule(
+                        **schedule_info.model_dump(),
+                        start_date=general_info.start_date,
+                        end_date=general_info.end_date,
+                    )
+                    crawled_class.schedules.append(crawled_schedule)
+                    class_professors_set.update(schedule_info.professors)
+                    self.__subject_professors.update(schedule_info.professors)
 
-    def __get_general_info(self, info_tables: Any) -> dict:
-        result = {}
-        general_info_table = info_tables[0]
-        general_info_table_rows = general_info_table.find_all("tr")
+                crawled_class.professors = sorted(list(class_professors_set))
+                crawled_classes.append(crawled_class)
+            except Exception as e:
+                print(
+                    f"Ignoring exception trying to crawl {index}th class on {self.__subject_code} subject:\n",
+                    e,
+                )
 
-        class_code = general_info_table_rows[0].find_all("td")[1].get_text(strip=True)
-        start_period = general_info_table_rows[1].find_all("td")[1].get_text(strip=True)
-        end_period = general_info_table_rows[2].find_all("td")[1].get_text(strip=True)
-        class_type = general_info_table_rows[3].find_all("td")[1].get_text(strip=True)
+        return crawled_classes
+
+    def __get_general_info(self, rows: Any) -> GeneralInfo:
+        class_code: str = rows[0].find_all("td")[1].get_text(strip=True)
+        start_period: str = rows[1].find_all("td")[1].get_text(strip=True)
+        end_period: str = rows[2].find_all("td")[1].get_text(strip=True)
+        class_type: str = rows[3].find_all("td")[1].get_text(strip=True)
         try:
-            obs = general_info_table_rows[4].find_all("td")[1].get_text(strip=True)
+            obs = rows[4].find_all("td")[1].get_text(strip=True)
         except IndexError:
             obs = ""
 
-        result["class_code"] = class_code
-        result["start_period"] = start_period
-        result["end_period"] = end_period
-        result["start_period"] = datetime.strptime(start_period, "%d/%m/%Y").strftime(
-            "%Y-%m-%d"
+        return GeneralInfo(
+            class_code=class_code,
+            start_date=datetime.strptime(start_period, "%d/%m/%Y"),
+            end_date=datetime.strptime(end_period, "%d/%m/%Y"),
+            class_type=ClassType.from_str(class_type),
+            obs=obs,
         )
-        result["end_period"] = datetime.strptime(end_period, "%d/%m/%Y").strftime(
-            "%Y-%m-%d"
-        )
-        result["type"] = class_type
-        result["obs"] = obs
 
-        return result
-
-    def __get_schedule_info_list(self, info_tables: Any) -> list:
-        result: list = []
-        schedule_info_table = info_tables[1]
-        schedule_info_rows = schedule_info_table.find_all("tr")
-        schedule_info_rows_dropped = schedule_info_rows[1:]
-        schedule_info_enumerate = enumerate(schedule_info_rows_dropped)
-
-        for _, row in schedule_info_enumerate:
-            partial_result = {}
+    def __get_schedules_infos(self, rows: Any) -> list[ScheduleInfo]:
+        schedules_infos: list[ScheduleInfo] = []
+        rows_dropped = rows[1:]
+        for row in rows_dropped:
             data = row.find_all("td")
 
-            week_day = data[0].get_text(strip=True)
-            start_time = data[1].get_text(strip=True)
-            end_time = data[2].get_text(strip=True)
-            professor = data[3].get_text(strip=True)
+            week_day: str = data[0].get_text(strip=True)
+            start_time: str = data[1].get_text(strip=True)
+            end_time: str = data[2].get_text(strip=True)
+            professor: str = data[3].get_text(strip=True)
 
-            # More than one professor: only the first row has info, the others only have
+            # More than one professor - only the first row has info, the others only have
             # the additional professor
             if (
                 week_day == ""
@@ -119,41 +150,43 @@ class JupiterCrawler:
                 and end_time == ""
                 and professor != ""
             ):
-                result[len(result) - 1]["professors"].append(professor)
+                previous_schedule_info = schedules_infos[len(schedules_infos) - 1]
+                previous_schedule_info.professors.append(professor)
+                previous_schedule_info.professors = sorted(previous_schedule_info.professors)
                 continue
 
-            # More than one hour in same day: only week day is empty
+            # More than one hour in same day - only week day is empty
             if (
                 week_day == ""
                 and start_time != ""
                 and end_time != ""
                 and professor != ""
             ):
-                week_day = result[len(result) - 1]["week_day"]
+                previous_schedule_info = schedules_infos[len(schedules_infos) - 1]
+                week_day_as_enum = previous_schedule_info.week_day
+            else:
+                week_day_as_enum = WeekDay.from_str(week_day)
 
-            partial_result["week_day"] = week_day
-            partial_result["professors"] = [professor]
-            partial_result["start_time"] = start_time
-            partial_result["end_time"] = end_time
-            result.append(partial_result)
+            schedules_infos.append(
+                ScheduleInfo(
+                    week_day=week_day_as_enum,
+                    professors=[professor],
+                    start_time=DayTime.from_string(start_time),
+                    end_time=DayTime.from_string(end_time),
+                )
+            )
+        return schedules_infos
 
-        return result
+    def __get_student_numbers_info(self, rows: Any) -> StudentNumbersInfo:
+        student_numbers_info = StudentNumbersInfo(
+            vacancies=0, subscribers=0, pendings=0, enrolled=0
+        )
 
-    def __get_student_numbers_info(self, info_tables: Any) -> dict:
-        result = {
-            "vacancies": 0,
-            "subscribers": 0,
-            "pendings": 0,
-            "enrolled": 0,
-        }
-        student_numbers_table = info_tables[2]
-        student_numbers_rows = student_numbers_table.find_all("tr")
-
-        # drop the first row, which is the header:
-        student_numbers_rows_dropped = student_numbers_rows[1:]
+        # drop the first row, which is the header
+        rows_dropped = rows[1:]
 
         filter = {"class": "txt_arial_8pt_black"}
-        for row in student_numbers_rows_dropped:
+        for row in rows_dropped:
             data = row.find_all("span", attrs=filter)
 
             # The filter is of black text. If the data is empty, it means that the text on
@@ -162,7 +195,7 @@ class JupiterCrawler:
                 continue
 
             if len(data) == 6:
-                # drop the first column, which is an empty one:
+                # drop the first column, which is an empty one
                 data.pop(0)
 
             vacancies_text = data[1].get_text(strip=True)
@@ -171,29 +204,26 @@ class JupiterCrawler:
             enrolled_text = data[4].get_text(strip=True)
 
             if vacancies_text != "" and vacancies_text.isdigit():
-                result["vacancies"] += int(vacancies_text)
+                student_numbers_info.vacancies += int(vacancies_text)
             if subscribers_text != "" and subscribers_text.isdigit():
-                result["subscribers"] += int(subscribers_text)
+                student_numbers_info.subscribers += int(subscribers_text)
             if pendings_text != "" and pendings_text.isdigit():
-                result["pendings"] += int(pendings_text)
+                student_numbers_info.pendings += int(pendings_text)
             if enrolled_text != "" and enrolled_text.isdigit():
-                result["enrolled"] += int(enrolled_text)
+                student_numbers_info.enrolled += int(enrolled_text)
 
-        return result
-
-    def __add_subject_info_to_events(self) -> Any:
-        self.__get_subject_name()
-        for event in self.events:
-            event["subject_name"] = self.subject_name
-            event["subject_code"] = self.subject_code
-
-    def __get_subject_name(self) -> Any:
-        subject = self.soup.find_all("b", text=re.compile("Disciplina:(.*)"))[0]
-        self.subject_name = subject.get_text().replace(
-            f"Disciplina: {self.subject_code} - ", ""
-        )
+        return student_numbers_info
 
 
 if __name__ == "__main__":
-    result = JupiterCrawler.crawl_subject_static("PEA3306")
-    print(result)
+    import asyncio
+
+    async def main() -> None:
+        import json
+
+        subject_code = "PEA3311"
+        crawler = JupiterCrawler(subject_code)
+        subject = await crawler.crawl_subject()
+        print(json.dumps(json.loads(subject.model_dump_json()), indent=4))
+
+    asyncio.run(main())
