@@ -34,7 +34,7 @@ async def create_holiday_category(holiday_category_input: HolidayCategoryRegiste
     return str(holiday_category.id)
 
 
-@router.patch("/{holiday_category_id}")
+@router.put("/{holiday_category_id}")
 async def update_holiday_category(holiday_category_id: str, holiday_category_input: HolidayCategoryUpdate) -> str:
     new_category = holiday_category_input.category
     if not await HolidayCategory.check_category_is_valid(holiday_category_id, new_category):

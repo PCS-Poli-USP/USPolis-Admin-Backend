@@ -40,7 +40,7 @@ async def create_holiday(holiday_input: HolidayRegister) -> str:
     return str(holiday.id)
 
 
-@router.patch("/{holiday_id}")
+@router.put("/{holiday_id}")
 async def update_holiday(holiday_id: str, holiday_input: HolidayUpdate) -> str:
     category_id = holiday_input.category_id
     if not await Holiday.check_date_is_valid(category_id, holiday_id, holiday_input.date):

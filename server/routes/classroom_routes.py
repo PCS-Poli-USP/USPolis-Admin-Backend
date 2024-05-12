@@ -55,7 +55,7 @@ async def create_classroom(
     return str(classroom.id)
 
 
-@router.patch("/{classroom_id}")
+@router.put("/{classroom_id}")
 async def update_classroom(
     classroom_id: str, classroom_input: ClassroomRegister
 ) -> str:

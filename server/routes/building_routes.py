@@ -46,7 +46,7 @@ async def create_building(
     return str(new_building.id)
 
 
-@router.patch("/{building_id}")
+@router.put("/{building_id}")
 async def update_building(building_id: str, building_input: BuildingUpdate) -> str:
     """Update a building"""
     if not await Building.check_name_is_valid(building_id, building_input.name):
