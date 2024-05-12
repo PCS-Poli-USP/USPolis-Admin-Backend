@@ -63,13 +63,13 @@ class Classroom(Document):
     async def check_classroom_name_is_valid(
         cls, building_id: str, classroom_id: str, name: str
     ) -> bool:
-        """Check if the classroom name is not used by other classroom in a building"""
+        """Check if the classroom name is valid, i.e not used by other classroom in a building"""
         classroom = await cls.find_one(
             {"building.$id": ObjectId(building_id), "name": name}
         )
         if classroom is None:
-            return False
-        return str(classroom.id) != classroom_id
+            return True
+        return str(classroom.id) == classroom_id
 
 
 class ClassroomNotFound(HTTPException):

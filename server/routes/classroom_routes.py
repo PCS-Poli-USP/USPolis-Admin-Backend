@@ -55,14 +55,14 @@ async def create_classroom(
     return str(classroom.id)
 
 
-@router.patch("/{classroom_id}")
+@router.put("/{classroom_id}")
 async def update_classroom(
     classroom_id: str, classroom_input: ClassroomRegister
 ) -> str:
     """Update a classroom, not allowing two classrooms with same name in same building"""
     building_id = classroom_input.building_id
     classroom_name = classroom_input.name
-    if await Classroom.check_classroom_name_is_valid(
+    if not await Classroom.check_classroom_name_is_valid(
         building_id, classroom_id, classroom_name
     ):
         raise ClassroomInBuildingAlredyExists(classroom_name, building_id)
