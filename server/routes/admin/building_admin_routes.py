@@ -16,19 +16,6 @@ embed = Body(..., embed=True)
 router = APIRouter(prefix="/buildings", tags=["Buildings"])
 
 
-@router.get("")
-async def get_all_buildings() -> list[Building]:
-    """Get all buildings"""
-    return await Building.find_all().to_list()
-
-
-@router.get("/{building_id}")
-async def get_building(building_id: str) -> Building:
-    """Get a building"""
-    building: Building = await Building.by_id(building_id)
-    return building
-
-
 @router.post("")
 async def create_building(
     building_input: BuildingRegister, user: Annotated[User, Depends(authenticate)]
