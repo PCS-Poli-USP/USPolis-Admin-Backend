@@ -18,13 +18,13 @@ router = APIRouter(
 )
 
 
-@router.get("")
+@router.get("", response_model_by_alias=False)
 async def get_all_buildings() -> list[Building]:
     """Get all buildings"""
     return await Building.find_all().to_list()
 
 
-@router.get("/{building_id}")
+@router.get("/{building_id}", response_model_by_alias=False)
 async def get_building(building_id: str) -> Building:
     """Get a building"""
     building: Building = await Building.by_id(building_id)

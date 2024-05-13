@@ -11,12 +11,12 @@ router = APIRouter(prefix="/holidays_categories",
 embed = Body(..., embed=True)
 
 
-@router.get("")
+@router.get("", response_model_by_alias=False)
 async def get_all_holidays_categories() -> list[HolidayCategory]:
     return await HolidayCategory.find_all().to_list()
 
 
-@router.get("/{holiday_category_id}")
+@router.get("/{holiday_category_id}", response_model_by_alias=False)
 async def get_holiday_category(holiday_category_id: str) -> HolidayCategory:
     holiday_category: HolidayCategory = await HolidayCategory.by_id(holiday_category_id)
     return holiday_category
