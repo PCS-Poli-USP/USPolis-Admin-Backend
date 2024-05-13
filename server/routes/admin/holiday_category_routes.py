@@ -1,12 +1,12 @@
-
-from fastapi import APIRouter, Body, Depends, HTTPException, status
+from fastapi import APIRouter, Body, HTTPException, status
 
 from server.models.database.holiday_category_db_model import HolidayCategory
-from server.models.http.requests.holiday_category_request_models import HolidayCategoryRegister, HolidayCategoryUpdate
-from server.services.auth.authenticate import admin_authenticate
+from server.models.http.requests.holiday_category_request_models import (
+    HolidayCategoryRegister,
+    HolidayCategoryUpdate,
+)
 
-router = APIRouter(prefix="/holidays_categories",
-                   tags=["Holiday Category"], dependencies=[Depends(admin_authenticate)])
+router = APIRouter(prefix="/holidays_categories", tags=["Holiday Category"])
 
 embed = Body(..., embed=True)
 
@@ -23,21 +23,25 @@ async def get_holiday_category(holiday_category_id: str) -> HolidayCategory:
 
 
 @router.post("")
-async def create_holiday_category(holiday_category_input: HolidayCategoryRegister) -> str:
+async def create_holiday_category(
+    holiday_category_input: HolidayCategoryRegister,
+) -> str:
     category = holiday_category_input.category
     if await HolidayCategory.check_category_exists(category):
         raise HolidayCategoryAlreadyExists(category)
-    holiday_category = HolidayCategory(
-        category=category
-    )
+    holiday_category = HolidayCategory(category=category)
     await holiday_category.create()
     return str(holiday_category.id)
 
 
 @router.put("/{holiday_category_id}")
-async def update_holiday_category(holiday_category_id: str, holiday_category_input: HolidayCategoryUpdate) -> str:
+async def update_holiday_category(
+    holiday_category_id: str, holiday_category_input: HolidayCategoryUpdate
+) -> str:
     new_category = holiday_category_input.category
-    if not await HolidayCategory.check_category_is_valid(holiday_category_id, new_category):
+    if not await HolidayCategory.check_category_is_valid(
+        holiday_category_id, new_category
+    ):
         raise HolidayCategoryAlreadyExists(new_category)
     holiday_category = await HolidayCategory.by_id(holiday_category_id)
     holiday_category.category = holiday_category_input.category
@@ -58,5 +62,6 @@ async def delete_holiday_category(holiday_category_id: str) -> int:
 
 class HolidayCategoryAlreadyExists(HTTPException):
     def __init__(self, category: str) -> None:
-        super().__init__(status.HTTP_409_CONFLICT,
-                         f"Holiday Category {category} already exists")
+        super().__init__(
+            status.HTTP_409_CONFLICT, f"Holiday Category {category} already exists"
+        )
