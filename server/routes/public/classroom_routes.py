@@ -16,13 +16,13 @@ router = APIRouter(
 )
 
 
-@router.get("", response_model_by_alias=False)
+@router.get("")
 async def get_all_classrooms() -> list[Classroom]:
     """Get all classroom"""
     return await Classroom.find_all().to_list()
 
 
-@router.get("/{classroom_id}", response_model_by_alias=False)
+@router.get("/{classroom_id}")
 async def get_classroom(classroom_id: str) -> Classroom:
     """Get a classroom"""
     return await Classroom.by_id(classroom_id)  # type: ignore
