@@ -14,7 +14,7 @@ embed = Body(..., embed=True)
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@router.get("")
+@router.get("", response_model_by_alias=False)
 async def get_users() -> list[User]:
     return await User.all().to_list()
 
