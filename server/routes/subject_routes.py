@@ -11,13 +11,13 @@ router = APIRouter(
 )
 
 
-@router.get("", response_model=list[Subject], response_model_by_alias=False)
+@router.get("", response_model_by_alias=False)
 async def get_all_subjects() -> list[Subject]:
     """Get all subjects"""
     return await Subject.find_all().to_list()
 
 
-@router.get("/{subject_id}", response_model=Subject, response_model_by_alias=False)
+@router.get("/{subject_id}", response_model_by_alias=False)
 async def get_subject(subject_id: str) -> Subject:
     """Get a subject"""
     return await Subject.by_id(subject_id)  # type: ignore

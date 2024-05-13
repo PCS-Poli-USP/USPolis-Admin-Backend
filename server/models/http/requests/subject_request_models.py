@@ -2,6 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, field_validator
 
+from server.utils.enums.subject_type import SubjectType
 from server.utils.subject.subject_validator import SubjectValidator
 
 
@@ -9,7 +10,7 @@ class SubjectRegister(BaseModel):
     code: str
     name: str
     professors: list[str]
-    type: str
+    type: SubjectType
     class_credit: int
     work_credit: int
     activation: datetime
