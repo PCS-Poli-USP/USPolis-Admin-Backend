@@ -2,8 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, field_validator
 
+from server.models.validators.subject.subject_validator import SubjectValidator
 from server.utils.enums.subject_type import SubjectType
-from server.utils.subject.subject_validator import SubjectValidator
 
 
 class SubjectRegister(BaseModel):
