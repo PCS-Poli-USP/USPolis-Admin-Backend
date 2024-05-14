@@ -2,7 +2,7 @@ from datetime import datetime
 
 from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
-from server.routes.building_routes import BuildingNameAlreadyExists
+from server.routes.admin.building_admin_routes import BuildingNameAlreadyExists
 from tests.utils.default_values.test_building_default_values import (
     BuildingDefaultValues,
 )
