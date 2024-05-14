@@ -8,6 +8,7 @@ from server.models.http.responses.building_response_models import BuildingRespon
 
 class UserResponse(BaseModel):
     id: str
+    username: str
     email: str
     is_admin: bool
     name: str
@@ -20,18 +21,20 @@ class UserResponse(BaseModel):
         await user.fetch_all_links()
         return cls(
             id=str(user.id),
+            username=user.username,
             email=user.email,
             is_admin=user.is_admin,
             name=user.name,
-            created_by=user.created_by.name if user.created_by else None,
+            created_by=user.created_by.name if user.created_by else None,  # type: ignore
             buildings=[
-                await BuildingResponse.from_building(building) for building in user.buildings
+                await BuildingResponse.from_building(building)  # type: ignore
+                for building in user.buildings
             ]
             if user.buildings
             else None,
             updated_at=user.updated_at,
         )
-    
+
     @classmethod
     async def from_user_list(cls, users: list[User]) -> list["UserResponse"]:
         return [await cls.from_user(user) for user in users]
