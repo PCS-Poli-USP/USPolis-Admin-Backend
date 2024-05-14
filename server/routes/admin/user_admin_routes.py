@@ -6,6 +6,7 @@ from fastapi import APIRouter, Body, Depends, HTTPException
 from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister, UserUpdate
+from server.models.http.responses.user_response_models import UserResponse
 from server.services.auth.authenticate import authenticate
 from server.services.cognito.cognito_client import CognitoClient
 
@@ -15,8 +16,9 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @router.get("", response_model_by_alias=False)
-async def get_users() -> list[User]:
-    return await User.all().to_list()
+async def get_users() -> list[UserResponse]:
+    users = await User.all().to_list()
+    return await UserResponse.from_user_list(users)
 
 
 @router.post("")
@@ -28,8 +30,8 @@ async def create_user(
     """Create new user."""
 
     buildings = None
-    if user_input.buildings is not None:
-        buildings = await Building.by_ids(user_input.buildings)
+    if user_input.building_ids is not None:
+        buildings = await Building.by_ids(user_input.building_ids)
 
     cognito_id = cognito_client.create_user(user_input.username, user_input.email)
 
@@ -60,11 +62,10 @@ async def update_user(
             raise HTTPException(400, "Cannot edit own admin status")
 
     buildings = None
-    if user_input.buildings is not None:
-        buildings = await Building.by_ids(user_input.buildings)
+    if user_input.building_ids is not None:
+        buildings = await Building.by_ids(user_input.building_ids)
     user_to_update.buildings = buildings  # type: ignore
     user_to_update.is_admin = user_input.is_admin
-    user_to_update.name = user_input.name
     user_to_update.updated_at = datetime.now()
     await user_to_update.save()  # type: ignore
     return str(user_to_update.id)

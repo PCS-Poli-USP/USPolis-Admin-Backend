@@ -2,12 +2,12 @@ from pydantic import BaseModel, EmailStr, field_validator
 
 
 class UserUpdate(BaseModel):
-    name: str
     is_admin: bool
-    buildings: list[str] | None = None
+    building_ids: list[str] | None = None
 
 
 class UserRegister(UserUpdate):
+    name: str
     username: str
     email: EmailStr
 
