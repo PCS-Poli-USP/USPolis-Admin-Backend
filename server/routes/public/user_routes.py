@@ -9,7 +9,7 @@ from server.services.auth.authenticate import authenticate
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@router.get("", response_model_by_alias=False)
+@router.get("")
 async def get_current_user(
     user: Annotated[User, Depends(authenticate)],
 ) -> UserResponse:
