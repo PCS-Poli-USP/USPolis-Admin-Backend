@@ -2,8 +2,8 @@ from pydantic import BaseModel
 
 
 class HolidayCategoryRegister(BaseModel):
-    category: str
+    name: str
 
 
 class HolidayCategoryUpdate(BaseModel):
-    category: str
+    name: str
