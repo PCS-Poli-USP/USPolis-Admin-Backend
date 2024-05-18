@@ -15,6 +15,6 @@ class BuildingResponse(BaseModel):
         await building.fetch_all_links()
         return cls(
             name=building.name,
-            created_by=building.created_by.name,
+            created_by=building.created_by.name, # type: ignore
             updated_at=building.updated_at,
         )
