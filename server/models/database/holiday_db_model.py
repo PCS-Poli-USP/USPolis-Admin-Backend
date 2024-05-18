@@ -3,14 +3,16 @@ from fastapi import HTTPException, status
 from beanie import Document, Link
 from bson import ObjectId
 
+from server.models.database.user_db_model import User
 from server.models.database.holiday_category_db_model import HolidayCategory
-
+from server.utils.enums.holiday_type import HolidayType
 
 class Holiday(Document):
     category: Link[HolidayCategory]
     date: datetime
-    type: str
+    type: HolidayType
     updated_at: datetime
+    created_by: Link[User]
 
     class Settings:
         name = "holidays"
