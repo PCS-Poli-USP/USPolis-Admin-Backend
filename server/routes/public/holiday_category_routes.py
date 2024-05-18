@@ -1,10 +1,14 @@
-from fastapi import APIRouter, Body, HTTPException, status
+from fastapi import APIRouter, Body, HTTPException, status, Depends
+from typing import Annotated
 
+from server.models.database.user_db_model import User
 from server.models.database.holiday_category_db_model import HolidayCategory
 from server.models.http.requests.holiday_category_request_models import (
     HolidayCategoryRegister,
     HolidayCategoryUpdate,
 )
+from server.models.http.responses.holiday_category_response_models import HolidayCategoryResponse
+from server.services.auth.authenticate import authenticate
 
 router = APIRouter(prefix="/holidays_categories", tags=["Holiday Category"])
 
@@ -12,24 +16,26 @@ embed = Body(..., embed=True)
 
 
 @router.get("", response_model_by_alias=False)
-async def get_all_holidays_categories() -> list[HolidayCategory]:
-    return await HolidayCategory.find_all().to_list()
+async def get_all_holidays_categories() -> list[HolidayCategoryResponse]:
+    holidays_categories = await HolidayCategory.find_all().to_list()
+    return await HolidayCategoryResponse.from_holiday_category_list(holidays_categories)
 
 
 @router.get("/{holiday_category_id}", response_model_by_alias=False)
-async def get_holiday_category(holiday_category_id: str) -> HolidayCategory:
+async def get_holiday_category(holiday_category_id: str) -> HolidayCategoryResponse:
     holiday_category: HolidayCategory = await HolidayCategory.by_id(holiday_category_id)
-    return holiday_category
+    return await HolidayCategoryResponse.from_holiday_category(holiday_category)
 
 
 @router.post("")
 async def create_holiday_category(
-    holiday_category_input: HolidayCategoryRegister,
+    holiday_category_input: HolidayCategoryRegister, user: Annotated[User, Depends(authenticate)]
 ) -> str:
-    category = holiday_category_input.category
-    if await HolidayCategory.check_category_exists(category):
-        raise HolidayCategoryAlreadyExists(category)
-    holiday_category = HolidayCategory(category=category)
+    name = holiday_category_input.name
+    if await HolidayCategory.check_name_exists(name):
+        raise HolidayCategoryAlreadyExists(name)
+    holiday_category = HolidayCategory(
+        name=name, created_by=user)  # type: ignore
     await holiday_category.create()
     return str(holiday_category.id)
 
@@ -38,13 +44,13 @@ async def create_holiday_category(
 async def update_holiday_category(
     holiday_category_id: str, holiday_category_input: HolidayCategoryUpdate
 ) -> str:
-    new_category = holiday_category_input.category
+    new_name = holiday_category_input.name
     if not await HolidayCategory.check_category_is_valid(
-        holiday_category_id, new_category
+        holiday_category_id, new_name
     ):
-        raise HolidayCategoryAlreadyExists(new_category)
+        raise HolidayCategoryAlreadyExists(new_name)
     holiday_category = await HolidayCategory.by_id(holiday_category_id)
-    holiday_category.category = holiday_category_input.category
+    holiday_category.name = holiday_category_input.name
     await holiday_category.save()  # type: ignore
     return str(holiday_category.id)
 
