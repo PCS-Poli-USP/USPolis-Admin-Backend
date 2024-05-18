@@ -1,10 +1,13 @@
-from beanie import Document
+from beanie import Document, Link
 from fastapi import HTTPException, status
 from typing import Self
 
+from server.models.database.user_db_model import User
+
 
 class HolidayCategory(Document):
-    category: str
+    name: str
+    created_by: Link[User]
 
     class Settings:
         name = "holiday_categories"
@@ -17,21 +20,21 @@ class HolidayCategory(Document):
         return category
 
     @classmethod
-    async def by_category(cls, category: str) -> Self:
-        holiday_category = await cls.find_one(HolidayCategory.category == category)
+    async def by_name(cls, name: str) -> Self:
+        holiday_category = await cls.find_one(HolidayCategory.name == name)
         if holiday_category is None:
-            raise HolidayCategoryNotFound(category)
+            raise HolidayCategoryNotFound(name)
         return holiday_category
 
     @classmethod
-    async def check_category_exists(cls, category: str) -> bool:
-        """Check if exists a holiday category with this category"""
-        return await cls.find_one(HolidayCategory.category == category) is not None
+    async def check_name_exists(cls, name: str) -> bool:
+        """Check if exists a Holiday Category with this name"""
+        return await cls.find_one(HolidayCategory.name == name) is not None
 
     @classmethod
-    async def check_category_is_valid(cls, holiday_category_id: str, category: str) -> bool:
-        """Check if this category is not used in other holiday category"""
-        current = await cls.find_one(HolidayCategory.category == category)
+    async def check_category_is_valid(cls, holiday_category_id: str, name: str) -> bool:
+        """Check if this category name is not used in other holiday category"""
+        current = await cls.find_one(HolidayCategory.name == name)
         if current is None:
             return True
         return str(current.id) == holiday_category_id
