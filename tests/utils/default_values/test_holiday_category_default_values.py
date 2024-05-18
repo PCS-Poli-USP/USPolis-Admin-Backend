@@ -1,2 +1,2 @@
 class HolidayCategoryDefaultValues:
-    CATEGORY: str = "default category"
+    NAME: str = "default name"

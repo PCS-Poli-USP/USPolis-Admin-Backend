@@ -14,7 +14,7 @@ MAX_HOLIDAY_CATEGORY_COUNT = 5
 @pytest.mark.asyncio
 async def test_holiday_category_get_all(client: AsyncClient, user: User) -> None:
     for i in range(MAX_HOLIDAY_CATEGORY_COUNT):
-        await add_holiday_category(f"Category {i}")
+        await add_holiday_category(f"Category {i}", user)
 
     response = await client.get("/holidays_categories")
     assert response.status_code == status.HTTP_200_OK
@@ -25,19 +25,19 @@ async def test_holiday_category_get_all(client: AsyncClient, user: User) -> None
 
 @pytest.mark.asyncio
 async def test_holiday_category_get(client: AsyncClient, user: User) -> None:
-    holiday_category_id = await add_holiday_category(HolidayCategoryDefaultValues.CATEGORY)
+    holiday_category_id = await add_holiday_category(HolidayCategoryDefaultValues.NAME, user)
 
     response = await client.get(f"/holidays_categories/{holiday_category_id}")
     assert response.status_code == status.HTTP_200_OK
 
     data = response.json()
-    assert data["category"] == HolidayCategoryDefaultValues.CATEGORY
+    assert data["name"] == HolidayCategoryDefaultValues.NAME
 
 
 @pytest.mark.asyncio
 async def test_holiday_category_create(client: AsyncClient, user: User) -> None:
     register = make_holiday_category_register(
-        HolidayCategoryDefaultValues.CATEGORY)
+        HolidayCategoryDefaultValues.NAME)
     input = register.model_dump_json()
 
     response = await client.post("/holidays_categories", json=loads(input))
@@ -45,13 +45,13 @@ async def test_holiday_category_create(client: AsyncClient, user: User) -> None:
 
     holiday_category_id = response.json()
     assert isinstance(holiday_category_id, str)
-    assert await HolidayCategory.check_category_exists(HolidayCategoryDefaultValues.CATEGORY)
+    assert await HolidayCategory.check_name_exists(HolidayCategoryDefaultValues.NAME)
 
 
 @pytest.mark.asyncio
 async def test_holiday_category_update(client: AsyncClient, user: User) -> None:
-    holiday_category_id = await add_holiday_category(HolidayCategoryDefaultValues.CATEGORY)
-    new_category = f"{HolidayCategoryDefaultValues.CATEGORY} Updated"
+    holiday_category_id = await add_holiday_category(HolidayCategoryDefaultValues.NAME, user)
+    new_category = f"{HolidayCategoryDefaultValues.NAME} Updated"
     update = make_holiday_category_update(new_category)
     input = update.model_dump_json()
 
@@ -60,12 +60,12 @@ async def test_holiday_category_update(client: AsyncClient, user: User) -> None:
 
     holiday_category_id = response.json()
     assert isinstance(holiday_category_id, str)
-    assert await HolidayCategory.check_category_exists(new_category)
+    assert await HolidayCategory.check_name_exists(new_category)
 
 
 @pytest.mark.asyncio
 async def test_holiday_category_delete(client: AsyncClient, user: User) -> None:
-    holiday_category_id = await add_holiday_category(HolidayCategoryDefaultValues.CATEGORY)
+    holiday_category_id = await add_holiday_category(HolidayCategoryDefaultValues.NAME, user)
 
     response = await client.delete(f"/holidays_categories/{holiday_category_id}")
     assert response.status_code == status.HTTP_200_OK
@@ -73,4 +73,4 @@ async def test_holiday_category_delete(client: AsyncClient, user: User) -> None:
     data = response.json()
     assert isinstance(data, int)
 
-    assert not await HolidayCategory.check_category_exists(HolidayCategoryDefaultValues.CATEGORY)
+    assert not await HolidayCategory.check_name_exists(HolidayCategoryDefaultValues.NAME)

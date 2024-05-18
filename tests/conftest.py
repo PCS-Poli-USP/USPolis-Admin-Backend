@@ -19,13 +19,13 @@ CONFIG.mongo_uri = config(
 CONFIG.mongo_db_name = config(
     "TEST_MONGO_DB_NAME", default="uspolis-test")  # type: ignore
 
-from server import app  # noqa: E402
+from server.app import app  # noqa: E402
 
 
-async def clear_database(server: FastAPI) -> None:
+async def clear_database(app: FastAPI) -> None:
     """Empty the test database."""
-    async for collection in await server.db.list_collections():  # type: ignore[attr-defined]
-        await server.db[collection["name"]].delete_many({})  # type: ignore
+    async for collection in await app.db.list_collections():  # type: ignore[attr-defined]
+        await app.db[collection["name"]].delete_many({})  # type: ignore
 
 
 @pytest_asyncio.fixture(autouse=False)
