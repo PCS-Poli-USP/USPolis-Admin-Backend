@@ -2,6 +2,7 @@ from fastapi import APIRouter, Body, Depends, HTTPException, status
 
 from server.models.database.subject_db_model import Subject
 from server.models.http.requests.subject_request_models import SubjectRegister
+from server.models.http.responses.subject_response_models import SubjectResponse
 from server.services.auth.authenticate import authenticate
 
 embed = Body(..., embed=True)
@@ -12,15 +13,17 @@ router = APIRouter(
 
 
 @router.get("", response_model_by_alias=False)
-async def get_all_subjects() -> list[Subject]:
+async def get_all_subjects() -> list[SubjectResponse]:
     """Get all subjects"""
-    return await Subject.find_all().to_list()
+    subjects = await Subject.find_all().to_list()
+    return await SubjectResponse.from_subject_list(subjects)
 
 
 @router.get("/{subject_id}", response_model_by_alias=False)
-async def get_subject(subject_id: str) -> Subject:
+async def get_subject(subject_id: str) -> SubjectResponse:
     """Get a subject"""
-    return await Subject.by_id(subject_id)  # type: ignore
+    subject = await Subject.by_id(subject_id)  # type: ignore
+    return await SubjectResponse.from_subject(subject)
 
 
 @router.post("")

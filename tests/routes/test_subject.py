@@ -56,7 +56,7 @@ async def test_subject_update(client: AsyncClient, user: User) -> None:
     register.code = UPDATED_SUBJECT_CODE
     subject_input = register.model_dump_json()
 
-    response = await client.patch(f"/subjects/{subject_id}", json=loads(subject_input))
+    response = await client.put(f"/subjects/{subject_id}", json=loads(subject_input))
     assert response.status_code == status.HTTP_200_OK
 
     updated_id = response.json()
