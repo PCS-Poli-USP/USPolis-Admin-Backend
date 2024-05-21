@@ -13,6 +13,13 @@ class Settings(BaseModel):
     mongo_uri: str = config("MONGO_URI")
     mongo_db_name: str = config("MONGO_DB_NAME")
 
+    # SQLAlchemy settings
+    sql_alchemy_db_uri: str = config("SQLALCHEMY_DATABASE_URI")
+    first_superuser_email: str = config("FIRST_SUPERUSER_EMAIL", "amdmin@uspolis.com")
+    first_superuser_password: str = config("FIRST_SUPERUSER_PASSWORD", "admin")
+    first_superuser_name: str = config("FIRST_SUPERUSER_NAME", "admin")
+    first_superuser_username: str = config("FIRST_SUPERUSER_USERNAME", "admin")
+
     # AWS
     aws_region_name: str = config("AWS_REGION")
     aws_access_key_id: str = config("AWS_ACCESS_KEY_ID")
@@ -25,7 +32,7 @@ class Settings(BaseModel):
 
     mock_username: str = config(
         "MOCK_USERNAME", default=""
-    )  # TODO: implement as non required
+    ) 
 
 
 CONFIG = Settings()

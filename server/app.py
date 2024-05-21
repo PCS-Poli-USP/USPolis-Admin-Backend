@@ -2,18 +2,10 @@
 
 from contextlib import asynccontextmanager
 
-from beanie import init_beanie
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from server.connections.mongo import database_singleton
 from server.mocks.dependency_overrides import overrides
-from server.models.database.building_db_model import Building
-from server.models.database.classroom_db_model import Classroom
-from server.models.database.holiday_category_db_model import HolidayCategory
-from server.models.database.holiday_db_model import Holiday
-from server.models.database.subject_db_model import Subject
-from server.models.database.user_db_model import User
 from server.routes.admin import router as AdminRouter
 from server.routes.public import router as PublicRouter
 
@@ -31,13 +23,13 @@ It supports:
 async def lifespan(app: FastAPI):  # type: ignore
     """Initialize application services."""
 
-    database_singleton.init_connection()
-    db = database_singleton.get_instance()
-    await init_beanie(
-        db,
-        document_models=[User, Building, Subject, Classroom, HolidayCategory, Holiday],
-    )
-    app.db = db  # type: ignore [attr-defined]
+    # database_singleton.init_connection()
+    # db = database_singleton.get_instance()
+    # await init_beanie(
+    #     db,
+    #     document_models=[User, Building, Subject, Classroom, HolidayCategory, Holiday],
+    # )
+    # app.db = db  # type: ignore [attr-defined]
 
     print("Startup complete")
     yield

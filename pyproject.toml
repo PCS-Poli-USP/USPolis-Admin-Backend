@@ -16,9 +16,11 @@ dependencies = [
     "fastapi-mail~=1.4",
     "python-decouple~=3.8",
     "uvicorn~=0.24",
+    "pydantic==2.7",
     "boto3",
     "requests",
-    "beautifulsoup4"
+    "beautifulsoup4",
+    "psycopg2-binary",
 ]
 
 [project.optional-dependencies]
