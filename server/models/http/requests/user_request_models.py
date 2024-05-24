@@ -10,7 +10,6 @@ class UserRegister(UserUpdate):
     name: str
     username: str
     email: EmailStr
-    cognito_id: str
 
     @field_validator("username")
     @classmethod

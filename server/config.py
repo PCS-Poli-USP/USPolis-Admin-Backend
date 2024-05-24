@@ -29,10 +29,11 @@ class Settings(BaseModel):
     # Testing / Development:
     testing: bool = config("TESTING", default=False, cast=bool)
     override_auth: bool = config("OVERRIDE_AUTH", default=False, cast=bool)
+    override_cognito_client: bool = config(
+        "OVERRIDE_COGNITO_CLIENT", default=False, cast=bool
+    )
 
-    mock_username: str = config(
-        "MOCK_USERNAME", default=""
-    ) 
+    mock_username: str = config("MOCK_USERNAME", default="admin")
 
 
 CONFIG = Settings()

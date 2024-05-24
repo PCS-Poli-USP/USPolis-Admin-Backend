@@ -1,12 +1,13 @@
 from typing import Annotated, Any
 
 import boto3  # type: ignore [import-untyped]
-from fastapi import HTTPException, status
+from fastapi import Depends, HTTPException, status
 
 from server.config import CONFIG
+from server.deps.interfaces.i_cognito_client import ICognitoClient
 
 
-class CognitoClient:
+class CognitoClient(ICognitoClient):
     _aws_client: Any
 
     def __init__(self) -> None:
@@ -55,3 +56,6 @@ class UsernameAlreadyExists(HTTPException):
         super().__init__(
             status.HTTP_409_CONFLICT, f"Username '{username}' already exists"
         )
+
+
+CognitoClientDep = Annotated[ICognitoClient, Depends(CognitoClient)]

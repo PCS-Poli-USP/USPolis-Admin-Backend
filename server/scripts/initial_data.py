@@ -3,7 +3,8 @@ import logging
 from sqlmodel import Session, SQLModel, select
 
 from server.config import CONFIG
-from server.connections.db import engine
+from server.db import engine
+from server.deps.mocks.cognito_client_mock import CognitoClientMock
 from server.models.database import (  # noqa
     building_db_model,
     user_building_link,
@@ -29,10 +30,14 @@ def init_db(session: Session) -> None:
             name=CONFIG.first_superuser_name,
             username=CONFIG.first_superuser_username,
             email=CONFIG.first_superuser_email,
-            cognito_id="123",
             is_admin=True,
         )
-        user = UserRepository.create_user(session=session, user_in=user_in)
+        user = UserRepository.create(
+            creator=None,
+            cognito_client=CognitoClientMock(),
+            session=session,
+            user_in=user_in,
+        )
 
 
 def init() -> None:

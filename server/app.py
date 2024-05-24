@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from server.mocks.dependency_overrides import overrides
+from server.deps.mocks.deps_overrides import DepsOverrides
 from server.routes.admin import router as AdminRouter
 from server.routes.public import router as PublicRouter
 
@@ -20,17 +20,8 @@ It supports:
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):  # type: ignore
+async def lifespan(app: FastAPI):  # type: ignore [no-untyped-def]
     """Initialize application services."""
-
-    # database_singleton.init_connection()
-    # db = database_singleton.get_instance()
-    # await init_beanie(
-    #     db,
-    #     document_models=[User, Building, Subject, Classroom, HolidayCategory, Holiday],
-    # )
-    # app.db = db  # type: ignore [attr-defined]
-
     print("Startup complete")
     yield
     print("Shutdown complete")
@@ -55,4 +46,4 @@ app.add_middleware(
 app.include_router(AdminRouter)
 app.include_router(PublicRouter)
 
-app.dependency_overrides = overrides
+app.dependency_overrides = DepsOverrides

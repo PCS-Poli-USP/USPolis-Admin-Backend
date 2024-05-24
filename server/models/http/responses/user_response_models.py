@@ -18,7 +18,6 @@ class UserResponse(BaseModel):
 
     @classmethod
     async def from_user(cls, user: User) -> "UserResponse":
-        await user.fetch_all_links()
         return cls(
             id=str(user.id),
             username=user.username,

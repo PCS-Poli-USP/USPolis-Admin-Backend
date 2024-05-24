@@ -12,7 +12,6 @@ class BuildingResponse(BaseModel):
 
     @classmethod
     async def from_building(cls, building: Building) -> "BuildingResponse":
-        await building.fetch_all_links()
         return cls(
             name=building.name,
             created_by=building.created_by.name, # type: ignore

@@ -21,6 +21,7 @@ dependencies = [
     "requests",
     "beautifulsoup4",
     "psycopg2-binary",
+    "tenacity",
 ]
 
 [project.optional-dependencies]

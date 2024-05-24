@@ -16,9 +16,15 @@ class User(SQLModel, table=True):
     is_admin: bool
     name: str
     cognito_id: str
-    created_by_id: int | None = Field(default=None, foreign_key="user.id")
-    created_by: Optional["User"] = Relationship()
-    buildings: list["Building"] = Relationship(
+    created_by_id: int | None = Field(
+        foreign_key="user.id",
+        default=None,
+        nullable=True,
+    )
+    created_by: Optional["User"] = Relationship(
+        sa_relationship_kwargs=dict(remote_side="User.id"),
+    )
+    buildings: list["Building"] | None = Relationship(
         back_populates="users", link_model=UserBuildingLink
     )
     updated_at: datetime = Field(default=datetime.now())
