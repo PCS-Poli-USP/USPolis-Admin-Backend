@@ -7,7 +7,7 @@ from server.models.http.responses.building_response_models import BuildingRespon
 
 
 class UserResponse(BaseModel):
-    id: str
+    id: int
     username: str
     email: str
     is_admin: bool
@@ -18,8 +18,12 @@ class UserResponse(BaseModel):
 
     @classmethod
     async def from_user(cls, user: User) -> "UserResponse":
+        if user.id is None:
+            raise ValueError(
+                "User ID is None, try refreshing the session if it is newly created"
+            )
         return cls(
-            id=str(user.id),
+            id=user.id,
             username=user.username,
             email=user.email,
             is_admin=user.is_admin,

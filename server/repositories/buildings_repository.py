@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import HTTPException, status
 from sqlmodel import Session, col, select
 
@@ -14,7 +16,12 @@ class BuildingRepository:
         return buildings
 
     @staticmethod
-    def get_by_ids(*, ids: list[str], session: Session) -> list[Building]:
+    def get_by_id(building_id: int, *, session: Session) -> Building:
+        building = session.get_one(Building, building_id)
+        return building
+
+    @staticmethod
+    def get_by_ids(*, ids: list[int], session: Session) -> list[Building]:
         statement = select(Building).where(col(Building.id).in_(ids))
         buildings = list(session.exec(statement).all())
         return buildings
@@ -31,9 +38,22 @@ class BuildingRepository:
         session.commit()
         return building
 
+    @staticmethod
+    def update(*, building: Building, session: Session) -> Building:
+        session.add(building)
+        session.commit()
+        return building
+
+    @staticmethod
+    def delete(*, building_id: int, session: Session) -> Building:
+        building = session.get_one(Building, building_id)
+        session.delete(building)
+        session.commit()
+        return building
+
 
 class BuildingNotFound(HTTPException):
-    def __init__(self, building_info: str) -> None:
+    def __init__(self, building_info: Any) -> None:
         super().__init__(
             status.HTTP_404_NOT_FOUND, f"Building {building_info} not found"
         )
