@@ -9,12 +9,9 @@ class Settings(BaseModel):
 
     root_url: str = config("ROOT_URL", default="http://localhost:8080")
 
-    # Mongo Engine settings
-    mongo_uri: str = config("MONGO_URI")
-    mongo_db_name: str = config("MONGO_DB_NAME")
-
     # SQLAlchemy settings
-    sql_alchemy_db_uri: str = config("SQLALCHEMY_DATABASE_URI")
+    db_uri: str = config("DATABASE_URI")
+    db_database: str = config("DATABASE_NAME")
     first_superuser_email: str = config("FIRST_SUPERUSER_EMAIL", "amdmin@uspolis.com")
     first_superuser_password: str = config("FIRST_SUPERUSER_PASSWORD", "admin")
     first_superuser_name: str = config("FIRST_SUPERUSER_NAME", "admin")
