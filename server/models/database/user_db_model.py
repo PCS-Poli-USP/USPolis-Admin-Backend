@@ -10,7 +10,6 @@ if TYPE_CHECKING:
     from server.models.database.holiday_category_db_model import HolidayCategory
     from server.models.database.holiday_db_model import Holiday
 
-
 class User(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     username: str = Field(index=True, unique=True)
