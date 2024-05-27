@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from server.config import CONFIG
-from server.deps.interfaces.i_cognito_client import ICognitoClient
+from server.services.interfaces.i_cognito_client import ICognitoClient
 
 
 class CognitoClientMock(ICognitoClient):

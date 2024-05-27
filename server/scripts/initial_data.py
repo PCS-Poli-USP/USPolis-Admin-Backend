@@ -4,7 +4,7 @@ from sqlmodel import Session, SQLModel, select
 
 from server.config import CONFIG
 from server.db import engine
-from server.deps.mocks.cognito_client_mock import CognitoClientMock
+from server.mocks.services.cognito_client_mock import CognitoClientMock
 from server.models.database import (  # noqa
     building_db_model,
     user_building_link,

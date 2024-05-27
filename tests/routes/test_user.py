@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
-from server.deps.mocks.cognito_client_mock import CognitoClientMock
+from server.mocks.services.cognito_client_mock import CognitoClientMock
 from server.models.database.building_db_model import Building  # noqa
 from server.models.database.user_db_model import User  # noqa
 from server.models.http.requests.user_request_models import UserRegister

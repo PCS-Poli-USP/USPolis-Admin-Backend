@@ -3,8 +3,8 @@ from typing import Any
 from server.config import CONFIG
 from server.deps.authenticate import authenticate
 from server.deps.cognito_client import CognitoClient
-from server.deps.mocks.authenticate_mock import authenticate_mock
-from server.deps.mocks.cognito_client_mock import CognitoClientMock
+from server.mocks.deps.authenticate_mock import authenticate_mock
+from server.mocks.services.cognito_client_mock import CognitoClientMock
 
 deps_overrides: dict[Any, Any] = {}
 

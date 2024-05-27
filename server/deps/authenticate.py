@@ -28,4 +28,5 @@ async def admin_authenticate(user: Annotated[User, Depends(authenticate)]) -> No
     if not user.is_admin:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "User must be admin")
 
+
 UserDep = Annotated[User, Depends(authenticate)]
