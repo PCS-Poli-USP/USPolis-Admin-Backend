@@ -1,11 +1,8 @@
-from datetime import datetime
-
 from fastapi import APIRouter, Body, HTTPException, Response, status
 
 from server.deps.authenticate import UserDep
 from server.deps.session_dep import SessionDep
 from server.models.database.holiday_db_model import Holiday
-from server.models.database.user_db_model import User
 from server.models.http.requests.holiday_request_models import (
     HolidayRegister,
     HolidayUpdate,
