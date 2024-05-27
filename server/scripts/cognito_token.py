@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-import boto3 # type: ignore
+import boto3  # type: ignore
 
 load_dotenv()
 

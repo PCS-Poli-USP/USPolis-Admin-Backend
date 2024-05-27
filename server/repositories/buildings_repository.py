@@ -1,4 +1,3 @@
-
 from sqlmodel import Session, col, select
 
 from server.models.database.building_db_model import Building

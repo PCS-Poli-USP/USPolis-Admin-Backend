@@ -9,6 +9,7 @@ from server.models.database import (  # noqa
     building_db_model,
     user_building_link,
     user_db_model,
+    holiday_category_db_model,
 )
 from server.models.http.requests.user_request_models import UserRegister
 from server.repositories.users_repository import UserRepository
