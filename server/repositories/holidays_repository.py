@@ -30,7 +30,7 @@ class HolidayRepository:
         *, category_id: str, date: datetime, session: SessionDep
     ) -> bool:
         statement = select(HolidayCategory).where(
-            col(HolidayCategory.id) == category_id and col(Holiday.date) == date
+            col(HolidayCategory.id) == category_id and col(Holiday.date) == date # type: ignore
         )
         result = session.exec(statement).first()
         return result is None
@@ -54,7 +54,7 @@ class HolidayRepository:
             category=category,
             updated_at=datetime.now(),
             created_by=creator,
-        )
+        ) # type: ignore
         session.add(new_holiday)
         session.commit()
         session.refresh(new_holiday)
@@ -66,7 +66,8 @@ class HolidayRepository:
     ) -> Holiday:
         holiday = HolidayRepository.get_by_id(id=id, session=session)
         if holiday.created_by_id != user.id:
-            raise HolidayOperationNotAllowed("update", input.date.strftime("%d/%m/%Y"))
+            raise HolidayOperationNotAllowed(
+                "update", input.date.strftime("%d/%m/%Y"))
         holiday.date = input.date
         holiday.updated_at = datetime.now()
         session.add(holiday)

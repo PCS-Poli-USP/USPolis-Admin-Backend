@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from server.models.database.holiday_category_db_model import HolidayCategory
 
 
-class Holiday(SQLModel):
+class Holiday(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     date: datetime = Field()
     updated_at: datetime = Field(default=datetime.now())
