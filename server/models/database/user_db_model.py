@@ -7,6 +7,8 @@ from server.models.database.user_building_link import UserBuildingLink
 
 if TYPE_CHECKING:
     from server.models.database.building_db_model import Building
+    from server.models.database.holiday_category_db_model import HolidayCategory
+    from server.models.database.holiday_db_model import Holiday
 
 
 class User(SQLModel, table=True):
@@ -16,6 +18,8 @@ class User(SQLModel, table=True):
     is_admin: bool
     name: str
     cognito_id: str
+    updated_at: datetime = Field(default=datetime.now())
+
     created_by_id: int | None = Field(
         foreign_key="user.id",
         default=None,
@@ -27,4 +31,7 @@ class User(SQLModel, table=True):
     buildings: list["Building"] | None = Relationship(
         back_populates="users", link_model=UserBuildingLink
     )
-    updated_at: datetime = Field(default=datetime.now())
+    holidays_categories: list["HolidayCategory"] | None = Relationship(
+        back_populates="created_by"
+    )
+    holidays: list["Holiday"] | None = Relationship(back_populates="created_by")
