@@ -17,4 +17,4 @@ class Holiday(SQLModel):
     category: "HolidayCategory" = Relationship(back_populates="holidays")
 
     created_by_id: int = Field(foreign_key="user.id")
-    created_by: User = Relationship()
+    created_by: "User" = Relationship()
