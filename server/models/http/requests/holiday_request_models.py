@@ -3,10 +3,10 @@ from datetime import datetime
 
 
 class HolidayRegister(BaseModel):
-    category_id: str
+    category_id: int
     date: datetime
 
 
 class HolidayUpdate(BaseModel):
-    category_id: str
+    category_id: int
     date: datetime

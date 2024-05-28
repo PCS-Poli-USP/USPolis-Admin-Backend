@@ -10,7 +10,7 @@ from server.models.http.responses.generic_responses import NoContent
 from server.models.http.responses.holiday_category_response_models import (
     HolidayCategoryResponse,
 )
-from server.repositories.holidays_categories_repository import HolidayCategoryRepository
+from server.repositories.holiday_category_repository import HolidayCategoryRepository
 
 router = APIRouter(prefix="/holidays_categories", tags=["Holiday Category"])
 
@@ -27,7 +27,7 @@ async def get_all_holidays_categories(
 
 @router.get("/{holiday_category_id}", response_model_by_alias=False)
 async def get_holiday_category(
-    holiday_category_id: str, session: SessionDep
+    holiday_category_id: int, session: SessionDep
 ) -> HolidayCategoryResponse:
     holiday_category = HolidayCategoryRepository.get_by_id(
         id=holiday_category_id, session=session
@@ -47,7 +47,7 @@ async def create_holiday_category(
 
 @router.put("/{holiday_category_id}")
 async def update_holiday_category(
-    holiday_category_id: str,
+    holiday_category_id: int,
     holiday_category_input: HolidayCategoryUpdate,
     user: UserDep,
     session: SessionDep,
@@ -60,7 +60,7 @@ async def update_holiday_category(
 
 @router.delete("/{holiday_category_id}")
 async def delete_holiday_category(
-    holiday_category_id: str, user: UserDep, session: SessionDep
+    holiday_category_id: int, user: UserDep, session: SessionDep
 ) -> Response:
     HolidayCategoryRepository.delete(id=holiday_category_id, user=user, session=session)
     return NoContent

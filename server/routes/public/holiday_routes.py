@@ -9,7 +9,7 @@ from server.models.http.requests.holiday_request_models import (
 )
 from server.models.http.responses.generic_responses import NoContent
 from server.models.http.responses.holiday_response_models import HolidayResponse
-from server.repositories.holidays_repository import HolidayRepository
+from server.repositories.holiday_repository import HolidayRepository
 
 router = APIRouter(prefix="/holidays", tags=["Holiday"])
 
@@ -41,7 +41,7 @@ async def create_holiday(
 
 @router.put("/{holiday_id}")
 async def update_holiday(
-    holiday_id: str,
+    holiday_id: int,
     holiday_input: HolidayUpdate,
     user: UserDep,
     session: SessionDep,
@@ -54,7 +54,7 @@ async def update_holiday(
 
 @router.delete("/{holiday_id}")
 async def delete_holiday(
-    holiday_id: str, user: UserDep, session: SessionDep
+    holiday_id: int, user: UserDep, session: SessionDep
 ) -> Response:
     HolidayRepository.delete(id=holiday_id, user=user, session=session)
     return NoContent
