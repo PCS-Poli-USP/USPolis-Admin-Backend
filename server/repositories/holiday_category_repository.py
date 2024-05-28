@@ -17,7 +17,7 @@ class HolidayCategoryRepository:
         return list(holidays_categories)
 
     @staticmethod
-    def get_by_id(*, id: str, session: Session) -> HolidayCategory:
+    def get_by_id(*, id: int, session: Session) -> HolidayCategory:
         statement = select(HolidayCategory).where(col(HolidayCategory.id) == id)
         holiday_category = session.exec(statement).one()
         return holiday_category
@@ -43,7 +43,7 @@ class HolidayCategoryRepository:
 
     @staticmethod
     def update(
-        *, id: str, input: HolidayCategoryUpdate, user: User, session: Session
+        *, id: int, input: HolidayCategoryUpdate, user: User, session: Session
     ) -> HolidayCategory:
         holiday_category = HolidayCategoryRepository.get_by_id(id=id, session=session)
         if holiday_category.created_by_id != user.id:
@@ -54,7 +54,7 @@ class HolidayCategoryRepository:
         return holiday_category
 
     @staticmethod
-    def delete(*, id: str, user: User, session: Session) -> None:
+    def delete(*, id: int, user: User, session: Session) -> None:
         holiday_category = HolidayCategoryRepository.get_by_id(id=id, session=session)
         if holiday_category.created_by_id != user.id:
             raise HolidayCategoryOperationNotAllowed("delete", holiday_category.name)

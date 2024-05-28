@@ -2,14 +2,13 @@ from datetime import datetime
 from fastapi import HTTPException, status
 from sqlmodel import col, select
 from server.deps.session_dep import SessionDep
-from server.models.database.holiday_category_db_model import HolidayCategory
 from server.models.database.holiday_db_model import Holiday
 from server.models.database.user_db_model import User
 from server.models.http.requests.holiday_request_models import (
     HolidayRegister,
     HolidayUpdate,
 )
-from server.repositories.holidays_categories_repository import HolidayCategoryRepository
+from server.repositories.holiday_category_repository import HolidayCategoryRepository
 
 
 class HolidayRepository:
@@ -20,18 +19,17 @@ class HolidayRepository:
         return list(holidays)
 
     @staticmethod
-    def get_by_id(*, id: str, session: SessionDep) -> Holiday:
+    def get_by_id(*, id: int, session: SessionDep) -> Holiday:
         statement = select(Holiday).where(col(Holiday.id) == id)
         holiday = session.exec(statement).one()
         return holiday
 
     @staticmethod
     def check_date_is_valid(
-        *, category_id: str, date: datetime, session: SessionDep
+        *, category_id: int, date: datetime, session: SessionDep
     ) -> bool:
-        statement = select(HolidayCategory).where(
-            col(HolidayCategory.id) == category_id and col(Holiday.date) == date # type: ignore
-        )
+        statement = select(Holiday).where(
+            col(Holiday.category_id) == category_id).where(col(Holiday.date) == date)
         result = session.exec(statement).first()
         return result is None
 
@@ -43,7 +41,7 @@ class HolidayRepository:
             category_id=input.category_id, date=input.date, session=session
         ):
             raise HolidayInCategoryAlreadyExists(
-                input.date.strftime("%d/%m/%Y"), input.category_id
+                input.date.strftime("%d/%m/%Y"), str(input.category_id)
             )
 
         category = HolidayCategoryRepository.get_by_id(
@@ -54,7 +52,7 @@ class HolidayRepository:
             category=category,
             updated_at=datetime.now(),
             created_by=creator,
-        ) # type: ignore
+        )  # type: ignore
         session.add(new_holiday)
         session.commit()
         session.refresh(new_holiday)
@@ -62,7 +60,7 @@ class HolidayRepository:
 
     @staticmethod
     def update(
-        *, id: str, input: HolidayUpdate, user: User, session: SessionDep
+        *, id: int, input: HolidayUpdate, user: User, session: SessionDep
     ) -> Holiday:
         holiday = HolidayRepository.get_by_id(id=id, session=session)
         if holiday.created_by_id != user.id:
@@ -75,7 +73,7 @@ class HolidayRepository:
         return holiday
 
     @staticmethod
-    def delete(*, id: str, user: User, session: SessionDep) -> None:
+    def delete(*, id: int, user: User, session: SessionDep) -> None:
         holiday = HolidayRepository.get_by_id(id=id, session=session)
         if holiday.created_by_id != user.id:
             raise HolidayOperationNotAllowed(
