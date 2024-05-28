@@ -1,12 +1,14 @@
 from pydantic import BaseModel
 
 from server.models.database.holiday_category_db_model import HolidayCategory
+from server.models.database.holiday_db_model import Holiday
 
 
 class HolidayCategoryResponse(BaseModel):
     id: int
     name: str
     created_by: str
+    holidays: list[Holiday]
 
     @classmethod
     def from_holiday_category(
@@ -20,6 +22,7 @@ class HolidayCategoryResponse(BaseModel):
             id=holiday_category.id,
             name=holiday_category.name,
             created_by=holiday_category.created_by.name,  # type: ignore
+            holidays=holiday_category.holidays,
         )
 
     @classmethod
