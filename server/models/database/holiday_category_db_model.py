@@ -16,4 +16,4 @@ class HolidayCategory(SQLModel, table=True):
     )
     created_by: "User" = Relationship(back_populates="holidays_categories")
 
-    holidays: list["Holiday"] = Relationship(back_populates="category")
+    holidays: list["Holiday"] = Relationship(sa_relationship_kwargs={"cascade": "delete"}, back_populates="category")
