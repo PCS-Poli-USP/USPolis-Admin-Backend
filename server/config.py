@@ -9,9 +9,13 @@ class Settings(BaseModel):
 
     root_url: str = config("ROOT_URL", default="http://localhost:8080")
 
-    # Mongo Engine settings
-    mongo_uri: str = config("MONGO_URI")
-    mongo_db_name: str = config("MONGO_DB_NAME")
+    # SQLAlchemy settings
+    db_uri: str = config("DATABASE_URI")
+    db_database: str = config("DATABASE_NAME")
+    first_superuser_email: str = config("FIRST_SUPERUSER_EMAIL", "amdmin@uspolis.com")
+    first_superuser_password: str = config("FIRST_SUPERUSER_PASSWORD", "admin")
+    first_superuser_name: str = config("FIRST_SUPERUSER_NAME", "admin")
+    first_superuser_username: str = config("FIRST_SUPERUSER_USERNAME", "admin")
 
     # AWS
     aws_region_name: str = config("AWS_REGION")
@@ -22,10 +26,11 @@ class Settings(BaseModel):
     # Testing / Development:
     testing: bool = config("TESTING", default=False, cast=bool)
     override_auth: bool = config("OVERRIDE_AUTH", default=False, cast=bool)
+    override_cognito_client: bool = config(
+        "OVERRIDE_COGNITO_CLIENT", default=False, cast=bool
+    )
 
-    mock_username: str = config(
-        "MOCK_USERNAME", default=""
-    )  # TODO: implement as non required
+    mock_username: str = config("MOCK_USERNAME", default="admin")
 
 
 CONFIG = Settings()

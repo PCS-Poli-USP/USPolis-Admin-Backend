@@ -1,14 +1,17 @@
-from fastapi import APIRouter, Body, HTTPException, status, Depends
 from typing import Annotated
 
-from server.models.database.user_db_model import User
+from fastapi import APIRouter, Body, Depends, HTTPException, status
+
+from server.deps.authenticate import authenticate
 from server.models.database.holiday_category_db_model import HolidayCategory
+from server.models.database.user_db_model import User
 from server.models.http.requests.holiday_category_request_models import (
     HolidayCategoryRegister,
     HolidayCategoryUpdate,
 )
-from server.models.http.responses.holiday_category_response_models import HolidayCategoryResponse
-from server.services.auth.authenticate import authenticate
+from server.models.http.responses.holiday_category_response_models import (
+    HolidayCategoryResponse,
+)
 
 router = APIRouter(prefix="/holidays_categories", tags=["Holiday Category"])
 
