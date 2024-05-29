@@ -21,7 +21,7 @@ class HolidayCategoryResponse(BaseModel):
         return cls(
             id=holiday_category.id,
             name=holiday_category.name,
-            created_by=holiday_category.created_by.name,  # type: ignore
+            created_by=holiday_category.created_by.name,
             holidays=holiday_category.holidays,
         )
 
