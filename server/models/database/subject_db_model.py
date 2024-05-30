@@ -1,55 +1,31 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
+from sqlalchemy import Column, String
+from sqlalchemy.dialects import postgresql
+from sqlmodel import Field, Relationship, SQLModel
 
-from beanie import Document, Link, Indexed
-from fastapi import HTTPException, status
-from typing import Annotated
-
-from server.models.database.building_db_model import Building
+from server.models.database.subject_building_link import SubjectBuildingLink
 from server.utils.enums.subject_type import SubjectType
 
-
-class Subject(Document):
-    buildings: list[Link[Building]] | None = None
-    code: Annotated[str, Indexed(unique=True)]
-    name: str
-    professors: list[str]
-    type: SubjectType
-    class_credit: int
-    work_credit: int
-    activation: datetime
-    desactivation: datetime | None = None
-
-    class Settings:
-        name = "subjects"  # Colletion Name
-        keep_nulls = False
-
-    @classmethod
-    async def by_id(cls, id: str) -> "Subject":
-        subject = await Subject.get(id)
-        if subject is None:
-            raise SubjectNotFound(id)
-        return subject
-
-    @classmethod
-    async def by_code(cls, code: str) -> "Subject":
-        subject = await Subject.find_one(cls.code == code)
-        if subject is None:
-            raise SubjectNotFound(code)
-        return subject
-
-    @classmethod
-    async def check_code_exists(cls, code: str) -> bool:
-        return await cls.find_one(cls.code == code) is not None
-
-    @classmethod
-    async def check_code_is_valid(cls, subject_id: str, code: str) -> bool:
-        """Check if this code is used by other subject"""
-        current = await cls.find_one(cls.code == code)
-        if current is None:
-            return True
-        return str(current.id) == subject_id
+if TYPE_CHECKING:
+    from server.models.database.building_db_model import Building
+    from server.models.database.department_db_model import Department
 
 
-class SubjectNotFound(HTTPException):
-    def __init__(self, subject_info: str) -> None:
-        super().__init__(status.HTTP_404_NOT_FOUND, f"Subject {subject_info} not found")
+class Subject(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    name: str = Field(nullable=False)
+    code: str = Field(index=True, unique=True, nullable=False)
+    professors: list[str] = Field(sa_column=Column(postgresql.ARRAY(String())))
+    type: SubjectType = Field()
+    class_credit: int = Field()
+    work_credit: int = Field()
+    activation: datetime = Field()
+    desactivation: datetime | None = Field(default=None)
+
+    buildings: list["Building"] | None = Relationship(
+        back_populates="subjects", link_model=SubjectBuildingLink)
+
+    department_id: int | None = Field(
+        default=None, foreign_key="department.id")
+    department: "Department" = Relationship(back_populates="subjects")
