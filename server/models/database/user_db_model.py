@@ -7,8 +7,11 @@ from server.models.database.user_building_link import UserBuildingLink
 
 if TYPE_CHECKING:
     from server.models.database.building_db_model import Building
+    from server.models.database.classroom_db_model import Classroom
     from server.models.database.holiday_category_db_model import HolidayCategory
     from server.models.database.holiday_db_model import Holiday
+    from server.models.database.calendar_db_model import Calendar
+
 
 class User(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -30,7 +33,12 @@ class User(SQLModel, table=True):
     buildings: list["Building"] | None = Relationship(
         back_populates="users", link_model=UserBuildingLink
     )
+    classrooms: list["Classroom"] | None = Relationship(
+        back_populates="created_by")
     holidays_categories: list["HolidayCategory"] | None = Relationship(
         back_populates="created_by"
     )
-    holidays: list["Holiday"] | None = Relationship(back_populates="created_by")
+    holidays: list["Holiday"] | None = Relationship(
+        back_populates="created_by")
+    calendars: list["Calendar"] | None = Relationship(
+        back_populates="created_by")
