@@ -1,7 +1,9 @@
 from typing import TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
 
-from server.models.database.calendar_holiday_category_link import CalendarHolidayCategoryLink
+from server.models.database.calendar_holiday_category_link import (
+    CalendarHolidayCategoryLink,
+)
 
 
 if TYPE_CHECKING:
@@ -20,6 +22,8 @@ class HolidayCategory(SQLModel, table=True):
     created_by: "User" = Relationship(back_populates="holidays_categories")
 
     holidays: list["Holiday"] = Relationship(
-        sa_relationship_kwargs={"cascade": "delete"}, back_populates="category")
+        sa_relationship_kwargs={"cascade": "delete"}, back_populates="category"
+    )
     calendars: list["Calendar"] = Relationship(
-        back_populates="categories", link_model=CalendarHolidayCategoryLink)
+        back_populates="categories", link_model=CalendarHolidayCategoryLink
+    )

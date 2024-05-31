@@ -24,8 +24,8 @@ class Subject(SQLModel, table=True):
     desactivation: datetime | None = Field(default=None)
 
     buildings: list["Building"] | None = Relationship(
-        back_populates="subjects", link_model=SubjectBuildingLink)
+        back_populates="subjects", link_model=SubjectBuildingLink
+    )
 
-    department_id: int | None = Field(
-        default=None, foreign_key="department.id")
+    department_id: int | None = Field(default=None, foreign_key="department.id")
     department: "Department" = Relationship(back_populates="subjects")

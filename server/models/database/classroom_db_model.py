@@ -23,12 +23,15 @@ class Classroom(SQLModel, table=True):
     updated_at: datetime = Field(default=datetime.now())
 
     created_by_id: int | None = Field(
-        foreign_key="user.id", default=None, nullable=False)
+        foreign_key="user.id", default=None, nullable=False
+    )
     created_by: "User" = Relationship(back_populates="classrooms")
 
     building_id: int | None = Field(
-        index=True, foreign_key="building.id", default=None, nullable=False)
+        index=True, foreign_key="building.id", default=None, nullable=False
+    )
     building: "Building" = Relationship(back_populates="classrooms")
 
     departments: list["Department"] | None = Relationship(
-        back_populates="classrooms", link_model=DepartmentClassroomLink)
+        back_populates="classrooms", link_model=DepartmentClassroomLink
+    )

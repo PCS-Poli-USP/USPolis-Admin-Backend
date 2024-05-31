@@ -23,7 +23,8 @@ class Building(SQLModel, table=True):
         back_populates="buildings", link_model=UserBuildingLink
     )
     classrooms: list["Classroom"] | None = Relationship(
-        back_populates="building", sa_relationship_kwargs={"cascade": "delete"})
+        back_populates="building", sa_relationship_kwargs={"cascade": "delete"}
+    )
     subjects: list["Subject"] | None = Relationship(
         back_populates="buildings", link_model=SubjectBuildingLink
     )

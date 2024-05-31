@@ -21,8 +21,10 @@ class Department(SQLModel, table=True):
     updated_at: datetime = Field(default=datetime.now())
 
     building_id: int | None = Field(
-        foreign_key="building.id", default=None, nullable=False)
+        foreign_key="building.id", default=None, nullable=False
+    )
     building: "Building" = Relationship(back_populates="departments")
-    classrooms: list["Classroom"] = Relationship(
-        back_populates="departments", link_model=DepartmentClassroomLink)
-    subjects: list["Subject"] = Relationship(back_populates="department")
+    classrooms: list["Classroom"] | None = Relationship(
+        back_populates="departments", link_model=DepartmentClassroomLink
+    )
+    subjects: list["Subject"] | None = Relationship(back_populates="department")
