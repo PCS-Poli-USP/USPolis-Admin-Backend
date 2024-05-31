@@ -27,4 +27,5 @@ class Department(SQLModel, table=True):
     classrooms: list["Classroom"] | None = Relationship(
         back_populates="departments", link_model=DepartmentClassroomLink
     )
-    subjects: list["Subject"] | None = Relationship(back_populates="department")
+    subjects: list["Subject"] | None = Relationship(
+        back_populates="department", sa_relationship_kwargs={"cascade": "delete"})
