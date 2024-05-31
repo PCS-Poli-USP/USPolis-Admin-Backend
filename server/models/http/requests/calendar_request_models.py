@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel, field_validator
 
 from server.models.validators.calendar.calendar_validator import CalendarValidator
@@ -16,4 +15,4 @@ class CalendarRegister(BaseModel):
 
 
 class CalendarUpdate(CalendarRegister):
-    pass
+    categories_ids: list[int] | None  # type: ignore

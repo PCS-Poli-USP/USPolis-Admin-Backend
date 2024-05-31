@@ -2,7 +2,9 @@ from pydantic import BaseModel
 
 from server.models.database.calendar_db_model import Calendar
 from server.models.http.exceptions.responses_exceptions import UnfetchDataError
-from server.models.http.responses.holiday_category_response_models import HolidayCategoryResponse
+from server.models.http.responses.holiday_category_response_models import (
+    HolidayCategoryResponse,
+)
 
 
 class CalendarResponse(BaseModel):
@@ -18,7 +20,9 @@ class CalendarResponse(BaseModel):
         return cls(
             id=calendar.id,
             name=calendar.name,
-            categories=HolidayCategoryResponse.from_holiday_category_list(calendar.categories),
+            categories=HolidayCategoryResponse.from_holiday_category_list(
+                calendar.categories
+            ),
             created_by=calendar.created_by.name,
         )
 
