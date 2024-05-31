@@ -3,8 +3,12 @@ from typing import TYPE_CHECKING
 from fastapi import HTTPException, status
 from sqlmodel import Session, col, select
 
+from server.deps.session_dep import SessionDep
 from server.models.database.department_db_model import Department
-from server.models.http.requests.department_request_models import DepartmentCreate
+from server.models.http.requests.department_request_models import (
+    DepartmentRegister,
+    DepartmentUpdate,
+)
 from server.repositories.buildings_repository import BuildingRepository
 
 if TYPE_CHECKING:
@@ -27,10 +31,8 @@ class DepartmentRepository:
         return department
 
     @staticmethod
-    def create(*, input: DepartmentCreate, session: Session) -> Department:
-        building = BuildingRepository.get_by_id(
-            building_id=input.building_id, session=session
-        )
+    def create(*, input: DepartmentRegister, session: Session) -> Department:
+        building = BuildingRepository.get_by_id(id=input.building_id, session=session)
         subjects = None
         if input.subjects_ids is not None:
             subjects = SubjectRepository.get_by_ids(
@@ -48,6 +50,31 @@ class DepartmentRepository:
         session.commit()
         session.refresh(new_department)
         return new_department
+
+    @staticmethod
+    def update(*, id: int, input: DepartmentUpdate, session: SessionDep) -> Department:
+        department = DepartmentRepository.get_by_id(id=id, session=session)
+        if input.building_id is not None:
+            department.building = BuildingRepository.get_by_id(
+                id=input.building_id, session=session
+            )
+        if input.subjects_ids is not None:
+            department.subjects = SubjectRepository.get_by_ids(
+                ids=input.subjects_ids, session=session
+            )
+        department.name = input.name
+        department.abbreviation = input.abbreviation
+        department.professors = input.professors
+        session.add(department)
+        session.commit()
+        session.refresh(department)
+        return department
+
+    @staticmethod
+    def delete(*, id: int, session: Session) -> None:
+        department = DepartmentRepository.get_by_id(id=id, session=session)
+        session.delete(department)
+        session.commit()
 
 
 class DepartmentNotExists(HTTPException):
