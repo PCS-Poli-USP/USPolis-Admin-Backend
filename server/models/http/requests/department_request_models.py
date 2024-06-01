@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class DepartmentCreate(BaseModel):
+class DepartmentRegister(BaseModel):
     building_id: int
     name: str
     abbreviation: str
@@ -10,5 +10,5 @@ class DepartmentCreate(BaseModel):
     classrooms_ids: list[int] | None
 
 
-class DepartmentUpdate(DepartmentCreate):
-    pass
+class DepartmentUpdate(DepartmentRegister):
+    building_id: int | None  # type: ignore

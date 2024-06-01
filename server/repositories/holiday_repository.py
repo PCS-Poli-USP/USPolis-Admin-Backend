@@ -28,8 +28,11 @@ class HolidayRepository:
     def check_date_is_valid(
         *, category_id: int, date: datetime, session: SessionDep
     ) -> bool:
-        statement = select(Holiday).where(
-            col(Holiday.category_id) == category_id).where(col(Holiday.date) == date)
+        statement = (
+            select(Holiday)
+            .where(col(Holiday.category_id) == category_id)
+            .where(col(Holiday.date) == date)
+        )
         result = session.exec(statement).first()
         return result is None
 
@@ -64,8 +67,7 @@ class HolidayRepository:
     ) -> Holiday:
         holiday = HolidayRepository.get_by_id(id=id, session=session)
         if holiday.created_by_id != user.id:
-            raise HolidayOperationNotAllowed(
-                "update", input.date.strftime("%d/%m/%Y"))
+            raise HolidayOperationNotAllowed("update", input.date.strftime("%d/%m/%Y"))
         holiday.date = input.date
         holiday.updated_at = datetime.now()
         session.add(holiday)
@@ -93,5 +95,5 @@ class HolidayOperationNotAllowed(HTTPException):
     def __init__(self, operation: str, holiday_info: str) -> None:
         super().__init__(
             status.HTTP_401_UNAUTHORIZED,
-            f"Not Allowed to {operation} Holiday {holiday_info}",
+            f"Only the creator is Allowed to {operation} Holiday {holiday_info}",
         )

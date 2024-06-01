@@ -23,6 +23,12 @@ class HolidayCategoryRepository:
         return holiday_category
 
     @staticmethod
+    def get_by_ids(*, ids: list[int], session: Session) -> list[HolidayCategory]:
+        statement = select(HolidayCategory).where(col(HolidayCategory.id).in_(ids))
+        holidays_categories = session.exec(statement).all()
+        return list(holidays_categories)
+
+    @staticmethod
     def get_by_name(*, name: str, session: Session) -> HolidayCategory:
         statement = select(HolidayCategory).where(col(HolidayCategory.name) == name)
         holiday_category = session.exec(statement).one()
@@ -66,5 +72,5 @@ class HolidayCategoryOperationNotAllowed(HTTPException):
     def __init__(self, operation: str, holiday_category_info: str) -> None:
         super().__init__(
             status.HTTP_401_UNAUTHORIZED,
-            f"Not Allowed to {operation} HolidayCategory {holiday_category_info}",
+            f"Only the creator is Allowed to {operation} HolidayCategory {holiday_category_info}",
         )
