@@ -55,7 +55,7 @@ class HolidayRepository:
             category=category,
             updated_at=datetime.now(),
             created_by=creator,
-        ) # type: ignore
+        )  # type: ignore
         session.add(new_holiday)
         session.commit()
         session.refresh(new_holiday)
