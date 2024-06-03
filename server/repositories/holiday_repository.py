@@ -1,10 +1,13 @@
 from datetime import datetime
+
 from fastapi import HTTPException, status
 from sqlmodel import col, select
+
 from server.deps.session_dep import SessionDep
 from server.models.database.holiday_db_model import Holiday
 from server.models.database.user_db_model import User
 from server.models.http.requests.holiday_request_models import (
+    HolidayManyRegister,
     HolidayRegister,
     HolidayUpdate,
 )
@@ -60,6 +63,22 @@ class HolidayRepository:
         session.commit()
         session.refresh(new_holiday)
         return new_holiday
+
+    @staticmethod
+    def create_many(
+        *, creator: User, input: HolidayManyRegister, session: SessionDep
+    ) -> list[Holiday]:
+        dates = input.dates
+        category_id = input.category_id
+        holidays = [
+            HolidayRepository.create(
+                creator=creator,
+                input=HolidayRegister(category_id=category_id, date=date),
+                session=session,
+            )
+            for date in dates
+        ]
+        return holidays
 
     @staticmethod
     def update(
