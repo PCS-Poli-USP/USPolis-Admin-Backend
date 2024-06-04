@@ -1,3 +1,4 @@
+from fastapi import HTTPException, status
 from sqlmodel import Session, col, select
 
 from server.models.database.building_db_model import Building
@@ -51,3 +52,10 @@ class BuildingRepository:
         building = session.get_one(Building, building_id)
         session.delete(building)
         session.commit()
+
+
+class BuildingNotExists(HTTPException):
+    def __init__(self, building_info: str) -> None:
+        super().__init__(
+            status.HTTP_404_NOT_FOUND, f"Building with {building_info} not exists"
+        )

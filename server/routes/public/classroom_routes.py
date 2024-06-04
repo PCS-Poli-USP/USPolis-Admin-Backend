@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Body, Depends, HTTPException, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Response, status
 
 from server.deps.authenticate import (
     BuildingDep,
@@ -10,6 +10,7 @@ from server.deps.authenticate import (
 from server.deps.session_dep import SessionDep
 from server.models.database.classroom_db_model import Classroom
 from server.models.http.requests.classroom_request_models import ClassroomRegister
+from server.models.http.responses.generic_responses import NoContent
 from server.repositories.classrooms_repository import ClassroomRepository
 
 embed = Body(..., embed=True)
@@ -54,38 +55,40 @@ async def create_classroom(
 
 @router.put("/{classroom_id}")
 async def update_classroom(
-    classroom_id: str, classroom_input: ClassroomRegister
-) -> str:
-    """Update a classroom, not allowing two classrooms with same name in same building"""
-    building_id = classroom_input.building_id
-    classroom_name = classroom_input.name
-    if not await Classroom.check_classroom_name_is_valid(
-        building_id, classroom_id, classroom_name
-    ):
-        raise ClassroomInBuildingAlredyExists(classroom_name, building_id)
+    classroom_id: int,
+    classroom_input: ClassroomRegister,
+    building: BuildingDep,
+    session: SessionDep,
+) -> Classroom:
+    """Update a classroom"""
 
-    new_classroom = await Classroom.by_id(classroom_id)
-    new_classroom.name = classroom_input.name
-    new_classroom.capacity = classroom_input.capacity
-    new_classroom.floor = classroom_input.floor
-    new_classroom.ignore_to_allocate = classroom_input.ignore_to_allocate
-    new_classroom.accessibility = classroom_input.accessibility
-    new_classroom.projector = classroom_input.projector
-    new_classroom.air_conditioning = classroom_input.air_conditioning
-    new_classroom.updated_at = datetime.now()
-    await new_classroom.save()  # type: ignore
-    return str(new_classroom.id)
+    classroom = ClassroomRepository.get_by_id_on_building(
+        classroom_id=classroom_id, building=building, session=session
+    )
+    classroom.name = classroom_input.name
+    classroom.capacity = classroom_input.capacity
+    classroom.floor = classroom_input.floor
+    classroom.ignore_to_allocate = classroom_input.ignore_to_allocate
+    classroom.accessibility = classroom_input.accessibility
+    classroom.projector = classroom_input.projector
+    classroom.air_conditioning = classroom_input.air_conditioning
+    classroom.updated_at = datetime.now()
+    session.add(classroom)
+    session.commit()
+    session.refresh(classroom)
+    return classroom
 
 
 @router.delete("/{classroom_id}")
-async def delete_classroom(classroom_id: str) -> int:
-    classroom = await Classroom.by_id(classroom_id)
-    response = await classroom.delete()  # type: ignore
-    if response is None:
-        raise HTTPException(
-            status.HTTP_500_INTERNAL_SERVER_ERROR, "No classroom deleted"
-        )
-    return int(response.deleted_count)
+async def delete_classroom(
+    classroom_id: int, building: BuildingDep, session: SessionDep
+) -> Response:
+    classroom = ClassroomRepository.get_by_id_on_building(
+        classroom_id=classroom_id, building=building, session=session
+    )
+    session.delete(classroom)
+    session.commit()
+    return NoContent
 
 
 class ClassroomInBuildingAlredyExists(HTTPException):
