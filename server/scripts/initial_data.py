@@ -5,20 +5,7 @@ from sqlmodel import Session, SQLModel, select
 from server.config import CONFIG
 from server.db import engine
 from server.mocks.services.cognito_client_mock import CognitoClientMock
-from server.models.database import (  # noqa
-    building_db_model,
-    user_building_link,
-    user_db_model,
-    subject_db_model,
-    subject_building_link,
-    department_db_model,
-    classroom_db_model,
-    department_classroom_link,
-    holiday_category_db_model,
-    holiday_db_model,
-    calendar_db_model,
-    calendar_holiday_category_link,
-)
+from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister
 from server.repositories.users_repository import UserRepository
 
@@ -30,9 +17,7 @@ def init_db(session: Session) -> None:
     SQLModel.metadata.create_all(engine)
 
     user = session.exec(
-        select(user_db_model.User).where(
-            user_db_model.User.username == CONFIG.first_superuser_username
-        )
+        select(User).where(User.username == CONFIG.first_superuser_username)
     ).first()
     if not user:
         user_in = UserRegister(

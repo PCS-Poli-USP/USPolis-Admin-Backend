@@ -7,10 +7,10 @@ from server.models.database.subject_building_link import SubjectBuildingLink
 from server.models.database.user_building_link import UserBuildingLink
 
 if TYPE_CHECKING:
-    from server.models.database.user_db_model import User
+    from server.models.database.classroom_db_model import Classroom
     from server.models.database.department_db_model import Department
     from server.models.database.subject_db_model import Subject
-    from server.models.database.classroom_db_model import Classroom
+    from server.models.database.user_db_model import User
 
 
 class Building(SQLModel, table=True):
