@@ -66,11 +66,3 @@ async def delete_holiday(
 ) -> Response:
     HolidayRepository.delete(id=holiday_id, user=user, session=session)
     return NoContent
-
-
-class HolidayInCategoryAlreadyExists(HTTPException):
-    def __init__(self, holiday_info: str, category_info: str) -> None:
-        super().__init__(
-            status.HTTP_409_CONFLICT,
-            f"Holiday {holiday_info} in Category {category_info} already exists",
-        )

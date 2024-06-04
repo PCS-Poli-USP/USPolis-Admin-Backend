@@ -56,10 +56,3 @@ async def delete_subject(subject_id: int, session: SessionDep) -> Response:
     """Delete a subject"""
     SubjectRepository.delete(id=subject_id, session=session)
     return NoContent
-
-
-class SubjectCodeAlreadyExists(HTTPException):
-    def __init__(self, subject_code: str) -> None:
-        super().__init__(
-            status.HTTP_409_CONFLICT, f"Subject {subject_code} already exists"
-        )

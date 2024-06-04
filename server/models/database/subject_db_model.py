@@ -1,5 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
+
+
 from sqlalchemy import Column, String
 from sqlalchemy.dialects import postgresql
 from sqlmodel import Field, Relationship, SQLModel
@@ -9,7 +11,6 @@ from server.utils.enums.subject_type import SubjectType
 
 if TYPE_CHECKING:
     from server.models.database.building_db_model import Building
-    from server.models.database.department_db_model import Department
 
 
 class Subject(SQLModel, table=True):
@@ -26,6 +27,3 @@ class Subject(SQLModel, table=True):
     buildings: list["Building"] | None = Relationship(
         back_populates="subjects", link_model=SubjectBuildingLink
     )
-
-    department_id: int | None = Field(default=None, foreign_key="department.id")
-    department: "Department" = Relationship(back_populates="subjects")

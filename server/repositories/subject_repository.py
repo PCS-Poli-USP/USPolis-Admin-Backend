@@ -6,7 +6,6 @@ from server.models.http.requests.subject_request_models import (
     SubjectRegister,
     SubjectUpdate,
 )
-from server.repositories.department_repository import DepartmentRepository
 
 
 class SubjectRepository:
@@ -32,11 +31,7 @@ class SubjectRepository:
 
     @staticmethod
     def create(*, input: SubjectRegister, session: Session) -> Subject:
-        department = DepartmentRepository.get_by_id(
-            id=input.department_id, session=session
-        )
         new_subject = Subject(
-            department=department,
             name=input.name,
             code=input.code,
             professors=input.professors,
@@ -54,11 +49,6 @@ class SubjectRepository:
     @staticmethod
     def update(*, id: int, input: SubjectUpdate, session: Session) -> Subject:
         subject = SubjectRepository.get_by_id(id=id, session=session)
-        if input.department_id is not None:
-            department = DepartmentRepository.get_by_id(
-                id=input.department_id, session=session
-            )
-            subject.department = department
         subject.name = input.name
         subject.code = input.code
         subject.professors = input.professors
