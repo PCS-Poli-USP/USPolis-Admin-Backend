@@ -2,12 +2,17 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from server.models.database.subject_db_model import Subject
+from server.models.http.exceptions.responses_exceptions import UnfetchDataError
+from server.models.http.responses.department_response_models import (
+    DepartmentBaseResponse,
+)
 from server.utils.enums.subject_type import SubjectType
 from server.models.http.responses.building_response_models import BuildingResponse
 
 
 class SubjectResponse(BaseModel):
-    id: str
+    id: int
+    department: DepartmentBaseResponse
     buildings: list[BuildingResponse] | None = None
     code: str
     name: str
@@ -19,15 +24,17 @@ class SubjectResponse(BaseModel):
     desactivation: datetime | None = None
 
     @classmethod
-    async def from_subject(cls, subject: Subject) -> "SubjectResponse":
-        await subject.fetch_all_links()
+    def from_subject(cls, subject: Subject) -> "SubjectResponse":
+        if subject.id is None:
+            raise UnfetchDataError("Subject", "ID")
         return cls(
-            id=str(subject.id),
+            id=subject.id,
+            department=DepartmentBaseResponse.from_department(subject.department),
             code=subject.code,
             name=subject.name,
             professors=subject.professors,
             buildings=[
-                await BuildingResponse.from_building(building)  # type: ignore
+                BuildingResponse.from_building(building)  # type: ignore
                 for building in subject.buildings
             ]
             if subject.buildings
@@ -40,7 +47,5 @@ class SubjectResponse(BaseModel):
         )
 
     @classmethod
-    async def from_subject_list(
-        cls, subjects: list[Subject]
-    ) -> list["SubjectResponse"]:
-        return [await cls.from_subject(subject) for subject in subjects]
+    def from_subject_list(cls, subjects: list[Subject]) -> list["SubjectResponse"]:
+        return [cls.from_subject(subject) for subject in subjects]

@@ -4,6 +4,7 @@ from server.deps.authenticate import UserDep
 from server.deps.session_dep import SessionDep
 from server.models.database.holiday_db_model import Holiday
 from server.models.http.requests.holiday_request_models import (
+    HolidayManyRegister,
     HolidayRegister,
     HolidayUpdate,
 )
@@ -35,8 +36,15 @@ async def create_holiday(
     holiday = HolidayRepository.create(
         creator=user, input=holiday_input, session=session
     )
-    session.refresh(holiday)
     return HolidayResponse.from_holiday(holiday=holiday)
+
+
+@router.post("/many")
+async def create_many_holidays(
+    input: HolidayManyRegister, user: UserDep, session: SessionDep
+) -> list[HolidayResponse]:
+    holidays = HolidayRepository.create_many(creator=user, input=input, session=session)
+    return HolidayResponse.from_holiday_list(holidays)
 
 
 @router.put("/{holiday_id}")

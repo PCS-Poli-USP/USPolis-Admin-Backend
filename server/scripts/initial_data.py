@@ -9,8 +9,15 @@ from server.models.database import (  # noqa
     building_db_model,
     user_building_link,
     user_db_model,
+    subject_db_model,
+    subject_building_link,
+    department_db_model,
+    classroom_db_model,
+    department_classroom_link,
     holiday_category_db_model,
     holiday_db_model,
+    calendar_db_model,
+    calendar_holiday_category_link,
 )
 from server.models.http.requests.user_request_models import UserRegister
 from server.repositories.users_repository import UserRepository

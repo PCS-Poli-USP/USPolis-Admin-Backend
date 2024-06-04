@@ -1,4 +1,5 @@
 from sqlmodel import Session, col, select
+from fastapi import HTTPException, status
 
 from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
@@ -13,8 +14,11 @@ class BuildingRepository:
         return buildings
 
     @staticmethod
-    def get_by_id(building_id: int, *, session: Session) -> Building:
-        building = session.get_one(Building, building_id)
+    def get_by_id(id: int, *, session: Session) -> Building:
+        statement = select(Building).where(col(Building.id) == id)
+        building = session.exec(statement).first()
+        if building is None:
+            raise BuildingNotExists(str(id))
         return building
 
     @staticmethod
@@ -47,3 +51,10 @@ class BuildingRepository:
         session.delete(building)
         session.commit()
         return building
+
+
+class BuildingNotExists(HTTPException):
+    def __init__(self, building_info: str) -> None:
+        super().__init__(
+            status.HTTP_404_NOT_FOUND, f"Building with {building_info} not exists"
+        )

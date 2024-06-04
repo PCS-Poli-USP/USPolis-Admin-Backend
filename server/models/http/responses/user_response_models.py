@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from server.models.database.user_db_model import User
+from server.models.http.exceptions.responses_exceptions import UnfetchDataError
 from server.models.http.responses.building_response_models import BuildingResponse
 
 
@@ -19,9 +20,7 @@ class UserResponse(BaseModel):
     @classmethod
     def from_user(cls, user: User) -> "UserResponse":
         if user.id is None:
-            raise ValueError(
-                "User ID is None, try refreshing the session if it is newly created"
-            )
+            raise UnfetchDataError("User", "ID")
         return cls(
             id=user.id,
             username=user.username,
