@@ -2,12 +2,21 @@ from collections.abc import Generator
 
 from sqlmodel import Session, create_engine
 
-from server.models.database.building_db_model import Building
-from server.models.database.user_db_model import User
-from server.models.database.holiday_category_db_model import HolidayCategory
-from server.models.database.holiday_db_model import Holiday
-
 from server.config import CONFIG
+from server.models.database import (  # noqa
+    building_db_model,
+    calendar_db_model,
+    calendar_holiday_category_link,
+    classroom_db_model,
+    department_classroom_link,
+    department_db_model,
+    holiday_category_db_model,
+    holiday_db_model,
+    subject_building_link,
+    subject_db_model,
+    user_building_link,
+    user_db_model,
+)
 
 engine = create_engine(f"{CONFIG.db_uri}/{CONFIG.db_database}")
 
