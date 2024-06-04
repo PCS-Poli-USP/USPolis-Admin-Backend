@@ -1,4 +1,3 @@
-
 from sqlmodel import Session, col, select
 
 from server.models.database.building_db_model import Building
@@ -34,17 +33,18 @@ class BuildingRepository:
         )
         session.add(building)
         session.commit()
+        session.refresh(building)
         return building
 
     @staticmethod
     def update(*, building: Building, session: Session) -> Building:
         session.add(building)
         session.commit()
+        session.refresh(building)
         return building
 
     @staticmethod
-    def delete(*, building_id: int, session: Session) -> Building:
+    def delete(*, building_id: int, session: Session) -> None:
         building = session.get_one(Building, building_id)
         session.delete(building)
         session.commit()
-        return building
