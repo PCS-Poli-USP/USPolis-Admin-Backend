@@ -8,8 +8,6 @@ from server.models.database import (  # noqa
     calendar_db_model,
     calendar_holiday_category_link,
     classroom_db_model,
-    department_classroom_link,
-    department_db_model,
     holiday_category_db_model,
     holiday_db_model,
     subject_building_link,

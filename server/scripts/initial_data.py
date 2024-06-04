@@ -18,6 +18,7 @@ from server.models.database import (  # noqa
     calendar_db_model,
     calendar_holiday_category_link,
 )
+from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister
 from server.repositories.users_repository import UserRepository
 
