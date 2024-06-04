@@ -4,11 +4,9 @@ from typing import TYPE_CHECKING
 from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, Relationship, SQLModel
 
-from server.models.database.department_classroom_link import DepartmentClassroomLink
 
 if TYPE_CHECKING:
     from server.models.database.building_db_model import Building
-    from server.models.database.department_db_model import Department
     from server.models.database.user_db_model import User
 
 
@@ -37,7 +35,3 @@ class Classroom(SQLModel, table=True):
         index=True, foreign_key="building.id", default=None, nullable=False
     )
     building: "Building" = Relationship(back_populates="classrooms")
-
-    departments: list["Department"] | None = Relationship(
-        back_populates="classrooms", link_model=DepartmentClassroomLink
-    )

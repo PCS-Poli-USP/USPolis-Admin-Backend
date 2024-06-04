@@ -7,7 +7,6 @@ from server.utils.enums.subject_type import SubjectType
 
 
 class SubjectRegister(BaseModel):
-    department_id: int
     code: str
     name: str
     professors: list[str]
@@ -25,4 +24,4 @@ class SubjectRegister(BaseModel):
 
 
 class SubjectUpdate(SubjectRegister):
-    department_id: int | None = None  # type: ignore
+    pass
