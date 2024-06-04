@@ -7,6 +7,7 @@ from typing import Annotated
 from server.models.database.building_db_model import Building
 from server.utils.enums.subject_type import SubjectType
 
+
 class Subject(Document):
     buildings: list[Link[Building]] | None = None
     code: Annotated[str, Indexed(unique=True)]
@@ -51,5 +52,4 @@ class Subject(Document):
 
 class SubjectNotFound(HTTPException):
     def __init__(self, subject_info: str) -> None:
-        super().__init__(status.HTTP_404_NOT_FOUND,
-                         f"Subject {subject_info} not found")
+        super().__init__(status.HTTP_404_NOT_FOUND, f"Subject {subject_info} not found")

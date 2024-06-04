@@ -40,5 +40,7 @@ class SubjectResponse(BaseModel):
         )
 
     @classmethod
-    async def from_subject_list(cls, subjects: list[Subject]) -> list["SubjectResponse"]:
+    async def from_subject_list(
+        cls, subjects: list[Subject]
+    ) -> list["SubjectResponse"]:
         return [await cls.from_subject(subject) for subject in subjects]
