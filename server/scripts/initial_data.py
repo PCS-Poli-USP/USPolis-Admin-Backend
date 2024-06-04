@@ -5,6 +5,20 @@ from sqlmodel import Session, SQLModel, select
 from server.config import CONFIG
 from server.db import engine
 from server.mocks.services.cognito_client_mock import CognitoClientMock
+from server.models.database import (  # noqa
+    building_db_model,
+    calendar_db_model,
+    calendar_holiday_category_link,
+    classroom_db_model,
+    department_classroom_link,
+    department_db_model,
+    holiday_category_db_model,
+    holiday_db_model,
+    subject_building_link,
+    subject_db_model,
+    user_building_link,
+    user_db_model,
+)
 from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister
 from server.repositories.users_repository import UserRepository

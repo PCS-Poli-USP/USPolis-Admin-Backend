@@ -1,17 +1,16 @@
-from datetime import datetime
-from typing import Annotated
+from fastapi import APIRouter, Body, HTTPException, Response, status
 
-from fastapi import APIRouter, Body, Depends, HTTPException, status
-
-from server.deps.authenticate import authenticate
-from server.models.database.holiday_category_db_model import HolidayCategory
+from server.deps.authenticate import UserDep
+from server.deps.session_dep import SessionDep
 from server.models.database.holiday_db_model import Holiday
-from server.models.database.user_db_model import User
 from server.models.http.requests.holiday_request_models import (
+    HolidayManyRegister,
     HolidayRegister,
     HolidayUpdate,
 )
+from server.models.http.responses.generic_responses import NoContent
 from server.models.http.responses.holiday_response_models import HolidayResponse
+from server.repositories.holiday_repository import HolidayRepository
 
 router = APIRouter(prefix="/holidays", tags=["Holiday"])
 
@@ -19,61 +18,54 @@ embed = Body(..., embed=True)
 
 
 @router.get("", response_model_by_alias=False)
-async def get_all_holidays() -> list[HolidayResponse]:
-    holidays = await Holiday.find_all().to_list()
-    return await HolidayResponse.from_holiday_list(holidays)
+async def get_all_holidays(session: SessionDep) -> list[HolidayResponse]:
+    holidays = HolidayRepository.get_all(session=session)
+    return HolidayResponse.from_holiday_list(holidays)
 
 
 @router.get("/{holiday_id}", response_model_by_alias=False)
 async def get_holiday(holiday_id: str) -> HolidayResponse:
     holiday = await Holiday.by_id(holiday_id)  # type: ignore
-    return await HolidayResponse.from_holiday(holiday)
+    return HolidayResponse.from_holiday(holiday)
 
 
 @router.post("")
-async def create_holiday(holiday_input: HolidayRegister, user: Annotated[User, Depends(authenticate)]) -> str:
-    category_id = holiday_input.category_id
-    if await Holiday.check_date_in_category_exists(category_id, holiday_input.date):
-        raise HolidayInCategoryAlreadyExists(
-            holiday_input.date.strftime("%D-%m-%Y"), holiday_input.category_id
-        )
-    category = await HolidayCategory.by_id(category_id)
-    holiday = Holiday(
-        category=category,  # type: ignore
-        date=holiday_input.date,
-        type=holiday_input.type,
-        updated_at=datetime.now(),
-        created_by=user  # type: ignore
+async def create_holiday(
+    holiday_input: HolidayRegister, user: UserDep, session: SessionDep
+) -> HolidayResponse:
+    holiday = HolidayRepository.create(
+        creator=user, input=holiday_input, session=session
     )
-    await holiday.create()
-    return str(holiday.id)
+    return HolidayResponse.from_holiday(holiday=holiday)
+
+
+@router.post("/many")
+async def create_many_holidays(
+    input: HolidayManyRegister, user: UserDep, session: SessionDep
+) -> list[HolidayResponse]:
+    holidays = HolidayRepository.create_many(creator=user, input=input, session=session)
+    return HolidayResponse.from_holiday_list(holidays)
 
 
 @router.put("/{holiday_id}")
-async def update_holiday(holiday_id: str, holiday_input: HolidayUpdate, user: Annotated[User, Depends(authenticate)]) -> str:
-    category_id = holiday_input.category_id
-    if not await Holiday.check_date_is_valid(
-        category_id, holiday_id, holiday_input.date
-    ):
-        raise HolidayInCategoryAlreadyExists(
-            holiday_input.date.strftime("%D-%m-%Y"), holiday_input.category_id
-        )
-    new_holiday = await Holiday.by_id(holiday_id)
-    new_holiday.date = holiday_input.date
-    new_holiday.type = holiday_input.type
-    new_holiday.updated_at = datetime.now()
-    await new_holiday.save()  # type: ignore
-    return holiday_id
+async def update_holiday(
+    holiday_id: int,
+    holiday_input: HolidayUpdate,
+    user: UserDep,
+    session: SessionDep,
+) -> HolidayResponse:
+    updated_holiday = HolidayRepository.update(
+        id=holiday_id, input=holiday_input, user=user, session=session
+    )
+    return HolidayResponse.from_holiday(updated_holiday)
 
 
 @router.delete("/{holiday_id}")
-async def delete_holiday(holiday_id: str) -> int:
-    holiday = await Holiday.by_id(holiday_id)
-    response = await holiday.delete()  # type: ignore
-    if response is None:
-        raise HTTPException(
-            status.HTTP_500_INTERNAL_SERVER_ERROR, "No holiday deleted")
-    return int(response.deleted_count)
+async def delete_holiday(
+    holiday_id: int, user: UserDep, session: SessionDep
+) -> Response:
+    HolidayRepository.delete(id=holiday_id, user=user, session=session)
+    return NoContent
 
 
 class HolidayInCategoryAlreadyExists(HTTPException):

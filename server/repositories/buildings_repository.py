@@ -13,8 +13,11 @@ class BuildingRepository:
         return buildings
 
     @staticmethod
-    def get_by_id(building_id: int, *, session: Session) -> Building:
-        building = session.get_one(Building, building_id)
+    def get_by_id(id: int, *, session: Session) -> Building:
+        statement = select(Building).where(col(Building.id) == id)
+        building = session.exec(statement).first()
+        if building is None:
+            raise BuildingNotExists(str(id))
         return building
 
     @staticmethod

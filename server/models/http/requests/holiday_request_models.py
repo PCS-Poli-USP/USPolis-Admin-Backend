@@ -1,16 +1,18 @@
-from pydantic import BaseModel
 from datetime import datetime
 
-from server.utils.enums.holiday_type import HolidayType
+from pydantic import BaseModel
 
 
 class HolidayRegister(BaseModel):
-    category_id: str
+    category_id: int
     date: datetime
-    type: HolidayType
 
 
 class HolidayUpdate(BaseModel):
-    category_id: str
+    category_id: int
     date: datetime
-    type: HolidayType
+
+
+class HolidayManyRegister(BaseModel):
+    category_id: int
+    dates: list[datetime]

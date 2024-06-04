@@ -33,7 +33,7 @@ async def update_building(
     building_id: int, building_input: BuildingUpdate, session: SessionDep
 ) -> BuildingResponse:
     """Update a building"""
-    building = BuildingRepository.get_by_id(building_id=building_id, session=session)
+    building = BuildingRepository.get_by_id(id=building_id, session=session)
     building.name = building_input.name
     BuildingRepository.update(building=building, session=session)
     session.refresh(building)
