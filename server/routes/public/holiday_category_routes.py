@@ -64,4 +64,3 @@ async def delete_holiday_category(
 ) -> Response:
     HolidayCategoryRepository.delete(id=holiday_category_id, user=user, session=session)
     return NoContent
-
