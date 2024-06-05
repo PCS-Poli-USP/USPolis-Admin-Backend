@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, HTTPException, Response, status
+from fastapi import APIRouter, Body, Response
 
 from server.deps.authenticate import UserDep
 from server.deps.session_dep import SessionDep
