@@ -29,7 +29,7 @@ class SubjectResponse(BaseModel):
             name=subject.name,
             professors=subject.professors,
             buildings=[
-                BuildingResponse.from_building(building)  # type: ignore
+                BuildingResponse.from_building(building)
                 for building in subject.buildings
             ]
             if subject.buildings

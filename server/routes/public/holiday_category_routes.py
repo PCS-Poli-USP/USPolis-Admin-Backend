@@ -21,6 +21,7 @@ embed = Body(..., embed=True)
 async def get_all_holidays_categories(
     session: SessionDep,
 ) -> list[HolidayCategoryResponse]:
+    """Get all holidays categories"""
     holidays_categories = HolidayCategoryRepository.get_all(session=session)
     return HolidayCategoryResponse.from_holiday_category_list(holidays_categories)
 
@@ -29,6 +30,7 @@ async def get_all_holidays_categories(
 async def get_holiday_category(
     holiday_category_id: int, session: SessionDep
 ) -> HolidayCategoryResponse:
+    """Get a holiday category by id"""
     holiday_category = HolidayCategoryRepository.get_by_id(
         id=holiday_category_id, session=session
     )
@@ -39,6 +41,7 @@ async def get_holiday_category(
 async def create_holiday_category(
     holiday_category_input: HolidayCategoryRegister, user: UserDep, session: SessionDep
 ) -> HolidayCategoryResponse:
+    """Create a holiday category"""
     new_holiday_category = HolidayCategoryRepository.create(
         creator=user, input=holiday_category_input, session=session
     )
@@ -52,6 +55,7 @@ async def update_holiday_category(
     user: UserDep,
     session: SessionDep,
 ) -> HolidayCategoryResponse:
+    """Update a holiday category by id"""
     updated = HolidayCategoryRepository.update(
         id=holiday_category_id, input=holiday_category_input, user=user, session=session
     )
@@ -62,5 +66,6 @@ async def update_holiday_category(
 async def delete_holiday_category(
     holiday_category_id: int, user: UserDep, session: SessionDep
 ) -> Response:
+    """Delete a holiday category by id"""
     HolidayCategoryRepository.delete(id=holiday_category_id, user=user, session=session)
     return NoContent

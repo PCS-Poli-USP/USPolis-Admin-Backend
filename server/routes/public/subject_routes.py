@@ -12,9 +12,7 @@ from server.repositories.subject_repository import SubjectRepository
 
 embed = Body(..., embed=True)
 
-router = APIRouter(
-    prefix="/subjects", tags=["Subjects"], dependencies=[Depends(authenticate)]
-)
+router = APIRouter(prefix="/subjects", tags=["Subjects"])
 
 
 @router.get("", response_model_by_alias=False)

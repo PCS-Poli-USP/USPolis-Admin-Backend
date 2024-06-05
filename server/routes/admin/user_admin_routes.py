@@ -18,6 +18,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.get("", response_model_by_alias=False)
 async def get_users(session: SessionDep) -> list[UserResponse]:
+    """Get all users"""
     users = UserRepository.get_all(session=session)
     return UserResponse.from_user_list(users)
 
@@ -42,14 +43,15 @@ async def create_user(
 
 @router.put("/{user_id}")
 async def update_user(
-    user_id: str,
+    user_id: int,
     user_input: UserUpdate,
     current_user: UserDep,
     session: SessionDep,
 ) -> UserResponse:
+    """Update a user by id"""
     user_to_update = UserRepository.get_by_id(user_id=user_id, session=session)
 
-    if user_id == current_user.id:  # type: ignore [comparison-overlap]
+    if user_id == current_user.id:  
         if current_user.is_admin != user_input.is_admin:
             raise HTTPException(400, "Cannot edit own admin status")
 
@@ -68,12 +70,13 @@ async def update_user(
 
 @router.delete("/{user_id}")
 async def delete_user(
-    user_id: str,
+    user_id: int,
     current_user: UserDep,
     session: SessionDep,
     cognito_client: CognitoClientDep,
 ) -> Response:
-    if current_user.id == user_id:  # type: ignore [comparison-overlap]
+    """Delete a user by id"""
+    if current_user.id == user_id:
         raise HTTPException(400, "Cannot delete self")
 
     UserRepository.delete(
