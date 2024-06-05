@@ -8,6 +8,7 @@ from server.routes.public.holiday_routes import router as HolidayRouter
 from server.routes.public.calendar_routes import router as CalendarRouter
 from server.routes.public.subject_routes import router as SubjectRouter
 from server.routes.public.user_routes import router as UserRouter
+from server.routes.public.institutional_event_routes import router as InstitutionalEventRouter
 
 router = APIRouter(dependencies=[Depends(authenticate)])
 
@@ -18,3 +19,4 @@ router.include_router(UserRouter)
 router.include_router(HolidayCateryRouter)
 router.include_router(HolidayRouter)
 router.include_router(CalendarRouter)
+router.include_router(InstitutionalEventRouter)
