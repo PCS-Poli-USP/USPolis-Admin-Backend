@@ -2,7 +2,7 @@ import json
 from typing import Any, Self
 
 from pydantic import BaseModel, field_validator
-from sqlalchemy import VARCHAR, TypeDecorator
+from sqlalchemy.types import JSON, VARCHAR, TypeDecorator
 
 
 class DayTime(BaseModel):
@@ -56,9 +56,7 @@ class DayTime(BaseModel):
         return (self.hours, self.minutes) >= (other.hours, other.minutes)
 
 
-class DayTimeType(TypeDecorator):
-    impl = VARCHAR
-
+class DayTimeType(JSON):
     def process_bind_param(self, value: DayTime | None, dialect: Any) -> str | None:
         if value is not None:
             return json.dumps(value.model_dump())
