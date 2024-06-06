@@ -51,7 +51,7 @@ async def update_user(
     """Update a user by id"""
     user_to_update = UserRepository.get_by_id(user_id=user_id, session=session)
 
-    if user_id == current_user.id:  
+    if user_id == current_user.id:
         if current_user.is_admin != user_input.is_admin:
             raise HTTPException(400, "Cannot edit own admin status")
 
