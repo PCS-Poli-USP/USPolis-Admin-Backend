@@ -17,6 +17,12 @@ from server.models.database import (  # noqa
     holiday_db_model,
     calendar_db_model,
     calendar_holiday_category_link,
+    class_db_model,
+    schedule_calendar_link,
+    schedule_db_model,
+    reservation_db_model,
+    occurence_db_model,
+    institutional_event_db_model,
 )
 from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister
