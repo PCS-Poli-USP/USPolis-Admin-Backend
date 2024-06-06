@@ -8,6 +8,7 @@ from server.mocks.services.cognito_client_mock import CognitoClientMock
 
 from server.models.database import (  # noqa
     building_db_model,
+    occurrence_db_model,
     user_building_link,
     user_db_model,
     subject_db_model,
@@ -21,7 +22,6 @@ from server.models.database import (  # noqa
     schedule_calendar_link,
     schedule_db_model,
     reservation_db_model,
-    occurence_db_model,
     institutional_event_db_model,
 )
 from server.models.database.user_db_model import User
