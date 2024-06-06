@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from pydantic import BaseModel
 from sqlalchemy import Column, String
 from sqlalchemy.dialects import postgresql
 from sqlmodel import Field, Relationship, SQLModel
