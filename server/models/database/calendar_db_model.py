@@ -20,7 +20,7 @@ class Calendar(SQLModel, table=True):
     categories: list["HolidayCategory"] = Relationship(
         back_populates="calendars", link_model=CalendarHolidayCategoryLink
     )
-    schedules: list[Schedule] | None = Relationship(
+    schedules: list["Schedule"] | None = Relationship(
         back_populates="calendars", link_model=ScheduleCalendarLink
     )
     created_by_id: int | None = Field(default=None, foreign_key="user.id")

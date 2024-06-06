@@ -13,13 +13,8 @@ if TYPE_CHECKING:
     from server.models.database.subject_db_model import Subject
 
 
-class Preferences(BaseModel):
-    air_conditionating: bool
-    accessibility: bool
-    projector: bool
-
-
 class Class(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
     period: list[str] = Field(sa_column=Column(postgresql.ARRAY(String())))
     start_date: datetime = Field()
     end_date: datetime = Field()
@@ -27,7 +22,11 @@ class Class(SQLModel, table=True):
     vacancies: int = Field()
     subscribers: int = Field()
     pendings: int = Field()
-    preferences: Preferences = Field()
+
+    air_conditionating: bool = Field(default=False)
+    accessibility: bool = Field(default=False)
+    projector: bool = Field(default=False)
+
     ignore_to_allocate: bool = Field(default=False)
     full_allocated: bool = Field(default=False)
     updated_at: datetime = Field(default=datetime.now())

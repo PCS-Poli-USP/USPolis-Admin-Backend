@@ -40,4 +40,4 @@ class User(SQLModel, table=True):
     )
     holidays: list["Holiday"] | None = Relationship(back_populates="created_by")
     calendars: list["Calendar"] | None = Relationship(back_populates="created_by")
-    reservations: list[Reservation] | None = Relationship(back_populates="created_by")
+    reservations: list["Reservation"] | None = Relationship(back_populates="created_by")
