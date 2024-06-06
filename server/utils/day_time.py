@@ -2,7 +2,7 @@ import json
 from typing import Any, Self
 
 from pydantic import BaseModel, field_validator
-from sqlalchemy.types import JSON, VARCHAR, TypeDecorator
+from sqlalchemy.types import JSON
 
 
 class DayTime(BaseModel):
