@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Body, Response
 
 from server.deps.authenticate import UserDep
 from server.deps.session_dep import SessionDep
@@ -9,6 +9,8 @@ from server.models.http.requests.calendar_request_models import (
 from server.models.http.responses.calendar_response_models import CalendarResponse
 from server.models.http.responses.generic_responses import NoContent
 from server.repositories.calendar_repository import CalendarRepository
+
+embed = Body(..., embed=True)
 
 router = APIRouter(prefix="/calendars", tags=["Calendars"])
 

@@ -1,6 +1,5 @@
-from fastapi import APIRouter, Body, Depends, Response
+from fastapi import APIRouter, Body, Response
 
-from server.deps.authenticate import authenticate
 from server.deps.session_dep import SessionDep
 from server.models.http.requests.subject_request_models import (
     SubjectRegister,
