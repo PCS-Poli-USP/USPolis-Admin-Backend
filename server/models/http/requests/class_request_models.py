@@ -1,16 +1,14 @@
 from datetime import datetime
 from pydantic import BaseModel
 
+from server.models.http.requests.schedule_request_models import ScheduleManyRegister
+from server.utils.day_time import DayTime
 from server.utils.enums.class_type import ClassType
 from server.utils.enums.recurrence import Recurrence
+from server.utils.enums.week_day import WeekDay
 
 
 class ClassBase(BaseModel):
-    week_days: list[str]
-    start_times: list[str]
-    end_times: list[str]
-    recurrence: Recurrence
-
     period: list[str]
     start_date: datetime
     end_date: datetime
@@ -29,6 +27,7 @@ class ClassBase(BaseModel):
 
 class ClassRegister(ClassBase):
     subject_id: int
+    schedules_data: ScheduleManyRegister
 
 
 class ClassUpdate(ClassBase):

@@ -21,7 +21,12 @@ class ClassRepository:
     @staticmethod
     def create(*, input: ClassRegister, session: Session) -> Class:
         subject = SubjectRepository.get_by_id(id=input.subject_id, session=session)
-        new_class = Class(**input.model_dump(), subject=subject)
+        input_data = input.model_dump()
+        class_fields = Class.__fields__.keys()  # type: ignore
+        class_data = {key: input_data[key] for key in class_fields if key in input_data}
+        print(class_data)
+        print(class_fields)
+        new_class = Class(**class_data, subject=subject)
         session.add(new_class)
         session.commit()
         session.refresh(new_class)
