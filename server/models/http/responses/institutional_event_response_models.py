@@ -10,14 +10,15 @@ class InstitutionalEventResponse(BaseModel):
     id: int
     title: str
     description: str
-    start: datetime
-    end: datetime | None
-    location: str
-    external_link: str
-    likes: int
     category: str
+    start: datetime
+    end: datetime
+    likes: int
     created_at: datetime
-    building: str
+    location: str | None
+    building: str | None
+    classroom: str | None
+    external_link: str | None
 
     @classmethod
     def from_institutional_event(
@@ -37,6 +38,7 @@ class InstitutionalEventResponse(BaseModel):
             category=event.category,
             created_at=event.created_at,
             building=event.building,
+            classroom=event.classroom,
         )
 
     @classmethod

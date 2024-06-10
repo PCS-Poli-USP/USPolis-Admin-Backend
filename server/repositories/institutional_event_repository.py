@@ -33,10 +33,10 @@ class InstitutionalEventRepository:
             end=input.end,
             location=input.location,
             external_link=input.external_link,
-            likes=input.likes,
             category=input.category,
             created_at=datetime.now(),
             building=input.building,
+            classroom=input.classroom,
         )
         session.add(new_event)
         session.commit()
@@ -54,9 +54,9 @@ class InstitutionalEventRepository:
         event.end = input.end
         event.location = input.location
         event.external_link = input.external_link
-        event.likes = input.likes
         event.category = input.category
         event.building = input.building
+        event.classroom = input.classroom
         session.add(event)
         session.commit()
         return event

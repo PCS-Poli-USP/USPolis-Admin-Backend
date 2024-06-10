@@ -23,6 +23,7 @@ from server.models.database import (  # noqa
     schedule_db_model,
     reservation_db_model,
     institutional_event_db_model,
+    institutional_event_db_model,
 )
 from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister
