@@ -7,12 +7,12 @@ class InstitutionalEventRegister(BaseModel):
     title: str
     description: str
     start: datetime
-    end: datetime | None
-    location: str
-    external_link: str
-    likes: int
+    end: datetime
     category: str
-    building: str
+    building: str | None = None
+    classroom: str | None = None
+    location: str | None = None
+    external_link: str | None = None
 
 
 class InstitutionalEventUpdate(InstitutionalEventRegister):
