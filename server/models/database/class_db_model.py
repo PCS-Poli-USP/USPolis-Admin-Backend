@@ -14,10 +14,11 @@ if TYPE_CHECKING:
 
 class Class(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    period: list[str] = Field(sa_column=Column(postgresql.ARRAY(String())))
+    semester: int = Field()
     start_date: datetime = Field()
     end_date: datetime = Field()
-    class_type: ClassType = Field()
+    code: str = Field()
+    type: ClassType = Field()
     vacancies: int = Field()
     subscribers: int = Field()
     pendings: int = Field()
