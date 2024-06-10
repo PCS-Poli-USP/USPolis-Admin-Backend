@@ -13,15 +13,15 @@ from server.utils.enums.week_day import WeekDay
 
 
 class ScheduleBase(BaseModel):
-    """Base for any schedule"""
+    """Base for any schedule request of update or create"""
 
     calendar_id: int
     start_date: datetime
     end_date: datetime
     recurrence: Recurrence
     skip_exceptions: bool
-    allocated: bool
     all_day: bool
+    allocated: bool | None
 
 
 class ScheduleManyRegister(ScheduleBase):
@@ -46,7 +46,7 @@ class ScheduleManyRegister(ScheduleBase):
         return values
 
 
-class ScheduleRegister(BaseModel):
+class ScheduleRegister(ScheduleBase):
     """Register a single Schedule"""
 
     week_day: WeekDay
