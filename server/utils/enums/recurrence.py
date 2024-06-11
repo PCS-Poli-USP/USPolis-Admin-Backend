@@ -6,4 +6,4 @@ class Recurrence(Enum):
     WEEKLY = "Weekly"
     BIWEEKLY = "Biweekly"
     MONTHLY = "Monthly"
-    CUSTOM = "Custom"
+    NONE = "None"
