@@ -11,6 +11,7 @@ class ClassBase(BaseModel):
     end_date: datetime
     code: str
     type: ClassType
+    professors: list[str]
     vacancies: int
     subscribers: int
     pendings: int

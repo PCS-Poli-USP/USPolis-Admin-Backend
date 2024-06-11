@@ -18,6 +18,7 @@ class Class(SQLModel, table=True):
     start_date: datetime = Field()
     end_date: datetime = Field()
     code: str = Field()
+    professors: list[str] = Field(sa_column=Column(postgresql.ARRAY(String())))
     type: ClassType = Field()
     vacancies: int = Field()
     subscribers: int = Field()

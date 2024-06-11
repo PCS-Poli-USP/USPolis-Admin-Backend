@@ -16,6 +16,7 @@ class ClassResponse(BaseModel):
     end_date: datetime
     code: str
     class_type: ClassType
+    professors: list[str]
     vacancies: int
     subscribers: int
     pendings: int
