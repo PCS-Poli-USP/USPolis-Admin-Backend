@@ -36,7 +36,7 @@ class ScheduleRepository:
                 week_day=input.week_days[i],
                 start_time=input.start_times[i],
                 end_time=input.end_times[i],
-                calendar_id=input.calendar_id,
+                calendar_ids=input.calendar_ids,
                 start_date=input.start_date,
                 end_date=input.end_date,
                 recurrence=input.recurrence,
