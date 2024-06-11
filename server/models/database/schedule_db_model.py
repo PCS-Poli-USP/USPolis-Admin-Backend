@@ -23,8 +23,8 @@ class Schedule(SQLModel, table=True):
     week_day: WeekDay = Field()
     start_date: datetime = Field()
     end_date: datetime = Field()
-    start_time: DayTime = Field(sa_column=Column(DayTimeType))
-    end_time: DayTime = Field(sa_column=Column(DayTimeType))
+    start_time: DayTime = Field(sa_column=Column(DayTimeType, nullable=False))
+    end_time: DayTime = Field(sa_column=Column(DayTimeType, nullable=False))
     skip_exceptions: bool = Field(default=False)
     allocated: bool = Field(default=False)
     recurrence: Recurrence = Field()
@@ -33,7 +33,7 @@ class Schedule(SQLModel, table=True):
     university_class_id: int | None = Field(foreign_key="class.id", nullable=True)
     university_class: Optional["Class"] = Relationship(back_populates="schedules")
 
-    classroom_id: int | None = Field(foreign_key="classroom.id")
+    classroom_id: int | None = Field(foreign_key="classroom.id", nullable=True)
     classroom: Optional["Classroom"] = Relationship(back_populates="schedules")
 
     reservation: Optional["Reservation"] = Relationship(back_populates="schedule")
