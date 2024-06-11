@@ -31,7 +31,7 @@ async def create_building(
 async def update_building(
     building_id: int, building_input: BuildingUpdate, session: SessionDep
 ) -> BuildingResponse:
-    """Update a building"""
+    """Update a building by id"""
     building = BuildingRepository.get_by_id(id=building_id, session=session)
     building.name = building_input.name
     BuildingRepository.update(building=building, session=session)
@@ -41,7 +41,7 @@ async def update_building(
 
 @router.delete("/{building_id}")
 async def delete_building(building_id: int, session: SessionDep) -> Response:
-    """Delete a building"""
+    """Delete a building by id"""
     BuildingRepository.delete(building_id=building_id, session=session)
     return NoContent
 

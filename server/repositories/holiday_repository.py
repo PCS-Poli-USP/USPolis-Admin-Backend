@@ -1,9 +1,8 @@
 from datetime import datetime
 
 from fastapi import HTTPException, status
-from sqlmodel import col, select
+from sqlmodel import col, select, Session
 
-from server.deps.session_dep import SessionDep
 from server.models.database.holiday_db_model import Holiday
 from server.models.database.user_db_model import User
 from server.models.http.requests.holiday_request_models import (
@@ -16,20 +15,20 @@ from server.repositories.holiday_category_repository import HolidayCategoryRepos
 
 class HolidayRepository:
     @staticmethod
-    def get_all(*, session: SessionDep) -> list[Holiday]:
+    def get_all(*, session: Session) -> list[Holiday]:
         statement = select(Holiday)
         holidays = session.exec(statement).all()
         return list(holidays)
 
     @staticmethod
-    def get_by_id(*, id: int, session: SessionDep) -> Holiday:
+    def get_by_id(*, id: int, session: Session) -> Holiday:
         statement = select(Holiday).where(col(Holiday.id) == id)
         holiday = session.exec(statement).one()
         return holiday
 
     @staticmethod
     def check_date_is_valid(
-        *, category_id: int, date: datetime, session: SessionDep
+        *, category_id: int, date: datetime, session: Session
     ) -> bool:
         statement = (
             select(Holiday)
@@ -40,9 +39,7 @@ class HolidayRepository:
         return result is None
 
     @staticmethod
-    def create(
-        *, creator: User, input: HolidayRegister, session: SessionDep
-    ) -> Holiday:
+    def create(*, creator: User, input: HolidayRegister, session: Session) -> Holiday:
         if not HolidayRepository.check_date_is_valid(
             category_id=input.category_id, date=input.date, session=session
         ):
@@ -66,7 +63,7 @@ class HolidayRepository:
 
     @staticmethod
     def create_many(
-        *, creator: User, input: HolidayManyRegister, session: SessionDep
+        *, creator: User, input: HolidayManyRegister, session: Session
     ) -> list[Holiday]:
         dates = input.dates
         category_id = input.category_id
@@ -82,7 +79,7 @@ class HolidayRepository:
 
     @staticmethod
     def update(
-        *, id: int, input: HolidayUpdate, user: User, session: SessionDep
+        *, id: int, input: HolidayUpdate, user: User, session: Session
     ) -> Holiday:
         holiday = HolidayRepository.get_by_id(id=id, session=session)
         if holiday.created_by_id != user.id:
@@ -94,7 +91,7 @@ class HolidayRepository:
         return holiday
 
     @staticmethod
-    def delete(*, id: int, user: User, session: SessionDep) -> None:
+    def delete(*, id: int, user: User, session: Session) -> None:
         holiday = HolidayRepository.get_by_id(id=id, session=session)
         if holiday.created_by_id != user.id:
             raise HolidayOperationNotAllowed(

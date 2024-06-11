@@ -1,8 +1,7 @@
-from fastapi import APIRouter, Body, HTTPException, Response, status
+from fastapi import APIRouter, Body, Response
 
 from server.deps.authenticate import UserDep
 from server.deps.session_dep import SessionDep
-from server.models.database.holiday_db_model import Holiday
 from server.models.http.requests.holiday_request_models import (
     HolidayManyRegister,
     HolidayRegister,
@@ -19,13 +18,15 @@ embed = Body(..., embed=True)
 
 @router.get("", response_model_by_alias=False)
 async def get_all_holidays(session: SessionDep) -> list[HolidayResponse]:
+    """Get all holidays"""
     holidays = HolidayRepository.get_all(session=session)
     return HolidayResponse.from_holiday_list(holidays)
 
 
 @router.get("/{holiday_id}", response_model_by_alias=False)
-async def get_holiday(holiday_id: str) -> HolidayResponse:
-    holiday = await Holiday.by_id(holiday_id)  # type: ignore
+async def get_holiday(holiday_id: int, session: SessionDep) -> HolidayResponse:
+    """Get holiday by id"""
+    holiday = HolidayRepository.get_by_id(id=holiday_id, session=session)
     return HolidayResponse.from_holiday(holiday)
 
 
@@ -43,6 +44,7 @@ async def create_holiday(
 async def create_many_holidays(
     input: HolidayManyRegister, user: UserDep, session: SessionDep
 ) -> list[HolidayResponse]:
+    """Create many holidays"""
     holidays = HolidayRepository.create_many(creator=user, input=input, session=session)
     return HolidayResponse.from_holiday_list(holidays)
 
@@ -54,6 +56,7 @@ async def update_holiday(
     user: UserDep,
     session: SessionDep,
 ) -> HolidayResponse:
+    """Update holiday by id"""
     updated_holiday = HolidayRepository.update(
         id=holiday_id, input=holiday_input, user=user, session=session
     )

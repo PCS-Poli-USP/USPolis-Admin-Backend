@@ -10,4 +10,5 @@ router = APIRouter(prefix="/users", tags=["Users"])
 async def get_current_user(
     user: UserDep,
 ) -> UserResponse:
+    """Get current user"""
     return UserResponse.from_user(user)

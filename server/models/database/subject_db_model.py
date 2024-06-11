@@ -11,6 +11,7 @@ from server.utils.enums.subject_type import SubjectType
 
 if TYPE_CHECKING:
     from server.models.database.building_db_model import Building
+    from server.models.database.class_db_model import Class
 
 
 class Subject(SQLModel, table=True):
@@ -27,3 +28,4 @@ class Subject(SQLModel, table=True):
     buildings: list["Building"] | None = Relationship(
         back_populates="subjects", link_model=SubjectBuildingLink
     )
+    classes: list["Class"] = Relationship(back_populates="subject")

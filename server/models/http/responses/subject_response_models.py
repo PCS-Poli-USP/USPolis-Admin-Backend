@@ -1,6 +1,7 @@
 from datetime import datetime
 from pydantic import BaseModel
 
+from server.models.database.class_db_model import Class
 from server.models.database.subject_db_model import Subject
 from server.models.http.exceptions.responses_exceptions import UnfetchDataError
 from server.utils.enums.subject_type import SubjectType
@@ -10,6 +11,7 @@ from server.models.http.responses.building_response_models import BuildingRespon
 class SubjectResponse(BaseModel):
     id: int
     buildings: list[BuildingResponse] | None = None
+    classes: list[Class]
     code: str
     name: str
     professors: list[str]
@@ -29,11 +31,12 @@ class SubjectResponse(BaseModel):
             name=subject.name,
             professors=subject.professors,
             buildings=[
-                BuildingResponse.from_building(building)  # type: ignore
+                BuildingResponse.from_building(building)
                 for building in subject.buildings
             ]
             if subject.buildings
             else None,
+            classes=subject.classes,
             type=subject.type,
             class_credit=subject.class_credit,
             work_credit=subject.work_credit,

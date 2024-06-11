@@ -19,10 +19,10 @@ class HolidayResponse(BaseModel):
             )
         return cls(
             id=holiday.id,
-            category=holiday.category.name,  # type: ignore
+            category=holiday.category.name,
             date=holiday.date,
             updated_at=holiday.updated_at,
-            created_by=holiday.created_by.name,  # type: ignore
+            created_by=holiday.created_by.name,
         )
 
     @classmethod
