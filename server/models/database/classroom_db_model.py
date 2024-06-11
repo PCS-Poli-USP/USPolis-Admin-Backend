@@ -8,6 +8,7 @@ from sqlmodel import Field, Relationship, SQLModel
 if TYPE_CHECKING:
     from server.models.database.building_db_model import Building
     from server.models.database.user_db_model import User
+    from server.models.database.schedule_db_model import Schedule
     from server.models.database.occurrence_db_model import Occurrence
     from server.models.database.reservation_db_model import Reservation
 
@@ -38,3 +39,4 @@ class Classroom(SQLModel, table=True):
     building: "Building" = Relationship(back_populates="classrooms")
     occurrences: list["Occurrence"] | None = Relationship(back_populates="classroom")
     reservations: list["Reservation"] | None = Relationship(back_populates="classroom")
+    schedules: list["Schedule"] | None = Relationship(back_populates="classroom")

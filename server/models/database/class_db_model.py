@@ -32,7 +32,7 @@ class Class(SQLModel, table=True):
     full_allocated: bool = Field(default=False)
     updated_at: datetime = Field(default=datetime.now())
 
-    schedules: list["Schedule"] | None = Relationship(back_populates="university_class")
+    schedules: list["Schedule"] = Relationship(back_populates="university_class")
 
     subject_id: int | None = Field(
         foreign_key="subject.id", index=True, default=None, nullable=False

@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from server.models.database.calendar_db_model import Calendar
     from server.models.database.class_db_model import Class
     from server.models.database.occurrence_db_model import Occurrence
+    from server.models.database.classroom_db_model import Classroom
 
 from server.utils.day_time import DayTime, DayTimeType
 from server.utils.enums.recurrence import Recurrence
@@ -31,6 +32,9 @@ class Schedule(SQLModel, table=True):
 
     university_class_id: int | None = Field(foreign_key="class.id", nullable=True)
     university_class: Optional["Class"] = Relationship(back_populates="schedules")
+
+    classroom_id: int | None = Field(foreign_key="classroom.id")
+    classroom: Optional["Classroom"] = Relationship(back_populates="schedules")
 
     reservation: Optional["Reservation"] = Relationship(back_populates="schedule")
 

@@ -5,7 +5,7 @@ from server.models.http.requests.schedule_request_models import ScheduleManyRegi
 from server.utils.enums.class_type import ClassType
 
 
-class ClassBase(BaseModel):
+class ClassRequestBase(BaseModel):
     semester: int
     start_date: datetime
     end_date: datetime
@@ -24,10 +24,10 @@ class ClassBase(BaseModel):
     full_allocated: bool
 
 
-class ClassRegister(ClassBase):
+class ClassRegister(ClassRequestBase):
     subject_id: int
     schedules_data: ScheduleManyRegister
 
 
-class ClassUpdate(ClassBase):
+class ClassUpdate(ClassRequestBase):
     subject_id: int | None
