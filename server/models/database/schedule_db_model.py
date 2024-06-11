@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import Column
 from sqlmodel import Field, Relationship, SQLModel
@@ -29,10 +29,12 @@ class Schedule(SQLModel, table=True):
     recurrence: Recurrence = Field()
     all_day: bool = Field(default=False)
 
-    university_class_id: int | None = Field(foreign_key="class.id")
-    university_class: "Class" = Relationship(back_populates="schedules")
+    university_class_id: int | None = Field(foreign_key="class.id", nullable=True)
+    university_class: Optional["Class"] = Relationship(back_populates="schedules")
+
+    reservation: Optional["Reservation"] = Relationship(back_populates="schedule")
+
     occurrences: list["Occurrence"] = Relationship(back_populates="schedule")
     calendars: list["Calendar"] = Relationship(
         back_populates="schedules", link_model=ScheduleCalendarLink
     )
-    reservation: Reservation | None = Relationship(back_populates="schedule")

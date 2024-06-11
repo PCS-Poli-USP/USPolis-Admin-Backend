@@ -15,7 +15,7 @@ from server.utils.enums.week_day import WeekDay
 class ScheduleBase(BaseModel):
     """Base for any schedule request of update or create"""
 
-    calendar_id: int
+    calendar_ids: list[int]
     start_date: datetime
     end_date: datetime
     recurrence: Recurrence
