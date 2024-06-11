@@ -22,7 +22,7 @@ class ClassRepository:
     def create(*, input: ClassRegister, session: Session) -> Class:
         subject = SubjectRepository.get_by_id(id=input.subject_id, session=session)
         input_data = input.model_dump()
-        class_fields = Class.__fields__.keys()  # type: ignore
+        class_fields = Class.model_fields.keys()
         class_data = {key: input_data[key] for key in class_fields if key in input_data}
         print(class_data)
         print(class_fields)
