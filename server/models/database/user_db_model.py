@@ -1,44 +1,41 @@
 from datetime import datetime
-from typing import Annotated, Self
+from typing import TYPE_CHECKING, Optional
 
-from beanie import Document, Indexed, Link
-from fastapi import HTTPException, status
+from sqlmodel import Field, Relationship, SQLModel
+
+from server.models.database.user_building_link import UserBuildingLink
+
+if TYPE_CHECKING:
+    from server.models.database.building_db_model import Building
+    from server.models.database.classroom_db_model import Classroom
+    from server.models.database.holiday_category_db_model import HolidayCategory
+    from server.models.database.holiday_db_model import Holiday
+    from server.models.database.calendar_db_model import Calendar
 
 
-class User(Document):
-    username: Annotated[str, Indexed(unique=True)]
+class User(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    username: str = Field(index=True, unique=True)
     email: str
     is_admin: bool
     name: str
     cognito_id: str
-    created_by: Link["User"] | None = None
-    buildings: list[Link["Building"]] | None = None  # type: ignore # noqa: F821
-    updated_at: datetime
+    updated_at: datetime = Field(default=datetime.now())
 
-    class Settings:
-        name = "users"
-        keep_nulls = False
-
-    @classmethod
-    async def by_username(cls, username: str) -> Self:
-        user = await cls.find_one(cls.username == username)
-        if user is None:
-            raise UserNotFound(username)
-        return user
-
-    @classmethod
-    async def by_id(cls, id: str) -> Self:
-        user = await cls.get(id)
-        if user is None:
-            raise UserNotFound(id)
-        return user
-
-    @classmethod
-    async def check_username_exists(cls, username: str) -> bool:
-        """Check if a username already exists"""
-        return await cls.find_one(cls.username == username) is not None
-
-
-class UserNotFound(HTTPException):
-    def __init__(self, user_info: str):
-        super().__init__(status.HTTP_404_NOT_FOUND, f"User '{user_info}' not found")
+    created_by_id: int | None = Field(
+        foreign_key="user.id",
+        default=None,
+        nullable=True,
+    )
+    created_by: Optional["User"] = Relationship(
+        sa_relationship_kwargs=dict(remote_side="User.id"),
+    )
+    buildings: list["Building"] | None = Relationship(
+        back_populates="users", link_model=UserBuildingLink
+    )
+    classrooms: list["Classroom"] | None = Relationship(back_populates="created_by")
+    holidays_categories: list["HolidayCategory"] | None = Relationship(
+        back_populates="created_by"
+    )
+    holidays: list["Holiday"] | None = Relationship(back_populates="created_by")
+    calendars: list["Calendar"] | None = Relationship(back_populates="created_by")

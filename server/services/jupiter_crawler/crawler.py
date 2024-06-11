@@ -152,7 +152,9 @@ class JupiterCrawler:
             ):
                 previous_schedule_info = schedules_infos[len(schedules_infos) - 1]
                 previous_schedule_info.professors.append(professor)
-                previous_schedule_info.professors = sorted(previous_schedule_info.professors)
+                previous_schedule_info.professors = sorted(
+                    previous_schedule_info.professors
+                )
                 continue
 
             # More than one hour in same day - only week day is empty

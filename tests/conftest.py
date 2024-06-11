@@ -1,47 +1,48 @@
 """Pytest fixtures."""
 
-from collections.abc import AsyncIterator
+from collections.abc import Generator
 
-import pytest_asyncio
-from asgi_lifespan import LifespanManager
+import pytest
 from decouple import config  # type: ignore [import-untyped]
-from fastapi import FastAPI
-from httpx import AsyncClient
+from fastapi.testclient import TestClient
+from sqlmodel import Session
 
 from server.config import CONFIG
-from server.models.database.user_db_model import User
-from tests.utils.user_test_utils import get_test_admin_user
+
+CONFIG.testing = True
+CONFIG.override_auth = True
+CONFIG.override_cognito_client = True
+CONFIG.db_uri = config("TEST_DATABASE_URI")  # type: ignore
+CONFIG.db_database = config("TEST_DATABASE_NAME", default="uspolis-test")  # type: ignore
 
 # Override config settings before loading the app
-CONFIG.testing = True
-CONFIG.mongo_uri = config(
-    "TEST_MONGO_URI", default="mongodb://localhost:27017")  # type: ignore
-CONFIG.mongo_db_name = config(
-    "TEST_MONGO_DB_NAME", default="uspolis-test")  # type: ignore
-
-from server import app  # noqa: E402
+from server.app import app  # noqa: E402
+from server.models.database.building_db_model import Building  # noqa  # noqa
+from server.models.database.user_db_model import User  # noqa
+from server.repositories.users_repository import UserRepository  # noqa
+from server.scripts.initial_data import init_db  # noqa
 
 
-async def clear_database(server: FastAPI) -> None:
-    """Empty the test database."""
-    async for collection in await server.db.list_collections():  # type: ignore[attr-defined]
-        await server.db[collection["name"]].delete_many({})  # type: ignore
+@pytest.fixture(scope="session", autouse=True)
+def db() -> Generator[Session, None, None]:
+    from server.db import engine  # noqa
+
+    with Session(engine) as session:
+        init_db(session)
+        yield session
+        # session.execute(delete(UserBuildingLink))
+        # session.execute(delete(Building))
+        # session.execute(delete(User))
+        # session.commit()
 
 
-@pytest_asyncio.fixture(autouse=False)
-async def client() -> AsyncIterator[AsyncClient]:
-    """Async server client that handles lifespan and teardown."""
-    async with LifespanManager(app):
-        async with AsyncClient(app=app, base_url="http://test") as _client:  # type: ignore
-            try:
-                yield _client
-            except Exception as exc:
-                print(exc)
-            finally:
-                await clear_database(app)
+@pytest.fixture(scope="module")
+def client() -> Generator[TestClient, None, None]:
+    with TestClient(app) as c:
+        yield c
 
 
-@pytest_asyncio.fixture(autouse=False)
-async def user() -> AsyncIterator[User]:
-    user = await get_test_admin_user()
+@pytest.fixture(autouse=False)
+def user(db: Session) -> Generator[User, None, None]:
+    user = UserRepository.get_by_username(session=db, username=CONFIG.mock_username)
     yield user

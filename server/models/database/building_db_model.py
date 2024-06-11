@@ -1,57 +1,30 @@
 from datetime import datetime
-from typing import Annotated, Self
+from typing import TYPE_CHECKING
 
-from beanie import Document, Indexed, Link
-from fastapi import HTTPException, status
+from sqlmodel import Field, Relationship, SQLModel
 
+from server.models.database.subject_building_link import SubjectBuildingLink
+from server.models.database.user_building_link import UserBuildingLink
 
-class Building(Document):
-    name: Annotated[str, Indexed(unique=True)]
-    created_by: Link["User"]  # type: ignore  # noqa: F821
-    updated_at: datetime
-
-    class Settings:
-        name = "buildings"
-
-    @classmethod
-    async def by_name(cls, name: str) -> Self:
-        building = await cls.find_one(cls.name == name)
-        if building is None:
-            raise BuildingNotFound(name)
-        return building
-
-    @classmethod
-    async def by_id(cls, id: str) -> Self:
-        building = await cls.get(id)
-        if building is None:
-            raise BuildingNotFound(id)
-        return building
-
-    @classmethod
-    async def check_name_exits(cls, name: str) -> bool:
-        return await cls.find_one(cls.name == name) is not None
-
-    @classmethod
-    async def check_name_is_valid(cls, building_id: str, name: str) -> bool:
-        """Check if the name of building is not used in other building"""
-        current = await cls.find_one(cls.name == name)
-        if current is None:
-            return True
-        return str(current.id) == building_id
-
-    @classmethod
-    async def by_ids(cls, ids: list[str]) -> list["Building"]:
-        async def get_building_by_id(id: str) -> Building:
-            building = await Building.get(id)
-            if not building:
-                raise BuildingNotFound(id)
-            return building
-
-        return [await get_building_by_id(id) for id in ids]
+if TYPE_CHECKING:
+    from server.models.database.classroom_db_model import Classroom
+    from server.models.database.subject_db_model import Subject
+    from server.models.database.user_db_model import User
 
 
-class BuildingNotFound(HTTPException):
-    def __init__(self, building_info: str) -> None:
-        super().__init__(
-            status.HTTP_404_NOT_FOUND, f"Building {building_info} not found"
-        )
+class Building(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    name: str = Field(index=True, unique=True)
+
+    created_by_id: int | None = Field(default=None, foreign_key="user.id")
+    created_by: "User" = Relationship()
+    users: list["User"] | None = Relationship(
+        back_populates="buildings", link_model=UserBuildingLink
+    )
+    classrooms: list["Classroom"] | None = Relationship(
+        back_populates="building", sa_relationship_kwargs={"cascade": "delete"}
+    )
+    subjects: list["Subject"] | None = Relationship(
+        back_populates="buildings", link_model=SubjectBuildingLink
+    )
+    updated_at: datetime = Field(default=datetime.now())

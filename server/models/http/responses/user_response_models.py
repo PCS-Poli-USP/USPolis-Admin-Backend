@@ -3,11 +3,12 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from server.models.database.user_db_model import User
+from server.models.http.exceptions.responses_exceptions import UnfetchDataError
 from server.models.http.responses.building_response_models import BuildingResponse
 
 
 class UserResponse(BaseModel):
-    id: str
+    id: int
     username: str
     email: str
     is_admin: bool
@@ -17,18 +18,18 @@ class UserResponse(BaseModel):
     updated_at: datetime
 
     @classmethod
-    async def from_user(cls, user: User) -> "UserResponse":
-        await user.fetch_all_links()
+    def from_user(cls, user: User) -> "UserResponse":
+        if user.id is None:
+            raise UnfetchDataError("User", "ID")
         return cls(
-            id=str(user.id),
+            id=user.id,
             username=user.username,
             email=user.email,
             is_admin=user.is_admin,
             name=user.name,
-            created_by=user.created_by.name if user.created_by else None,  # type: ignore
+            created_by=user.created_by.name if user.created_by else None,
             buildings=[
-                await BuildingResponse.from_building(building)  # type: ignore
-                for building in user.buildings
+                BuildingResponse.from_building(building) for building in user.buildings
             ]
             if user.buildings
             else None,
@@ -36,5 +37,5 @@ class UserResponse(BaseModel):
         )
 
     @classmethod
-    async def from_user_list(cls, users: list[User]) -> list["UserResponse"]:
-        return [await cls.from_user(user) for user in users]
+    def from_user_list(cls, users: list[User]) -> list["UserResponse"]:
+        return [cls.from_user(user) for user in users]

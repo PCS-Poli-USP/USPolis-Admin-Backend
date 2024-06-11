@@ -1,13 +1,18 @@
-from pydantic import BaseModel
 from datetime import datetime
 
+from pydantic import BaseModel
+
+
 class HolidayRegister(BaseModel):
-    category_id: str
+    category_id: int
     date: datetime
-    type: str
+
 
 class HolidayUpdate(BaseModel):
-    category_id: str
+    category_id: int
     date: datetime
-    type: str
 
+
+class HolidayManyRegister(BaseModel):
+    category_id: int
+    dates: list[datetime]

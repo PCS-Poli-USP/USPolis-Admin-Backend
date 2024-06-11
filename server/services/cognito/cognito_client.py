@@ -4,9 +4,10 @@ import boto3  # type: ignore [import-untyped]
 from fastapi import HTTPException, status
 
 from server.config import CONFIG
+from server.services.interfaces.i_cognito_client import ICognitoClient
 
 
-class CognitoClient:
+class CognitoClient(ICognitoClient):
     _aws_client: Any
 
     def __init__(self) -> None:

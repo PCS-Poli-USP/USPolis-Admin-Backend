@@ -1,87 +1,37 @@
 from datetime import datetime
-from typing import Self
-from beanie import Document, Link
-from fastapi import HTTPException, status
-from bson import ObjectId
-from pydantic import BaseModel
+from typing import TYPE_CHECKING
 
-from server.models.database.building_db_model import Building
-from server.models.database.user_db_model import User
+from sqlalchemy import UniqueConstraint
+from sqlmodel import Field, Relationship, SQLModel
 
 
-class ClassroomSchedule(BaseModel):
-    pass
+if TYPE_CHECKING:
+    from server.models.database.building_db_model import Building
+    from server.models.database.user_db_model import User
 
 
-class Classroom(Document):
-    building: Link[Building]
-    name: str
-    capacity: int
-    floor: int
-    ignore_to_allocate: bool | None
-    accessibility: bool
-    projector: bool
-    air_conditioning: bool
-    created_by: Link[User]
-    updated_at: datetime
+class Classroom(SQLModel, table=True):
+    __table_args__ = (
+        UniqueConstraint(
+            "name", "building_id", name="unique_classroom_name_for_building"
+        ),
+    )
+    id: int | None = Field(primary_key=True, default=None)
+    name: str = Field()
+    capacity: int = Field()
+    floor: int = Field()
+    ignore_to_allocate: bool = Field(default=False)
+    accessibility: bool = Field(default=False)
+    projector: bool = Field(default=False)
+    air_conditioning: bool = Field(default=False)
+    updated_at: datetime = Field(default=datetime.now())
 
-    class Settings:
-        name = "classrooms"
-        indexes = [[("building", 1), ("name", 1)]]
+    created_by_id: int | None = Field(
+        foreign_key="user.id", default=None, nullable=False
+    )
+    created_by: "User" = Relationship(back_populates="classrooms")
 
-    @classmethod
-    async def by_id(cls, id: str) -> Self:
-        classroom = await cls.get(id)
-        if classroom is None:
-            raise ClassroomNotFound(id)
-        return classroom
-
-    @classmethod
-    async def by_building_and_classroom(
-        cls, building_id: str, classroom_name: str
-    ) -> Self:
-        classroom = await cls.find_one(
-            {"building.$id": ObjectId(building_id), "name": classroom_name}
-        )
-        if classroom is None:
-            raise ClassroomInBuildingNotFound(classroom_name, building_id)
-        return classroom
-
-    @classmethod
-    async def check_classroom_name_exists(
-        cls, building_id: str, classroom_name: str
-    ) -> bool:
-        """Check if a classroom name exist in a building"""
-        return (
-            await cls.find_one(
-                {"building.$id": ObjectId(building_id), "name": classroom_name}
-            )
-            is not None
-        )
-
-    @classmethod
-    async def check_classroom_name_is_valid(
-        cls, building_id: str, classroom_id: str, name: str
-    ) -> bool:
-        """Check if the classroom name is valid, i.e not used by other classroom in a building"""
-        classroom = await cls.find_one(
-            {"building.$id": ObjectId(building_id), "name": name}
-        )
-        if classroom is None:
-            return True
-        return str(classroom.id) == classroom_id
-
-
-class ClassroomNotFound(HTTPException):
-    def __init__(self, classroom_info: str) -> None:
-        super().__init__(
-            status.HTTP_404_NOT_FOUND, f"Classroom {classroom_info} not found"
-        )
-
-
-class ClassroomInBuildingNotFound(HTTPException):
-    def __init__(self, classroom_info: str, building_info: str) -> None:
-        super().__init__(
-            status.HTTP_404_NOT_FOUND,
-            f"Classroom {classroom_info} in Building {building_info} not found",
-        )
+    building_id: int | None = Field(
+        index=True, foreign_key="building.id", default=None, nullable=False
+    )
+    building: "Building" = Relationship(back_populates="classrooms")

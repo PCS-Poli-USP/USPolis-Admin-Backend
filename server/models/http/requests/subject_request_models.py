@@ -21,3 +21,7 @@ class SubjectRegister(BaseModel):
         if not SubjectValidator.validate_subject_code(code):
             raise ValueError("Subject Code must have 7 characters")
         return code
+
+
+class SubjectUpdate(SubjectRegister):
+    pass
