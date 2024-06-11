@@ -9,7 +9,7 @@ from server.models.http.requests.classroom_request_models import ClassroomRegist
 from server.repositories.classrooms_repository import ClassroomRepository
 
 
-class SessionClassroomRepository:
+class ClassroomRepositoryAdapter:
     def __init__(self, building: BuildingDep, session: SessionDep, user: UserDep):
         self.building = building
         self.session = session
@@ -54,4 +54,4 @@ class SessionClassroomRepository:
         )
 
 
-ClassroomRepositoryDep = Annotated[SessionClassroomRepository, Depends()]
+ClassroomRepositoryDep = Annotated[ClassroomRepositoryAdapter, Depends()]
