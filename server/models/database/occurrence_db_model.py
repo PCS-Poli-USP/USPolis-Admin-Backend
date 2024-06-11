@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING
 from sqlalchemy import Column
 from sqlmodel import Field, Relationship, SQLModel
 
+from server.utils.day_time import DayTime, DayTimeType
+
 if TYPE_CHECKING:
     from server.models.database.classroom_db_model import Classroom
     from server.models.database.schedule_db_model import Schedule
-
-from server.utils.day_time import DayTime, DayTimeType
 
 
 class Occurrence(SQLModel, table=True):

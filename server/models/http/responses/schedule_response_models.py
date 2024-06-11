@@ -25,11 +25,14 @@ class ScheduleResponseBase(BaseModel):
 
 
 class ScheduleResponse(ScheduleResponseBase):
-    classroom: ClassroomResponse | None
-
     class_id: int | None
+    reservation_id: int | None
 
-    reservation: ReservationResponse | None
+    classroom_id: int | None
+    classroom: str | None
+
+    building_id: int | None
+    building: str | None
 
     @classmethod
     def from_schedule(cls, schedule: Schedule) -> "ScheduleResponse":
@@ -46,13 +49,12 @@ class ScheduleResponse(ScheduleResponseBase):
             allocated=schedule.allocated,
             recurrence=schedule.recurrence,
             all_day=schedule.all_day,
-            classroom=ClassroomResponse.from_classroom(schedule.classroom)
-            if schedule.classroom
-            else None,
+            classroom_id=schedule.classroom_id,
+            classroom=schedule.classroom.name if schedule.classroom else None,
+            building_id=schedule.classroom.building.id if schedule.classroom else None,
+            building=schedule.classroom.building.name if schedule.classroom else None,
             class_id=schedule.university_class_id,
-            reservation=ReservationResponse.from_reservation(schedule.reservation)
-            if schedule.reservation
-            else None,
+            reservation_id=schedule.reservation.id if schedule.reservation else None,
         )
 
     @classmethod

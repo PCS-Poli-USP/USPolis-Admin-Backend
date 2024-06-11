@@ -9,7 +9,7 @@ from server.models.http.responses.schedule_response_models import ScheduleRespon
 from server.utils.enums.class_type import ClassType
 
 
-class ClassResponse(BaseModel):
+class ClassResponseBase(BaseModel):
     id: int
     semester: int
     start_date: datetime
@@ -28,13 +28,20 @@ class ClassResponse(BaseModel):
     ignore_to_allocate: bool
     full_allocated: bool
     updated_at: datetime
-    subject: Subject
+
+
+class ClassResponse(ClassResponseBase):
+    subject_id: int
+    subject_name: str
+    subject_code: str
     schedules: list[ScheduleResponse]
 
     @classmethod
     def from_class(cls, university_class: Class) -> "ClassResponse":
         if university_class.id is None:
             raise UnfetchDataError("Class", "ID")
+        if university_class.subject.id is None:
+            raise UnfetchDataError("Subject", "ID")
         return cls(
             id=university_class.id,
             semester=university_class.semester,
@@ -52,8 +59,11 @@ class ClassResponse(BaseModel):
             ignore_to_allocate=university_class.ignore_to_allocate,
             full_allocated=university_class.full_allocated,
             updated_at=university_class.updated_at,
-            subject=university_class.subject,
-            schedules=ScheduleResponse.from_schedule_list(university_class.schedules),
+            subject_id=university_class.subject.id,
+            subject_code=university_class.subject.code,
+            subject_name=university_class.subject.name,
+            schedules=ScheduleResponse.from_schedule_list(
+                university_class.schedules),
         )
 
     @classmethod
