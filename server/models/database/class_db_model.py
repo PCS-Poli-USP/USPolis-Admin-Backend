@@ -37,7 +37,9 @@ class Class(SQLModel, table=True):
     calendars: list["Calendar"] = Relationship(
         back_populates="classes", link_model=ClassCalendarLink
     )
-    schedules: list["Schedule"] = Relationship(sa_relationship_kwargs={"cascade": "delete"}, back_populates="class_")
+    schedules: list["Schedule"] = Relationship(
+        sa_relationship_kwargs={"cascade": "delete"}, back_populates="class_"
+    )
 
     subject_id: int | None = Field(
         foreign_key="subject.id", index=True, default=None, nullable=False

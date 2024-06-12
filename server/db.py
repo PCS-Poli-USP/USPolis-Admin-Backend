@@ -21,6 +21,7 @@ from server.models.database import (  # noqa
     reservation_db_model,
     institutional_event_db_model,
 )
+
 engine = create_engine(f"{CONFIG.db_uri}/{CONFIG.db_database}")
 
 
