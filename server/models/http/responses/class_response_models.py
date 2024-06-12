@@ -35,37 +35,42 @@ class ClassResponse(ClassResponseBase):
     subject_name: str
     subject_code: str
     schedules: list[ScheduleResponse]
+    calendar_ids: list[int]
+    calendar_names: list[str]
 
     @classmethod
-    def from_class(cls, university_class: Class) -> "ClassResponse":
-        if university_class.id is None:
+    def from_class(cls, _class: Class) -> "ClassResponse":
+        if _class.id is None:
             raise UnfetchDataError("Class", "ID")
-        if university_class.subject.id is None:
+        if _class.subject.id is None:
             raise UnfetchDataError("Subject", "ID")
         return cls(
-            id=university_class.id,
-            semester=university_class.semester,
-            start_date=university_class.start_date,
-            end_date=university_class.end_date,
-            code=university_class.code,
-            professors=university_class.professors,
-            type=university_class.type,
-            vacancies=university_class.vacancies,
-            subscribers=university_class.subscribers,
-            pendings=university_class.pendings,
-            air_conditionating=university_class.air_conditionating,
-            accessibility=university_class.accessibility,
-            projector=university_class.projector,
-            ignore_to_allocate=university_class.ignore_to_allocate,
-            full_allocated=university_class.full_allocated,
-            updated_at=university_class.updated_at,
-            subject_id=university_class.subject.id,
-            subject_code=university_class.subject.code,
-            subject_name=university_class.subject.name,
-            schedules=ScheduleResponse.from_schedule_list(
-                university_class.schedules),
+            id=_class.id,
+            semester=_class.semester,
+            start_date=_class.start_date,
+            end_date=_class.end_date,
+            code=_class.code,
+            professors=_class.professors,
+            type=_class.type,
+            vacancies=_class.vacancies,
+            subscribers=_class.subscribers,
+            pendings=_class.pendings,
+            air_conditionating=_class.air_conditionating,
+            accessibility=_class.accessibility,
+            projector=_class.projector,
+            ignore_to_allocate=_class.ignore_to_allocate,
+            full_allocated=_class.full_allocated,
+            updated_at=_class.updated_at,
+            subject_id=_class.subject.id,
+            subject_code=_class.subject.code,
+            subject_name=_class.subject.name,
+            schedules=ScheduleResponse.from_schedule_list(_class.schedules),
+            calendar_ids=[
+                calendar.id for calendar in _class.calendars if (calendar.id)
+            ],
+            calendar_names=[calendar.name for calendar in _class.calendars],
         )
 
     @classmethod
-    def from_class_list(cls, classes: list[Class]) -> list["ClassResponse"]:
+    def from__classlist(cls, classes: list[Class]) -> list["ClassResponse"]:
         return [cls.from_class(u_class) for u_class in classes]

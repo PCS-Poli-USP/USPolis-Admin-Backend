@@ -53,7 +53,7 @@ class ScheduleResponse(ScheduleResponseBase):
             classroom=schedule.classroom.name if schedule.classroom else None,
             building_id=schedule.classroom.building.id if schedule.classroom else None,
             building=schedule.classroom.building.name if schedule.classroom else None,
-            class_id=schedule.university_class_id,
+            class_id=schedule.class_id,
             reservation_id=schedule.reservation.id if schedule.reservation else None,
         )
 
