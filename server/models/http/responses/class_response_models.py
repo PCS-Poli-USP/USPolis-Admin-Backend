@@ -72,5 +72,5 @@ class ClassResponse(ClassResponseBase):
         )
 
     @classmethod
-    def from__classlist(cls, classes: list[Class]) -> list["ClassResponse"]:
+    def from_class_list(cls, classes: list[Class]) -> list["ClassResponse"]:
         return [cls.from_class(u_class) for u_class in classes]
