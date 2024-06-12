@@ -5,11 +5,13 @@ from sqlalchemy import Column, String
 from sqlalchemy.dialects import postgresql
 from sqlmodel import Field, Relationship, SQLModel
 
+from server.models.database.class_calendar_link import ClassCalendarLink
 from server.utils.enums.class_type import ClassType
 
 if TYPE_CHECKING:
     from server.models.database.schedule_db_model import Schedule
     from server.models.database.subject_db_model import Subject
+    from server.models.database.calendar_db_model import Calendar
 
 
 class Class(SQLModel, table=True):
@@ -32,7 +34,10 @@ class Class(SQLModel, table=True):
     full_allocated: bool = Field(default=False)
     updated_at: datetime = Field(default=datetime.now())
 
-    schedules: list["Schedule"] = Relationship(back_populates="university_class")
+    calendars: list["Calendar"] = Relationship(
+        back_populates="classes", link_model=ClassCalendarLink
+    )
+    schedules: list["Schedule"] = Relationship(sa_relationship_kwargs={"cascade": "delete"}, back_populates="class_")
 
     subject_id: int | None = Field(
         foreign_key="subject.id", index=True, default=None, nullable=False
