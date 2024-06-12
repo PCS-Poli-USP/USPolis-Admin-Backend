@@ -6,7 +6,9 @@ from server.utils.enums.class_type import ClassType
 
 
 class ClassRequestBase(BaseModel):
-    semester: int
+    """Base for any Class request of register or update"""
+
+    calendar_ids: list[int]
     start_date: datetime
     end_date: datetime
     code: str
@@ -25,9 +27,13 @@ class ClassRequestBase(BaseModel):
 
 
 class ClassRegister(ClassRequestBase):
+    """Class register input body"""
+
     subject_id: int
     schedules_data: ScheduleManyRegister
 
 
 class ClassUpdate(ClassRequestBase):
+    """Class update input body"""
+    
     subject_id: int | None
