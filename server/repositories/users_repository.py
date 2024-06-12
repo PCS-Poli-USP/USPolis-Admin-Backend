@@ -8,7 +8,7 @@ from server.repositories.buildings_repository import BuildingRepository
 
 class UserRepository:
     @staticmethod
-    def get_by_id(*, user_id: str, session: Session) -> User:
+    def get_by_id(*, user_id: int, session: Session) -> User:
         statement = select(User).where(col(User.id) == user_id)
         user = session.exec(statement).one()
         return user
@@ -62,7 +62,7 @@ class UserRepository:
 
     @staticmethod
     def delete(
-        *, user_id: str, session: Session, cognito_client: ICognitoClient
+        *, user_id: int, session: Session, cognito_client: ICognitoClient
     ) -> None:
         user = UserRepository.get_by_id(user_id=user_id, session=session)
         session.delete(user)

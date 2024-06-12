@@ -17,6 +17,6 @@ async def get_all_buildings(session: SessionDep) -> list[BuildingResponse]:
 
 @router.get("/{building_id}", response_model_by_alias=False)
 async def get_building(building_id: int, session: SessionDep) -> BuildingResponse:
-    """Get a building"""
+    """Get an building by id"""
     building: Building = BuildingRepository.get_by_id(building_id, session=session)
     return BuildingResponse.from_building(building)

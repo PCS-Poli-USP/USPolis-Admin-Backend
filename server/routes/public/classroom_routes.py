@@ -47,6 +47,7 @@ async def create_classroom(
     user: UserDep,
     session: SessionDep,
 ) -> int:
+    """Create a classroom"""
     classroom = ClassroomRepository.create(
         classroom_in, building=building, creator=user, session=session
     )
@@ -86,6 +87,7 @@ async def delete_classroom(
     classroom = ClassroomRepository.get_by_id_on_building(
         classroom_id=classroom_id, building=building, session=session
     )
+    """Delete a classroom"""
     session.delete(classroom)
     session.commit()
     return NoContent

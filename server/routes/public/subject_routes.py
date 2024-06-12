@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Body, Depends, Response
 
 from server.deps.authenticate import authenticate
 from server.deps.session_dep import SessionDep
@@ -12,9 +12,7 @@ from server.repositories.subject_repository import SubjectRepository
 
 embed = Body(..., embed=True)
 
-router = APIRouter(
-    prefix="/subjects", tags=["Subjects"], dependencies=[Depends(authenticate)]
-)
+router = APIRouter(prefix="/subjects", tags=["Subjects"])
 
 
 @router.get("", response_model_by_alias=False)
