@@ -16,7 +16,6 @@ if TYPE_CHECKING:
 
 class Class(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    semester: int = Field()
     start_date: datetime = Field()
     end_date: datetime = Field()
     code: str = Field()

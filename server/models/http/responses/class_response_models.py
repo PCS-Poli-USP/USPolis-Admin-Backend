@@ -2,8 +2,6 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from server.models.database.class_db_model import Class
-from server.models.database.schedule_db_model import Schedule
-from server.models.database.subject_db_model import Subject
 from server.models.http.exceptions.responses_exceptions import UnfetchDataError
 from server.models.http.responses.schedule_response_models import ScheduleResponse
 from server.utils.enums.class_type import ClassType
@@ -11,7 +9,6 @@ from server.utils.enums.class_type import ClassType
 
 class ClassResponseBase(BaseModel):
     id: int
-    semester: int
     start_date: datetime
     end_date: datetime
     code: str
@@ -46,7 +43,6 @@ class ClassResponse(ClassResponseBase):
             raise UnfetchDataError("Subject", "ID")
         return cls(
             id=_class.id,
-            semester=_class.semester,
             start_date=_class.start_date,
             end_date=_class.end_date,
             code=_class.code,
