@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from fastapi import HTTPException, status
+from httpx import delete
 from sqlmodel import col, select, Session
 
 from server.models.database.holiday_db_model import Holiday
@@ -97,6 +98,8 @@ class HolidayRepository:
             raise HolidayOperationNotAllowed(
                 "delete", holiday.date.strftime("%d/%m/%Y")
             )
+        session.delete(holiday)
+        session.commit()
 
 
 class HolidayInCategoryAlreadyExists(HTTPException):
