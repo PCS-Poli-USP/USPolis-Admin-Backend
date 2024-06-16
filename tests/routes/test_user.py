@@ -8,7 +8,7 @@ from server.models.http.requests.user_request_models import UserRegister
 from server.repositories.users_repository import UserRepository
 
 
-def test_user_get(client: TestClient, user: User, db: Session) -> None:
+def test_user_create(client: TestClient, user: User, db: Session) -> None:
     """Test user endpoint returns authorized user."""
     my_user = UserRegister(
         email="test@mail.com",

@@ -1,6 +1,7 @@
 import pytest
 from fastapi import status
-from httpx import AsyncClient
+from fastapi.testclient import TestClient
+from sqlmodel import Session
 
 from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
@@ -8,24 +9,27 @@ from server.models.http.requests.building_request_models import (
     BuildingRegister,
     BuildingUpdate,
 )
-from tests.utils.building_test_utils import add_building, make_building
+from server.repositories.buildings_repository import BuildingRepository
+from tests.utils.building_test_utils import (
+    add_building,
+    check_name_exists,
+    make_building,
+)
 from tests.utils.default_values.test_building_default_values import (
     BuildingDefaultValues,
 )
-from tests.utils.user_test_utils import get_test_admin_user
 
 MAX_BUILDINGS_COUNT = 5
 
 
 @pytest.mark.asyncio
-async def test_building_get_all(client: AsyncClient) -> None:
-    user = await get_test_admin_user()
+async def test_building_get_all(db: Session, client: TestClient, user: User) -> None:
     building_ids = []
     for i in range(MAX_BUILDINGS_COUNT):
-        building_id = await add_building(f"{BuildingDefaultValues.NAME} {i}", user)
+        building_id = add_building(db, f"{BuildingDefaultValues.NAME} {i}", user)
         building_ids.append(building_id)
 
-    response = await client.get("/buildings")
+    response = client.get("/buildings")
     assert response.status_code == status.HTTP_200_OK
 
     data = response.json()
@@ -33,69 +37,59 @@ async def test_building_get_all(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_building_get(client: AsyncClient, user: User) -> None:
+async def test_building_get(db: Session, client: TestClient, user: User) -> None:
     building = make_building("Test Get", user)
-    await building.create()
+    db.add(building)
+    db.commit()
 
     building_id = str(building.id)
-    response = await client.get(f"/buildings/{building_id}")
+    response = client.get(f"/buildings/{building_id}")
     assert response.status_code == status.HTTP_200_OK
 
     data = response.json()
     assert data["name"] == building.name
 
-    user_id = str(user.id)
-    assert data["created_by"]["id"] == user_id
-
 
 @pytest.mark.asyncio
-async def test_building_create(client: AsyncClient) -> None:
-    user = await get_test_admin_user()
+async def test_building_create(db: Session, client: TestClient, user: User) -> None:
     building_input = BuildingRegister(name=BuildingDefaultValues.NAME)
 
-    response = await client.post(
-        "/buildings", json={"name": BuildingDefaultValues.NAME}
-    )
+    response = client.post("/admin/buildings", json={"name": BuildingDefaultValues.NAME})
     assert response.status_code == status.HTTP_200_OK
 
     data = response.json()
-    building = await Building.get(data, fetch_links=True)
+    id = data["id"]
+    building = db.get(Building, id)
     assert building is not None
 
     if building:
         assert building.name == building_input.name
         assert isinstance(building.created_by, User)
-        assert str(building.created_by.id) == str(user.id)
+        assert building.created_by.id == user.id
 
 
 @pytest.mark.asyncio
-async def test_building_update(client: AsyncClient) -> None:
-    user = await get_test_admin_user()
-    building_id = await add_building(BuildingDefaultValues.NAME, user)
+async def test_building_update(db: Session, client: TestClient, user: User) -> None:
+    building_id = add_building(db, BuildingDefaultValues.NAME, user)
 
     building_input = BuildingUpdate(name=f"{BuildingDefaultValues.NAME} Updated")
-    response = await client.patch(
-        f"/buildings/{building_id}", json={"name": building_input.name}
+    response = client.put(
+        f"/admin/buildings/{building_id}", json={"name": building_input.name}
     )
     assert response.status_code == status.HTTP_200_OK
 
     data = response.json()
-    assert isinstance(data, str)
-    assert data == building_id
+    assert data["id"] == building_id
 
-    updated_building = await Building.by_id(building_id)
+    updated_building = BuildingRepository.get_by_id(id=building_id, session=db)
     assert updated_building.name == building_input.name
 
 
 @pytest.mark.asyncio
-async def test_building_delete(client: AsyncClient) -> None:
-    user = await get_test_admin_user()
-    building_id = await add_building(BuildingDefaultValues.NAME, user)
+async def test_building_delete(db: Session, client: TestClient, user: User) -> None:
+    building_id = add_building(db, BuildingDefaultValues.NAME, user)
 
-    response = await client.delete(f"/buildings/{building_id}")
-    assert response.status_code == status.HTTP_200_OK
+    response = client.delete(f"/admin/buildings/{building_id}")
+    assert response.status_code == status.HTTP_204_NO_CONTENT
 
-    data = response.json()
-    assert data == 1
-
-    assert not await Building.check_name_exits(BuildingDefaultValues.NAME)
+    assert not check_name_exists(db, BuildingDefaultValues.NAME)
