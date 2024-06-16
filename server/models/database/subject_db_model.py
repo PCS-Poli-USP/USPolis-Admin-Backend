@@ -21,7 +21,6 @@ class Subject(SQLModel, table=True):
     type: SubjectType = Field()
     class_credit: int = Field()
     work_credit: int = Field()
-    # TODO: mudar nos outros lugares que agora é date, nao datetime
     activation: date = Field()
     deactivation: date | None = Field(default=None)
 
