@@ -1,21 +1,20 @@
-from datetime import datetime
+from datetime import date as datetime_date
+from datetime import time
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from server.models.database.classroom_db_model import Classroom
     from server.models.database.schedule_db_model import Schedule
 
-from server.utils.day_time import DayTime, DayTimeType
 
 
 class Occurrence(SQLModel, table=True):
     id: int | None = Field(primary_key=True, default=None)
-    start_time: DayTime = Field(sa_column=Column(DayTimeType))
-    end_time: DayTime = Field(sa_column=Column(DayTimeType))
-    date: datetime = Field()
+    start_time: time = Field()
+    end_time: time = Field()
+    date: datetime_date = Field()
 
     classroom_id: int | None = Field(
         default=None, foreign_key="classroom.id", nullable=False

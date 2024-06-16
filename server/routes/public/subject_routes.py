@@ -36,6 +36,7 @@ async def get_subject(subject_id: int, session: SessionDep) -> SubjectResponse:
 async def crawl_subject(
     subject_code: str, building: BuildingDep, session: SessionDep
 ) -> Subject:
+    # TODO: remover o content quando jupiter voltar ao normal!
     contents = JupiterCrawlerTestUtils.retrieve_html_contents()
     content = contents[subject_code]
     subject = await JupiterCrawler.crawl_subject_static(subject_code, content)

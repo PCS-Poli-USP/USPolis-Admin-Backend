@@ -19,11 +19,11 @@ from server.services.jupiter_crawler.models import (
     ScheduleInfo,
     StudentNumbersInfo,
 )
-from server.utils.day_time import DayTime
 from server.utils.enums.class_type import ClassType
 from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.subject_type import SubjectType
 from server.utils.enums.week_day import WeekDay
+from server.utils.time_utils import TimeUtils
 
 BASE_URL = "https://uspdigital.usp.br/jupiterweb/obterTurma?nomdis=&sgldis="
 CLASS_DIV_IDENTIFIERS = {
@@ -192,8 +192,8 @@ class JupiterCrawler:
                 ScheduleInfo(
                     week_day=week_day_as_enum,
                     professors=[professor],
-                    start_time=DayTime.from_string(start_time),
-                    end_time=DayTime.from_string(end_time),
+                    start_time=TimeUtils.time_from_string(start_time),
+                    end_time=TimeUtils.time_from_string(end_time),
                 )
             )
         return schedules_infos
