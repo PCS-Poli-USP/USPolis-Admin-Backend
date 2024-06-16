@@ -16,13 +16,18 @@ def test_user_get(client: TestClient, user: User, db: Session) -> None:
         name="Test",
         username="test_user",
     )
-    new_user = UserRepository.create(
+    UserRepository.create(
         session=db,
         user_in=my_user,
         creator=user,
         cognito_client=CognitoClientMock(),
     )
-    resp = client.get("/users")
+    resp = client.get("/admin/users")
     assert resp.status_code == 200
-    data = resp.json()
-    assert data["email"] == my_user.email
+    data: list[dict] = resp.json()  # noqa
+    found = False
+    for user_in_response in data:
+        if user_in_response["username"] == "test_user":
+            found = True
+    assert found
+    print(data)
