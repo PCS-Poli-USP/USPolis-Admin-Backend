@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, time
 
 from pydantic import BaseModel
 
@@ -6,7 +6,6 @@ from server.models.database.schedule_db_model import Schedule
 from server.models.http.exceptions.responses_exceptions import UnfetchDataError
 from server.models.http.responses.classroom_response_models import ClassroomResponse
 from server.models.http.responses.reservation_response_models import ReservationResponse
-from server.utils.day_time import DayTime
 from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.week_day import WeekDay
 
@@ -16,8 +15,8 @@ class ScheduleResponseBase(BaseModel):
     week_day: WeekDay
     start_date: date
     end_date: date
-    start_time: DayTime
-    end_time: DayTime
+    start_time: time
+    end_time: time
     skip_exceptions: bool
     allocated: bool
     recurrence: Recurrence

@@ -7,25 +7,6 @@ from server.db import engine
 from server.mocks.services.cognito_client_mock import CognitoClientMock
 
 # TODO: move imports to the engine file
-from server.models.database import (  # noqa
-    building_db_model,
-    occurrence_db_model,
-    user_building_link,
-    user_db_model,
-    subject_db_model,
-    subject_building_link,
-    classroom_db_model,
-    holiday_category_db_model,
-    holiday_db_model,
-    calendar_db_model,
-    calendar_holiday_category_link,
-    class_db_model,
-    schedule_calendar_link,
-    schedule_db_model,
-    reservation_db_model,
-    institutional_event_db_model,
-    institutional_event_db_model,
-)
 from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister
 from server.repositories.users_repository import UserRepository

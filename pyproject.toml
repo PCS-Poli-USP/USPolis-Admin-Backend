@@ -22,7 +22,9 @@ dependencies = [
     "beautifulsoup4",
     "psycopg2-binary",
     "tenacity",
-    "pytz"
+    "pytz",
+    "alembic",
+    "asyncpg"
 ]
 
 [project.optional-dependencies]
