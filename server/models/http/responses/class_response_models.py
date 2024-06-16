@@ -1,8 +1,8 @@
-from datetime import datetime
+from datetime import date
+
 from pydantic import BaseModel
 
 from server.models.database.class_db_model import Class
-from server.models.database.schedule_db_model import Schedule
 from server.models.database.subject_db_model import Subject
 from server.models.http.exceptions.responses_exceptions import UnfetchDataError
 from server.models.http.responses.schedule_response_models import ScheduleResponse
@@ -12,8 +12,8 @@ from server.utils.enums.class_type import ClassType
 class ClassResponse(BaseModel):
     id: int
     semester: int
-    start_date: datetime
-    end_date: datetime
+    start_date: date
+    end_date: date
     code: str
     professors: list[str]
     type: ClassType
@@ -27,33 +27,33 @@ class ClassResponse(BaseModel):
 
     ignore_to_allocate: bool
     full_allocated: bool
-    updated_at: datetime
+    updated_at: date
     subject: Subject
     schedules: list[ScheduleResponse]
 
     @classmethod
-    def from_class(cls, university_class: Class) -> "ClassResponse":
-        if university_class.id is None:
+    def from_class(cls, class_in: Class) -> "ClassResponse":
+        if class_in.id is None:
             raise UnfetchDataError("Class", "ID")
         return cls(
-            id=university_class.id,
-            semester=university_class.semester,
-            start_date=university_class.start_date,
-            end_date=university_class.end_date,
-            code=university_class.code,
-            professors=university_class.professors,
-            type=university_class.type,
-            vacancies=university_class.vacancies,
-            subscribers=university_class.subscribers,
-            pendings=university_class.pendings,
-            air_conditionating=university_class.air_conditionating,
-            accessibility=university_class.accessibility,
-            projector=university_class.projector,
-            ignore_to_allocate=university_class.ignore_to_allocate,
-            full_allocated=university_class.full_allocated,
-            updated_at=university_class.updated_at,
-            subject=university_class.subject,
-            schedules=ScheduleResponse.from_schedule_list(university_class.schedules),
+            id=class_in.id,
+            semester=class_in.semester or 0,
+            start_date=class_in.start_date,
+            end_date=class_in.end_date,
+            code=class_in.code,
+            professors=class_in.professors,
+            type=class_in.type,
+            vacancies=class_in.vacancies,
+            subscribers=class_in.subscribers,
+            pendings=class_in.pendings,
+            air_conditionating=class_in.air_conditionating,
+            accessibility=class_in.accessibility,
+            projector=class_in.projector,
+            ignore_to_allocate=class_in.ignore_to_allocate,
+            full_allocated=class_in.full_allocated,
+            updated_at=class_in.updated_at,
+            subject=class_in.subject,
+            schedules=ScheduleResponse.from_schedule_list(class_in.schedules),
         )
 
     @classmethod

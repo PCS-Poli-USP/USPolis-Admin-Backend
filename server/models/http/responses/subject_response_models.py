@@ -1,11 +1,12 @@
-from datetime import datetime
+from datetime import date
+
 from pydantic import BaseModel
 
 from server.models.database.class_db_model import Class
 from server.models.database.subject_db_model import Subject
 from server.models.http.exceptions.responses_exceptions import UnfetchDataError
-from server.utils.enums.subject_type import SubjectType
 from server.models.http.responses.building_response_models import BuildingResponse
+from server.utils.enums.subject_type import SubjectType
 
 
 class SubjectResponse(BaseModel):
@@ -18,8 +19,8 @@ class SubjectResponse(BaseModel):
     type: SubjectType
     class_credit: int
     work_credit: int
-    activation: datetime
-    desactivation: datetime | None = None
+    activation: date
+    desactivation: date | None = None
 
     @classmethod
     def from_subject(cls, subject: Subject) -> "SubjectResponse":
@@ -41,7 +42,7 @@ class SubjectResponse(BaseModel):
             class_credit=subject.class_credit,
             work_credit=subject.work_credit,
             activation=subject.activation,
-            desactivation=subject.desactivation if subject.desactivation else None,
+            desactivation=subject.deactivation if subject.deactivation else None,
         )
 
     @classmethod

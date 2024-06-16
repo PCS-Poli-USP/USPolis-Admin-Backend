@@ -26,8 +26,16 @@ def authenticate(
     return user
 
 
+def admin_authenticate(user: Annotated[User, Depends(authenticate)]) -> None:
+    if not user.is_admin:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "User must be admin")
+
+
+# -- permission authentications :
+
+
 def building_authenticate(
-    user: Annotated[User, Depends(authenticate)], building_id: int, session: SessionDep
+    user: Annotated[User, Depends(authenticate)], session: SessionDep, building_id: int
 ) -> Building:
     building = BuildingRepository.get_by_id(id=building_id, session=session)
     if user.is_admin:
@@ -39,10 +47,15 @@ def building_authenticate(
     return building
 
 
-def admin_authenticate(user: Annotated[User, Depends(authenticate)]) -> None:
-    if not user.is_admin:
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "User must be admin")
+def class_authenticate(
+    user: Annotated[User, Depends(authenticate)],
+    building: Annotated[Building, Depends(building_authenticate)],
+    class_id: int,
+    session: SessionDep,
+):
+    pass
 
 
+# exports:
 UserDep = Annotated[User, Depends(authenticate)]
 BuildingDep = Annotated[Building, Depends(building_authenticate)]

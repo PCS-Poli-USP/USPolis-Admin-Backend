@@ -1,7 +1,7 @@
 import pickle
 
+from server.models.database.subject_db_model import Subject
 from server.services.jupiter_crawler.crawler import JupiterCrawler
-from server.services.jupiter_crawler.models import CrawledSubject
 
 
 class JupiterCrawlerTestUtils:
@@ -15,11 +15,11 @@ class JupiterCrawlerTestUtils:
             return [line.strip() for line in f.readlines()]
 
     @classmethod
-    def retrieve_reference_results(cls) -> dict[str, CrawledSubject]:
+    def retrieve_reference_results(cls) -> dict[str, Subject]:
         with open(cls._reference_results_file_path, "rb") as file:
-            results: dict[str, CrawledSubject] = pickle.load(file)
+            results: dict[str, Subject] = pickle.load(file)
             return results
-        
+
     @classmethod
     def retrieve_html_contents(cls) -> dict[str, bytes]:
         with open(cls._contents_file_path, "rb") as file:
@@ -40,7 +40,7 @@ class JupiterCrawlerTestUtils:
 
     @classmethod
     async def create_reference_results(cls) -> None:
-        results: dict[str, CrawledSubject] = {}
+        results: dict[str, Subject] = {}
 
         contents_dict = cls.retrieve_html_contents()
 
@@ -57,6 +57,6 @@ class JupiterCrawlerTestUtils:
             pickle.dump(contents, file)
 
     @classmethod
-    def _save_reference_results(cls, results: dict[str, CrawledSubject]) -> None:
+    def _save_reference_results(cls, results: dict[str, Subject]) -> None:
         with open(cls._reference_results_file_path, "wb") as file:
             pickle.dump(results, file)

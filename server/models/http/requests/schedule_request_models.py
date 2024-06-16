@@ -1,6 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict
-
+from typing import Any
 
 from pydantic import (
     BaseModel,
@@ -18,10 +17,10 @@ class ScheduleBase(BaseModel):
     calendar_ids: list[int]
     start_date: datetime
     end_date: datetime
-    recurrence: Recurrence
-    skip_exceptions: bool
-    all_day: bool
-    allocated: bool | None
+    recurrence: Recurrence = Recurrence.NONE
+    skip_exceptions: bool = False
+    all_day: bool = False
+    allocated: bool | None = None
 
 
 class ScheduleManyRegister(ScheduleBase):
@@ -32,7 +31,7 @@ class ScheduleManyRegister(ScheduleBase):
     end_times: list[DayTime]
 
     @model_validator(mode="before")
-    def check_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    def check_fields(cls, values: dict[str, Any]) -> dict[str, Any]:
         week_days: list[WeekDay] = values.get("week_days", [])
         start_times: list[DayTime] = values.get("start_times", [])
         end_times: list[DayTime] = values.get("end_times", [])

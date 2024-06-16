@@ -1,6 +1,5 @@
-from datetime import datetime
+from datetime import date
 from typing import TYPE_CHECKING
-
 
 from sqlalchemy import Column, String
 from sqlalchemy.dialects import postgresql
@@ -22,8 +21,9 @@ class Subject(SQLModel, table=True):
     type: SubjectType = Field()
     class_credit: int = Field()
     work_credit: int = Field()
-    activation: datetime = Field()
-    desactivation: datetime | None = Field(default=None)
+    # TODO: mudar nos outros lugares que agora é date, nao datetime
+    activation: date = Field()
+    deactivation: date | None = Field(default=None)
 
     buildings: list["Building"] | None = Relationship(
         back_populates="subjects", link_model=SubjectBuildingLink

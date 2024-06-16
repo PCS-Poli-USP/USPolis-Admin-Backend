@@ -1,4 +1,4 @@
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from server.models.database.class_db_model import Class
 from server.models.database.schedule_db_model import Schedule
@@ -10,10 +10,26 @@ from server.models.http.requests.schedule_request_models import (
 
 class ScheduleRepository:
     @staticmethod
+    def get_all_on_class(*, class_: Class, session: Session) -> list[Schedule]:
+        statement = select(Schedule).where(Schedule.class_id == class_.id)
+        schedules = list(session.exec(statement).all())
+        return schedules
+
+    @staticmethod
+    def get_by_id_on_class(*, class_: Class, id: int, session: Session) -> Schedule:
+        statement = (
+            select(Schedule)
+            .where(Schedule.class_id == class_.id)
+            .where(Schedule.id == id)
+        )
+        schedule = session.exec(statement).one()
+        return schedule
+
+    @staticmethod
     def create_with_class(
-        *, university_class: Class, input: ScheduleRegister, session: Session
+        *, class_input: Class, input: ScheduleRegister, session: Session
     ) -> Schedule:
-        new_schedule = Schedule(**input.model_dump(), university_class=university_class)
+        new_schedule = Schedule(**input.model_dump(), class_=class_input)
         session.add(new_schedule)
         session.commit()
         session.refresh(new_schedule)
@@ -21,7 +37,7 @@ class ScheduleRepository:
 
     @staticmethod
     def create_many_with_class(
-        *, university_class: Class, input: ScheduleManyRegister, session: Session
+        *, class_input: Class, input: ScheduleManyRegister, session: Session
     ) -> list[Schedule]:
         days = input.week_days
         starts = input.start_times
@@ -47,7 +63,7 @@ class ScheduleRepository:
             inputs.append(schedule_input)
         return [
             ScheduleRepository.create_with_class(
-                university_class=university_class, input=schedule_input, session=session
+                class_input=class_input, input=schedule_input, session=session
             )
             for schedule_input in inputs
         ]

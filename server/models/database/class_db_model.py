@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Column, String
@@ -14,9 +14,9 @@ if TYPE_CHECKING:
 
 class Class(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    semester: int = Field()
-    start_date: datetime = Field()
-    end_date: datetime = Field()
+    semester: int | None = Field(default=None, nullable=True)
+    start_date: date = Field()
+    end_date: date = Field()
     code: str = Field()
     professors: list[str] = Field(sa_column=Column(postgresql.ARRAY(String())))
     type: ClassType = Field()
@@ -32,7 +32,7 @@ class Class(SQLModel, table=True):
     full_allocated: bool = Field(default=False)
     updated_at: datetime = Field(default=datetime.now())
 
-    schedules: list["Schedule"] = Relationship(back_populates="university_class")
+    schedules: list["Schedule"] = Relationship(back_populates="class_")
 
     subject_id: int | None = Field(
         foreign_key="subject.id", index=True, default=None, nullable=False

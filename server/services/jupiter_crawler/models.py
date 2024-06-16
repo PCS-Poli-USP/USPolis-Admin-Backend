@@ -27,25 +27,3 @@ class StudentNumbersInfo(BaseModel):
     subscribers: int
     pendings: int
     enrolled: int
-
-
-class CrawledSchedule(ScheduleInfo):
-    start_date: datetime
-    end_date: datetime
-
-
-class CrawledClass(GeneralInfo, StudentNumbersInfo):
-    schedules: list[CrawledSchedule]
-    professors: list[str]
-
-
-class CrawledSubject(BaseModel):
-    classes: list[CrawledClass]
-    code: str
-    name: str
-    professors: list[str]
-    class_type: ClassType
-    class_credit: int
-    work_credit: int
-    activation: datetime
-    deactivation: datetime

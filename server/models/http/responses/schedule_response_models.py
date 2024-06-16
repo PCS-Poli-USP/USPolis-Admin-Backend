@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import date
+
 from pydantic import BaseModel
 
-from server.models.database.reservation_db_model import Reservation
 from server.models.database.schedule_db_model import Schedule
 from server.models.http.exceptions.responses_exceptions import UnfetchDataError
 from server.models.http.responses.classroom_response_models import ClassroomResponse
@@ -14,8 +14,8 @@ from server.utils.enums.week_day import WeekDay
 class ScheduleResponseBase(BaseModel):
     id: int
     week_day: WeekDay
-    start_date: datetime
-    end_date: datetime
+    start_date: date
+    end_date: date
     start_time: DayTime
     end_time: DayTime
     skip_exceptions: bool
@@ -49,7 +49,7 @@ class ScheduleResponse(ScheduleResponseBase):
             classroom=ClassroomResponse.from_classroom(schedule.classroom)
             if schedule.classroom
             else None,
-            class_id=schedule.university_class_id,
+            class_id=schedule.class_id,
             reservation=ReservationResponse.from_reservation(schedule.reservation)
             if schedule.reservation
             else None,

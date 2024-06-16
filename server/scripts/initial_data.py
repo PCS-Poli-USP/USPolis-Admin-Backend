@@ -6,6 +6,7 @@ from server.config import CONFIG
 from server.db import engine
 from server.mocks.services.cognito_client_mock import CognitoClientMock
 
+# TODO: move imports to the engine file
 from server.models.database import (  # noqa
     building_db_model,
     occurrence_db_model,

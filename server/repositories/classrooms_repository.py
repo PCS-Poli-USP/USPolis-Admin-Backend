@@ -39,8 +39,6 @@ class ClassroomRepository:
             created_by=creator,
         )
         session.add(new_classroom)
-        session.commit()
-        session.refresh(new_classroom)
         return new_classroom
 
     @staticmethod
@@ -81,8 +79,6 @@ class ClassroomRepository:
         classroom.air_conditioning = classroom_in.air_conditioning
         classroom.updated_at = datetime.now()
         session.add(classroom)
-        session.commit()
-        session.refresh(classroom)
         return classroom
 
     @staticmethod
@@ -91,4 +87,3 @@ class ClassroomRepository:
             id=id, building=building, session=session
         )
         session.delete(classroom)
-        session.commit()

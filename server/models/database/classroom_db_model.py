@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, Relationship, SQLModel
@@ -31,7 +31,7 @@ class Classroom(SQLModel, table=True):
     created_by_id: int | None = Field(
         foreign_key="user.id", default=None, nullable=False
     )
-    created_by: "User" = Relationship(back_populates="classrooms")
+    created_by: Optional["User"] = Relationship()
     building_id: int | None = Field(
         index=True, foreign_key="building.id", default=None, nullable=False
     )
