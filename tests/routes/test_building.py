@@ -1,4 +1,3 @@
-import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlmodel import Session
@@ -22,8 +21,7 @@ from tests.utils.default_values.test_building_default_values import (
 MAX_BUILDINGS_COUNT = 5
 
 
-@pytest.mark.asyncio
-async def test_building_get_all(db: Session, client: TestClient, user: User) -> None:
+def test_building_get_all(db: Session, client: TestClient, user: User) -> None:
     building_ids = []
     for i in range(MAX_BUILDINGS_COUNT):
         building_id = add_building(db, f"{BuildingDefaultValues.NAME} {i}", user)
@@ -36,8 +34,7 @@ async def test_building_get_all(db: Session, client: TestClient, user: User) -> 
     assert len(data) == MAX_BUILDINGS_COUNT
 
 
-@pytest.mark.asyncio
-async def test_building_get(db: Session, client: TestClient, user: User) -> None:
+def test_building_get(db: Session, client: TestClient, user: User) -> None:
     building = make_building("Test Get", user)
     db.add(building)
     db.commit()
@@ -50,8 +47,7 @@ async def test_building_get(db: Session, client: TestClient, user: User) -> None
     assert data["name"] == building.name
 
 
-@pytest.mark.asyncio
-async def test_building_create(db: Session, client: TestClient, user: User) -> None:
+def test_building_create(db: Session, client: TestClient, user: User) -> None:
     building_input = BuildingRegister(name=BuildingDefaultValues.NAME)
 
     response = client.post("/admin/buildings", json={"name": BuildingDefaultValues.NAME})
@@ -68,8 +64,7 @@ async def test_building_create(db: Session, client: TestClient, user: User) -> N
         assert building.created_by.id == user.id
 
 
-@pytest.mark.asyncio
-async def test_building_update(db: Session, client: TestClient, user: User) -> None:
+def test_building_update(db: Session, client: TestClient, user: User) -> None:
     building_id = add_building(db, BuildingDefaultValues.NAME, user)
 
     building_input = BuildingUpdate(name=f"{BuildingDefaultValues.NAME} Updated")
@@ -85,8 +80,7 @@ async def test_building_update(db: Session, client: TestClient, user: User) -> N
     assert updated_building.name == building_input.name
 
 
-@pytest.mark.asyncio
-async def test_building_delete(db: Session, client: TestClient, user: User) -> None:
+def test_building_delete(db: Session, client: TestClient, user: User) -> None:
     building_id = add_building(db, BuildingDefaultValues.NAME, user)
 
     response = client.delete(f"/admin/buildings/{building_id}")

@@ -41,7 +41,7 @@ with Session(engine) as session:
     session.execute(statement)
     session.commit()
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(autouse=True)
 def db() -> Generator[Session, None, None]:
 
     with Session(engine) as session:
