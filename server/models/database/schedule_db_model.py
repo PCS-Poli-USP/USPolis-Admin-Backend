@@ -18,7 +18,7 @@ from server.utils.enums.week_day import WeekDay
 
 class Schedule(SQLModel, table=True):
     id: int | None = Field(primary_key=True, default=None)
-    week_day: WeekDay = Field()
+    week_day: WeekDay | None = Field(nullable=True, default=None)
     start_date: datetime = Field()
     end_date: datetime = Field()
     start_time: DayTime = Field(sa_column=Column(DayTimeType, nullable=False))

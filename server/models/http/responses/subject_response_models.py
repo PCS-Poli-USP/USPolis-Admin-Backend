@@ -10,7 +10,8 @@ from server.models.http.responses.building_response_models import BuildingRespon
 
 class SubjectResponse(BaseModel):
     id: int
-    buildings: list[BuildingResponse] | None = None
+    building_ids: list[int]
+    buildings: list[BuildingResponse]
     classes: list[Class]
     code: str
     name: str
@@ -27,16 +28,17 @@ class SubjectResponse(BaseModel):
             raise UnfetchDataError("Subject", "ID")
         return cls(
             id=subject.id,
-            code=subject.code,
-            name=subject.name,
             professors=subject.professors,
+            building_ids=[
+                building.id for building in subject.buildings if (building.id)
+            ],
             buildings=[
                 BuildingResponse.from_building(building)
                 for building in subject.buildings
-            ]
-            if subject.buildings
-            else None,
+            ],
             classes=subject.classes,
+            code=subject.code,
+            name=subject.name,
             type=subject.type,
             class_credit=subject.class_credit,
             work_credit=subject.work_credit,

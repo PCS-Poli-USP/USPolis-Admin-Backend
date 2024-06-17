@@ -23,7 +23,6 @@ class ClassRequestBase(BaseModel):
     projector: bool
 
     ignore_to_allocate: bool
-    full_allocated: bool
 
 
 class ClassRegister(ClassRequestBase):
@@ -35,5 +34,5 @@ class ClassRegister(ClassRequestBase):
 
 class ClassUpdate(ClassRequestBase):
     """Class update input body"""
-    
+
     subject_id: int | None

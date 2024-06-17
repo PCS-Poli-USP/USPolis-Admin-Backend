@@ -6,6 +6,7 @@ from server.models.http.requests.subject_request_models import (
     SubjectRegister,
     SubjectUpdate,
 )
+from server.repositories.buildings_repository import BuildingRepository
 
 
 class SubjectRepository:
@@ -32,6 +33,9 @@ class SubjectRepository:
     @staticmethod
     def create(*, input: SubjectRegister, session: Session) -> Subject:
         new_subject = Subject(
+            buildings=BuildingRepository.get_by_ids(
+                ids=input.building_ids, session=session
+            ),
             name=input.name,
             code=input.code,
             professors=input.professors,
@@ -49,6 +53,9 @@ class SubjectRepository:
     @staticmethod
     def update(*, id: int, input: SubjectUpdate, session: Session) -> Subject:
         subject = SubjectRepository.get_by_id(id=id, session=session)
+        subject.buildings = BuildingRepository.get_by_ids(
+            ids=input.building_ids, session=session
+        )
         subject.name = input.name
         subject.code = input.code
         subject.professors = input.professors
