@@ -2,7 +2,6 @@ from fastapi import APIRouter, Body, Response
 
 from server.deps.authenticate import UserDep
 from server.deps.session_dep import SessionDep
-from server.models.database.holiday_db_model import Holiday
 from server.models.http.requests.holiday_request_models import (
     HolidayManyRegister,
     HolidayRegister,

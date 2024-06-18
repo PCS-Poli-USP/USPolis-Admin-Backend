@@ -25,6 +25,12 @@ class CalendarRepository:
         return calendar
 
     @staticmethod
+    def get_by_ids(*, ids: list[int], session: Session) -> list[Calendar]:
+        statement = select(Calendar).where(col(Calendar.id).in_(ids))
+        calendars = session.exec(statement).all()
+        return list(calendars)
+
+    @staticmethod
     def get_by_name(*, name: str, session: Session) -> Calendar:
         statement = select(Calendar).where(col(Calendar.name) == name)
         calendar = session.exec(statement).first()

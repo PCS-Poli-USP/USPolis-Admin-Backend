@@ -21,6 +21,12 @@ class ClassroomRepository:
         return classroom
 
     @staticmethod
+    def get_by_id(*, id: int, session: Session) -> Classroom:
+        statement = select(Classroom).where(Classroom.id == id)
+        classroom = session.exec(statement).one()
+        return classroom
+
+    @staticmethod
     def get_by_ids(ids: list[int], *, session: Session) -> list[Classroom]:
         statement = select(Classroom).where(col(Classroom.id).in_(ids))
         classrooms = list(session.exec(statement).all())

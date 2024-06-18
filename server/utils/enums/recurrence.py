@@ -7,3 +7,6 @@ class Recurrence(Enum):
     BIWEEKLY = "Biweekly"
     MONTHLY = "Monthly"
     CUSTOM = "Custom"
+
+    def to_string(self) -> str:
+        return self.value
