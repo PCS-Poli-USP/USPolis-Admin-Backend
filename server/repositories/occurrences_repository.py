@@ -12,10 +12,16 @@ class OccurencesRepository:
         schedule: Schedule, classroom: Classroom, session: Session
     ) -> None:
         occurrences = OccurrenceUtils.occurrences_from_schedules(schedule)
+
+        previous_occurrences = schedule.occurrences
+        for occurrence in previous_occurrences:
+            session.delete(occurrence)
+
         schedule.occurrences = occurrences
-        classroom.occurrences = occurrences
+        classroom.occurrences.extend(occurrences)
 
         schedule.allocated = True
+        
         session.add(schedule)
         session.add(classroom)
 
