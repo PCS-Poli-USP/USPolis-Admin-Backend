@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, String
+from sqlalchemy import Column, String, UniqueConstraint
 from sqlalchemy.dialects import postgresql
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -15,6 +15,11 @@ if TYPE_CHECKING:
 
 
 class Class(SQLModel, table=True):
+    __table_args__ = (
+        UniqueConstraint(
+            "code", "subject_id", name="unique_class_code_for_subject"
+        ),
+    )
     id: int | None = Field(default=None, primary_key=True)
     start_date: datetime = Field()
     end_date: datetime = Field()

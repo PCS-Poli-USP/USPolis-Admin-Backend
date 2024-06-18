@@ -2,6 +2,8 @@ from sqlmodel import Session, col, select
 
 from server.models.database.class_db_model import Class
 from server.models.http.requests.class_request_models import ClassRegister, ClassUpdate
+from server.repositories.calendar_repository import CalendarRepository
+from server.repositories.schedule_repository import ScheduleRepository
 from server.repositories.subject_repository import SubjectRepository
 
 
@@ -21,12 +23,34 @@ class ClassRepository:
     @staticmethod
     def create(*, input: ClassRegister, session: Session) -> Class:
         subject = SubjectRepository.get_by_id(id=input.subject_id, session=session)
-        input_data = input.model_dump()
-        class_fields = Class.model_fields.keys()
-        class_data = {key: input_data[key] for key in class_fields if key in input_data}
-        print(class_data)
-        print(class_fields)
-        new_class = Class(**class_data, subject=subject)
+        calendars = CalendarRepository.get_by_ids(
+            ids=input.calendar_ids, session=session
+        )
+        new_class = Class(
+            subject=subject,
+            calendars=calendars,
+            start_date=input.start_date,
+            end_date=input.end_date,
+            code=input.code,
+            professors=input.professors,
+            type=input.type,
+            vacancies=input.vacancies,
+            subscribers=input.subscribers,
+            pendings=input.pendings,
+            air_conditionating=input.air_conditionating,
+            accessibility=input.accessibility,
+            projector=input.projector,
+            ignore_to_allocate=input.ignore_to_allocate,
+            full_allocated=False,
+        )
+        session.add(new_class)
+        session.commit()
+        session.refresh(new_class)
+
+        schedules = ScheduleRepository.create_many_with_class(
+            university_class=new_class, input=input.schedules_data, session=session
+        )
+        new_class.schedules = schedules
         session.add(new_class)
         session.commit()
         session.refresh(new_class)
@@ -43,6 +67,9 @@ class ClassRepository:
         if input.subject_id:
             subject = SubjectRepository.get_by_id(id=input.subject_id, session=session)
             updated_class.subject = subject
+
+        if input.schedules_data:
+            pass  # TODO
 
         session.add(updated_class)
         session.commit()

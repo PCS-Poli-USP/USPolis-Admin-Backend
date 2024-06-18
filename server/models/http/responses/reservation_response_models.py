@@ -28,7 +28,7 @@ class ReservationResponse(ReservationResponseBase):
             raise UnfetchDataError("Reservation", "ID")
         if reservation.classroom_id is None:
             raise UnfetchDataError("Reservation", "Classroom ID")
-        if reservation.schedule_id is None:
+        if reservation.schedule.id is None:
             raise UnfetchDataError("Reservation", "Schedule ID")
         if reservation.created_by_id is None:
             raise UnfetchDataError("Reservation", "User ID")
@@ -40,7 +40,7 @@ class ReservationResponse(ReservationResponseBase):
             updated_at=reservation.updated_at,
             classroom_id=reservation.classroom_id,
             classroom_name=reservation.classroom.name,
-            schedule_id=reservation.schedule_id,
+            schedule_id=reservation.schedule.id,
             created_by_id=reservation.created_by_id,
             created_by=reservation.created_by.name,
         )

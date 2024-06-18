@@ -1,7 +1,10 @@
 from datetime import datetime
 from pydantic import BaseModel
 
-from server.models.http.requests.schedule_request_models import ScheduleRegister
+from server.models.http.requests.schedule_request_models import (
+    ScheduleRegister,
+    ScheduleUpdate,
+)
 from server.utils.enums.class_type import ClassType
 
 
@@ -35,4 +38,5 @@ class ClassRegister(ClassRequestBase):
 class ClassUpdate(ClassRequestBase):
     """Class update input body"""
 
-    subject_id: int | None
+    subject_id: int | None = None
+    schedules_data: list[ScheduleUpdate] | None = None

@@ -1,10 +1,9 @@
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import Column
 from sqlmodel import Field, Relationship, SQLModel
 
-from server.utils.day_time import DayTime, DayTimeType
 
 if TYPE_CHECKING:
     from server.models.database.classroom_db_model import Classroom
@@ -13,14 +12,12 @@ if TYPE_CHECKING:
 
 class Occurrence(SQLModel, table=True):
     id: int | None = Field(primary_key=True, default=None)
-    start_time: DayTime = Field(sa_column=Column(DayTimeType))
-    end_time: DayTime = Field(sa_column=Column(DayTimeType))
+    start_time: str = Field(nullable=False)
+    end_time: str = Field(nullable=False)
     date: datetime = Field()
 
-    classroom_id: int | None = Field(
-        default=None, foreign_key="classroom.id", nullable=False
-    )
-    classroom: "Classroom" = Relationship(back_populates="occurrences")
+    classroom_id: int | None = Field(default=None, foreign_key="classroom.id")
+    classroom: Optional["Classroom"] = Relationship(back_populates="occurrences")
     schedule_id: int | None = Field(
         default=None, index=True, foreign_key="schedule.id", nullable=False
     )

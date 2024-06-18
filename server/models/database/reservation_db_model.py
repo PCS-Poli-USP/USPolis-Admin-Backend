@@ -21,9 +21,6 @@ class Reservation(SQLModel, table=True):
     )
     classroom: "Classroom" = Relationship(back_populates="reservations")
 
-    schedule_id: int | None = Field(
-        default=None, index=True, foreign_key="schedule.id", nullable=False
-    )
     schedule: "Schedule" = Relationship(
         back_populates="reservation", sa_relationship_kwargs={"cascade": "delete"}
     )

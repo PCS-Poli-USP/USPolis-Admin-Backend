@@ -42,8 +42,8 @@ class ScheduleResponse(ScheduleResponseBase):
             week_day=schedule.week_day,
             start_date=schedule.start_date,
             end_date=schedule.end_date,
-            start_time=schedule.start_time,
-            end_time=schedule.end_time,
+            start_time=DayTime.from_string(schedule.start_time),
+            end_time=DayTime.from_string(schedule.end_time),
             skip_exceptions=schedule.skip_exceptions,
             allocated=schedule.allocated,
             recurrence=schedule.recurrence,
@@ -65,6 +65,8 @@ class ScheduleResponse(ScheduleResponseBase):
 
     @classmethod
     def get_occurences_ids(cls, schedule: Schedule) -> list[int]:
+        if schedule.occurrences is None:
+            return []
         ids = []
         for occurence in schedule.occurrences:
             if occurence.id is None:
