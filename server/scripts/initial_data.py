@@ -5,8 +5,6 @@ from sqlmodel import Session, SQLModel, select
 from server.config import CONFIG
 from server.db import engine
 from server.mocks.services.cognito_client_mock import CognitoClientMock
-
-# TODO: move imports to the engine file
 from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister
 from server.repositories.users_repository import UserRepository

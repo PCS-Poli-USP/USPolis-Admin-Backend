@@ -13,7 +13,7 @@ from server.models.http.responses.generic_responses import NoContent
 embed = Body(..., embed=True)
 
 router = APIRouter(
-    prefix="/classrooms/{building_id}",
+    prefix="/classrooms",
     tags=["Classrooms"],
     dependencies=[Depends(building_authenticate)],
 )

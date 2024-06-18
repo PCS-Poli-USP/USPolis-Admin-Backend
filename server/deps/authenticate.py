@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import Depends, Header, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from server.deps.cognito_client import CognitoClientDep
@@ -35,7 +35,7 @@ def admin_authenticate(user: Annotated[User, Depends(authenticate)]) -> None:
 
 
 def building_authenticate(
-    user: Annotated[User, Depends(authenticate)], session: SessionDep, building_id: int
+    user: Annotated[User, Depends(authenticate)], session: SessionDep, building_id: Annotated[int, Header()]
 ) -> Building:
     building = BuildingRepository.get_by_id(id=building_id, session=session)
     if user.is_admin:
