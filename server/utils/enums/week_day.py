@@ -5,7 +5,7 @@ class WeekDay(Enum):
     MONDAY = "Monday"
     TUESDAY = "Tuesday"
     WEDNESDAY = "Wednesday"
-    THURSDAY = "Thurday"
+    THURSDAY = "Thursday"
     FRIDAY = "Friday"
     SATURDAY = "Saturday"
     SUNDAY = "Sunday"

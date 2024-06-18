@@ -10,7 +10,8 @@ from server.utils.enums.week_day import WeekDay
 
 class ScheduleResponseBase(BaseModel):
     id: int
-    week_day: WeekDay | None
+    week_day: WeekDay | None = None
+    dates: list[datetime] | None = None
     start_date: datetime
     end_date: datetime
     start_time: DayTime
@@ -22,16 +23,16 @@ class ScheduleResponseBase(BaseModel):
 
 
 class ScheduleResponse(ScheduleResponseBase):
-    occurrence_ids: list[int] | None
+    occurrence_ids: list[int] | None = None
 
-    class_id: int | None
-    reservation_id: int | None
+    class_id: int | None = None
+    reservation_id: int | None = None
 
-    classroom_id: int | None
-    classroom: str | None
+    classroom_id: int | None = None
+    classroom: str | None = None
 
-    building_id: int | None
-    building: str | None
+    building_id: int | None = None
+    building: str | None = None
 
     @classmethod
     def from_schedule(cls, schedule: Schedule) -> "ScheduleResponse":
@@ -40,6 +41,7 @@ class ScheduleResponse(ScheduleResponseBase):
         return cls(
             id=schedule.id,
             week_day=schedule.week_day,
+            dates=[occurrence.date for occurrence in schedule.occurrences] if schedule.occurrences else None,
             start_date=schedule.start_date,
             end_date=schedule.end_date,
             start_time=DayTime.from_string(schedule.start_time),
