@@ -29,4 +29,15 @@ class OccurencesRepository:
     def allocate_class(class_: Class, classroom: Classroom, session: Session) -> None:
         for schedule in class_.schedules:
             OccurencesRepository.allocate_schedule(schedule, classroom, session)
-        session.add(class_)  # TODO: checar se é necessário
+    
+    @staticmethod
+    def remove_schedule_allocation(schedule: Schedule, session: Session) -> None:
+        for occurrence in schedule.occurrences:
+            session.delete(occurrence)
+        schedule.allocated = False
+        session.add(schedule)
+
+    @staticmethod
+    def remove_class_allocation(class_: Class, session: Session) -> None:
+        for schedule in class_.schedules:
+            OccurencesRepository.remove_schedule_allocation(schedule, session)
