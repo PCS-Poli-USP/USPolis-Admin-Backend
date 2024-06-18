@@ -40,6 +40,7 @@ async def crawl_subject(
     contents = JupiterCrawlerTestUtils.retrieve_html_contents()
     content = contents[subject_code]
     subject = await JupiterCrawler.crawl_subject_static(subject_code, content)
+    subject.buildings = [building]
     return SubjectRepository.crawler_create(
         subject=subject, session=session, building=building
     )

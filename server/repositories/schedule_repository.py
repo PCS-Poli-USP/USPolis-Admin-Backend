@@ -1,5 +1,8 @@
+from fastapi import HTTPException
+from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, select
 
+from server.models.database.building_db_model import Building
 from server.models.database.class_db_model import Class
 from server.models.database.schedule_db_model import Schedule
 from server.models.http.requests.schedule_request_models import (
@@ -23,6 +26,23 @@ class ScheduleRepository:
             .where(Schedule.id == id)
         )
         schedule = session.exec(statement).one()
+        return schedule
+
+    @staticmethod
+    def get_by_id_on_building(
+        *, schedule_id: int, building: Building, session: Session
+    ) -> Schedule:
+        statement = select(Schedule).where(Schedule.id == schedule_id)
+
+        try:
+            schedule = session.exec(statement).one()
+        except NoResultFound:
+            raise ScheduleNotFound()
+
+        buildings = schedule.class_.subject.buildings
+        if building.id not in [building.id for building in buildings]:
+            raise ScheduleNotFound()
+
         return schedule
 
     @staticmethod
@@ -67,3 +87,8 @@ class ScheduleRepository:
             )
             for schedule_input in inputs
         ]
+
+
+class ScheduleNotFound(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(status_code=404, detail="Schedule not found")

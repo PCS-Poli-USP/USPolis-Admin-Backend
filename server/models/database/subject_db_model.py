@@ -24,7 +24,7 @@ class Subject(SQLModel, table=True):
     activation: date = Field()
     deactivation: date | None = Field(default=None)
 
-    buildings: list["Building"] | None = Relationship(
+    buildings: list["Building"] = Relationship(
         back_populates="subjects", link_model=SubjectBuildingLink
     )
     classes: list["Class"] = Relationship(back_populates="subject")

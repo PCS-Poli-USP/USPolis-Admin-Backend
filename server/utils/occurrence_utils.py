@@ -4,52 +4,32 @@ from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.schedule_db_model import Schedule
 from server.utils.enums.recurrence import Recurrence
 
-# TODO: dont create occurrences on holidays
-# update/delete schedules
 
-
-class ScheduleManager:
-    # def __init__(self, class_: Class):
-    #     self.class_ = class_
-
-    def add_recurrent_schedule(self, schedule: Schedule) -> None:
-        if schedule.recurrence == Recurrence.NONE:
-            raise ValueError("For non recurrent schedule, use add_non_schedule method")
-
-        dates = self._dates_for_recurrence(
+class OccurrenceUtils:
+    # TODO: dont create occurrences on holidays
+    # update/delete schedules
+    @staticmethod
+    def occurrences_from_schedules(schedule: Schedule) -> list[Occurrence]:
+        occurrences: list[Occurrence] = []
+        dates = OccurrenceUtils.__dates_for_recurrence(
             schedule.week_day.value,
             schedule.recurrence,
-            start_date=schedule.start_date,
-            end_date=schedule.end_date,
-            month_week=schedule.month_week,
+            schedule.start_date,
+            schedule.end_date,
+            schedule.month_week,
         )
-
-        for date_ in dates:
-            new_occurrence = Occurrence(
-                schedule=schedule,
-                date=date_,
+        for occ_date in dates:
+            occurrence = Occurrence(
+                date=occ_date,
                 start_time=schedule.start_time,
                 end_time=schedule.end_time,
+                schedule_id=schedule.id,
             )
-            schedule.occurrences.append(new_occurrence)
+            occurrences.append(occurrence)
+        return occurrences
 
-    def add_non_recurrent_schedule(self, schedule: Schedule, dates: list[date]) -> None:
-        if schedule.recurrence != Recurrence.NONE:
-            raise ValueError(
-                "For recurrent schedule, use add_recurrent_schedule method"
-            )
-
-        for date_ in dates:
-            new_occurrence = Occurrence(
-                schedule=schedule,
-                date=date_,
-                start_time=schedule.start_time,
-                end_time=schedule.end_time,
-            )
-            schedule.occurrences.append(new_occurrence)
-
-    def _dates_for_recurrence(
-        self,
+    @staticmethod
+    def __dates_for_recurrence(
         week_day: int,
         recurrence: Recurrence,
         start_date: date,
@@ -112,8 +92,7 @@ class ScheduleManager:
 
 
 if __name__ == "__main__":
-    manager = ScheduleManager()
-    dates = manager._dates_for_recurrence(
+    dates = OccurrenceUtils.__dates_for_recurrence(
         2, Recurrence.MONTHLY, date(2024, 1, 1), date(2024, 3, 15), 2
     )
     print(dates)

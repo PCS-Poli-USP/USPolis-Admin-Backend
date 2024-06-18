@@ -47,15 +47,6 @@ def building_authenticate(
     return building
 
 
-def class_authenticate(
-    user: Annotated[User, Depends(authenticate)],
-    building: Annotated[Building, Depends(building_authenticate)],
-    class_id: int,
-    session: SessionDep,
-):
-    pass
-
-
 # exports:
 UserDep = Annotated[User, Depends(authenticate)]
 BuildingDep = Annotated[Building, Depends(building_authenticate)]

@@ -16,7 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 def init_db(session: Session) -> None:
-    SQLModel.metadata.create_all(engine)
+    if CONFIG.testing:
+        SQLModel.metadata.create_all(engine)
 
     user = session.exec(
         select(User).where(User.username == CONFIG.first_superuser_username)

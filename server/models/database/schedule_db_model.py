@@ -30,7 +30,7 @@ class Schedule(SQLModel, table=True):
     all_day: bool = Field(default=False)
 
     class_id: int | None = Field(foreign_key="class.id", nullable=True, default=None)
-    class_: Optional["Class"] = Relationship(back_populates="schedules")
+    class_: "Class" = Relationship(back_populates="schedules")
 
     classroom_id: int | None = Field(
         foreign_key="classroom.id", nullable=True, default=None
@@ -43,3 +43,4 @@ class Schedule(SQLModel, table=True):
     calendars: list["Calendar"] = Relationship(
         back_populates="schedules", link_model=ScheduleCalendarLink
     )
+

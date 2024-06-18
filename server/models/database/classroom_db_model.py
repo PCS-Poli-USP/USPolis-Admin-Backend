@@ -36,6 +36,6 @@ class Classroom(SQLModel, table=True):
         index=True, foreign_key="building.id", default=None, nullable=False
     )
     building: "Building" = Relationship(back_populates="classrooms")
-    occurrences: list["Occurrence"] | None = Relationship(back_populates="classroom")
+    occurrences: list["Occurrence"] = Relationship(back_populates="classroom")
     reservations: list["Reservation"] | None = Relationship(back_populates="classroom")
     schedules: list["Schedule"] | None = Relationship(back_populates="classroom")

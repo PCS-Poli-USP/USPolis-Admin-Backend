@@ -3,7 +3,9 @@ from fastapi import APIRouter, Body, Depends, Response
 from server.deps.authenticate import (
     building_authenticate,
 )
-from server.deps.repository_deps.classrooms_repository_dep import ClassroomRepositoryDep
+from server.deps.repository_adapters.classrooms_repository_adapter import (
+    ClassroomRepositoryDep,
+)
 from server.models.database.classroom_db_model import Classroom
 from server.models.http.requests.classroom_request_models import ClassroomRegister
 from server.models.http.responses.generic_responses import NoContent

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from pydantic import BaseModel
 
@@ -27,7 +27,7 @@ class ClassResponse(BaseModel):
 
     ignore_to_allocate: bool
     full_allocated: bool
-    updated_at: date
+    updated_at: datetime
     subject: Subject
     schedules: list[ScheduleResponse]
 
