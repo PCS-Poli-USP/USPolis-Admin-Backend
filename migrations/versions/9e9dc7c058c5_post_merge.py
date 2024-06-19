@@ -1,8 +1,8 @@
-"""First commit
+"""post merge
 
-Revision ID: 3fb2a7fba8b5
+Revision ID: 9e9dc7c058c5
 Revises: 
-Create Date: 2024-06-16 18:04:40.559278
+Create Date: 2024-06-18 21:07:28.673105
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import sqlmodel
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = '3fb2a7fba8b5'
+revision: str = '9e9dc7c058c5'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -40,8 +40,8 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('code', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('professors', postgresql.ARRAY(sa.String()), nullable=True),
-    sa.Column('type', sa.Enum('BIANNUAL', 'FOUR_MONTHLY', 'OTHER', name='subjecttype'), nullable=False),
+    sa.Column('professors', postgresql.ARRAY(sa.String()), nullable=False),
+    sa.Column('type', sa.Enum('BIANNUAL', 'FOUR_MONTHLY', 'OTHER', name='subjecttype'), nullable=True),
     sa.Column('class_credit', sa.Integer(), nullable=False),
     sa.Column('work_credit', sa.Integer(), nullable=False),
     sa.Column('activation', sa.Date(), nullable=False),
@@ -81,7 +81,6 @@ def upgrade() -> None:
     op.create_index(op.f('ix_calendar_name'), 'calendar', ['name'], unique=True)
     op.create_table('class',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('semester', sa.Integer(), nullable=True),
     sa.Column('start_date', sa.Date(), nullable=False),
     sa.Column('end_date', sa.Date(), nullable=False),
     sa.Column('code', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -98,7 +97,8 @@ def upgrade() -> None:
     sa.Column('updated_at', sa.DateTime(), nullable=False),
     sa.Column('subject_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['subject_id'], ['subject.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('code', 'subject_id', name='unique_class_code_for_subject')
     )
     op.create_index(op.f('ix_class_subject_id'), 'class', ['subject_id'], unique=False)
     op.create_table('holidaycategory',
@@ -115,6 +115,13 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['calendar_id'], ['calendar.id'], ),
     sa.ForeignKeyConstraint(['holiday_category_id'], ['holidaycategory.id'], ),
     sa.PrimaryKeyConstraint('calendar_id', 'holiday_category_id')
+    )
+    op.create_table('classcalendarlink',
+    sa.Column('class_id', sa.Integer(), nullable=False),
+    sa.Column('calendar_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['calendar_id'], ['calendar.id'], ),
+    sa.ForeignKeyConstraint(['class_id'], ['class.id'], ),
+    sa.PrimaryKeyConstraint('class_id', 'calendar_id')
     )
     op.create_table('classroom',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -158,36 +165,6 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('user_id', 'building_id')
     )
-    op.create_table('schedule',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('start_date', sa.Date(), nullable=False),
-    sa.Column('end_date', sa.Date(), nullable=False),
-    sa.Column('start_time', sa.Time(), nullable=False),
-    sa.Column('end_time', sa.Time(), nullable=False),
-    sa.Column('skip_exceptions', sa.Boolean(), nullable=False),
-    sa.Column('allocated', sa.Boolean(), nullable=False),
-    sa.Column('recurrence', sa.Enum('DAILY', 'WEEKLY', 'BIWEEKLY', 'MONTHLY', 'NONE', name='recurrence'), nullable=False),
-    sa.Column('week_day', sa.Enum('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY', name='weekday'), nullable=False),
-    sa.Column('month_week', sa.Integer(), nullable=True),
-    sa.Column('all_day', sa.Boolean(), nullable=False),
-    sa.Column('class_id', sa.Integer(), nullable=True),
-    sa.Column('classroom_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['class_id'], ['class.id'], ),
-    sa.ForeignKeyConstraint(['classroom_id'], ['classroom.id'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_table('occurrence',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('start_time', sa.Time(), nullable=False),
-    sa.Column('end_time', sa.Time(), nullable=False),
-    sa.Column('date', sa.Date(), nullable=False),
-    sa.Column('classroom_id', sa.Integer(), nullable=False),
-    sa.Column('schedule_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['classroom_id'], ['classroom.id'], ),
-    sa.ForeignKeyConstraint(['schedule_id'], ['schedule.id'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_index(op.f('ix_occurrence_schedule_id'), 'occurrence', ['schedule_id'], unique=False)
     op.create_table('reservation',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -195,41 +172,62 @@ def upgrade() -> None:
     sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),
     sa.Column('classroom_id', sa.Integer(), nullable=False),
-    sa.Column('schedule_id', sa.Integer(), nullable=False),
     sa.Column('created_by_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['classroom_id'], ['classroom.id'], ),
     sa.ForeignKeyConstraint(['created_by_id'], ['user.id'], ),
-    sa.ForeignKeyConstraint(['schedule_id'], ['schedule.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_reservation_classroom_id'), 'reservation', ['classroom_id'], unique=False)
     op.create_index(op.f('ix_reservation_created_by_id'), 'reservation', ['created_by_id'], unique=False)
-    op.create_index(op.f('ix_reservation_schedule_id'), 'reservation', ['schedule_id'], unique=False)
-    op.create_table('schedulecalendarlink',
-    sa.Column('schedule_id', sa.Integer(), nullable=False),
-    sa.Column('calendar_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['calendar_id'], ['calendar.id'], ),
-    sa.ForeignKeyConstraint(['schedule_id'], ['schedule.id'], ),
-    sa.PrimaryKeyConstraint('schedule_id', 'calendar_id')
+    op.create_table('schedule',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('start_date', sa.Date(), nullable=False),
+    sa.Column('end_date', sa.Date(), nullable=False),
+    sa.Column('start_time', sa.Time(), nullable=False),
+    sa.Column('end_time', sa.Time(), nullable=False),
+    sa.Column('week_day', sa.Enum('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY', name='weekday'), nullable=True),
+    sa.Column('skip_exceptions', sa.Boolean(), nullable=False),
+    sa.Column('allocated', sa.Boolean(), nullable=False),
+    sa.Column('recurrence', sa.Enum('DAILY', 'WEEKLY', 'BIWEEKLY', 'MONTHLY', 'NONE', 'CUSTOM', name='recurrence'), nullable=False),
+    sa.Column('month_week', sa.Integer(), nullable=True),
+    sa.Column('all_day', sa.Boolean(), nullable=False),
+    sa.Column('class_id', sa.Integer(), nullable=True),
+    sa.Column('classroom_id', sa.Integer(), nullable=True),
+    sa.Column('reservation_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['class_id'], ['class.id'], ),
+    sa.ForeignKeyConstraint(['classroom_id'], ['classroom.id'], ),
+    sa.ForeignKeyConstraint(['reservation_id'], ['reservation.id'], ),
+    sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('occurrence',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('start_time', sa.Time(), nullable=False),
+    sa.Column('end_time', sa.Time(), nullable=False),
+    sa.Column('date', sa.Date(), nullable=False),
+    sa.Column('classroom_id', sa.Integer(), nullable=True),
+    sa.Column('schedule_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['classroom_id'], ['classroom.id'], ),
+    sa.ForeignKeyConstraint(['schedule_id'], ['schedule.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_occurrence_schedule_id'), 'occurrence', ['schedule_id'], unique=False)
     # ### end Alembic commands ###
 
 
 def downgrade() -> None:
     # ### commands auto generated by Alembic - please adjust! ###
-    op.drop_table('schedulecalendarlink')
-    op.drop_index(op.f('ix_reservation_schedule_id'), table_name='reservation')
-    op.drop_index(op.f('ix_reservation_created_by_id'), table_name='reservation')
-    op.drop_index(op.f('ix_reservation_classroom_id'), table_name='reservation')
-    op.drop_table('reservation')
     op.drop_index(op.f('ix_occurrence_schedule_id'), table_name='occurrence')
     op.drop_table('occurrence')
     op.drop_table('schedule')
+    op.drop_index(op.f('ix_reservation_created_by_id'), table_name='reservation')
+    op.drop_index(op.f('ix_reservation_classroom_id'), table_name='reservation')
+    op.drop_table('reservation')
     op.drop_table('userbuildinglink')
     op.drop_table('subjectbuildinglink')
     op.drop_table('holiday')
     op.drop_index(op.f('ix_classroom_building_id'), table_name='classroom')
     op.drop_table('classroom')
+    op.drop_table('classcalendarlink')
     op.drop_table('calendarholidaycategorylink')
     op.drop_index(op.f('ix_holidaycategory_name'), table_name='holidaycategory')
     op.drop_table('holidaycategory')
