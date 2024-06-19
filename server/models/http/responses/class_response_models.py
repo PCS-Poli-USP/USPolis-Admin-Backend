@@ -3,15 +3,13 @@ from datetime import date, datetime
 from pydantic import BaseModel
 
 from server.models.database.class_db_model import Class
-from server.models.database.subject_db_model import Subject
 from server.models.http.exceptions.responses_exceptions import UnfetchDataError
 from server.models.http.responses.schedule_response_models import ScheduleResponse
 from server.utils.enums.class_type import ClassType
 
 
-class ClassResponse(BaseModel):
+class ClassResponseBase(BaseModel):
     id: int
-    semester: int
     start_date: date
     end_date: date
     code: str
@@ -28,32 +26,46 @@ class ClassResponse(BaseModel):
     ignore_to_allocate: bool
     full_allocated: bool
     updated_at: datetime
-    subject: Subject
+
+
+class ClassResponse(ClassResponseBase):
+    subject_id: int
+    subject_name: str
+    subject_code: str
     schedules: list[ScheduleResponse]
+    calendar_ids: list[int]
+    calendar_names: list[str]
 
     @classmethod
-    def from_class(cls, class_in: Class) -> "ClassResponse":
-        if class_in.id is None:
+    def from_class(cls, _class: Class) -> "ClassResponse":
+        if _class.id is None:
             raise UnfetchDataError("Class", "ID")
+        if _class.subject.id is None:
+            raise UnfetchDataError("Subject", "ID")
         return cls(
-            id=class_in.id,
-            semester=class_in.semester or 0,
-            start_date=class_in.start_date,
-            end_date=class_in.end_date,
-            code=class_in.code,
-            professors=class_in.professors,
-            type=class_in.type,
-            vacancies=class_in.vacancies,
-            subscribers=class_in.subscribers,
-            pendings=class_in.pendings,
-            air_conditionating=class_in.air_conditionating,
-            accessibility=class_in.accessibility,
-            projector=class_in.projector,
-            ignore_to_allocate=class_in.ignore_to_allocate,
-            full_allocated=class_in.full_allocated,
-            updated_at=class_in.updated_at,
-            subject=class_in.subject,
-            schedules=ScheduleResponse.from_schedule_list(class_in.schedules),
+            id=_class.id,
+            start_date=_class.start_date,
+            end_date=_class.end_date,
+            code=_class.code,
+            professors=_class.professors,
+            type=_class.type,
+            vacancies=_class.vacancies,
+            subscribers=_class.subscribers,
+            pendings=_class.pendings,
+            air_conditionating=_class.air_conditionating,
+            accessibility=_class.accessibility,
+            projector=_class.projector,
+            ignore_to_allocate=_class.ignore_to_allocate,
+            full_allocated=_class.full_allocated,
+            updated_at=_class.updated_at,
+            subject_id=_class.subject.id,
+            subject_code=_class.subject.code,
+            subject_name=_class.subject.name,
+            schedules=ScheduleResponse.from_schedule_list(_class.schedules),
+            calendar_ids=[
+                calendar.id for calendar in _class.calendars if (calendar.id)
+            ],
+            calendar_names=[calendar.name for calendar in _class.calendars],
         )
 
     @classmethod

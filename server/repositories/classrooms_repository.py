@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
@@ -15,16 +15,23 @@ class ClassroomRepository:
         return classrooms
 
     @staticmethod
-    def get_by_id(id: int, *, session: Session) -> Classroom:
-        classroom = session.exec(select(Classroom).where(Classroom.id == id)).one()
+    def get_by_id(*, id: int, session: Session) -> Classroom:
+        statement = select(Classroom).where(Classroom.id == id)
+        classroom = session.exec(statement).one()
         return classroom
+
+    @staticmethod
+    def get_by_ids(ids: list[int], *, session: Session) -> list[Classroom]:
+        statement = select(Classroom).where(col(Classroom.id).in_(ids))
+        classrooms = list(session.exec(statement).all())
+        return classrooms
 
     @staticmethod
     def create(
         classroom: ClassroomRegister,
         *,
         building: Building,
-        creator: User | None,
+        creator: User,
         session: Session,
     ) -> Classroom:
         new_classroom = Classroom(

@@ -11,6 +11,8 @@ class OccurrenceUtils:
     @staticmethod
     def occurrences_from_schedules(schedule: Schedule) -> list[Occurrence]:
         occurrences: list[Occurrence] = []
+        if schedule.week_day is None:
+            raise ValueError("Week day is required for schedule for this method")
         dates = OccurrenceUtils.__dates_for_recurrence(
             schedule.week_day.value,
             schedule.recurrence,

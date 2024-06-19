@@ -1,6 +1,6 @@
 from datetime import date as datetime_date
 from datetime import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -11,11 +11,15 @@ if TYPE_CHECKING:
 
 class Occurrence(SQLModel, table=True):
     id: int | None = Field(primary_key=True, default=None)
-    start_time: time = Field()
-    end_time: time = Field()
+    start_time: time = Field(nullable=False)
+    end_time: time = Field(nullable=False)
     date: datetime_date = Field()
 
-    classroom_id: int | None = Field(default=None, foreign_key="classroom.id")
-    classroom: "Classroom" = Relationship(back_populates="occurrences")
-    schedule_id: int | None = Field(default=None, foreign_key="schedule.id")
+    # TODO: pensar se não é ruim que tenham ocorrencias sem classroom
+    classroom_id: int | None = Field(
+        default=None, foreign_key="classroom.id", nullable=True
+    )
+    classroom: Optional["Classroom"] = Relationship(back_populates="occurrences")
+
+    schedule_id: int | None = Field(default=None, index=True, foreign_key="schedule.id")
     schedule: "Schedule" = Relationship(back_populates="occurrences")

@@ -1,8 +1,5 @@
-import json
-from typing import Any, Self
-
+from typing import Self
 from pydantic import BaseModel, field_validator
-from sqlalchemy.types import JSON
 
 
 class DayTime(BaseModel):
@@ -54,15 +51,3 @@ class DayTime(BaseModel):
 
     def __ge__(self, other: Self) -> bool:
         return (self.hours, self.minutes) >= (other.hours, other.minutes)
-
-
-class DayTimeType(JSON):
-    def process_bind_param(self, value: DayTime | None, dialect: Any) -> str | None:
-        if value is not None:
-            return json.dumps(value.model_dump())
-        return value
-
-    def process_result_value(self, value: str | None, dialect: Any) -> DayTime | None:
-        if value is not None:
-            return DayTime.model_validate_json(value)
-        return value

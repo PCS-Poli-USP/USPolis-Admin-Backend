@@ -1,20 +1,26 @@
-from datetime import datetime, date
+from datetime import date, datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, String
+from sqlalchemy import Column, String, UniqueConstraint
 from sqlalchemy.dialects import postgresql
 from sqlmodel import Field, Relationship, SQLModel
 
+from server.models.database.class_calendar_link import ClassCalendarLink
 from server.utils.enums.class_type import ClassType
 
 if TYPE_CHECKING:
+    from server.models.database.calendar_db_model import Calendar
     from server.models.database.schedule_db_model import Schedule
     from server.models.database.subject_db_model import Subject
 
 
 class Class(SQLModel, table=True):
+    __table_args__ = (
+        UniqueConstraint(
+            "code", "subject_id", name="unique_class_code_for_subject"
+        ),
+    )
     id: int | None = Field(default=None, primary_key=True)
-    semester: int | None = Field(default=None, nullable=True)
     start_date: date = Field()
     end_date: date = Field()
     code: str = Field()
@@ -32,7 +38,12 @@ class Class(SQLModel, table=True):
     full_allocated: bool = Field(default=False)
     updated_at: datetime = Field(default=datetime.now())
 
-    schedules: list["Schedule"] = Relationship(back_populates="class_")
+    calendars: list["Calendar"] = Relationship(
+        back_populates="classes", link_model=ClassCalendarLink
+    )
+    schedules: list["Schedule"] = Relationship(
+        sa_relationship_kwargs={"cascade": "delete"}, back_populates="class_"
+    )
 
     subject_id: int | None = Field(
         foreign_key="subject.id", index=True, default=None, nullable=False
