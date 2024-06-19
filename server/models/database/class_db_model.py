@@ -16,9 +16,7 @@ if TYPE_CHECKING:
 
 class Class(SQLModel, table=True):
     __table_args__ = (
-        UniqueConstraint(
-            "code", "subject_id", name="unique_class_code_for_subject"
-        ),
+        UniqueConstraint("code", "subject_id", name="unique_class_code_for_subject"),
     )
     id: int | None = Field(default=None, primary_key=True)
     start_date: date = Field()
@@ -41,9 +39,7 @@ class Class(SQLModel, table=True):
     calendars: list["Calendar"] = Relationship(
         back_populates="classes", link_model=ClassCalendarLink
     )
-    schedules: list["Schedule"] = Relationship(
-        sa_relationship_kwargs={"cascade": "delete"}, back_populates="class_"
-    )
+    schedules: list["Schedule"] = Relationship(back_populates="class_")
 
     subject_id: int | None = Field(
         foreign_key="subject.id", index=True, default=None, nullable=False
