@@ -7,8 +7,8 @@ from server.deps.cognito_client import CognitoClientDep
 from server.deps.session_dep import SessionDep
 from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
-from server.repositories.buildings_repository import BuildingRepository
-from server.repositories.users_repository import UserRepository
+from server.repositories.building_repository import BuildingRepository
+from server.repositories.user_repository import UserRepository
 
 security = HTTPBearer()
 

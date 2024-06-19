@@ -19,7 +19,7 @@ CONFIG.db_database = config("TEST_DATABASE_NAME", default="uspolis-test")  # typ
 from server.app import app  # noqa
 from server.models.database.building_db_model import Building  # noqa  # noqa
 from server.models.database.user_db_model import User  # noqa
-from server.repositories.users_repository import UserRepository  # noqa
+from server.repositories.user_repository import UserRepository  # noqa
 from server.scripts.initial_data import init_db  # noqa
 from server.db import engine  # noqa
 

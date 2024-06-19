@@ -3,7 +3,7 @@ from fastapi import APIRouter, Body, Depends, Response
 from server.deps.authenticate import (
     building_authenticate,
 )
-from server.deps.repository_adapters.classrooms_repository_adapter import (
+from server.deps.repository_adapters.classroom_repository_adapter import (
     ClassroomRepositoryDep,
 )
 from server.models.database.classroom_db_model import Classroom

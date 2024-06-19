@@ -7,7 +7,7 @@ from server.db import engine
 from server.mocks.services.cognito_client_mock import CognitoClientMock
 from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister
-from server.repositories.users_repository import UserRepository
+from server.repositories.user_repository import UserRepository
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

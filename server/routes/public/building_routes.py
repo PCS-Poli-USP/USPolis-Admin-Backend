@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from server.deps.session_dep import SessionDep
 from server.models.database.building_db_model import Building
 from server.models.http.responses.building_response_models import BuildingResponse
-from server.repositories.buildings_repository import BuildingRepository
+from server.repositories.building_repository import BuildingRepository
 
 router = APIRouter(prefix="/buildings", tags=["Buildings"])
 

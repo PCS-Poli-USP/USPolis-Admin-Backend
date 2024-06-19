@@ -6,7 +6,7 @@ from server.deps.authenticate import BuildingDep, UserDep
 from server.deps.session_dep import SessionDep
 from server.models.database.classroom_db_model import Classroom
 from server.models.http.requests.classroom_request_models import ClassroomRegister
-from server.repositories.classrooms_repository import ClassroomRepository
+from server.repositories.classroom_repository import ClassroomRepository
 
 
 class ClassroomRepositoryAdapter:

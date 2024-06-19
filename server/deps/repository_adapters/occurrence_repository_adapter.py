@@ -7,12 +7,12 @@ from server.deps.session_dep import SessionDep
 from server.models.database.class_db_model import Class
 from server.models.database.schedule_db_model import Schedule
 from server.repositories.class_repository import ClassRepository
-from server.repositories.classrooms_repository import ClassroomRepository
-from server.repositories.occurrences_repository import OccurencesRepository
+from server.repositories.classroom_repository import ClassroomRepository
+from server.repositories.occurrence_repository import OccurrenceRepository
 from server.repositories.schedule_repository import ScheduleRepository
 
 
-class OccurrencesRepositoryAdapter:
+class OccurrenceRepositoryAdapter:
     def __init__(self, building: BuildingDep, session: SessionDep):
         self.building = building
         self.session = session
@@ -26,7 +26,7 @@ class OccurrencesRepositoryAdapter:
         classroom = ClassroomRepository.get_by_id_on_building(
             building=self.building, id=classroom_id, session=self.session
         )
-        OccurencesRepository.allocate_schedule(
+        OccurrenceRepository.allocate_schedule(
             schedule=schedule, classroom=classroom, session=self.session
         )
         self.session.commit()
@@ -42,7 +42,7 @@ class OccurrencesRepositoryAdapter:
         classroom = ClassroomRepository.get_by_id_on_building(
             building=self.building, id=classroom_id, session=self.session
         )
-        OccurencesRepository.allocate_class(
+        OccurrenceRepository.allocate_class(
             class_=class_, classroom=classroom, session=self.session
         )
         self.session.commit()
@@ -55,7 +55,7 @@ class OccurrencesRepositoryAdapter:
             building=self.building,
             session=self.session,
         )
-        OccurencesRepository.remove_schedule_allocation(
+        OccurrenceRepository.remove_schedule_allocation(
             schedule=schedule, session=self.session
         )
         self.session.commit()
@@ -68,7 +68,7 @@ class OccurrencesRepositoryAdapter:
             building=self.building,
             session=self.session,
         )
-        OccurencesRepository.remove_class_allocation(
+        OccurrenceRepository.remove_class_allocation(
             class_=class_, session=self.session
         )
         self.session.commit()
@@ -76,4 +76,4 @@ class OccurrencesRepositoryAdapter:
         return class_
 
 
-OccurrencesRepositoryDep = Annotated[OccurrencesRepositoryAdapter, Depends()]
+OccurrenceRepositoryDep = Annotated[OccurrenceRepositoryAdapter, Depends()]

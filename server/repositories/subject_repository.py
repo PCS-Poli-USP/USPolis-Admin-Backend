@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status
-from sqlalchemy.exc import IntegrityError, NoResultFound
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, col, select
 
 from server.deps.authenticate import BuildingDep
@@ -9,7 +9,7 @@ from server.models.http.requests.subject_request_models import (
     SubjectRegister,
     SubjectUpdate,
 )
-from server.repositories.buildings_repository import BuildingRepository
+from server.repositories.building_repository import BuildingRepository
 
 
 class SubjectRepository:

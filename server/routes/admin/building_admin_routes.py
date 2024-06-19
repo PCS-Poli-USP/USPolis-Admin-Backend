@@ -8,7 +8,7 @@ from server.models.http.requests.building_request_models import (
 )
 from server.models.http.responses.building_response_models import BuildingResponse
 from server.models.http.responses.generic_responses import NoContent
-from server.repositories.buildings_repository import BuildingRepository
+from server.repositories.building_repository import BuildingRepository
 
 embed = Body(..., embed=True)
 

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 
 from server.deps.authenticate import building_authenticate
-from server.deps.repository_adapters.occurrences_repository_adapter import (
-    OccurrencesRepositoryDep,
+from server.deps.repository_adapters.occurrence_repository_adapter import (
+    OccurrenceRepositoryDep,
 )
 from server.models.database.class_db_model import Class
 from server.models.database.schedule_db_model import Schedule
@@ -16,7 +16,7 @@ router = APIRouter(
 
 @router.post("/allocate-schedule")
 def allocate_schedule(
-    occurrence_repository: OccurrencesRepositoryDep,
+    occurrence_repository: OccurrenceRepositoryDep,
     schedule_id: int,
     classroom_id: int,
 ) -> Schedule:
@@ -25,7 +25,7 @@ def allocate_schedule(
 
 @router.post("/allocate-class")
 def allocate_class(
-    occurrence_repository: OccurrencesRepositoryDep,
+    occurrence_repository: OccurrenceRepositoryDep,
     class_id: int,
     classroom_id: int,
 ) -> Class:
@@ -34,7 +34,7 @@ def allocate_class(
 
 @router.delete("/remove-schedule-allocation")
 def remove_schedule_allocation(
-    occurrence_repository: OccurrencesRepositoryDep,
+    occurrence_repository: OccurrenceRepositoryDep,
     schedule_id: int,
 ) -> Schedule:
     schedule = occurrence_repository.remove_schedule_allocation(schedule_id)
@@ -42,7 +42,7 @@ def remove_schedule_allocation(
 
 @router.delete("/remove-class-allocation")
 def remove_class_allocation(
-    occurrence_repository: OccurrencesRepositoryDep,
+    occurrence_repository: OccurrenceRepositoryDep,
     class_id: int,
 ) -> Class:
     class_ = occurrence_repository.remove_class_allocation(class_id)

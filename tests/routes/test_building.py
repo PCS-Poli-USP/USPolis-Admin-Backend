@@ -8,7 +8,7 @@ from server.models.http.requests.building_request_models import (
     BuildingRegister,
     BuildingUpdate,
 )
-from server.repositories.buildings_repository import BuildingRepository
+from server.repositories.building_repository import BuildingRepository
 from tests.utils.building_test_utils import (
     add_building,
     check_name_exists,
