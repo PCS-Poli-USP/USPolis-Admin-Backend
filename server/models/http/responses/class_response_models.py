@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import date, datetime
+
 from pydantic import BaseModel
 
 from server.models.database.class_db_model import Class
@@ -9,8 +10,8 @@ from server.utils.enums.class_type import ClassType
 
 class ClassResponseBase(BaseModel):
     id: int
-    start_date: datetime
-    end_date: datetime
+    start_date: date
+    end_date: date
     code: str
     professors: list[str]
     type: ClassType

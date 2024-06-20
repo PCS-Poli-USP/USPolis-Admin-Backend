@@ -6,7 +6,8 @@ class Recurrence(Enum):
     WEEKLY = "Weekly"
     BIWEEKLY = "Biweekly"
     MONTHLY = "Monthly"
-    CUSTOM = "Custom"
+    NONE = "None"
+    CUSTOM = "Custom" # TODO: remove one of None or Custom
 
     def to_string(self) -> str:
         return self.value

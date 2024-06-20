@@ -1,6 +1,5 @@
-from datetime import datetime
-from typing import Self
-
+from datetime import datetime, time
+from typing import Any, Self
 
 from fastapi import HTTPException, status
 from pydantic import (
@@ -8,7 +7,6 @@ from pydantic import (
     model_validator,
 )
 
-from server.utils.day_time import DayTime
 from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.week_day import WeekDay
 
@@ -18,10 +16,32 @@ class ScheduleBase(BaseModel):
 
     start_date: datetime
     end_date: datetime
-    recurrence: Recurrence
-    skip_exceptions: bool
-    all_day: bool
+    recurrence: Recurrence = Recurrence.NONE
+    skip_exceptions: bool = False
+    all_day: bool = False
     allocated: bool | None = None
+
+
+class ScheduleManyRegister(ScheduleBase):
+    """Register Many Schedules"""
+
+    week_days: list[WeekDay]
+    start_times: list[time]
+    end_times: list[time]
+
+    @model_validator(mode="before")
+    def check_fields(cls, values: dict[str, Any]) -> dict[str, Any]:
+        week_days: list[WeekDay] = values.get("week_days", [])
+        start_times: list[time] = values.get("start_times", [])
+        end_times: list[time] = values.get("end_times", [])
+
+        if not week_days or not start_times or not end_times:
+            raise ValueError("Schedule info must not be empty")
+
+        if len(week_days) != len(start_times) or len(week_days) != len(end_times):
+            raise ValueError("Schedule allocation info must be with same size")
+
+        return values
 
 
 class ScheduleRegister(ScheduleBase):
@@ -31,8 +51,8 @@ class ScheduleRegister(ScheduleBase):
     reservation_id: int | None = None
     classroom_id: int | None = None
     week_day: WeekDay | None = None
-    start_time: DayTime
-    end_time: DayTime
+    start_time: time
+    end_time: time
     dates: list[datetime] | None = None
 
     @model_validator(mode="after")

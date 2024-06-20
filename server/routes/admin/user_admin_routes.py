@@ -8,8 +8,8 @@ from server.deps.session_dep import SessionDep
 from server.models.http.requests.user_request_models import UserRegister, UserUpdate
 from server.models.http.responses.generic_responses import NoContent
 from server.models.http.responses.user_response_models import UserResponse
-from server.repositories.buildings_repository import BuildingRepository
-from server.repositories.users_repository import UserRepository
+from server.repositories.building_repository import BuildingRepository
+from server.repositories.user_repository import UserRepository
 
 embed = Body(..., embed=True)
 

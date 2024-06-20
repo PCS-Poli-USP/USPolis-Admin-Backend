@@ -5,10 +5,10 @@ from server.mocks.services.cognito_client_mock import CognitoClientMock
 from server.models.database.building_db_model import Building  # noqa
 from server.models.database.user_db_model import User  # noqa
 from server.models.http.requests.user_request_models import UserRegister
-from server.repositories.users_repository import UserRepository
+from server.repositories.user_repository import UserRepository
 
 
-def test_user_get(client: TestClient, user: User, db: Session) -> None:
+def test_user_create(client: TestClient, user: User, db: Session) -> None:
     """Test user endpoint returns authorized user."""
     my_user = UserRegister(
         email="test@mail.com",
@@ -16,13 +16,18 @@ def test_user_get(client: TestClient, user: User, db: Session) -> None:
         name="Test",
         username="test_user",
     )
-    new_user = UserRepository.create(
+    UserRepository.create(
         session=db,
         user_in=my_user,
         creator=user,
         cognito_client=CognitoClientMock(),
     )
-    resp = client.get("/users")
+    resp = client.get("/admin/users")
     assert resp.status_code == 200
-    data = resp.json()
-    assert data["email"] == my_user.email
+    data: list[dict] = resp.json()  # noqa
+    found = False
+    for user_in_response in data:
+        if user_in_response["username"] == "test_user":
+            found = True
+    assert found
+    print(data)

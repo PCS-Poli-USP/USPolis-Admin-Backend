@@ -1,8 +1,9 @@
 from datetime import datetime
 
+from sqlmodel import Session, select
+
 from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
-from server.routes.admin.building_admin_routes import BuildingNameAlreadyExists
 from tests.utils.default_values.test_building_default_values import (
     BuildingDefaultValues,
 )
@@ -13,7 +14,7 @@ def make_building(name: str, user: User) -> Building:
     """Make a building created by user"""
     building = Building(
         name=name,
-        created_by=user,  # type: ignore
+        created_by=user,
         updated_at=datetime.now(),
     )
     return building
@@ -29,12 +30,17 @@ async def get_testing_building() -> Building:
     return building
 
 
-async def add_building(name: str, user: User) -> str:
-    if await Building.check_name_exits(name):
-        raise BuildingNameAlreadyExists(name)
+def add_building(session: Session, name: str, user: User) -> int:
     building = make_building(name, user)
-    await building.create()
-    return str(building.id)
+    session.add(building)
+    session.commit()
+    return building.id # type: ignore
+
+
+def check_name_exists(db: Session, name: str) -> bool:
+    statement = select(Building).where(Building.name == name)
+    result = db.exec(statement).first()
+    return result is not None
 
 
 async def remove_building(id: str) -> None:

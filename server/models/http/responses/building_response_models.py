@@ -20,7 +20,7 @@ class BuildingResponse(BaseModel):
         return cls(
             id=building.id,
             name=building.name,
-            created_by=building.created_by.name,
+            created_by=building.created_by.name,  # type: ignore
             updated_at=building.updated_at,
         )
 

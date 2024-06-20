@@ -1,3 +1,9 @@
+# Lógicas consideradas :
+#
+# datas de activation e deactivation de um Subject sao as de
+# inicio e fim da sua primeira Class
+#
+
 import re
 from datetime import datetime
 from typing import Any
@@ -5,17 +11,19 @@ from typing import Any
 from bs4 import BeautifulSoup
 from httpx import AsyncClient
 
+from server.models.database.class_db_model import Class
+from server.models.database.schedule_db_model import Schedule
+from server.models.database.subject_db_model import Subject
 from server.services.jupiter_crawler.models import (
-    CrawledClass,
-    CrawledSchedule,
-    CrawledSubject,
     GeneralInfo,
     ScheduleInfo,
     StudentNumbersInfo,
 )
-from server.utils.day_time import DayTime
 from server.utils.enums.class_type import ClassType
+from server.utils.enums.recurrence import Recurrence
+from server.utils.enums.subject_type import SubjectType
 from server.utils.enums.week_day import WeekDay
+from server.utils.time_utils import TimeUtils
 
 BASE_URL = "https://uspdigital.usp.br/jupiterweb/obterTurma?nomdis=&sgldis="
 CLASS_DIV_IDENTIFIERS = {
@@ -33,26 +41,28 @@ class JupiterCrawler:
     @staticmethod
     async def crawl_subject_static(
         subject_code: str, page_content: bytes | None = None
-    ) -> CrawledSubject:
+    ) -> Subject:
         crawler = JupiterCrawler(subject_code)
         return await crawler.crawl_subject(page_content)
 
-    async def crawl_subject(self, page_content: bytes | None = None) -> CrawledSubject:
+    async def crawl_subject(self, page_content: bytes | None = None) -> Subject:
         if page_content is None:
             page_content = await self.request_html()
         self.__soup = self.__build_soap(page_content)
         crawled_classes = self.__extract_classes_info()
-        return CrawledSubject(
+
+        subject = Subject(
             code=self.__subject_code,
             name=self.__get_subject_name(),
             classes=crawled_classes,
-            class_type=crawled_classes[0].class_type,
+            type=SubjectType.BIANNUAL,  # TODO: checar se disc. quadrimestral difere em algo no jupiter
+            professors=sorted(list(self.__subject_professors)),
             class_credit=0,
             work_credit=0,
             activation=crawled_classes[0].start_date,
             deactivation=crawled_classes[0].end_date,
-            professors=sorted(list(self.__subject_professors)),
         )
+        return subject
 
     async def request_html(self) -> bytes:
         async with AsyncClient() as client:
@@ -66,9 +76,9 @@ class JupiterCrawler:
         subject = self.__soup.find_all("b", text=re.compile("Disciplina:(.*)"))[0]
         return subject.get_text().replace(f"Disciplina: {self.__subject_code} - ", "")
 
-    def __extract_classes_info(self) -> list[CrawledClass]:
+    def __extract_classes_info(self) -> list[Class]:
         classes_soups = self.__soup.find_all("div", attrs=CLASS_DIV_IDENTIFIERS)
-        crawled_classes: list[CrawledClass] = []
+        classes: list[Class] = []
         for index, class_soup in enumerate(classes_soups):
             try:
                 class_professors_set: set[str] = set()
@@ -87,31 +97,40 @@ class JupiterCrawler:
                     student_numbers_table_rows
                 )
 
-                crawled_class = CrawledClass(
-                    **general_info.model_dump(),
-                    **student_numbers_info.model_dump(),
+                class_ = Class(
+                    start_date=general_info.start_date,
+                    end_date=general_info.end_date,
+                    code=general_info.class_code,
+                    type=general_info.class_type,
+                    vacancies=student_numbers_info.vacancies,
+                    subscribers=student_numbers_info.subscribers,
+                    pendings=student_numbers_info.pendings,
                     professors=[],
                     schedules=[],
                 )
                 for schedule_info in schedules_infos:
-                    crawled_schedule = CrawledSchedule(
-                        **schedule_info.model_dump(),
+                    schedule = Schedule(
                         start_date=general_info.start_date,
                         end_date=general_info.end_date,
+                        week_day=schedule_info.week_day,
+                        start_time=schedule_info.start_time,
+                        end_time=schedule_info.end_time,
+                        recurrence=Recurrence.WEEKLY,
                     )
-                    crawled_class.schedules.append(crawled_schedule)
+
+                    class_.schedules.append(schedule)
                     class_professors_set.update(schedule_info.professors)
                     self.__subject_professors.update(schedule_info.professors)
 
-                crawled_class.professors = sorted(list(class_professors_set))
-                crawled_classes.append(crawled_class)
+                class_.professors = sorted(list(class_professors_set))
+                classes.append(class_)
             except Exception as e:
                 print(
                     f"Ignoring exception trying to crawl {index}th class on {self.__subject_code} subject:\n",
                     e,
                 )
 
-        return crawled_classes
+        return classes
 
     def __get_general_info(self, rows: Any) -> GeneralInfo:
         class_code: str = rows[0].find_all("td")[1].get_text(strip=True)
@@ -173,8 +192,8 @@ class JupiterCrawler:
                 ScheduleInfo(
                     week_day=week_day_as_enum,
                     professors=[professor],
-                    start_time=DayTime.from_string(start_time),
-                    end_time=DayTime.from_string(end_time),
+                    start_time=TimeUtils.time_from_string(start_time),
+                    end_time=TimeUtils.time_from_string(end_time),
                 )
             )
         return schedules_infos

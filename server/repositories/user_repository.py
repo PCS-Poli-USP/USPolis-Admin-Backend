@@ -3,7 +3,7 @@ from sqlmodel import Session, col, select
 from server.deps.cognito_client import ICognitoClient
 from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister
-from server.repositories.buildings_repository import BuildingRepository
+from server.repositories.building_repository import BuildingRepository
 
 
 class UserRepository:

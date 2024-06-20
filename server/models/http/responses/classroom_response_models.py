@@ -1,5 +1,5 @@
 from datetime import datetime
-from math import floor
+
 from pydantic import BaseModel
 
 from server.models.database.classroom_db_model import Classroom

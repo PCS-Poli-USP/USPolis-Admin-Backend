@@ -1,5 +1,7 @@
+from fastapi import HTTPException
 from sqlmodel import Session, col, select
 
+from server.models.database.building_db_model import Building
 from server.models.database.class_db_model import Class
 from server.models.http.requests.class_request_models import ClassRegister, ClassUpdate
 from server.repositories.calendar_repository import CalendarRepository
@@ -19,6 +21,16 @@ class ClassRepository:
         statement = select(Class).where(col(Class.id) == id)
         _class = session.exec(statement).one()
         return _class
+
+    @staticmethod
+    def get_by_id_on_building(id: int, building: Building, session: Session) -> Class:
+        statement = select(Class).where(col(Class.id) == id)
+        class_ = session.exec(statement).one()
+
+        if building not in class_.subject.buildings:
+            raise ClassNotFound()
+
+        return class_
 
     @staticmethod
     def create(*, input: ClassRegister, session: Session) -> Class:
@@ -80,3 +92,8 @@ class ClassRepository:
         deleted_class = ClassRepository.get_by_id(id=id, session=session)
         session.delete(deleted_class)
         session.commit()
+
+
+class ClassNotFound(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(status_code=404, detail="Class not found")

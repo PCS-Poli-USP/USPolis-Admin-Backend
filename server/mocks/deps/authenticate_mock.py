@@ -3,7 +3,7 @@ from fastapi import Request
 from server.config import CONFIG
 from server.deps.session_dep import SessionDep
 from server.models.database.user_db_model import User
-from server.repositories.users_repository import UserRepository
+from server.repositories.user_repository import UserRepository
 
 
 async def authenticate_mock(request: Request, session: SessionDep) -> User:

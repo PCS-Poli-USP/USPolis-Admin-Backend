@@ -1,9 +1,9 @@
-from datetime import datetime
+from datetime import date
 from typing import TYPE_CHECKING
 
-from sqlmodel import Field, Relationship, SQLModel, Column, Enum
 from sqlalchemy import String
 from sqlalchemy.dialects import postgresql
+from sqlmodel import Column, Enum, Field, Relationship, SQLModel
 
 from server.models.database.subject_building_link import SubjectBuildingLink
 from server.utils.enums.subject_type import SubjectType
@@ -23,8 +23,8 @@ class Subject(SQLModel, table=True):
     type: SubjectType = Field(sa_column=Column(Enum(SubjectType)))
     class_credit: int = Field(nullable=False)
     work_credit: int = Field(nullable=False)
-    activation: datetime = Field(nullable=False)
-    desactivation: datetime | None = Field(default=None)
+    activation: date = Field(nullable=False)
+    deactivation: date | None = Field(default=None)
 
     buildings: list["Building"] = Relationship(
         back_populates="subjects", link_model=SubjectBuildingLink

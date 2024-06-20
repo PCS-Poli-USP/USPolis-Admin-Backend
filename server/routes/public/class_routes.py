@@ -21,8 +21,8 @@ async def get_all_classes(session: SessionDep) -> list[ClassResponse]:
 @router.get("/{class_id}")
 async def get_class(class_id: int, session: SessionDep) -> ClassResponse:
     """Get a class by id"""
-    university_class = ClassRepository.get_by_id(id=class_id, session=session)
-    return ClassResponse.from_class(university_class)
+    class_ = ClassRepository.get_by_id(id=class_id, session=session)
+    return ClassResponse.from_class(class_)
 
 
 @router.post("")
@@ -30,8 +30,8 @@ async def create_class(
     class_input: ClassRegister, session: SessionDep
 ) -> ClassResponse:
     """Create a class"""
-    university_class = ClassRepository.create(input=class_input, session=session)
-    return ClassResponse.from_class(university_class)
+    class_ = ClassRepository.create(input=class_input, session=session)
+    return ClassResponse.from_class(class_)
 
 
 @router.put("/{class_id}")

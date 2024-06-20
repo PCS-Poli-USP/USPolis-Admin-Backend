@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Column, String, UniqueConstraint
@@ -9,20 +9,18 @@ from server.models.database.class_calendar_link import ClassCalendarLink
 from server.utils.enums.class_type import ClassType
 
 if TYPE_CHECKING:
+    from server.models.database.calendar_db_model import Calendar
     from server.models.database.schedule_db_model import Schedule
     from server.models.database.subject_db_model import Subject
-    from server.models.database.calendar_db_model import Calendar
 
 
 class Class(SQLModel, table=True):
     __table_args__ = (
-        UniqueConstraint(
-            "code", "subject_id", name="unique_class_code_for_subject"
-        ),
+        UniqueConstraint("code", "subject_id", name="unique_class_code_for_subject"),
     )
     id: int | None = Field(default=None, primary_key=True)
-    start_date: datetime = Field()
-    end_date: datetime = Field()
+    start_date: date = Field()
+    end_date: date = Field()
     code: str = Field()
     professors: list[str] = Field(sa_column=Column(postgresql.ARRAY(String())))
     type: ClassType = Field()
@@ -41,9 +39,7 @@ class Class(SQLModel, table=True):
     calendars: list["Calendar"] = Relationship(
         back_populates="classes", link_model=ClassCalendarLink
     )
-    schedules: list["Schedule"] = Relationship(
-        sa_relationship_kwargs={"cascade": "delete"}, back_populates="class_"
-    )
+    schedules: list["Schedule"] = Relationship(back_populates="class_")
 
     subject_id: int | None = Field(
         foreign_key="subject.id", index=True, default=None, nullable=False
