@@ -33,8 +33,8 @@ class ClassResponse(ClassResponseBase):
     subject_name: str
     subject_code: str
     schedules: list[ScheduleResponse]
-    calendar_ids: list[int]
-    calendar_names: list[str]
+    calendar_ids: list[int] | None = None
+    calendar_names: list[str] | None = None
 
     @classmethod
     def from_class(cls, _class: Class) -> "ClassResponse":
@@ -64,8 +64,9 @@ class ClassResponse(ClassResponseBase):
             schedules=ScheduleResponse.from_schedule_list(_class.schedules),
             calendar_ids=[
                 calendar.id for calendar in _class.calendars if (calendar.id)
-            ],
-            calendar_names=[calendar.name for calendar in _class.calendars],
+            ] if _class.calendars else None,
+            calendar_names=[
+                calendar.name for calendar in _class.calendars] if _class.calendars else None,
         )
 
     @classmethod

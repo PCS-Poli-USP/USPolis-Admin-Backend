@@ -17,7 +17,6 @@ class ScheduleBase(BaseModel):
     start_date: datetime
     end_date: datetime
     recurrence: Recurrence = Recurrence.NONE
-    skip_exceptions: bool = False
     all_day: bool = False
     allocated: bool | None = None
 
@@ -56,7 +55,7 @@ class ScheduleRegister(ScheduleBase):
     dates: list[datetime] | None = None
 
     @model_validator(mode="after")
-    def check_class_id_and_reservation_id(self) -> Self:
+    def check_class_body(self) -> Self:
         class_id = self.class_id
         reservation_id = self.class_id
         week_day = self.week_day
