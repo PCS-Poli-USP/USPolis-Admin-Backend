@@ -21,7 +21,6 @@ class Schedule(SQLModel, table=True):
     start_time: time = Field()
     end_time: time = Field()
     week_day: WeekDay | None = Field(nullable=True, default=None)
-    skip_exceptions: bool = Field(default=False)
     allocated: bool = Field(default=False)
     recurrence: Recurrence = Field()
     month_week: int | None = Field(default=None, nullable=True)
