@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Body, Response
+from typing import Annotated
+from fastapi import APIRouter, Body, Query, Response
 
 from server.deps.session_dep import SessionDep
 from server.models.http.requests.class_request_models import ClassRegister, ClassUpdate
@@ -49,4 +50,11 @@ async def update_class(
 async def delete_class(class_id: int, session: SessionDep) -> Response:
     """Delete a class by id"""
     ClassRepository.delete(id=class_id, session=session)
+    return NoContent
+
+
+@router.delete("/many/")
+async def delete_many_class(session: SessionDep, ids: Annotated[list[int], Query()] = []) -> Response:
+    """Delete a class by id"""
+    ClassRepository.delete_many(ids=ids, session=session)
     return NoContent

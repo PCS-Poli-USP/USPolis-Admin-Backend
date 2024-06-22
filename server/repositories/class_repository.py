@@ -93,6 +93,14 @@ class ClassRepository:
         session.delete(deleted_class)
         session.commit()
 
+    @staticmethod
+    def delete_many(*, ids: list[int], session: Session) -> None:
+        statement = select(Class).where(col(Class.id).in_(ids))
+        classes = session.exec(statement).all()
+        for class_ in classes:
+            session.delete(class_)
+        session.commit()
+
 
 class ClassNotFound(HTTPException):
     def __init__(self) -> None:
