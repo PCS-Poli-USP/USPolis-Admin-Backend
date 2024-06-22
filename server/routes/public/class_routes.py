@@ -54,7 +54,9 @@ async def delete_class(class_id: int, session: SessionDep) -> Response:
 
 
 @router.delete("/many/")
-async def delete_many_class(session: SessionDep, ids: Annotated[list[int], Query()] = []) -> Response:
+async def delete_many_class(
+    session: SessionDep, ids: Annotated[list[int], Query()] = []
+) -> Response:
     """Delete a class by id"""
     ClassRepository.delete_many(ids=ids, session=session)
     return NoContent

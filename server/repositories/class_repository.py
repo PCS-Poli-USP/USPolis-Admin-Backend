@@ -8,6 +8,8 @@ from server.repositories.calendar_repository import CalendarRepository
 from server.repositories.schedule_repository import ScheduleRepository
 from server.repositories.subject_repository import SubjectRepository
 
+from server.utils.common_utils import compare_SQLModel_vectors_by_id
+
 
 class ClassRepository:
     @staticmethod
@@ -35,9 +37,11 @@ class ClassRepository:
     @staticmethod
     def create(*, input: ClassRegister, session: Session) -> Class:
         subject = SubjectRepository.get_by_id(id=input.subject_id, session=session)
-        calendars = CalendarRepository.get_by_ids(
-            ids=input.calendar_ids, session=session
-        ) if input.calendar_ids else None
+        calendars = (
+            CalendarRepository.get_by_ids(ids=input.calendar_ids, session=session)
+            if input.calendar_ids
+            else None
+        )
         new_class = Class(
             subject=subject,
             calendars=calendars if calendars else [],
@@ -80,8 +84,17 @@ class ClassRepository:
             subject = SubjectRepository.get_by_id(id=input.subject_id, session=session)
             updated_class.subject = subject
 
+        if input.calendar_ids:
+            calendars = CalendarRepository.get_by_ids(
+                ids=input.calendar_ids, session=session
+            )
+            updated_class.calendars = calendars
+
         if input.schedules_data:
-            pass  # TODO
+            new_schedules = ScheduleRepository.update_class_schedules(
+                class_=updated_class, input=input.schedules_data, session=session
+            )
+            updated_class.schedules = new_schedules
 
         session.add(updated_class)
         session.commit()

@@ -49,8 +49,6 @@ async def update_classroom(
 
 
 @router.delete("/{id}")
-async def delete_classroom(
-    id: int, repository: ClassroomRepositoryDep
-) -> Response:
+async def delete_classroom(id: int, repository: ClassroomRepositoryDep) -> Response:
     repository.delete(id)
     return NoContent

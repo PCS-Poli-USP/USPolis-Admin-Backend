@@ -37,9 +37,12 @@ class Class(SQLModel, table=True):
     updated_at: datetime = Field(default=datetime.now())
 
     calendars: Optional[list["Calendar"]] = Relationship(
-        back_populates="classes", link_model=ClassCalendarLink,
+        back_populates="classes",
+        link_model=ClassCalendarLink,
     )
-    schedules: list["Schedule"] = Relationship(back_populates="class_", sa_relationship_kwargs={"cascade": "delete"})
+    schedules: list["Schedule"] = Relationship(
+        back_populates="class_", sa_relationship_kwargs={"cascade": "delete"}
+    )
 
     subject_id: int | None = Field(
         foreign_key="subject.id", index=True, default=None, nullable=False

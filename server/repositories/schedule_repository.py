@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+from httpx import delete
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 
@@ -10,6 +11,7 @@ from server.models.http.requests.schedule_request_models import (
     ScheduleRegister,
     ScheduleUpdate,
 )
+from server.repositories.classroom_repository import ClassroomRepository
 from server.repositories.occurrence_repository import OccurrenceRepository
 
 
@@ -78,7 +80,6 @@ class ScheduleRepository:
             classroom_id=None,
         )
         session.add(new_schedule)
-        session.commit()
         session.refresh(new_schedule)
 
         if input.dates and new_schedule.id:
@@ -94,7 +95,6 @@ class ScheduleRepository:
             )
             new_schedule.occurrences = occurences
             session.add(new_schedule)
-            session.commit()
             session.refresh(new_schedule)
 
         return new_schedule
@@ -111,12 +111,35 @@ class ScheduleRepository:
         ]
 
     @staticmethod
-    def update(*, input: ScheduleUpdate, session: Session) -> None:
-        pass
+    def update_class_schedules(
+        *, class_: Class, input: list[ScheduleUpdate], session: Session
+    ) -> list[Schedule]:
+        old_schedules = class_.schedules
+        new_schedules: list[Schedule] = []
+
+        for schedule in old_schedules:
+            session.delete(schedule)
+
+        for schedule_input in input:
+            new_schedule = ScheduleRepository.create_with_class(
+                class_input=class_, input=schedule_input, session=session
+            )
+            if schedule_input.allocated and schedule_input.classroom_id:
+                classroom = ClassroomRepository.get_by_id(
+                    id=schedule_input.classroom_id, session=session
+                )
+                OccurrenceRepository.allocate_schedule(
+                    schedule=new_schedule, classroom=classroom, session=session
+                )
+            new_schedules.append(new_schedule)
+
+        return new_schedules
 
     @staticmethod
     def delete(*, id: int, session: Session) -> None:
-        pass
+        schedule = ScheduleRepository.get_by_id(id=id, session=session)
+        session.delete(schedule)
+        return
 
 
 class ScheduleInvalidData(HTTPException):

@@ -35,7 +35,9 @@ def admin_authenticate(user: Annotated[User, Depends(authenticate)]) -> None:
 
 
 def building_authenticate(
-    user: Annotated[User, Depends(authenticate)], session: SessionDep, building_id: Annotated[int, Header()]
+    user: Annotated[User, Depends(authenticate)],
+    session: SessionDep,
+    building_id: Annotated[int, Header()],
 ) -> Building:
     building = BuildingRepository.get_by_id(id=building_id, session=session)
     if user.is_admin:

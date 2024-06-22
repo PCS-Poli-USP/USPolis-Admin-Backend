@@ -34,10 +34,11 @@ class Schedule(SQLModel, table=True):
     )
     classroom: Optional["Classroom"] = Relationship(back_populates="schedules")
 
-    reservation_id: int | None = Field(default=None, foreign_key="reservation.id", nullable=True)
+    reservation_id: int | None = Field(
+        default=None, foreign_key="reservation.id", nullable=True
+    )
     reservation: Optional["Reservation"] = Relationship(back_populates="schedule")
 
     occurrences: list["Occurrence"] = Relationship(
         back_populates="schedule", sa_relationship_kwargs={"cascade": "delete"}
     )
-

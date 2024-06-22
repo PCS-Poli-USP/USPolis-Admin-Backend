@@ -23,6 +23,7 @@ def allocate_schedule(
     schedule = occurrence_repository.allocate_schedule(schedule_id, classroom_id)
     return schedule
 
+
 @router.post("/allocate-class")
 def allocate_class(
     occurrence_repository: OccurrenceRepositoryDep,
@@ -32,13 +33,15 @@ def allocate_class(
     class_ = occurrence_repository.allocate_class(class_id, classroom_id)
     return class_
 
+
 @router.delete("/remove-schedule-allocation")
 def remove_schedule_allocation(
     occurrence_repository: OccurrenceRepositoryDep,
     schedule_id: int,
 ) -> Schedule:
     schedule = occurrence_repository.remove_schedule_allocation(schedule_id)
-    return schedule 
+    return schedule
+
 
 @router.delete("/remove-class-allocation")
 def remove_class_allocation(
