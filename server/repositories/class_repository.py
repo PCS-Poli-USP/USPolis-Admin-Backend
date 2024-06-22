@@ -37,10 +37,10 @@ class ClassRepository:
         subject = SubjectRepository.get_by_id(id=input.subject_id, session=session)
         calendars = CalendarRepository.get_by_ids(
             ids=input.calendar_ids, session=session
-        )
+        ) if input.calendar_ids else None
         new_class = Class(
             subject=subject,
-            calendars=calendars,
+            calendars=calendars if calendars else [],
             start_date=input.start_date,
             end_date=input.end_date,
             code=input.code,
