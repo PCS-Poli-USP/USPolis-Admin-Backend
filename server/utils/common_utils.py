@@ -9,7 +9,7 @@ T = TypeVar("T", bound=GenericTable)
 
 
 def compare_SQLModel_vectors_by_id(vec1: Sequence[T], vec2: Sequence[T]) -> bool:
-    """Compare by id"""
+    """Compare if two vectors of sqlmodel objects are equals by objects id"""
     if len(vec1) != len(vec2):
         return False
 

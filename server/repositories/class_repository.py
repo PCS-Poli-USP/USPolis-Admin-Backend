@@ -88,7 +88,12 @@ class ClassRepository:
             calendars = CalendarRepository.get_by_ids(
                 ids=input.calendar_ids, session=session
             )
-            updated_class.calendars = calendars
+            # Only switch calendars if not exists or are different
+            if updated_class.calendars:
+                if (not compare_SQLModel_vectors_by_id(calendars, updated_class.calendars)):
+                    updated_class.calendars = calendars
+            else:
+                updated_class.calendars = calendars
 
         if input.schedules_data:
             new_schedules = ScheduleRepository.update_class_schedules(
