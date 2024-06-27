@@ -7,6 +7,7 @@ from server.deps_overrides import DepsOverrides
 from server.exception_handlers import add_exception_handlers
 from server.routes.admin import router as AdminRouter
 from server.routes.public import router as PublicRouter
+from server.routes.restricted import router as RestrictedRouter
 
 app = FastAPI(
     title="USPolis Server",
@@ -23,6 +24,7 @@ app.add_middleware(
 )
 
 app.include_router(AdminRouter)
+app.include_router(RestrictedRouter)
 app.include_router(PublicRouter)
 
 app.dependency_overrides = DepsOverrides
