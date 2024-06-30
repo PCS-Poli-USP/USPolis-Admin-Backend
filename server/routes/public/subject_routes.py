@@ -18,14 +18,14 @@ embed = Body(..., embed=True)
 router = APIRouter(prefix="/subjects", tags=["Subjects"])
 
 
-@router.get("", response_model_by_alias=False)
+@router.get("")
 async def get_all_subjects(session: SessionDep) -> list[SubjectResponse]:
     """Get all subjects"""
     subjects = SubjectRepository.get_all(session=session)
     return SubjectResponse.from_subject_list(subjects)
 
 
-@router.get("/{subject_id}", response_model_by_alias=False)
+@router.get("/{subject_id}")
 async def get_subject(subject_id: int, session: SessionDep) -> SubjectResponse:
     """Get a subject"""
     subject = SubjectRepository.get_by_id(id=subject_id, session=session)
