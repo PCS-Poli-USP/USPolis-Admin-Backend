@@ -1,8 +1,9 @@
 from datetime import datetime
 
+from fastapi import HTTPException
+from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 
-from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.user_db_model import User
 from server.models.http.requests.classroom_request_models import ClassroomRegister
@@ -30,12 +31,11 @@ class ClassroomRepository:
     def create(
         classroom: ClassroomRegister,
         *,
-        building: Building,
         creator: User,
         session: Session,
     ) -> Classroom:
         new_classroom = Classroom(
-            building=building,
+            building_id=classroom.building_id,
             name=classroom.name,
             capacity=classroom.capacity,
             floor=classroom.floor,
@@ -49,33 +49,40 @@ class ClassroomRepository:
         return new_classroom
 
     @staticmethod
-    def get_all_on_building(*, building: Building, session: Session) -> list[Classroom]:
-        statement = select(Classroom).where(Classroom.building_id == building.id)
+    def get_all_on_buildings(
+        *, building_ids: list[int], session: Session
+    ) -> list[Classroom]:
+        statement = select(Classroom).where(
+            col(Classroom.building_id).in_(building_ids)
+        )
         classrooms = list(session.exec(statement).all())
         return classrooms
 
     @staticmethod
-    def get_by_id_on_building(
-        id: int, *, building: Building, session: Session
+    def get_by_id_on_buildings(
+        id: int, *, building_ids: list[int], session: Session
     ) -> Classroom:
         statement = (
             select(Classroom)
-            .where(Classroom.building_id == building.id)
+            .where(col(Classroom.building_id).in_(building_ids))
             .where(Classroom.id == id)
         )
-        classroom = session.exec(statement).one()
+        try:
+            classroom = session.exec(statement).one()
+        except NoResultFound:
+            raise ClassroomNotFound(id)
         return classroom
 
     @staticmethod
-    def update_on_building(
+    def update_on_buildings(
         id: int,
         classroom_in: ClassroomRegister,
         *,
-        building: Building,
+        building_ids: list[int],
         session: Session,
     ) -> Classroom:
-        classroom = ClassroomRepository.get_by_id_on_building(
-            id=id, building=building, session=session
+        classroom = ClassroomRepository.get_by_id_on_buildings(
+            id=id, building_ids=building_ids, session=session
         )
         classroom.name = classroom_in.name
         classroom.capacity = classroom_in.capacity
@@ -89,8 +96,15 @@ class ClassroomRepository:
         return classroom
 
     @staticmethod
-    def delete_on_building(id: int, *, building: Building, session: Session) -> None:
-        classroom = ClassroomRepository.get_by_id_on_building(
-            id=id, building=building, session=session
+    def delete_on_buildings(
+        id: int, *, building_ids: list[int], session: Session
+    ) -> None:
+        classroom = ClassroomRepository.get_by_id_on_buildings(
+            id=id, building_ids=building_ids, session=session
         )
         session.delete(classroom)
+
+
+class ClassroomNotFound(HTTPException):
+    def __init__(self, id: int):
+        super().__init__(status_code=404, detail=f"Classroom with id {id} not found")

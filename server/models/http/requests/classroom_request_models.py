@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 
 class ClassroomRegister(BaseModel):
+    building_id: int
     name: str
     capacity: int
     floor: int
