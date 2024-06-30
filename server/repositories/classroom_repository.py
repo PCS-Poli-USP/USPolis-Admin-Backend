@@ -91,6 +91,7 @@ class ClassroomRepository:
         classroom.accessibility = classroom_in.accessibility
         classroom.projector = classroom_in.projector
         classroom.air_conditioning = classroom_in.air_conditioning
+        classroom.building_id = classroom_in.building_id
         classroom.updated_at = datetime.now()
         session.add(classroom)
         return classroom

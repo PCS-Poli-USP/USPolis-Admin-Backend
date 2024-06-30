@@ -53,6 +53,7 @@ class ClassroomRepositoryAdapter:
         classroom_id: int,
         classroom_in: ClassroomRegister,
     ) -> Classroom:
+        building_permission_checker(self.user, classroom_in.building_id)
         classroom = ClassroomRepository.update_on_buildings(
             id=classroom_id,
             building_ids=self.owned_building_ids,
