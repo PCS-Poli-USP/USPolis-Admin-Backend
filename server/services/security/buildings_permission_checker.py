@@ -25,7 +25,6 @@ def building_permission_checker(
         __building_list_permission_checker(user, building)
 
 
-
 def __building_id_permission_checker(user: User, building_id: int) -> None:
     if user.buildings is None or building_id not in [
         building.id for building in user.buildings
@@ -37,10 +36,19 @@ def __building_obj_permission_checker(user: User, building: Building) -> None:
     if user.buildings is None or building not in user.buildings:
         raise ForbiddenBuildingAccess([building.id])  # type: ignore
 
-def __building_list_permission_checker(user: User, buildings: list[int] | list[Building]) -> None:
-    building_ids = [building.id if isinstance(building, Building) else building for building in buildings]
-    if user.buildings is None or not set(building_ids).issubset(set([building.id for building in user.buildings])):
-        raise ForbiddenBuildingAccess(building_ids) # type: ignore
+
+def __building_list_permission_checker(
+    user: User, buildings: list[int] | list[Building]
+) -> None:
+    building_ids = [
+        building.id if isinstance(building, Building) else building
+        for building in buildings
+    ]
+    if user.buildings is None or not set(building_ids).issubset(
+        set([building.id for building in user.buildings])
+    ):
+        raise ForbiddenBuildingAccess(building_ids)  # type: ignore
+
 
 class ForbiddenBuildingAccess(HTTPException):
     def __init__(self, building_ids: list[int]):

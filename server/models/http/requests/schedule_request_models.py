@@ -7,6 +7,7 @@ from pydantic import (
     model_validator,
 )
 
+from server.utils.enums.month_week import MonthWeek
 from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.week_day import WeekDay
 
@@ -30,6 +31,7 @@ class ScheduleRegister(ScheduleBase):
     reservation_id: int | None = None
     classroom_id: int | None = None
     week_day: WeekDay | None = None
+    month_week: MonthWeek | None = None
     dates: list[datetime] | None = None
 
     @model_validator(mode="after")

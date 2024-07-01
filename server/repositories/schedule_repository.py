@@ -116,7 +116,6 @@ class ScheduleRepository:
     def update_class_schedules(
         *, class_: Class, input: list[ScheduleUpdate], session: Session
     ) -> list[Schedule]:
-
         old_schedules = ScheduleUtils.sort_schedules(class_.schedules)
         schedules_inputs = ScheduleUtils.sort_schedules_input(input)
         new_schedules: list[Schedule] = []
@@ -144,7 +143,7 @@ class ScheduleRepository:
             else:
                 new_schedules.append(schedule)
 
-        if (old_size < new_size):
+        if old_size < new_size:
             # Add the rest of schedules
             for i in range(len(new_schedules), new_size):
                 schedule_input = schedules_inputs[i]

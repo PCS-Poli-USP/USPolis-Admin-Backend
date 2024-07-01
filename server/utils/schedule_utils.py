@@ -5,11 +5,27 @@ from server.models.http.requests.schedule_request_models import ScheduleUpdate
 class ScheduleUtils:
     @staticmethod
     def sort_schedules(schedules: list[Schedule]) -> list[Schedule]:
-        return sorted(schedules, key=lambda schedule: (schedule.recurrence.value, schedule.start_time, schedule.end_time))
-    
+        return sorted(
+            schedules,
+            key=lambda schedule: (
+                schedule.recurrence.value,
+                schedule.start_time,
+                schedule.end_time,
+            ),
+        )
+
     @staticmethod
-    def sort_schedules_input(schedules_inputs: list[ScheduleUpdate]) -> list[ScheduleUpdate]:
-        return sorted(schedules_inputs, key=lambda schedule: (schedule.recurrence.value, schedule.start_time, schedule.end_time))
+    def sort_schedules_input(
+        schedules_inputs: list[ScheduleUpdate],
+    ) -> list[ScheduleUpdate]:
+        return sorted(
+            schedules_inputs,
+            key=lambda schedule: (
+                schedule.recurrence.value,
+                schedule.start_time,
+                schedule.end_time,
+            ),
+        )
 
     @staticmethod
     def has_schedule_diff(schedule: Schedule, schedule_input: ScheduleUpdate) -> bool:

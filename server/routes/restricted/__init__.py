@@ -5,7 +5,9 @@ from server.routes.restricted.building_routes import router as BuildingRouter
 from server.routes.restricted.calendar_routes import router as CalendarRouter
 from server.routes.restricted.class_routes import router as ClassRouter
 from server.routes.restricted.classroom_routes import router as ClassroomRouter
-from server.routes.restricted.holiday_category_routes import router as HolidayCateryRouter
+from server.routes.restricted.holiday_category_routes import (
+    router as HolidayCateryRouter,
+)
 from server.routes.restricted.holiday_routes import router as HolidayRouter
 from server.routes.restricted.institutional_event_routes import (
     router as InstitutionalEventRouter,
