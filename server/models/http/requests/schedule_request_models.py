@@ -1,5 +1,5 @@
 from datetime import datetime, time
-from typing import Any, Self
+from typing import Self
 
 from fastapi import HTTPException, status
 from pydantic import (
@@ -16,32 +16,11 @@ class ScheduleBase(BaseModel):
 
     start_date: datetime
     end_date: datetime
+    start_time: time
+    end_time: time
     recurrence: Recurrence = Recurrence.NONE
-    skip_exceptions: bool = False
     all_day: bool = False
-    allocated: bool | None = None
-
-
-class ScheduleManyRegister(ScheduleBase):
-    """Register Many Schedules"""
-
-    week_days: list[WeekDay]
-    start_times: list[time]
-    end_times: list[time]
-
-    @model_validator(mode="before")
-    def check_fields(cls, values: dict[str, Any]) -> dict[str, Any]:
-        week_days: list[WeekDay] = values.get("week_days", [])
-        start_times: list[time] = values.get("start_times", [])
-        end_times: list[time] = values.get("end_times", [])
-
-        if not week_days or not start_times or not end_times:
-            raise ValueError("Schedule info must not be empty")
-
-        if len(week_days) != len(start_times) or len(week_days) != len(end_times):
-            raise ValueError("Schedule allocation info must be with same size")
-
-        return values
+    allocated: bool = False
 
 
 class ScheduleRegister(ScheduleBase):
@@ -51,17 +30,19 @@ class ScheduleRegister(ScheduleBase):
     reservation_id: int | None = None
     classroom_id: int | None = None
     week_day: WeekDay | None = None
-    start_time: time
-    end_time: time
     dates: list[datetime] | None = None
 
     @model_validator(mode="after")
-    def check_class_id_and_reservation_id(self) -> Self:
+    def check_class_body(self) -> Self:
         class_id = self.class_id
         reservation_id = self.class_id
         week_day = self.week_day
         recurrence = self.recurrence
         dates = self.dates
+        allocated = self.allocated
+        all_day = self.all_day
+        classroom_id = self.classroom_id
+        reservation_id = self.reservation_id
 
         # if class_id is None and reservation_id is None:
         #     raise ValueError("Class Id and Reservation Id cannot be both empty")
@@ -75,6 +56,11 @@ class ScheduleRegister(ScheduleBase):
         if dates is not None:
             if recurrence != Recurrence.CUSTOM:
                 raise ScheduleInvalidData("Dates", "Recurrence")
+        if allocated:
+            if classroom_id is None and reservation_id is None:
+                raise ScheduleInvalidData(
+                    "Allocated", "Classroom ID and Reservation ID"
+                )
 
         return self
 

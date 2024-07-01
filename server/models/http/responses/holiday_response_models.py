@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from pydantic import BaseModel
 
 from server.models.database.holiday_db_model import Holiday
@@ -7,7 +7,7 @@ from server.models.database.holiday_db_model import Holiday
 class HolidayResponse(BaseModel):
     id: int
     category: str
-    date: datetime
+    date: date
     updated_at: datetime
     created_by: str
 

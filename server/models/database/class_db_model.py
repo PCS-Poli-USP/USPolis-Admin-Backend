@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import Column, String, UniqueConstraint
 from sqlalchemy.dialects import postgresql
@@ -36,10 +36,13 @@ class Class(SQLModel, table=True):
     full_allocated: bool = Field(default=False)
     updated_at: datetime = Field(default=datetime.now())
 
-    calendars: list["Calendar"] = Relationship(
-        back_populates="classes", link_model=ClassCalendarLink
+    calendars: Optional[list["Calendar"]] = Relationship(
+        back_populates="classes",
+        link_model=ClassCalendarLink,
     )
-    schedules: list["Schedule"] = Relationship(back_populates="class_")
+    schedules: list["Schedule"] = Relationship(
+        back_populates="class_", sa_relationship_kwargs={"cascade": "delete"}
+    )
 
     subject_id: int | None = Field(
         foreign_key="subject.id", index=True, default=None, nullable=False

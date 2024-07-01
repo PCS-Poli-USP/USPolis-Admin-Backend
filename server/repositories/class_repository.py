@@ -8,6 +8,8 @@ from server.repositories.calendar_repository import CalendarRepository
 from server.repositories.schedule_repository import ScheduleRepository
 from server.repositories.subject_repository import SubjectRepository
 
+from server.utils.common_utils import compare_SQLModel_vectors_by_id
+
 
 class ClassRepository:
     @staticmethod
@@ -35,12 +37,14 @@ class ClassRepository:
     @staticmethod
     def create(*, input: ClassRegister, session: Session) -> Class:
         subject = SubjectRepository.get_by_id(id=input.subject_id, session=session)
-        calendars = CalendarRepository.get_by_ids(
-            ids=input.calendar_ids, session=session
+        calendars = (
+            CalendarRepository.get_by_ids(ids=input.calendar_ids, session=session)
+            if input.calendar_ids
+            else None
         )
         new_class = Class(
             subject=subject,
-            calendars=calendars,
+            calendars=calendars if calendars else [],
             start_date=input.start_date,
             end_date=input.end_date,
             code=input.code,
@@ -80,8 +84,22 @@ class ClassRepository:
             subject = SubjectRepository.get_by_id(id=input.subject_id, session=session)
             updated_class.subject = subject
 
+        if input.calendar_ids:
+            calendars = CalendarRepository.get_by_ids(
+                ids=input.calendar_ids, session=session
+            )
+            # Only switch calendars if not exists or are different
+            if updated_class.calendars:
+                if (not compare_SQLModel_vectors_by_id(calendars, updated_class.calendars)):
+                    updated_class.calendars = calendars
+            else:
+                updated_class.calendars = calendars
+
         if input.schedules_data:
-            pass  # TODO
+            new_schedules = ScheduleRepository.update_class_schedules(
+                class_=updated_class, input=input.schedules_data, session=session
+            )
+            updated_class.schedules = new_schedules
 
         session.add(updated_class)
         session.commit()
@@ -91,6 +109,14 @@ class ClassRepository:
     def delete(*, id: int, session: Session) -> None:
         deleted_class = ClassRepository.get_by_id(id=id, session=session)
         session.delete(deleted_class)
+        session.commit()
+
+    @staticmethod
+    def delete_many(*, ids: list[int], session: Session) -> None:
+        statement = select(Class).where(col(Class.id).in_(ids))
+        classes = session.exec(statement).all()
+        for class_ in classes:
+            session.delete(class_)
         session.commit()
 
 
