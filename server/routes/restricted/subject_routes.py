@@ -46,6 +46,23 @@ async def crawl_subject(
     )
 
 
+@router.post("/crawl")
+async def crawl_subjects(
+    building: BuildingDep, session: SessionDep, subjects_list: list[str] = embed
+) -> list[Subject]:
+    result: list[Subject] = []
+    for subject_code in subjects_list:
+        contents = JupiterCrawlerTestUtils.retrieve_html_contents()
+        content = contents[subject_code]
+        subject = await JupiterCrawler.crawl_subject_static(subject_code, content)
+        subject.buildings = [building]
+        new_subject = SubjectRepository.crawler_create(
+            subject=subject, session=session, building=building
+        )
+        result.append(new_subject)
+    return result
+
+
 @router.post("")
 async def create_subject(
     subject_input: SubjectRegister, session: SessionDep
