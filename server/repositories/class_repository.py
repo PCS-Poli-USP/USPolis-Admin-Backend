@@ -90,7 +90,9 @@ class ClassRepository:
             )
             # Only switch calendars if not exists or are different
             if updated_class.calendars:
-                if (not compare_SQLModel_vectors_by_id(calendars, updated_class.calendars)):
+                if not compare_SQLModel_vectors_by_id(
+                    calendars, updated_class.calendars
+                ):
                     updated_class.calendars = calendars
             else:
                 updated_class.calendars = calendars

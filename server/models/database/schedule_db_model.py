@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from server.models.database.classroom_db_model import Classroom
     from server.models.database.occurrence_db_model import Occurrence
 
+from server.utils.enums.month_week import MonthWeek
 from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.week_day import WeekDay
 
@@ -23,7 +24,7 @@ class Schedule(SQLModel, table=True):
     week_day: WeekDay | None = Field(nullable=True, default=None)
     allocated: bool = Field(default=False)
     recurrence: Recurrence = Field()
-    month_week: int | None = Field(default=None, nullable=True)
+    month_week: MonthWeek | None = Field(default=None, nullable=True)
     all_day: bool = Field(default=False)
 
     class_id: int | None = Field(foreign_key="class.id", nullable=True, default=None)

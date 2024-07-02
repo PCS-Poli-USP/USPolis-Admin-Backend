@@ -3,7 +3,6 @@ from httpx import delete
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 
-from server.models.database.building_db_model import Building
 from server.models.database.class_db_model import Class
 from server.models.database.schedule_db_model import Schedule
 from server.models.http.requests.occurrence_request_models import OccurenceManyRegister
@@ -46,8 +45,8 @@ class ScheduleRepository:
         return schedule
 
     @staticmethod
-    def get_by_id_on_building(
-        *, schedule_id: int, building: Building, session: Session
+    def get_by_id_on_buildings(
+        *, schedule_id: int, owned_building_ids: list[int], session: Session
     ) -> Schedule:
         statement = select(Schedule).where(Schedule.id == schedule_id)
 
@@ -57,7 +56,8 @@ class ScheduleRepository:
             raise ScheduleNotFound()
 
         buildings = schedule.class_.subject.buildings
-        if building.id not in [building.id for building in buildings]:
+        building_ids = [building.id for building in buildings]
+        if not set(building_ids).issubset(set(owned_building_ids)):
             raise ScheduleNotFound()
 
         return schedule
@@ -70,6 +70,7 @@ class ScheduleRepository:
             start_date=input.start_date,
             end_date=input.end_date,
             recurrence=input.recurrence,
+            month_week=input.month_week,
             all_day=input.all_day,
             allocated=input.allocated if input.allocated else False,
             week_day=input.week_day,
@@ -116,7 +117,6 @@ class ScheduleRepository:
     def update_class_schedules(
         *, class_: Class, input: list[ScheduleUpdate], session: Session
     ) -> list[Schedule]:
-
         old_schedules = ScheduleUtils.sort_schedules(class_.schedules)
         schedules_inputs = ScheduleUtils.sort_schedules_input(input)
         new_schedules: list[Schedule] = []
@@ -144,7 +144,7 @@ class ScheduleRepository:
             else:
                 new_schedules.append(schedule)
 
-        if (old_size < new_size):
+        if old_size < new_size:
             # Add the rest of schedules
             for i in range(len(new_schedules), new_size):
                 schedule_input = schedules_inputs[i]
