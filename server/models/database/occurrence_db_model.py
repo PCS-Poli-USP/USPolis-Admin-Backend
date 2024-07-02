@@ -15,7 +15,6 @@ class Occurrence(SQLModel, table=True):
     end_time: time = Field(nullable=False)
     date: datetime_date = Field()
 
-    # TODO: pensar se não é ruim que tenham ocorrencias sem classroom
     classroom_id: int | None = Field(
         default=None, foreign_key="classroom.id", nullable=True
     )

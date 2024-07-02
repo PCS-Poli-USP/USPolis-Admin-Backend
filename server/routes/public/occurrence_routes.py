@@ -1,14 +1,14 @@
-from typing import Annotated, Any
+from typing import Any
 
 from fastapi import APIRouter, Depends
 
 from server.deps.authenticate import building_authenticate
+from server.deps.conflict_checker import ConflictCheckerDep
 from server.deps.repository_adapters.occurrence_repository_adapter import (
     OccurrenceRepositoryDep,
 )
 from server.models.database.class_db_model import Class
 from server.models.database.schedule_db_model import Schedule
-from server.services.conflict_checker import ConflictChecker
 
 router = APIRouter(
     prefix="/occurrences",
@@ -57,7 +57,7 @@ def remove_class_allocation(
 
 @router.get("/get-all-occurrences-grouped-by-classroom")
 def get_all_occurrences_grouped_by_classroom(
-    conflict_checker: Annotated[ConflictChecker, Depends()],
+    conflict_checker: ConflictCheckerDep,
 ) -> Any:
     occurences = conflict_checker.conflicting_occurrences_by_classroom()
     return occurences
