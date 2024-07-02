@@ -3,7 +3,6 @@ from httpx import delete
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 
-from server.models.database.building_db_model import Building
 from server.models.database.class_db_model import Class
 from server.models.database.schedule_db_model import Schedule
 from server.models.http.requests.occurrence_request_models import OccurenceManyRegister
@@ -46,8 +45,8 @@ class ScheduleRepository:
         return schedule
 
     @staticmethod
-    def get_by_id_on_building(
-        *, schedule_id: int, building: Building, session: Session
+    def get_by_id_on_buildings(
+        *, schedule_id: int, owned_building_ids: list[int], session: Session
     ) -> Schedule:
         statement = select(Schedule).where(Schedule.id == schedule_id)
 
@@ -57,7 +56,8 @@ class ScheduleRepository:
             raise ScheduleNotFound()
 
         buildings = schedule.class_.subject.buildings
-        if building.id not in [building.id for building in buildings]:
+        building_ids = [building.id for building in buildings]
+        if not set(building_ids).issubset(set(owned_building_ids)):
             raise ScheduleNotFound()
 
         return schedule
