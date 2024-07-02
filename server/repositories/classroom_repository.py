@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 
@@ -108,4 +108,4 @@ class ClassroomRepository:
 
 class ClassroomNotFound(HTTPException):
     def __init__(self, id: int):
-        super().__init__(status_code=404, detail=f"Classroom with id {id} not found")
+        super().__init__(status_code=status.HTTP_404_NOT_FOUND, detail=f"Classroom with id {id} not found")
