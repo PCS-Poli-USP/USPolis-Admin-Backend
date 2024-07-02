@@ -4,6 +4,7 @@ from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 
 from server.models.database.class_db_model import Class
+from server.models.database.reservation_db_model import Reservation
 from server.models.database.schedule_db_model import Schedule
 from server.models.http.requests.occurrence_request_models import OccurenceManyRegister
 from server.models.http.requests.schedule_request_models import (
@@ -54,11 +55,16 @@ class ScheduleRepository:
             schedule = session.exec(statement).one()
         except NoResultFound:
             raise ScheduleNotFound()
-
-        buildings = schedule.class_.subject.buildings
-        building_ids = [building.id for building in buildings]
-        if not set(building_ids).issubset(set(owned_building_ids)):
-            raise ScheduleNotFound()
+        
+        if schedule.class_:
+            buildings = schedule.class_.subject.buildings
+            building_ids = [building.id for building in buildings]
+            if not set(building_ids).issubset(set(owned_building_ids)):
+                raise ScheduleNotFound()
+        elif schedule.reservation:
+            building = schedule.reservation.classroom.building
+            if building.id not in owned_building_ids:
+                raise ScheduleNotFound()
 
         return schedule
 
@@ -100,6 +106,27 @@ class ScheduleRepository:
             session.add(new_schedule)
             session.refresh(new_schedule)
 
+        return new_schedule
+
+    @staticmethod
+    def create_with_reservation(*, reservation: Reservation, input: ScheduleRegister, session: Session) -> Schedule:
+        new_schedule = Schedule(
+            start_date=input.start_date,
+            end_date=input.end_date,
+            recurrence=input.recurrence,
+            month_week=input.month_week,
+            all_day=input.all_day,
+            allocated=input.allocated if input.allocated else False,
+            week_day=input.week_day,
+            start_time=input.start_time,
+            end_time=input.end_time,
+            class_id=None,
+            class_=None,
+            reservation_id=reservation.id,
+            reservation=reservation,
+            classroom_id=input.classroom_id,
+        )
+        session.add(new_schedule)
         return new_schedule
 
     @staticmethod
