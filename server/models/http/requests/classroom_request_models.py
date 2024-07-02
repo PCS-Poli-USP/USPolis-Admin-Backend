@@ -11,5 +11,6 @@ class ClassroomRegister(BaseModel):
     projector: bool
     air_conditioning: bool
 
+
 class ClassroomUpdate(ClassroomRegister):
     pass

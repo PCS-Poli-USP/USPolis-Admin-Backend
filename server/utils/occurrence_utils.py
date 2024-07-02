@@ -41,7 +41,9 @@ class OccurrenceUtils:
         first_week_day_date = first_date + timedelta(days=days_to_first_week_day)
         if month_week == MonthWeek.LAST.value:
             last_week_day_date = first_week_day_date + timedelta(weeks=4)
-            if last_week_day_date.month > month or (last_week_day_date.month == 1 and month == 12):
+            if last_week_day_date.month > month or (
+                last_week_day_date.month == 1 and month == 12
+            ):
                 last_week_day_date -= timedelta(weeks=1)
             return last_week_day_date
         else:
