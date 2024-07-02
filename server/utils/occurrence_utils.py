@@ -81,7 +81,7 @@ class OccurrenceUtils:
                     week_day_date = OccurrenceUtils.get_weekday_date_for_month_week(
                         current_date.year, current_date.month, week_day, month_week
                     )
-                    if week_day_date <= end_date:
+                    if start_date <= week_day_date <= end_date:
                         dates.append(week_day_date)
                     if current_date.month == 12:
                         current_date = date(current_date.year + 1, 1, 1)
@@ -102,10 +102,10 @@ class OccurrenceUtils:
 
 if __name__ == "__main__":
     dates = OccurrenceUtils._dates_for_recurrence(
-        WeekDay.MONDAY.value,
+        WeekDay.WEDNESDAY.value,
         Recurrence.MONTHLY,
-        date(2024, 1, 1),
-        date(2024, 1, 7),
-        MonthWeek.SECOND.value,
+        date(2024, 6, 30),
+        date(2024, 8, 10),
+        MonthWeek.THIRD.value,
     )
     print(dates)

@@ -10,3 +10,6 @@ class ClassroomRegister(BaseModel):
     accessibility: bool
     projector: bool
     air_conditioning: bool
+
+class ClassroomUpdate(ClassroomRegister):
+    pass

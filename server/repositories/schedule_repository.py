@@ -70,6 +70,7 @@ class ScheduleRepository:
             start_date=input.start_date,
             end_date=input.end_date,
             recurrence=input.recurrence,
+            month_week=input.month_week,
             all_day=input.all_day,
             allocated=input.allocated if input.allocated else False,
             week_day=input.week_day,
