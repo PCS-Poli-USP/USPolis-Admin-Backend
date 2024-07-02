@@ -23,3 +23,29 @@ class Occurrence(SQLModel, table=True):
 
     schedule_id: int | None = Field(default=None, index=True, foreign_key="schedule.id")
     schedule: "Schedule" = Relationship(back_populates="occurrences")
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, Occurrence):
+            return self.id == other.id
+        return False
+
+    def __hash__(self) -> int:
+        return hash(self.id)
+
+    def conflicts_with(self, other: "Occurrence") -> bool:
+        return (
+            self.date == other.date
+            and self.classroom_id == other.classroom_id
+            and (
+                self.start_time <= other.start_time <= self.end_time
+                or other.start_time <= self.start_time <= other.end_time
+                or (
+                    self.start_time <= other.start_time
+                    and self.end_time >= other.end_time
+                )
+                or (
+                    other.start_time <= self.start_time
+                    and other.end_time >= self.end_time
+                )
+            )
+        )
