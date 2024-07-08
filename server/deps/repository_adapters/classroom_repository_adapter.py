@@ -29,6 +29,12 @@ class ClassroomRepositoryAdapter:
             building_ids=self.owned_building_ids, session=self.session
         )
 
+    def get_all_on_building(self, building_id: int) -> list[Classroom]:
+        building_permission_checker(self.user, building_id)
+        return ClassroomRepository.get_all_on_buildings(
+            building_ids=[building_id], session=self.session
+        )
+
     def get_by_id(self, id: int) -> Classroom:
         return ClassroomRepository.get_by_id_on_buildings(
             building_ids=self.owned_building_ids, id=id, session=self.session
@@ -38,7 +44,7 @@ class ClassroomRepositoryAdapter:
         self,
         classroom: ClassroomRegister,
     ) -> Classroom:
-        building_permission_checker(self.user, classroom.building_id) 
+        building_permission_checker(self.user, classroom.building_id)
         new_classroom = ClassroomRepository.create(
             classroom=classroom,
             creator=self.user,
