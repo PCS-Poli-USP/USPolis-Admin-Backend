@@ -1,20 +1,17 @@
 from typing import Any
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Response
 
-from server.deps.authenticate import building_authenticate
 from server.deps.conflict_checker import ConflictCheckerDep
 from server.deps.repository_adapters.occurrence_repository_adapter import (
     OccurrenceRepositoryDep,
 )
 from server.models.database.class_db_model import Class
 from server.models.database.schedule_db_model import Schedule
+from server.models.http.requests.allocate_request_models import AllocateSchedule
+from server.models.http.responses.generic_responses import NoContent
 
-router = APIRouter(
-    prefix="/occurrences",
-    tags=["Occurrences"],
-    dependencies=[Depends(building_authenticate)],
-)
+router = APIRouter(prefix="/occurrences", tags=["Occurrences"])
 
 
 @router.post("/allocate-schedule")
@@ -25,6 +22,15 @@ def allocate_schedule(
 ) -> Schedule:
     schedule = occurrence_repository.allocate_schedule(schedule_id, classroom_id)
     return schedule
+
+
+@router.post("/allocate-schedule-many")
+def allocate_schedule_many(
+    occurrence_repository: OccurrenceRepositoryDep,
+    schedule_classroom_pairs: list[AllocateSchedule],
+) -> Response:
+    occurrence_repository.allocate_schedule_many(schedule_classroom_pairs)
+    return NoContent
 
 
 @router.post("/allocate-class")

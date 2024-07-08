@@ -61,14 +61,14 @@ class ConflictChecker:
     def __count_conflicts_schedule_in_classroom(
         self, schedule: Schedule, classroom: Classroom
     ) -> int:
-        if schedule.classroom_id is not None and schedule.classroom_id == classroom.id:
-            return 0
         count = 0
         occurrences_to_be_generated = OccurrenceUtils.occurrences_from_schedules(
             schedule
         )
         for classroom_occurrence in classroom.occurrences:
             for schedule_occurrence in occurrences_to_be_generated:
+                if classroom_occurrence.schedule_id == schedule.id:
+                    continue
                 schedule_occurrence.classroom_id = classroom.id
                 if classroom_occurrence.conflicts_with(schedule_occurrence):
                     count += 1

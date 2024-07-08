@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING
 from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, Relationship, SQLModel
 
+from server.utils.must_be_int import must_be_int
+
 if TYPE_CHECKING:
     from server.models.database.building_db_model import Building
     from server.models.database.occurrence_db_model import Occurrence
@@ -42,11 +44,13 @@ class Classroom(ClassroomBase, table=True):
 
 
 class ClassroomWithConflictsIndicator(ClassroomBase):
+    id: int
     conflicts: int = 0
 
     @classmethod
     def from_classroom(cls, classroom: Classroom) -> "ClassroomWithConflictsIndicator":
         return cls(
+            id=must_be_int(classroom.id),
             name=classroom.name,
             capacity=classroom.capacity,
             floor=classroom.floor,

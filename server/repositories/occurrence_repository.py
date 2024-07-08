@@ -27,6 +27,8 @@ class OccurrenceRepository:
         schedule.occurrences = occurrences
         classroom.occurrences.extend(occurrences)
 
+        schedule.classroom = classroom
+
         schedule.allocated = True
 
         session.add(schedule)

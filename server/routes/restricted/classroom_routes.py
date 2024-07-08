@@ -34,7 +34,7 @@ async def get_classroom(
 
 
 @router.get(
-    "/with-conflicts-count/{building_id}/{schedule_id}"
+    "/with-conflict-count/{building_id}/{schedule_id}"
 )
 async def get_classrooms_with_conflicts_count(
     building_id: int, schedule_id: int, conflict_checker: ConflictCheckerDep
