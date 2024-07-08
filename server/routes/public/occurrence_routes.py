@@ -55,7 +55,7 @@ def remove_class_allocation(
     return class_
 
 
-@router.get("/get-all-occurrences-grouped-by-classroom")
+@router.get("/get-all-conflicting-occurrences")
 def get_all_occurrences_grouped_by_classroom(
     conflict_checker: ConflictCheckerDep,
 ) -> Any:

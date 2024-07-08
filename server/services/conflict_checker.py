@@ -12,6 +12,7 @@ from server.models.database.classroom_db_model import (
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.schedule_db_model import Schedule
 from server.utils.must_be_int import must_be_int
+from server.utils.occurrence_utils import OccurrenceUtils
 
 Group = set[Occurrence]
 
@@ -44,8 +45,6 @@ class ConflictChecker:
         self, building_id: int, schedule_id: int
     ) -> list[ClassroomWithConflictsIndicator]:
         schedule = self.schedule_repository.get_by_id(schedule_id)
-        # TODO: gerar occurences para schedule (independente de ela já ter), mas NÃO ASSIGNAR, servirá apenas para a checagem, pq se for alocar mesmo vai dar overwrite
-
         classrooms = self.classroom_repository.get_all_on_building(building_id)
 
         classrooms_with_conflicts: list[ClassroomWithConflictsIndicator] = []
@@ -65,8 +64,12 @@ class ConflictChecker:
         if schedule.classroom_id is not None and schedule.classroom_id == classroom.id:
             return 0
         count = 0
+        occurrences_to_be_generated = OccurrenceUtils.occurrences_from_schedules(
+            schedule
+        )
         for classroom_occurrence in classroom.occurrences:
-            for schedule_occurrence in schedule.occurrences:
+            for schedule_occurrence in occurrences_to_be_generated:
+                schedule_occurrence.classroom_id = classroom.id
                 if classroom_occurrence.conflicts_with(schedule_occurrence):
                     count += 1
         return count
