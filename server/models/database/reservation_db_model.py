@@ -15,7 +15,7 @@ class Reservation(SQLModel, table=True):
     id: int | None = Field(primary_key=True, default=None)
     name: str = Field()
     type: ReservationType = Field()
-    description: str = Field()
+    description: str | None = Field(nullable=True, default=None)
     updated_at: datetime = Field(default=datetime.now())
 
     classroom_id: int | None = Field(

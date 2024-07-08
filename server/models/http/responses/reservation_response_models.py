@@ -11,7 +11,7 @@ class ReservationResponseBase(BaseModel):
     id: int
     name: str
     type: ReservationType
-    description: str
+    description: str | None
     updated_at: datetime
 
 
