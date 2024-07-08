@@ -38,7 +38,7 @@ class ClassroomRepositoryAdapter:
         self,
         classroom: ClassroomRegister,
     ) -> Classroom:
-        building_permission_checker(self.user, classroom.building_id) 
+        building_permission_checker(self.user, classroom.building_id)
         new_classroom = ClassroomRepository.create(
             classroom=classroom,
             creator=self.user,

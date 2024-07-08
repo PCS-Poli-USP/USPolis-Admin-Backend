@@ -1,4 +1,3 @@
-
 from datetime import date, time
 
 from pydantic import BaseModel
@@ -17,7 +16,6 @@ class ScheduleResponseBase(BaseModel):
     end_date: date
     start_time: time
     end_time: time
-    skip_exceptions: bool
     allocated: bool
     recurrence: Recurrence
     all_day: bool
@@ -42,12 +40,13 @@ class ScheduleResponse(ScheduleResponseBase):
         return cls(
             id=schedule.id,
             week_day=schedule.week_day,
-            dates=[occurrence.date for occurrence in schedule.occurrences] if schedule.occurrences else None,
+            dates=[occurrence.date for occurrence in schedule.occurrences]
+            if schedule.occurrences
+            else None,
             start_date=schedule.start_date,
             end_date=schedule.end_date,
             start_time=schedule.start_time,
             end_time=schedule.end_time,
-            skip_exceptions=schedule.skip_exceptions,
             allocated=schedule.allocated,
             recurrence=schedule.recurrence,
             all_day=schedule.all_day,
