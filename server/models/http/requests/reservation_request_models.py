@@ -2,13 +2,13 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from server.models.http.requests.schedule_request_models import ScheduleRegister, ScheduleUpdate
+from server.utils.enums.reservation_type import ReservationType
 
 
 class ReservationBase(BaseModel):
     name: str
-    type: str
+    type: ReservationType
     description: str
-    updated_at: datetime
     classroom_id: int
 
 

@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING
 
 from sqlmodel import Relationship, SQLModel, Field
 
+from server.utils.enums.reservation_type import ReservationType
+
 if TYPE_CHECKING:
     from server.models.database.classroom_db_model import Classroom
     from server.models.database.schedule_db_model import Schedule
@@ -12,7 +14,7 @@ if TYPE_CHECKING:
 class Reservation(SQLModel, table=True):
     id: int | None = Field(primary_key=True, default=None)
     name: str
-    type: str
+    type: ReservationType
     description: str
     updated_at: datetime
 
