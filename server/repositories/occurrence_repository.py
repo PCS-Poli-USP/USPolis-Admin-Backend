@@ -44,6 +44,7 @@ class OccurrenceRepository:
         for occurrence in schedule.occurrences:
             session.delete(occurrence)
         schedule.allocated = False
+        schedule.classroom_id = None
         session.add(schedule)
 
     @staticmethod

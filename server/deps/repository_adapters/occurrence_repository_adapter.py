@@ -48,9 +48,18 @@ class OccurrenceRepositoryAdapter:
         self, schedule_classroom_pairs: list[AllocateSchedule]
     ) -> None:
         for pair in schedule_classroom_pairs:
+            schedule = self.schedule_repo.get_by_id(pair.schedule_id)
+            building_permission_checker(self.user, schedule.class_.subject.buildings)
+
+            if pair.classroom_id == -1:
+                OccurrenceRepository.remove_schedule_allocation(
+                    schedule=schedule, session=self.session
+                )
+                continue
+
             classroom = self.classroom_repo.get_by_id(pair.classroom_id)
             building_permission_checker(self.user, must_be_int(classroom.building_id))
-            schedule = self.schedule_repo.get_by_id(pair.schedule_id)
+
             OccurrenceRepository.allocate_schedule(
                 schedule=schedule, classroom=classroom, session=self.session
             )
