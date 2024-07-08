@@ -13,10 +13,10 @@ if TYPE_CHECKING:
 
 class Reservation(SQLModel, table=True):
     id: int | None = Field(primary_key=True, default=None)
-    name: str
-    type: ReservationType
-    description: str
-    updated_at: datetime
+    name: str = Field()
+    type: ReservationType = Field()
+    description: str = Field()
+    updated_at: datetime = Field(default=datetime.now())
 
     classroom_id: int | None = Field(
         default=None, index=True, foreign_key="classroom.id", nullable=False
