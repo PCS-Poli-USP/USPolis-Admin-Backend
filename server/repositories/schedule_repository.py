@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+from httpx import delete
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 
@@ -9,7 +10,9 @@ from server.models.http.requests.schedule_request_models import (
     ScheduleRegister,
     ScheduleUpdate,
 )
+from server.repositories.classroom_repository import ClassroomRepository
 from server.repositories.occurrence_repository import OccurrenceRepository
+from server.utils.schedule_utils import ScheduleUtils
 
 
 class ScheduleRepository:
@@ -67,7 +70,7 @@ class ScheduleRepository:
             start_date=input.start_date,
             end_date=input.end_date,
             recurrence=input.recurrence,
-            skip_exceptions=input.skip_exceptions,
+            month_week=input.month_week,
             all_day=input.all_day,
             allocated=input.allocated if input.allocated else False,
             week_day=input.week_day,
@@ -95,7 +98,6 @@ class ScheduleRepository:
             )
             new_schedule.occurrences = occurences
             session.add(new_schedule)
-            session.commit()
             session.refresh(new_schedule)
 
         return new_schedule
@@ -112,12 +114,59 @@ class ScheduleRepository:
         ]
 
     @staticmethod
-    def update(*, input: ScheduleUpdate, session: Session) -> None:
-        pass
+    def update_class_schedules(
+        *, class_: Class, input: list[ScheduleUpdate], session: Session
+    ) -> list[Schedule]:
+        old_schedules = ScheduleUtils.sort_schedules(class_.schedules)
+        schedules_inputs = ScheduleUtils.sort_schedules_input(input)
+        new_schedules: list[Schedule] = []
+        old_size = len(old_schedules)
+        new_size = len(schedules_inputs)
+
+        range_size = min(old_size, new_size)
+        for i in range(range_size):
+            schedule = old_schedules[i]
+            schedule_input = schedules_inputs[i]
+
+            if ScheduleUtils.has_schedule_diff(schedule, schedules_inputs[i]):
+                session.delete(schedule)
+                new_schedule = ScheduleRepository.create_with_class(
+                    class_input=class_, input=schedule_input, session=session
+                )
+                if schedule_input.allocated and schedule_input.classroom_id:
+                    classroom = ClassroomRepository.get_by_id(
+                        id=schedule_input.classroom_id, session=session
+                    )
+                    OccurrenceRepository.allocate_schedule(
+                        schedule=new_schedule, classroom=classroom, session=session
+                    )
+                new_schedules.append(new_schedule)
+            else:
+                new_schedules.append(schedule)
+
+        if old_size < new_size:
+            # Add the rest of schedules
+            for i in range(len(new_schedules), new_size):
+                schedule_input = schedules_inputs[i]
+                new_schedule = ScheduleRepository.create_with_class(
+                    class_input=class_, input=schedule_input, session=session
+                )
+                if schedule_input.allocated and schedule_input.classroom_id:
+                    classroom = ClassroomRepository.get_by_id(
+                        id=schedule_input.classroom_id, session=session
+                    )
+                    OccurrenceRepository.allocate_schedule(
+                        schedule=new_schedule, classroom=classroom, session=session
+                    )
+                new_schedules.append(new_schedule)
+
+        return new_schedules
 
     @staticmethod
     def delete(*, id: int, session: Session) -> None:
-        pass
+        schedule = ScheduleRepository.get_by_id(id=id, session=session)
+        session.delete(schedule)
+        return
 
 
 class ScheduleInvalidData(HTTPException):

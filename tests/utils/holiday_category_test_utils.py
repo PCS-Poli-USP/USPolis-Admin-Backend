@@ -6,7 +6,9 @@ from server.models.http.requests.holiday_category_request_models import (
     HolidayCategoryRegister,
     HolidayCategoryUpdate,
 )
-from server.routes.public.holiday_category_routes import HolidayCategoryAlreadyExists
+from server.routes.restricted.holiday_category_routes import (
+    HolidayCategoryAlreadyExists,
+)
 
 
 def make_holiday_category(name: str, user: User) -> HolidayCategory:
