@@ -7,6 +7,7 @@ from server.models.http.requests.forum_request_models import (
 from server.models.http.responses.forum_post_response import (
     ForumPostResponse,
 )
+from server.repositories.forum_repository import ForumRepository
 
 
 embed = Body(..., embed=True)
