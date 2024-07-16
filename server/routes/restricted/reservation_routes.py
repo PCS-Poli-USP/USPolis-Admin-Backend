@@ -5,7 +5,10 @@ from server.deps.repository_adapters.reservation_repository_adapter import (
     ReservationRepositoryDep,
 )
 from server.models.database.reservation_db_model import Reservation
-from server.models.http.requests.reservation_request_models import ReservationRegister, ReservationUpdate
+from server.models.http.requests.reservation_request_models import (
+    ReservationRegister,
+    ReservationUpdate,
+)
 from server.models.http.responses.generic_responses import NoContent
 from server.models.http.responses.reservation_response_models import ReservationResponse
 from server.repositories.reservation_repository import ReservationRepository
@@ -43,14 +46,18 @@ async def create_reservation(
 
 
 @router.put("/{reservation_id}")
-async def update_reservation(reservation_id: int, input: ReservationUpdate, repository: ReservationRepositoryDep) -> ReservationResponse:
+async def update_reservation(
+    reservation_id: int, input: ReservationUpdate, repository: ReservationRepositoryDep
+) -> ReservationResponse:
     """Update a reservation by ID"""
     reservation = repository.update(id=reservation_id, input=input)
     return ReservationResponse.from_reservation(reservation)
 
 
 @router.delete("/{reservation_id}")
-async def delete_reservation(reservation_id: int, repository: ReservationRepositoryDep) -> Response:
+async def delete_reservation(
+    reservation_id: int, repository: ReservationRepositoryDep
+) -> Response:
     """Delete a Reservation by ID"""
     repository.delete(id=reservation_id)
     return NoContent
