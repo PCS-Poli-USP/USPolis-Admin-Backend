@@ -1,17 +1,14 @@
 from fastapi import APIRouter, Body, HTTPException, Response, status
 
-from server.deps.authenticate import UserDep
 from server.deps.repository_adapters.building_repository_adapter import (
     BuildingRespositoryAdapterDep,
 )
-from server.deps.session_dep import SessionDep
 from server.models.http.requests.building_request_models import (
     BuildingRegister,
     BuildingUpdate,
 )
 from server.models.http.responses.building_response_models import BuildingResponse
 from server.models.http.responses.generic_responses import NoContent
-from server.repositories.building_repository import BuildingRepository
 
 embed = Body(..., embed=True)
 
