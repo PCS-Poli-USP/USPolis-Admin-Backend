@@ -13,7 +13,7 @@ from server.models.database.class_db_model import Class
 class ForumPost(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
-    class_id : int = Field(
+    event_id : int = Field(
         foreign_key = "class.id"
     )
 

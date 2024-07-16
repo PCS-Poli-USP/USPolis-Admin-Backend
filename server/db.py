@@ -13,6 +13,7 @@ from server.models.database import (  # noqa
     class_calendar_link,
     class_db_model,
     classroom_db_model,
+    forum_db_model,
     holiday_category_db_model,
     holiday_db_model,
     institutional_event_db_model,
@@ -23,6 +24,7 @@ from server.models.database import (  # noqa
     subject_db_model,
     user_building_link,
     user_db_model,
+
 )
 
 engine = create_engine(f"{CONFIG.db_uri}/{CONFIG.db_database}")

@@ -11,9 +11,9 @@ class ForumRepository:
         session: Session
     ) -> ForumPost:
         new_post = ForumPost(
-            class_id = input.class_id,
-            post_title = input.post_title,
-            post_content = input.post_content,
+            event_id = input.event_id,
+            author= input.author,
+            content = input.content,
             created_at = datetime.now()
         )
 
@@ -24,7 +24,7 @@ class ForumRepository:
 
 
     @staticmethod
-    def get_all(*,class_id: int, session: Session) -> list[ForumPost]:
-        statement = select(ForumPost).where(class_id=class_id)
+    def get_all_posts(*,class_id: int, session: Session) -> list[ForumPost]:
+        statement = select(ForumPost).where(col(ForumPost.event_id)==class_id)
         posts = session.exec(statement).all()
         return list(posts)

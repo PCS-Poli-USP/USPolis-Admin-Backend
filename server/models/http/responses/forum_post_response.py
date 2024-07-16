@@ -6,7 +6,7 @@ from server.models.http.exceptions.responses_exceptions import UnfetchDataError
 
 class ForumPostResponse(BaseModel):
     id: int
-    class_id : int
+    event_id : int
 
     # title = str | None = Field ()
     content : str | None
@@ -26,9 +26,10 @@ class ForumPostResponse(BaseModel):
             raise UnfetchDataError("Forum Post", "ID")
         return cls(
             id= post.id,
-            class_id= post.class_id,
+            event_id= post.event_id,
             content= post.content,
             author= post.author,
+            created_at = datetime.now()
         )
 
     @classmethod
