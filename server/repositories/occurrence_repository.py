@@ -82,13 +82,9 @@ class OccurrenceRepository:
                 id=input.classroom_id, session=session
             )
 
-        if schedule.id is None:
-            raise UnfetchDataError("Schedule", "ID")
-
         occurrences: list[Occurrence] = []
         for date in input.dates:
             occurrence = Occurrence(
-                schedule_id=schedule.id,
                 schedule=schedule,
                 classroom_id=input.classroom_id,
                 classroom=classroom,
@@ -97,7 +93,5 @@ class OccurrenceRepository:
                 date=date,
             )
             session.add(occurrence)
-            session.commit()
-            session.refresh(occurrence)
             occurrences.append(occurrence)
         return occurrences

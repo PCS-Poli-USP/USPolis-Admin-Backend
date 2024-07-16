@@ -42,7 +42,6 @@ class ScheduleRegister(ScheduleBase):
         recurrence = self.recurrence
         dates = self.dates
         allocated = self.allocated
-        all_day = self.all_day
         classroom_id = self.classroom_id
         reservation_id = self.reservation_id
 
@@ -50,7 +49,7 @@ class ScheduleRegister(ScheduleBase):
         #     raise ValueError("Class Id and Reservation Id cannot be both empty")
 
         if class_id is not None and reservation_id is not None:
-            raise ScheduleInvalidData("Class Id", "Reservation Id")
+            raise ScheduleConflictedData("Class Id", "Reservation Id")
 
         if week_day is None:
             if recurrence != Recurrence.CUSTOM and recurrence != Recurrence.DAILY:
@@ -76,4 +75,12 @@ class ScheduleInvalidData(HTTPException):
         super().__init__(
             status.HTTP_400_BAD_REQUEST,
             f"Schedule with {schedule_info} has invalid {data_info} value",
+        )
+
+
+class ScheduleConflictedData(HTTPException):
+    def __init__(self, first_data: str, second_data: str) -> None:
+        super().__init__(
+            status.HTTP_400_BAD_REQUEST,
+            f"Schedule must have {first_data} value or {second_data} value, not both",
         )
