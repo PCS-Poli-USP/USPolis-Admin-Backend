@@ -1,8 +1,10 @@
-from fastapi import HTTPException
+from fastapi import HTTPException, status
+from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 
 from server.models.database.building_db_model import Building
 from server.models.database.class_db_model import Class
+from server.models.database.subject_db_model import Subject
 from server.models.http.requests.class_request_models import ClassRegister, ClassUpdate
 from server.repositories.calendar_repository import CalendarRepository
 from server.repositories.schedule_repository import ScheduleRepository
@@ -15,6 +17,19 @@ class ClassRepository:
     @staticmethod
     def get_all(*, session: Session) -> list[Class]:
         statement = select(Class)
+        classes = session.exec(statement).all()
+        return list(classes)
+
+    @staticmethod
+    def get_all_on_buildings(
+        *, building_ids: list[int], session: Session
+    ) -> list[Class]:
+        statement = (
+            select(Class)
+            .join(Subject)
+            .join(Building)
+            .where(col(Building.id).in_(building_ids))
+        )
         classes = session.exec(statement).all()
         return list(classes)
 
@@ -32,6 +47,23 @@ class ClassRepository:
         if building not in class_.subject.buildings:
             raise ClassNotFound()
 
+        return class_
+
+    @staticmethod
+    def get_by_id_on_buildings(
+        id: int, building_ids: list[int], session: Session
+    ) -> Class:
+        statement = (
+            select(Class)
+            .join(Subject)
+            .join(Building)
+            .where(col(Building.id).in_(building_ids))
+            .where(col(Class.id) == id)
+        )
+        try:
+            class_ = session.exec(statement).one()
+        except NoResultFound:
+            raise ClassNotFound()
         return class_
 
     @staticmethod
@@ -59,23 +91,17 @@ class ClassRepository:
             ignore_to_allocate=input.ignore_to_allocate,
             full_allocated=False,
         )
-        session.add(new_class)
-        session.commit()
-        session.refresh(new_class)
-
         schedules = ScheduleRepository.create_many_with_class(
             university_class=new_class, input=input.schedules_data, session=session
         )
         new_class.schedules = schedules
         session.add(new_class)
-        session.commit()
-        session.refresh(new_class)
         return new_class
 
     @staticmethod
     def update(*, id: int, input: ClassUpdate, session: Session) -> Class:
         updated_class = ClassRepository.get_by_id(id=id, session=session)
-        input_data = input.model_dump(exclude_unset=True)
+        input_data = input.model_dump()
         for key, value in input_data.items():
             if hasattr(updated_class, key):
                 setattr(updated_class, key, value)
@@ -104,14 +130,12 @@ class ClassRepository:
             updated_class.schedules = new_schedules
 
         session.add(updated_class)
-        session.commit()
         return updated_class
 
     @staticmethod
     def delete(*, id: int, session: Session) -> None:
         deleted_class = ClassRepository.get_by_id(id=id, session=session)
         session.delete(deleted_class)
-        session.commit()
 
     @staticmethod
     def delete_many(*, ids: list[int], session: Session) -> None:
@@ -119,9 +143,10 @@ class ClassRepository:
         classes = session.exec(statement).all()
         for class_ in classes:
             session.delete(class_)
-        session.commit()
 
 
 class ClassNotFound(HTTPException):
     def __init__(self) -> None:
-        super().__init__(status_code=404, detail="Class not found")
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Class not found"
+        )

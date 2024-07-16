@@ -2,8 +2,11 @@ from datetime import date, time
 
 from pydantic import BaseModel
 
+from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.schedule_db_model import Schedule
 from server.models.http.exceptions.responses_exceptions import UnfetchDataError
+from server.utils.enums import month_week
+from server.utils.enums.month_week import MonthWeek
 from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.week_day import WeekDay
 
@@ -11,6 +14,7 @@ from server.utils.enums.week_day import WeekDay
 class ScheduleResponseBase(BaseModel):
     id: int
     week_day: WeekDay | None = None
+    month_week: MonthWeek | None = None
     dates: list[date] | None = None
     start_date: date
     end_date: date
@@ -19,6 +23,7 @@ class ScheduleResponseBase(BaseModel):
     allocated: bool
     recurrence: Recurrence
     all_day: bool
+    occurrences: list[Occurrence] | None  # When recurrence is necessary
 
 
 class ScheduleResponse(ScheduleResponseBase):
@@ -40,6 +45,7 @@ class ScheduleResponse(ScheduleResponseBase):
         return cls(
             id=schedule.id,
             week_day=schedule.week_day,
+            month_week=schedule.month_week,
             dates=[occurrence.date for occurrence in schedule.occurrences]
             if schedule.occurrences
             else None,
@@ -58,6 +64,9 @@ class ScheduleResponse(ScheduleResponseBase):
             reservation_id=schedule.reservation.id if schedule.reservation else None,
             occurrence_ids=cls.get_occurences_ids(schedule)
             if schedule.occurrences
+            else None,
+            occurrences=schedule.occurrences
+            if schedule.recurrence == Recurrence.CUSTOM
             else None,
         )
 

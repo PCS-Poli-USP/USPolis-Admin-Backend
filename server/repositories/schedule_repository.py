@@ -4,6 +4,7 @@ from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 
 from server.models.database.class_db_model import Class
+from server.models.database.classroom_db_model import Classroom
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.schedule_db_model import Schedule
 from server.models.http.requests.occurrence_request_models import OccurenceManyRegister
@@ -13,6 +14,7 @@ from server.models.http.requests.schedule_request_models import (
 )
 from server.repositories.classroom_repository import ClassroomRepository
 from server.repositories.occurrence_repository import OccurrenceRepository
+from server.utils.enums.recurrence import Recurrence
 from server.utils.schedule_utils import ScheduleUtils
 
 
@@ -55,7 +57,7 @@ class ScheduleRepository:
             schedule = session.exec(statement).one()
         except NoResultFound:
             raise ScheduleNotFound()
-        
+
         if schedule.class_:
             buildings = schedule.class_.subject.buildings
             building_ids = [building.id for building in buildings]
@@ -87,14 +89,10 @@ class ScheduleRepository:
             reservation_id=None,
             classroom_id=None,
         )
-        session.add(new_schedule)
-        session.commit()
-        session.refresh(new_schedule)
 
-        if input.dates and new_schedule.id:
+        if input.dates:
             occurences_input = OccurenceManyRegister(
                 classroom_id=None,
-                schedule_id=new_schedule.id,
                 start_time=input.start_time,
                 end_time=input.end_time,
                 dates=input.dates,
@@ -103,13 +101,18 @@ class ScheduleRepository:
                 schedule=new_schedule, input=occurences_input, session=session
             )
             new_schedule.occurrences = occurences
-            session.add(new_schedule)
-            session.refresh(new_schedule)
 
+        session.add(new_schedule)
         return new_schedule
 
     @staticmethod
-    def create_with_reservation(*, reservation: Reservation, input: ScheduleRegister, session: Session) -> Schedule:
+    def create_with_reservation(
+        *,
+        reservation: Reservation,
+        input: ScheduleRegister,
+        classroom: Classroom,
+        session: Session,
+    ) -> Schedule:
         new_schedule = Schedule(
             start_date=input.start_date,
             end_date=input.end_date,
@@ -126,6 +129,22 @@ class ScheduleRepository:
             reservation=reservation,
             classroom_id=input.classroom_id,
         )
+
+        if input.dates and input.recurrence == Recurrence.CUSTOM:
+            occurences_input = OccurenceManyRegister(
+                classroom_id=classroom.id,
+                start_time=input.start_time,
+                end_time=input.end_time,
+                dates=input.dates,
+            )
+            occurences = OccurrenceRepository.create_many_with_schedule(
+                schedule=new_schedule, input=occurences_input, session=session
+            )
+            new_schedule.occurrences = occurences
+        else:
+            OccurrenceRepository.allocate_schedule(
+                schedule=new_schedule, classroom=classroom, session=session
+            )
         session.add(new_schedule)
         return new_schedule
 
@@ -188,6 +207,29 @@ class ScheduleRepository:
                 new_schedules.append(new_schedule)
 
         return new_schedules
+
+    @staticmethod
+    def update_reservation_schedule(
+        *,
+        reservation: Reservation,
+        input: ScheduleUpdate,
+        classroom: Classroom,
+        session: Session,
+    ) -> Schedule:
+        old_schedule = reservation.schedule
+
+        if ScheduleUtils.has_schedule_diff(old_schedule, input):
+            session.delete(old_schedule)
+            new_schedule = ScheduleRepository.create_with_reservation(
+                reservation=reservation,
+                input=input,
+                classroom=classroom,
+                session=session,
+            )
+            reservation.schedule = new_schedule
+            return new_schedule
+
+        return old_schedule
 
     @staticmethod
     def delete(*, id: int, session: Session) -> None:
