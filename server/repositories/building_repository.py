@@ -3,7 +3,10 @@ from sqlmodel import Session, col, select
 
 from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
-from server.models.http.requests.building_request_models import BuildingRegister
+from server.models.http.requests.building_request_models import (
+    BuildingRegister,
+    BuildingUpdate,
+)
 
 
 class BuildingRepository:
@@ -36,22 +39,19 @@ class BuildingRepository:
             created_by=creator,
         )
         session.add(building)
-        session.commit()
-        session.refresh(building)
         return building
 
     @staticmethod
-    def update(*, building: Building, session: Session) -> Building:
+    def update(*, id: int, input: BuildingUpdate, session: Session) -> Building:
+        building = BuildingRepository.get_by_id(id=id, session=session)
+        building.name = input.name
         session.add(building)
-        session.commit()
-        session.refresh(building)
         return building
 
     @staticmethod
-    def delete(*, building_id: int, session: Session) -> None:
-        building = session.get_one(Building, building_id)
+    def delete(*, id: int, session: Session) -> None:
+        building = session.get_one(Building, id)
         session.delete(building)
-        session.commit()
 
 
 class BuildingNotExists(HTTPException):
