@@ -7,7 +7,9 @@ from server.repositories.classroom_repository import ClassroomRepository
 
 
 def classroom_permission_checker(
-    user: User, classroom: int | Classroom | list[int] | list[Classroom], session: Session
+    user: User,
+    classroom: int | Classroom | list[int] | list[Classroom],
+    session: Session,
 ) -> None:
     """
     Checks the permission of a user for a specific classroom.
@@ -28,7 +30,9 @@ def classroom_permission_checker(
         __classroom_list_permission_checker(user, classroom, session)
 
 
-def __classroom_id_permission_checker(user: User, classroom_id: int, session: Session) -> None:
+def __classroom_id_permission_checker(
+    user: User, classroom_id: int, session: Session
+) -> None:
     classroom = ClassroomRepository.get_by_id(id=classroom_id, session=session)
     if user.buildings is None or classroom.building_id not in [
         building.id for building in user.buildings
@@ -45,8 +49,9 @@ def __classroom_list_permission_checker(
     user: User, classrooms: list[int] | list[Classroom], session: Session
 ) -> None:
     buildings_ids = [
-        classroom.building_id if isinstance(classroom, Classroom) else ClassroomRepository.get_by_id(
-            id=classroom, session=session).building_id
+        classroom.building_id
+        if isinstance(classroom, Classroom)
+        else ClassroomRepository.get_by_id(id=classroom, session=session).building_id
         for classroom in classrooms
     ]
     if user.buildings is None or not set(buildings_ids).issubset(

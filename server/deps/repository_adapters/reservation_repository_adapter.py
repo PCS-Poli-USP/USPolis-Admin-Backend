@@ -61,7 +61,7 @@ class ReservationRespositoryAdapter:
 
     def update(
         self,
-        reservation_id: int,
+        id: int,
         input: ReservationUpdate,
     ) -> Reservation:
         classroom = ClassroomRepository.get_by_id(
@@ -69,7 +69,7 @@ class ReservationRespositoryAdapter:
         )
         building_permission_checker(self.user, must_be_int(classroom.building_id))
         reservation = ReservationRepository.update_on_buildings(
-            id=reservation_id,
+            id=id,
             building_ids=self.owned_building_ids,
             input=input,
             classroom=classroom,
