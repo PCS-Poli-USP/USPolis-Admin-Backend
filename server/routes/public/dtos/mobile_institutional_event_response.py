@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from server.models.database.institutional_event_db_model import InstitutionalEvent
 from server.models.http.exceptions.responses_exceptions import UnfetchDataError
+from server.models.http.requests.institutional_event_request_models import InstitutionalEventUpdate
 from server.models.http.responses.institutional_event_response_models import InstitutionalEventResponse
 
 
@@ -47,8 +48,21 @@ class MobileInstitutionalEventResponse(BaseModel):
         cls, events: list[InstitutionalEvent]
     ) -> list["InstitutionalEventResponse"]:
         return [cls.from_model(event) for event in events]
+    
+def to_event_update(cls: InstitutionalEvent) -> InstitutionalEventUpdate:
+    return InstitutionalEventUpdate(
+        title=cls.title,
+        description=cls.description,
+        start=cls.start,
+        end=cls.end,
+        category=cls.category,
+        building=cls.building,
+        classroom=cls.classroom,
+        location=cls.location,
+        external_link=cls.external_link
+    )
 
-class InstitutionalEventLike(BaseModel):
+class MobileInstitutionalEventLike(BaseModel):
     event_id: int
     user_id: int
     like: bool
