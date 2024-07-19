@@ -49,4 +49,4 @@ async def create_new_user(idToken: Annotated[str | None, Header()], session: Ses
     )
 
     new_user = MobileUserRepository.create(new_user=newUser, session=session)
-    return AuthenticationResponse.from_auth_user(new_user)
+    return AuthenticationResponse.from_model_user(new_user)
