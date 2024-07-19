@@ -48,14 +48,11 @@ class BuildingRepository:
         except NoResultFound:
             raise BuildingNotFound(f"Class {class_.id}")
         return building
-    
+
     @staticmethod
     def get_by_class_id(*, class_id: int, session: Session) -> Building:
         statement = (
-            select(Building)
-            .join(Subject)
-            .join(Class)
-            .where(col(Class.id) == class_id)
+            select(Building).join(Subject).join(Class).where(col(Class.id) == class_id)
         )
 
         try:
@@ -63,14 +60,10 @@ class BuildingRepository:
         except NoResultFound:
             raise BuildingNotFound(f"Class ${class_id}")
         return building
-    
+
     @staticmethod
     def get_by_subject_id(*, subject_id: int, session: Session) -> Building:
-        statement = (
-            select(Building)
-            .join(Subject)
-            .where(col(Subject.id) == subject_id)
-        )
+        statement = select(Building).join(Subject).where(col(Subject.id) == subject_id)
 
         try:
             building = session.exec(statement).one()

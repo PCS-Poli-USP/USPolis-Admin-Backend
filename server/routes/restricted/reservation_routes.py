@@ -32,7 +32,7 @@ async def get_reservation(
     reservation_id: int, repository: ReservationRepositoryDep
 ) -> ReservationResponse:
     """Get an reservation by id"""
-    reservation: Reservation = repository.get_by_id(id=reservation_id)
+    reservation = repository.get_by_id(id=reservation_id)
     return ReservationResponse.from_reservation(reservation)
 
 

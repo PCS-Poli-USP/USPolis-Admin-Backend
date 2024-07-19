@@ -9,7 +9,9 @@ from server.models.database.class_db_model import Class
 from server.models.http.requests.class_request_models import ClassRegister, ClassUpdate
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.class_repository import ClassRepository
-from server.services.security.buildings_permission_checker import building_permission_checker
+from server.services.security.buildings_permission_checker import (
+    building_permission_checker,
+)
 from server.services.security.class_permission_checker import class_permission_checker
 
 
@@ -37,7 +39,9 @@ class ClassRepositoryAdapter:
         return class_
 
     def create(self, input: ClassRegister) -> Class:
-        building = BuildingRepository.get_by_subject_id(subject_id=input.subject_id, session=self.session)
+        building = BuildingRepository.get_by_subject_id(
+            subject_id=input.subject_id, session=self.session
+        )
         building_permission_checker(user=self.user, building=building)
         new_class = ClassRepository.create(input=input, session=self.session)
         self.session.commit()

@@ -32,8 +32,7 @@ def class_permission_checker(
 
 
 def __class_id_permission_checker(user: User, class_id: int, session: Session) -> None:
-    current = BuildingRepository.get_by_class_id(
-        class_id=class_id, session=session)
+    current = BuildingRepository.get_by_class_id(class_id=class_id, session=session)
     if user.buildings is None or current.id not in [
         building.id for building in user.buildings
     ]:
@@ -61,7 +60,7 @@ def __class_list_permission_checker(
         classes_ids: list[int] = []
         for class_ in classes:
             if isinstance(class_, Class):
-                if (class_.id):
+                if class_.id:
                     classes_ids.append(class_.id)
             else:
                 classes_ids.append(class_)
