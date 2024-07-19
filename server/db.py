@@ -16,6 +16,8 @@ from server.models.database import (  # noqa
     holiday_category_db_model,
     holiday_db_model,
     institutional_event_db_model,
+    mobile_comments_db_model,
+    mobile_user_db_model,
     occurrence_db_model,
     reservation_db_model,
     schedule_db_model,

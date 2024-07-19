@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from server.routes.public.mobile_classes_routes import router as MobileClassRouter
 from server.routes.public.mobile_institutional_events_routes import router as MobileInstitutionalEventsRouter
 from server.routes.public.mobile_comments_routes import router as MobileCommentsRouter
-from server.routes.public.mobile_google_authentication import router as MobileGAuth
+from server.routes.public.mobile_google_authentication_routes import router as MobileGAuth
 
 router = APIRouter()
 
