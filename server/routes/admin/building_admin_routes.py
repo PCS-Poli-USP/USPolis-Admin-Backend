@@ -14,6 +14,7 @@ embed = Body(..., embed=True)
 
 router = APIRouter(prefix="/buildings", tags=["Buildings"])
 
+
 @router.post("")
 async def create_building(
     building_in: BuildingRegister,

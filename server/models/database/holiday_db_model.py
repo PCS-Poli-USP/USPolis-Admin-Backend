@@ -1,3 +1,4 @@
+from datetime import date as datetime_date
 from datetime import datetime
 from typing import TYPE_CHECKING
 
@@ -11,7 +12,7 @@ if TYPE_CHECKING:
 
 class Holiday(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    date: datetime = Field()
+    date: datetime_date = Field()
     updated_at: datetime = Field(default=datetime.now())
 
     category_id: int = Field(foreign_key="holidaycategory.id")

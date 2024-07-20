@@ -2,7 +2,9 @@ from datetime import date, timedelta
 
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.schedule_db_model import Schedule
+from server.utils.enums.month_week import MonthWeek
 from server.utils.enums.recurrence import Recurrence
+from server.utils.enums.week_day import WeekDay
 
 
 class OccurrenceUtils:
@@ -13,12 +15,12 @@ class OccurrenceUtils:
         occurrences: list[Occurrence] = []
         if schedule.week_day is None:
             raise ValueError("Week day is required for schedule for this method")
-        dates = OccurrenceUtils.__dates_for_recurrence(
+        dates = OccurrenceUtils._dates_for_recurrence(
             schedule.week_day.value,
             schedule.recurrence,
             schedule.start_date,
             schedule.end_date,
-            schedule.month_week,
+            schedule.month_week.value if schedule.month_week else None,
         )
         for occ_date in dates:
             occurrence = Occurrence(
@@ -31,7 +33,24 @@ class OccurrenceUtils:
         return occurrences
 
     @staticmethod
-    def __dates_for_recurrence(
+    def get_weekday_date_for_month_week(
+        year: int, month: int, week_day: int, month_week: int
+    ) -> date:
+        first_date = date(year, month, 1)
+        days_to_first_week_day = (week_day - first_date.weekday() + 7) % 7
+        first_week_day_date = first_date + timedelta(days=days_to_first_week_day)
+        if month_week == MonthWeek.LAST.value:
+            last_week_day_date = first_week_day_date + timedelta(weeks=4)
+            if last_week_day_date.month > month or (
+                last_week_day_date.month == 1 and month == 12
+            ):
+                last_week_day_date -= timedelta(weeks=1)
+            return last_week_day_date
+        else:
+            return first_week_day_date + timedelta(weeks=(month_week - 1))
+
+    @staticmethod
+    def _dates_for_recurrence(
         week_day: int,
         recurrence: Recurrence,
         start_date: date,
@@ -59,28 +78,18 @@ class OccurrenceUtils:
             case Recurrence.MONTHLY:
                 if month_week is None:
                     raise ValueError("Month week is required for monthly recurrence")
-                first_month_day = date(start_date.year, start_date.month, 1)
-                while True:
-                    days_to_first_weekday = (
-                        week_day - first_month_day.weekday() + 7
-                    ) % 7
-                    first_weekday_date = first_month_day + timedelta(
-                        days=days_to_first_weekday
+                current_date = start_date
+                while current_date <= end_date:
+                    week_day_date = OccurrenceUtils.get_weekday_date_for_month_week(
+                        current_date.year, current_date.month, week_day, month_week
                     )
-                    current_date = first_weekday_date + timedelta(days=7) * (
-                        month_week - 1
-                    )
-
-                    if current_date > end_date:
-                        break
-
-                    dates.append(current_date)
-
-                    if first_month_day.month == 12:
-                        first_month_day = date(first_month_day.year + 1, 1, 1)
+                    if start_date <= week_day_date <= end_date:
+                        dates.append(week_day_date)
+                    if current_date.month == 12:
+                        current_date = date(current_date.year + 1, 1, 1)
                     else:
-                        first_month_day = date(
-                            first_month_day.year, first_month_day.month + 1, 1
+                        current_date = date(
+                            current_date.year, current_date.month + 1, 1
                         )
 
             case Recurrence.DAILY:
@@ -94,7 +103,11 @@ class OccurrenceUtils:
 
 
 if __name__ == "__main__":
-    dates = OccurrenceUtils.__dates_for_recurrence(
-        2, Recurrence.MONTHLY, date(2024, 1, 1), date(2024, 3, 15), 2
+    dates = OccurrenceUtils._dates_for_recurrence(
+        WeekDay.WEDNESDAY.value,
+        Recurrence.MONTHLY,
+        date(2024, 6, 30),
+        date(2024, 8, 10),
+        MonthWeek.THIRD.value,
     )
     print(dates)
