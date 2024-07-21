@@ -6,16 +6,10 @@ from server.models.http.exceptions.responses_exceptions import UnfetchDataError
 
 class ForumPostResponse(BaseModel):
     id: int
-    event_id : int
-
-    # title = str | None = Field ()
+    user_id: int
+    user_name: str
     content : str | None
-
-    author : str 
-    # user_id : int = Field(
-    #     foreign_key = "user.id"
-    # )
-
+    class_id : int
     created_at : datetime
 
     @classmethod
@@ -25,11 +19,12 @@ class ForumPostResponse(BaseModel):
         if post.id is None:
             raise UnfetchDataError("Forum Post", "ID")
         return cls(
-            id= post.id,
-            event_id= post.event_id,
-            content= post.content,
-            author= post.author,
-            created_at = datetime.now()
+            id = post.id,
+            user_id = post.user_id,
+            class_id = post.class_id,
+            content = post.content,
+            user_name = post.user.given_name+" "+post.user.family_name,
+            created_at = post.created_at
         )
 
     @classmethod
