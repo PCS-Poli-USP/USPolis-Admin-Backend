@@ -24,9 +24,6 @@ class AuthenticatedUser(BaseModel):
         else :
             return None
 
-def to_mobile_user_model(sub: str, ):
-    pass
-
 class AuthenticationResponse(BaseModel):
     is_registered_user: bool
     user: AuthenticatedUser

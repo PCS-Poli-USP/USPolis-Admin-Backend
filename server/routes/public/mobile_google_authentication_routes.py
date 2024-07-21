@@ -17,7 +17,7 @@ async def authenticate_user(idToken: Annotated[str | None, Header()], session: S
     """Authenticates user with Google: if it is in our DB return user info"""
     # Specify the CLIENT_ID of the app that accesses the backend:
     idInfo = id_token.verify_oauth2_token(idToken, requests.Request(), os.environ["G_AUTH_CLIENT_ID"])
-    print(idInfo)
+
     # Or, if multiple clients access the backend server:
     # idinfo = id_token.verify_oauth2_token(token, requests.Request())
     # if idinfo['aud'] not in [CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]:
@@ -30,7 +30,6 @@ async def authenticate_user(idToken: Annotated[str | None, Header()], session: S
     # ID token is valid. Get the user's Google Account ID from the decoded token.
     
     sub = idInfo["sub"]
-    print("sub found: ",sub)
 
     mobileUser = MobileUserRepository.get_user_by_sub(sub=sub, session=session)
     return AuthenticationResponse.from_model_user(modelUser=mobileUser)

@@ -176,4 +176,7 @@ cython_debug/
 python/
 migrations/
 
+# MacOS
+.DS_STORE
+
 docker-compose.*
