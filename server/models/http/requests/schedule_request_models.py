@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import date, time
 from typing import Self
 
 from fastapi import HTTPException, status
@@ -15,8 +15,8 @@ from server.utils.enums.week_day import WeekDay
 class ScheduleBase(BaseModel):
     """Base for any schedule request of update or create"""
 
-    start_date: datetime
-    end_date: datetime
+    start_date: date
+    end_date: date
     start_time: time
     end_time: time
     recurrence: Recurrence = Recurrence.NONE
@@ -32,7 +32,7 @@ class ScheduleRegister(ScheduleBase):
     classroom_id: int | None = None
     week_day: WeekDay | None = None
     month_week: MonthWeek | None = None
-    dates: list[datetime] | None = None
+    dates: list[date] | None = None
 
     @model_validator(mode="after")
     def check_class_body(self) -> Self:

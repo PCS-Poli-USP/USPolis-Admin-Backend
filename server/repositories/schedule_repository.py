@@ -248,4 +248,6 @@ class ScheduleInvalidData(HTTPException):
 
 class ScheduleNotFound(HTTPException):
     def __init__(self) -> None:
-        super().__init__(status_code=404, detail="Schedule not found")
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Schedule not found"
+        )

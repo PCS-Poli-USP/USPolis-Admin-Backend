@@ -15,7 +15,6 @@ class ScheduleResponseBase(BaseModel):
     id: int
     week_day: WeekDay | None = None
     month_week: MonthWeek | None = None
-    dates: list[date] | None = None
     start_date: date
     end_date: date
     start_time: time
@@ -23,7 +22,9 @@ class ScheduleResponseBase(BaseModel):
     allocated: bool
     recurrence: Recurrence
     all_day: bool
-    occurrences: list[Occurrence] | None  # When recurrence is necessary
+    occurrences: list[Occurrence] | None = (
+        None  # When recurrence is custom is necessary
+    )
 
 
 class ScheduleResponse(ScheduleResponseBase):
@@ -46,9 +47,6 @@ class ScheduleResponse(ScheduleResponseBase):
             id=schedule.id,
             week_day=schedule.week_day,
             month_week=schedule.month_week,
-            dates=[occurrence.date for occurrence in schedule.occurrences]
-            if schedule.occurrences
-            else None,
             start_date=schedule.start_date,
             end_date=schedule.end_date,
             start_time=schedule.start_time,
@@ -63,7 +61,7 @@ class ScheduleResponse(ScheduleResponseBase):
             class_id=schedule.class_id,
             reservation_id=schedule.reservation.id if schedule.reservation else None,
             occurrence_ids=cls.get_occurences_ids(schedule)
-            if schedule.occurrences
+            if schedule.occurrences and schedule.recurrence == Recurrence.CUSTOM
             else None,
             occurrences=schedule.occurrences
             if schedule.recurrence == Recurrence.CUSTOM

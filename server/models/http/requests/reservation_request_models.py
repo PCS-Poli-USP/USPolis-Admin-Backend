@@ -11,7 +11,7 @@ from server.utils.enums.reservation_type import ReservationType
 class ReservationBase(BaseModel):
     name: str
     type: ReservationType
-    description: str
+    description: str | None = None
     classroom_id: int
 
 

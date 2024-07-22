@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import date, time
 
 from pydantic import BaseModel
 
@@ -11,12 +11,12 @@ class OccurrenceBase(BaseModel):
 
 
 class OccurrenceRegister(OccurrenceBase):
-    date: datetime
+    date: date
 
 
 class OccurrenceUpdate(OccurrenceBase):
-    date: datetime
+    date: date
 
 
 class OccurenceManyRegister(OccurrenceBase):
-    dates: list[datetime]
+    dates: list[date]
