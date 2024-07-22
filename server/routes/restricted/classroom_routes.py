@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Body, Response
 
+from server.deps.conflict_checker import ConflictCheckerDep
 from server.deps.repository_adapters.classroom_repository_adapter import (
     ClassroomRepositoryDep,
 )
+from server.models.database.classroom_db_model import ClassroomWithConflictsIndicator
 from server.models.http.requests.classroom_request_models import ClassroomRegister
 from server.models.http.responses.classroom_response_models import (
     ClassroomResponse,
@@ -40,6 +42,16 @@ async def get_classroom_with_schedules(
 ) -> ClassroomWithSchedulesResponse:
     classroom = respository.get_by_id(id)
     return ClassroomWithSchedulesResponse.from_classroom(classroom)
+
+
+@router.get("/with-conflict-count/{building_id}/{schedule_id}")
+async def get_classrooms_with_conflicts_count(
+    building_id: int, schedule_id: int, conflict_checker: ConflictCheckerDep
+) -> list[ClassroomWithConflictsIndicator]:
+    classrooms = conflict_checker.classrooms_with_conflicts_indicator_for_schedule(
+        building_id, schedule_id
+    )
+    return classrooms
 
 
 @router.post("")

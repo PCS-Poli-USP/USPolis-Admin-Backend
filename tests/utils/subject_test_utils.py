@@ -1,3 +1,5 @@
+# type: ignore
+
 from server.models.database.subject_db_model import Subject
 from server.models.http.requests.subject_request_models import SubjectRegister
 from server.routes.restricted.subject_routes import SubjectCodeAlreadyExists

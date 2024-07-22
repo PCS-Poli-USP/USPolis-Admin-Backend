@@ -30,7 +30,7 @@ class ClassRepository:
             .join(Subject)
             .join(SubjectBuildingLink)
             .where(col(SubjectBuildingLink.building_id).in_(building_ids))
-            .distinct() # avoid duplicates
+            .distinct()  # avoid duplicates
         )
         classes = session.exec(statement).all()
         return list(classes)

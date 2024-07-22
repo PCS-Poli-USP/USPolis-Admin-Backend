@@ -96,27 +96,19 @@ class SubjectRepository:
     @staticmethod
     def crawler_create(
         subject: Subject, session: SessionDep, building: BuildingDep
-    ) -> Subject:
+    ) -> None:
         try:
             session.add(subject)
-            session.commit()
         except IntegrityError:
             # subject_code already exists
             # add building to existing subject
             # it is NOT updating schedule's info and relations!
             subject = SubjectRepository.get_by_code(code=subject.code, session=session)
-            if subject.buildings is None:
-                subject.buildings = [building]
-            elif (
+            if (
                 building not in subject.buildings
             ):  # dont know if it works... its comparing objects
                 subject.buildings.append(building)
-            else:
-                return subject
-            session.add(subject)
-            session.commit()
-        session.refresh(subject)
-        return subject
+                session.add(subject)
 
     @staticmethod
     def update(*, id: int, input: SubjectUpdate, session: Session) -> Subject:

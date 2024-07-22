@@ -1,3 +1,5 @@
+# type: ignore
+
 from datetime import datetime
 
 from sqlmodel import Session, select
