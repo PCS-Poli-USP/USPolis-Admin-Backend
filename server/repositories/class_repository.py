@@ -4,6 +4,7 @@ from sqlmodel import Session, col, select
 
 from server.models.database.building_db_model import Building
 from server.models.database.class_db_model import Class
+from server.models.database.subject_building_link import SubjectBuildingLink
 from server.models.database.subject_db_model import Subject
 from server.models.http.requests.class_request_models import ClassRegister, ClassUpdate
 from server.repositories.calendar_repository import CalendarRepository
@@ -27,8 +28,9 @@ class ClassRepository:
         statement = (
             select(Class)
             .join(Subject)
-            .join(Building)
-            .where(col(Building.id).in_(building_ids))
+            .join(SubjectBuildingLink)
+            .where(col(SubjectBuildingLink.building_id).in_(building_ids))
+            .distinct() # avoid duplicates
         )
         classes = session.exec(statement).all()
         return list(classes)
@@ -56,8 +58,8 @@ class ClassRepository:
         statement = (
             select(Class)
             .join(Subject)
-            .join(Building)
-            .where(col(Building.id).in_(building_ids))
+            .join(SubjectBuildingLink)
+            .where(col(SubjectBuildingLink.building_id).in_(building_ids))
             .where(col(Class.id) == id)
         )
         try:
