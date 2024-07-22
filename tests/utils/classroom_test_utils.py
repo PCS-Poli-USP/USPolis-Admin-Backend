@@ -1,3 +1,5 @@
+# type: ignore
+
 from datetime import datetime
 
 from server.models.database.building_db_model import Building

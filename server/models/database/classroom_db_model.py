@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING
 from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, Relationship, SQLModel
 
+from server.utils.must_be_int import must_be_int
+
 if TYPE_CHECKING:
     from server.models.database.building_db_model import Building
     from server.models.database.occurrence_db_model import Occurrence
@@ -12,30 +14,51 @@ if TYPE_CHECKING:
     from server.models.database.user_db_model import User
 
 
-class Classroom(SQLModel, table=True):
+class ClassroomBase(SQLModel):
+    name: str
+    capacity: int
+    floor: int
+    ignore_to_allocate: bool = False
+    accessibility: bool = False
+    projector: bool = False
+    air_conditioning: bool = False
+    updated_at: datetime = datetime.now()
+
+    created_by_id: int | None = Field(foreign_key="user.id", default=None)
+    building_id: int | None = Field(foreign_key="building.id", default=None)
+
+
+class Classroom(ClassroomBase, table=True):
     __table_args__ = (
         UniqueConstraint(
             "name", "building_id", name="unique_classroom_name_for_building"
         ),
     )
     id: int | None = Field(primary_key=True, default=None)
-    name: str = Field()
-    capacity: int = Field()
-    floor: int = Field()
-    ignore_to_allocate: bool = Field(default=False)
-    accessibility: bool = Field(default=False)
-    projector: bool = Field(default=False)
-    air_conditioning: bool = Field(default=False)
-    updated_at: datetime = Field(default=datetime.now())
 
-    created_by_id: int | None = Field(
-        foreign_key="user.id", default=None, nullable=False
-    )
     created_by: "User" = Relationship()
-    building_id: int | None = Field(
-        index=True, foreign_key="building.id", default=None, nullable=False
-    )
     building: "Building" = Relationship(back_populates="classrooms")
     occurrences: list["Occurrence"] = Relationship(back_populates="classroom")
     reservations: list["Reservation"] | None = Relationship(back_populates="classroom")
     schedules: list["Schedule"] | None = Relationship(back_populates="classroom")
+
+
+class ClassroomWithConflictsIndicator(ClassroomBase):
+    id: int
+    conflicts: int = 0
+
+    @classmethod
+    def from_classroom(cls, classroom: Classroom) -> "ClassroomWithConflictsIndicator":
+        return cls(
+            id=must_be_int(classroom.id),
+            name=classroom.name,
+            capacity=classroom.capacity,
+            floor=classroom.floor,
+            ignore_to_allocate=classroom.ignore_to_allocate,
+            accessibility=classroom.accessibility,
+            projector=classroom.projector,
+            air_conditioning=classroom.air_conditioning,
+            updated_at=classroom.updated_at,
+            created_by_id=classroom.created_by_id,
+            building_id=classroom.building_id,
+        )

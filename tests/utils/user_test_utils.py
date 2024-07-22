@@ -1,7 +1,9 @@
+# type: ignore
+
 from datetime import datetime
 
-from server.models.database.user_db_model import User
 from server.config import CONFIG
+from server.models.database.user_db_model import User
 
 
 def make_admin_user(username: str) -> User:

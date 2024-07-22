@@ -41,9 +41,12 @@ async def crawl_subject(
     content = contents[subject_code]
     subject = await JupiterCrawler.crawl_subject_static(subject_code, content)
     subject.buildings = [building]
-    return SubjectRepository.crawler_create(
+    SubjectRepository.crawler_create(
         subject=subject, session=session, building=building
     )
+    session.commit()
+    session.refresh(subject)
+    return subject
 
 
 @router.post("/crawl")
@@ -56,10 +59,13 @@ async def crawl_subjects(
         content = contents[subject_code]
         subject = await JupiterCrawler.crawl_subject_static(subject_code, content)
         subject.buildings = [building]
-        new_subject = SubjectRepository.crawler_create(
+        SubjectRepository.crawler_create(
             subject=subject, session=session, building=building
         )
-        result.append(new_subject)
+        result.append(subject)
+    session.commit()
+    for subject in result:
+        session.refresh(subject)
     return result
 
 
