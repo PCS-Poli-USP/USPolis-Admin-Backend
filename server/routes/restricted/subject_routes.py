@@ -1,6 +1,9 @@
 from fastapi import APIRouter, Body, Response
 
 from server.deps.authenticate import BuildingDep
+from server.deps.repository_adapters.subject_repository_adapter import (
+    SubjectRepositoryDep,
+)
 from server.deps.session_dep import SessionDep
 from server.models.database.subject_db_model import Subject
 from server.models.http.requests.subject_request_models import (
@@ -19,16 +22,18 @@ router = APIRouter(prefix="/subjects", tags=["Subjects"])
 
 
 @router.get("")
-async def get_all_subjects(session: SessionDep) -> list[SubjectResponse]:
+async def get_all_subjects(repository: SubjectRepositoryDep) -> list[SubjectResponse]:
     """Get all subjects"""
-    subjects = SubjectRepository.get_all(session=session)
+    subjects = repository.get_all()
     return SubjectResponse.from_subject_list(subjects)
 
 
 @router.get("/{subject_id}")
-async def get_subject(subject_id: int, session: SessionDep) -> SubjectResponse:
+async def get_subject(
+    subject_id: int, repository: SubjectRepositoryDep
+) -> SubjectResponse:
     """Get a subject"""
-    subject = SubjectRepository.get_by_id(id=subject_id, session=session)
+    subject = repository.get_by_id(id=subject_id)
     return SubjectResponse.from_subject(subject)
 
 
