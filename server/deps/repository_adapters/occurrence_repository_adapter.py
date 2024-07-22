@@ -47,7 +47,10 @@ class OccurrenceRepositoryAdapter:
     ) -> None:
         for pair in schedule_classroom_pairs:
             schedule = self.schedule_repo.get_by_id(pair.schedule_id)
-            building_permission_checker(self.user, schedule.class_.subject.buildings)
+            if (schedule.class_ is None and schedule.reservation is not None):
+                building_permission_checker(self.user, schedule.reservation.classroom.building)
+            if (schedule.class_ is not None):
+                building_permission_checker(self.user, schedule.class_.subject.buildings)
 
             if pair.classroom_id == -1:
                 OccurrenceRepository.remove_schedule_allocation(
