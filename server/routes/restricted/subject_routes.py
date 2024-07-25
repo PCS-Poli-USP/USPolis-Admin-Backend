@@ -10,8 +10,6 @@ from server.models.http.requests.subject_request_models import (
 from server.models.http.responses.generic_responses import NoContent
 from server.models.http.responses.subject_response_models import SubjectResponse
 from server.repositories.subject_repository import SubjectRepository
-from server.services.jupiter_crawler.crawler import JupiterCrawler
-from tests.services.jupiter_crawler.crawler_test_utils import JupiterCrawlerTestUtils
 
 embed = Body(..., embed=True)
 
@@ -32,41 +30,14 @@ async def get_subject(subject_id: int, session: SessionDep) -> SubjectResponse:
     return SubjectResponse.from_subject(subject)
 
 
-@router.get("/crawl/{subject_code}")
-async def crawl_subject(
-    subject_code: str, building: BuildingDep, session: SessionDep
-) -> Subject:
-    # TODO: remover o content quando jupiter voltar ao normal!
-    contents = JupiterCrawlerTestUtils.retrieve_html_contents()
-    content = contents[subject_code]
-    subject = await JupiterCrawler.crawl_subject_static(subject_code, content)
-    subject.buildings = [building]
-    SubjectRepository.crawler_create(
-        subject=subject, session=session, building=building
-    )
-    session.commit()
-    session.refresh(subject)
-    return subject
-
-
 @router.post("/crawl")
 async def crawl_subjects(
     building: BuildingDep, session: SessionDep, subjects_list: list[str] = embed
 ) -> list[Subject]:
-    result: list[Subject] = []
-    for subject_code in subjects_list:
-        contents = JupiterCrawlerTestUtils.retrieve_html_contents()
-        content = contents[subject_code]
-        subject = await JupiterCrawler.crawl_subject_static(subject_code, content)
-        subject.buildings = [building]
-        SubjectRepository.crawler_create(
-            subject=subject, session=session, building=building
-        )
-        result.append(subject)
-    session.commit()
-    for subject in result:
-        session.refresh(subject)
-    return result
+    subjects = await SubjectRepository.crawler_create_many(
+        building=building, session=session, subjects_codes=subjects_list
+    )
+    return subjects
 
 
 @router.post("")

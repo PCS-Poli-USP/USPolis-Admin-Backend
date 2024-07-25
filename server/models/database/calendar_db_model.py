@@ -1,4 +1,6 @@
-from typing import TYPE_CHECKING
+from collections.abc import Generator
+from datetime import date
+from typing import TYPE_CHECKING, Any
 
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -26,7 +28,7 @@ class Calendar(SQLModel, table=True):
     created_by_id: int | None = Field(default=None, foreign_key="user.id")
     created_by: "User" = Relationship(back_populates="calendars")
 
-    def dates(self):
+    def dates(self) -> Generator[date, Any, None]:
         for category in self.categories:
             for holiday in category.holidays:
                 yield holiday.date
