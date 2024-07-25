@@ -1,4 +1,11 @@
+from datetime import date, time
+
+from pydantic import BaseModel
+
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
+from server.deps.repository_adapters.building_repository_adapter import (
+    BuildingRepositoryDep,
+)
 from server.deps.repository_adapters.classroom_repository_adapter import (
     ClassroomRepositoryDep,
 )
@@ -17,16 +24,40 @@ from server.utils.occurrence_utils import OccurrenceUtils
 Group = set[Occurrence]
 
 
+class OccurrenceConflictSpecification(BaseModel):
+    id: int
+    start_time: time
+    end_time: time
+    date: date
+    subject_code: str
+    class_code: str
+    class_id: int
+
+
+class ClassroomConflictsSpecification(BaseModel):
+    id: int
+    name: str
+    conflicts: list[list[OccurrenceConflictSpecification]]
+
+
+class BuildingConflictSpecification(BaseModel):
+    id: int
+    name: str
+    conflicts: list[ClassroomConflictsSpecification]
+
+
 class ConflictChecker:
     def __init__(
         self,
         owned_building_ids: OwnedBuildingIdsDep,
         classroom_repository: ClassroomRepositoryDep,
         schedule_repository: ScheduleRepositoryDep,
+        building_repository: BuildingRepositoryDep,
     ):
         self.owned_building_ids = owned_building_ids
         self.classroom_repository = classroom_repository
         self.schedule_repository = schedule_repository
+        self.building_repository = building_repository
 
     def conflicting_occurrences_by_classroom(self) -> dict[int, list[Group]]:
         classrooms = self.classroom_repository.get_all()
@@ -58,11 +89,53 @@ class ConflictChecker:
 
         return classrooms_with_conflicts
 
+    def conflicts_for_allowed_buildings(self) -> list[BuildingConflictSpecification]:
+        allowed_buildings = self.building_repository.get_owned_buildings()
+        result: list[BuildingConflictSpecification] = []
+        for building in allowed_buildings:
+            if building.classrooms is None:
+                continue
+            on_building_result = BuildingConflictSpecification(
+                id=must_be_int(building.id), name=building.name, conflicts=[]
+            )
+            for classroom in building.classrooms:
+                conflicts = self.__conflicts_for_classroom(classroom)
+                real_conflicts = []
+                for conflict in conflicts:
+                    real_conflict_conflicts = []
+                    for occurrence in conflict:
+                        real_occurrence = OccurrenceConflictSpecification(
+                            id=must_be_int(occurrence.id),
+                            start_time=occurrence.start_time,
+                            end_time=occurrence.end_time,
+                            date=occurrence.date,
+                            subject_code=occurrence.schedule.class_.subject.code,
+                            class_code=occurrence.schedule.class_.code,
+                            class_id=must_be_int(occurrence.schedule.class_.id),
+                        )
+                        real_conflict_conflicts.append(real_occurrence)
+                    real_conflicts.append(real_conflict_conflicts)
+                on_building_result.conflicts.append(
+                    ClassroomConflictsSpecification(
+                        id=must_be_int(classroom.id),
+                        name=classroom.name,
+                        conflicts=real_conflicts,
+                    )
+                )
+            result.append(on_building_result)
+        return result
+
+    def __conflicts_for_classroom(self, classroom: Classroom) -> list[Group]:
+        conflictings = self.__get_grouped_conflicting_occurrences_in_list(
+            classroom.occurrences
+        )
+        return conflictings
+
     def __count_conflicts_schedule_in_classroom(
         self, schedule: Schedule, classroom: Classroom
     ) -> int:
         count = 0
-        occurrences_to_be_generated = OccurrenceUtils.occurrences_from_schedules(
+        occurrences_to_be_generated = OccurrenceUtils.generate_occurrences(
             schedule
         )
         for classroom_occurrence in classroom.occurrences:
@@ -73,17 +146,6 @@ class ConflictChecker:
                 if classroom_occurrence.conflicts_with(schedule_occurrence):
                     count += 1
         return count
-
-    def __get_conflicting_occurrences_in_list(
-        self, occurrences: list[Occurrence]
-    ) -> list[Occurrence]:
-        conflicting_occurrences: set[Occurrence] = set()
-        for i, occurrence in enumerate(occurrences):
-            for other_occurrence in occurrences[i + 1 :]:
-                if occurrence.conflicts_with(other_occurrence):
-                    conflicting_occurrences.add(occurrence)
-                    conflicting_occurrences.add(other_occurrence)
-        return list(conflicting_occurrences)
 
     def __get_grouped_conflicting_occurrences_in_list(
         self, occurrences: list[Occurrence]
