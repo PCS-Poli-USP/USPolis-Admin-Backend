@@ -68,7 +68,7 @@ class ConflictChecker:
                     classroom.occurrences
                 )
             )
-            if conflicting_occurrences:
+            if len(conflicting_occurrences) > 0:
                 grouped_occurrences[must_be_int(classroom.id)] = conflicting_occurrences
         return grouped_occurrences
 
@@ -114,14 +114,16 @@ class ConflictChecker:
                             class_id=must_be_int(occurrence.schedule.class_.id),
                         )
                         real_conflict_conflicts.append(real_occurrence)
-                    real_conflicts.append(real_conflict_conflicts)
-                on_building_result.conflicts.append(
-                    ClassroomConflictsSpecification(
-                        id=must_be_int(classroom.id),
-                        name=classroom.name,
-                        conflicts=real_conflicts,
+                    if real_conflict_conflicts:
+                        real_conflicts.append(real_conflict_conflicts)
+                if real_conflicts:
+                    on_building_result.conflicts.append(
+                        ClassroomConflictsSpecification(
+                            id=must_be_int(classroom.id),
+                            name=classroom.name,
+                            conflicts=real_conflicts,
+                        )
                     )
-                )
             result.append(on_building_result)
         return result
 
@@ -135,9 +137,7 @@ class ConflictChecker:
         self, schedule: Schedule, classroom: Classroom
     ) -> int:
         count = 0
-        occurrences_to_be_generated = OccurrenceUtils.generate_occurrences(
-            schedule
-        )
+        occurrences_to_be_generated = OccurrenceUtils.generate_occurrences(schedule)
         for classroom_occurrence in classroom.occurrences:
             for schedule_occurrence in occurrences_to_be_generated:
                 if classroom_occurrence.schedule_id == schedule.id:
