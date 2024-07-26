@@ -18,7 +18,6 @@ router = APIRouter(prefix="/mobile/forum", tags=["Forum"])
 async def get_posts(class_id: int, session: SessionDep) -> list[ForumPostResponse]:
     """Get all posts"""
     posts = ForumRepository.get_all_posts(class_id=class_id, session=session)
-    print(posts)
     return ForumPostResponse.from_forum_post_list(posts)
 
 @router.post("/posts")
