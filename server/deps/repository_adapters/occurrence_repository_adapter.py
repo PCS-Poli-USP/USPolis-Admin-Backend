@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import Depends
 
 from server.deps.authenticate import UserDep
+from server.deps.owned_building_ids import OwnedBuildingIdsDep
 from server.deps.repository_adapters.classroom_repository_adapter import (
     ClassroomRepositoryDep,
 )
@@ -10,6 +11,7 @@ from server.deps.repository_adapters.schedule_repository_adapter import (
     ScheduleRepositoryDep,
 )
 from server.deps.session_dep import SessionDep
+from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.schedule_db_model import Schedule
 from server.models.http.requests.allocate_request_models import AllocateSchedule
 from server.repositories.occurrence_repository import OccurrenceRepository
@@ -24,13 +26,21 @@ class OccurrenceRepositoryAdapter:
         self,
         session: SessionDep,
         user: UserDep,
+        owned_building_ids: OwnedBuildingIdsDep,
         classroom_repo: ClassroomRepositoryDep,
         schedule_repo: ScheduleRepositoryDep,
     ):
         self.session = session
         self.user = user
+        self.owned_building_ids = owned_building_ids
         self.classroom_repo = classroom_repo
         self.schedule_repo = schedule_repo
+
+    def get_all(self) -> list[Occurrence]:
+        occurrences = OccurrenceRepository.get_all_on_buildings(
+            building_ids=self.owned_building_ids, session=self.session
+        )
+        return occurrences
 
     def allocate_schedule(self, schedule_id: int, classroom_id: int) -> Schedule:
         schedule = self.schedule_repo.get_by_id(schedule_id)
@@ -47,10 +57,14 @@ class OccurrenceRepositoryAdapter:
     ) -> None:
         for pair in schedule_classroom_pairs:
             schedule = self.schedule_repo.get_by_id(pair.schedule_id)
-            if (schedule.class_ is None and schedule.reservation is not None):
-                building_permission_checker(self.user, schedule.reservation.classroom.building)
-            if (schedule.class_ is not None):
-                building_permission_checker(self.user, schedule.class_.subject.buildings)
+            if schedule.class_ is None and schedule.reservation is not None:
+                building_permission_checker(
+                    self.user, schedule.reservation.classroom.building
+                )
+            if schedule.class_ is not None:
+                building_permission_checker(
+                    self.user, schedule.class_.subject.buildings
+                )
 
             if pair.classroom_id == -1:
                 OccurrenceRepository.remove_schedule_allocation(

@@ -5,7 +5,7 @@ from server.deps.repository_adapters.class_repository_adapter import (
     ClassRepositoryAdapterDep,
 )
 from server.models.http.requests.class_request_models import ClassRegister, ClassUpdate
-from server.models.http.responses.class_response_models import ClassResponse
+from server.models.http.responses.class_response_models import ClassResponse, ClassWithOccurrencesResponse
 from server.models.http.responses.generic_responses import NoContent
 
 embed = Body(..., embed=True)
@@ -18,6 +18,12 @@ async def get_all_classes(repository: ClassRepositoryAdapterDep) -> list[ClassRe
     """Get all classes"""
     classes = repository.get_all()
     return ClassResponse.from_class_list(classes)
+
+@router.get("/with-occurrences/")
+async def get_all_classes_with_occurrences(repository: ClassRepositoryAdapterDep) -> list[ClassWithOccurrencesResponse]:
+    """Get all classes with occurrences"""
+    classes = repository.get_all()
+    return ClassWithOccurrencesResponse.from_class_list(classes)
 
 
 @router.get("/{class_id}")

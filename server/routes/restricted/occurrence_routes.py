@@ -9,8 +9,15 @@ from server.deps.repository_adapters.occurrence_repository_adapter import (
 from server.models.database.schedule_db_model import Schedule
 from server.models.http.requests.allocate_request_models import AllocateSchedule
 from server.models.http.responses.generic_responses import NoContent
+from server.models.http.responses.occurrence_response_models import OccurrenceResponse
 
 router = APIRouter(prefix="/occurrences", tags=["Occurrences"])
+
+
+@router.get("")
+def get_all_occurrences(repository: OccurrenceRepositoryDep) -> list[OccurrenceResponse]:
+    occurrences = repository.get_all()
+    return OccurrenceResponse.from_occurrence_list(occurrences)
 
 
 @router.post("/allocate-schedule")
@@ -19,7 +26,8 @@ def allocate_schedule(
     schedule_id: int,
     classroom_id: int,
 ) -> Schedule:
-    schedule = occurrence_repository.allocate_schedule(schedule_id, classroom_id)
+    schedule = occurrence_repository.allocate_schedule(
+        schedule_id, classroom_id)
     return schedule
 
 

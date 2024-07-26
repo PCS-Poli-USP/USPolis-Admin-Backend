@@ -1,17 +1,14 @@
 from fastapi import APIRouter, Body, Response
 
-from server.deps.session_dep import SessionDep
 from server.deps.repository_adapters.reservation_repository_adapter import (
     ReservationRepositoryDep,
 )
-from server.models.database.reservation_db_model import Reservation
 from server.models.http.requests.reservation_request_models import (
     ReservationRegister,
     ReservationUpdate,
 )
 from server.models.http.responses.generic_responses import NoContent
-from server.models.http.responses.reservation_response_models import ReservationResponse
-from server.repositories.reservation_repository import ReservationRepository
+from server.models.http.responses.reservation_response_models import ReservationResponse, ReservationWithOccurrencesResponse
 
 embed = Body(..., embed=True)
 
@@ -22,9 +19,17 @@ router = APIRouter(prefix="/reservations", tags=["Reservations"])
 async def get_all_reservations(
     repository: ReservationRepositoryDep,
 ) -> list[ReservationResponse]:
-    """Get all user reservations on user buildings"""
+    """Get all reservations on user buildings"""
     reservations = repository.get_all()
     return ReservationResponse.from_reservation_list(reservations)
+
+@router.get("/with-occurrences/")
+async def get_all_reservations_with_occurrences(
+    repository: ReservationRepositoryDep,
+) -> list[ReservationWithOccurrencesResponse]:
+    """Get all reservations with occurrences on user buildings"""
+    reservations = repository.get_all()
+    return ReservationWithOccurrencesResponse.from_reservation_list(reservations)
 
 
 @router.get("/{reservation_id}")
