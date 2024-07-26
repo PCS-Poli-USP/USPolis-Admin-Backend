@@ -178,4 +178,9 @@ python/
 # MacOS
 .DS_STORE
 
+# Docker
 docker-compose.*
+
+# Google API
+token.json
+credentials.json
