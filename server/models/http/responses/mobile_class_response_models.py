@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from server.models.database.class_db_model import Class
 from server.models.database.classroom_db_model import Classroom
 from server.models.http.exceptions.responses_exceptions import UnfetchDataError
-from server.routes.public.dtos.mobile_schedule_response import MobileScheduleResponse
+from server.models.http.responses.mobile_schedule_response_models import MobileScheduleResponse
 
 
 class MobileClassResponse(BaseModel):

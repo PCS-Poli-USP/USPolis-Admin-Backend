@@ -5,7 +5,7 @@ from server.models.database.institutional_event_db_model import InstitutionalEve
 from server.repositories.institutional_event_repository import (
     InstitutionalEventRepository,
 )
-from server.routes.public.dtos.mobile_institutional_event_response import MobileInstitutionalEventLike, MobileInstitutionalEventResponse, to_event_update
+from server.models.http.responses.mobile_institutional_event_response_models import MobileInstitutionalEventLike, MobileInstitutionalEventResponse, to_event_update
 
 embed = Body(..., embed=True)
 

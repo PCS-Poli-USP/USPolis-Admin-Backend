@@ -8,7 +8,7 @@ from google.auth.transport import requests
 from server.deps.session_dep import SessionDep
 from server.models.database.mobile_user_db_model import MobileUser
 from server.repositories.mobile_user_repository import MobileUserRepository
-from server.routes.public.dtos.mobile_auth_user_response import AuthenticationResponse
+from server.models.http.responses.mobile_auth_user_response_models import AuthenticationResponse
 
 router = APIRouter(prefix="/mobile/authentication", tags=["Mobile","Authenticate"])
 

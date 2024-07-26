@@ -1,12 +1,12 @@
-from datetime import datetime
 import os
 from fastapi import APIRouter
 
 #from sendgrid import SendGridAPIClient
 #from sendgrid.helpers.mail import Mail
 from server.deps.session_dep import SessionDep
+from server.models.http.requests.mobile_comment_request_models import MobileCommentRegister, to_comment_model
 from server.repositories.mobile_comments_repository import CommentRepository
-from server.routes.public.dtos.mobile_comment_dto import MobileCommentRegister, MobileCommentResponse, to_comment_model
+from server.models.http.responses.mobile_comment_response_models import MobileCommentResponse
 
 router = APIRouter(prefix="/mobile/comments", tags=["Mobile","Comments"])
 
