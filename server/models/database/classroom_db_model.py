@@ -39,8 +39,8 @@ class Classroom(ClassroomBase, table=True):
     created_by: "User" = Relationship()
     building: "Building" = Relationship(back_populates="classrooms")
     occurrences: list["Occurrence"] = Relationship(back_populates="classroom")
-    reservations: list["Reservation"] | None = Relationship(back_populates="classroom")
-    schedules: list["Schedule"] | None = Relationship(back_populates="classroom")
+    reservations: list["Reservation"] = Relationship(back_populates="classroom")
+    schedules: list["Schedule"] = Relationship(back_populates="classroom")
 
 
 class ClassroomWithConflictsIndicator(ClassroomBase):
