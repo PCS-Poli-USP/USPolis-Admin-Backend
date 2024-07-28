@@ -112,4 +112,3 @@ class ClassroomNotFound(HTTPException):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Classroom with id {id} not found",
         )
-

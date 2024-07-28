@@ -33,9 +33,9 @@ class User(SQLModel, table=True):
     buildings: list["Building"] | None = Relationship(
         back_populates="users", link_model=UserBuildingLink
     )
-    holidays_categories: list["HolidayCategory"] | None = Relationship(
+    holidays_categories: list["HolidayCategory"] = Relationship(
         back_populates="created_by"
     )
-    holidays: list["Holiday"] | None = Relationship(back_populates="created_by")
-    calendars: list["Calendar"] | None = Relationship(back_populates="created_by")
-    reservations: list["Reservation"] | None = Relationship(back_populates="created_by")
+    holidays: list["Holiday"] = Relationship(back_populates="created_by")
+    calendars: list["Calendar"] = Relationship(back_populates="created_by")
+    reservations: list["Reservation"] = Relationship(back_populates="created_by")

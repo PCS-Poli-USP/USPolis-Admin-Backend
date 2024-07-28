@@ -24,8 +24,8 @@ class ClassroomBase(SQLModel):
     air_conditioning: bool = False
     updated_at: datetime = datetime.now()
 
-    created_by_id: int | None = Field(foreign_key="user.id", default=None)
-    building_id: int | None = Field(foreign_key="building.id", default=None)
+    created_by_id: int = Field(foreign_key="user.id")
+    building_id: int = Field(foreign_key="building.id")
 
 
 class Classroom(ClassroomBase, table=True):

@@ -7,6 +7,8 @@ from server.utils.must_be_int import must_be_int
 
 class HolidayResponse(BaseModel):
     id: int
+    name: str
+    category_id: int
     category: str
     date: date
     updated_at: datetime
@@ -16,6 +18,8 @@ class HolidayResponse(BaseModel):
     def from_holiday(cls, holiday: Holiday) -> "HolidayResponse":
         return cls(
             id=must_be_int(holiday.id),
+            name=holiday.name,
+            category_id=must_be_int(holiday.category.id),
             category=holiday.category.name,
             date=holiday.date,
             updated_at=holiday.updated_at,
