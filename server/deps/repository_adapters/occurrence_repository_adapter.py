@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from server.deps.authenticate import UserDep
+from server.deps.authenticate import BuildingDep, UserDep
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
 from server.deps.repository_adapters.classroom_repository_adapter import (
     ClassroomRepositoryDep,
@@ -11,8 +11,10 @@ from server.deps.repository_adapters.schedule_repository_adapter import (
     ScheduleRepositoryDep,
 )
 from server.deps.session_dep import SessionDep
+from server.models.database.class_db_model import Class
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.schedule_db_model import Schedule
+from server.repositories.class_repository import ClassRepository
 from server.models.http.requests.allocate_request_models import AllocateSchedule
 from server.repositories.occurrence_repository import OccurrenceRepository
 from server.services.security.buildings_permission_checker import (
@@ -24,12 +26,15 @@ from server.utils.must_be_int import must_be_int
 class OccurrenceRepositoryAdapter:
     def __init__(
         self,
+        owned_building_ids: OwnedBuildingIdsDep,
+        building: BuildingDep,
         session: SessionDep,
         user: UserDep,
-        owned_building_ids: OwnedBuildingIdsDep,
         classroom_repo: ClassroomRepositoryDep,
         schedule_repo: ScheduleRepositoryDep,
     ):
+        self.owned_building_ids = owned_building_ids
+        self.building = building
         self.session = session
         self.user = user
         self.owned_building_ids = owned_building_ids

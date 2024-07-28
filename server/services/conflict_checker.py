@@ -1,3 +1,4 @@
+from typing import Any
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
 from server.deps.repository_adapters.classroom_repository_adapter import (
     ClassroomRepositoryDep,
