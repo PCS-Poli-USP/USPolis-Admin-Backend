@@ -1,4 +1,4 @@
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 
 
 def must_be_int(id: int | None) -> int:
@@ -14,4 +14,4 @@ class IdIsNoneException(HTTPException):
     def __init__(
         self,
     ) -> None:
-        super().__init__(500, "ID is None.")
+        super().__init__(status.HTTP_500_INTERNAL_SERVER_ERROR, "ID is None.")

@@ -5,7 +5,10 @@ from server.deps.repository_adapters.class_repository_adapter import (
     ClassRepositoryAdapterDep,
 )
 from server.models.http.requests.class_request_models import ClassRegister, ClassUpdate
-from server.models.http.responses.class_response_models import ClassResponse
+from server.models.http.responses.class_response_models import (
+    ClassResponse,
+    ClassFullResponse,
+)
 from server.models.http.responses.generic_responses import NoContent
 
 embed = Body(..., embed=True)
@@ -18,6 +21,15 @@ async def get_all_classes(repository: ClassRepositoryAdapterDep) -> list[ClassRe
     """Get all classes"""
     classes = repository.get_all()
     return ClassResponse.from_class_list(classes)
+
+
+@router.get("/full/")
+async def get_all_classes_full(
+    repository: ClassRepositoryAdapterDep,
+) -> list[ClassFullResponse]:
+    """Get all classes with schedules and occurrences"""
+    classes = repository.get_all()
+    return ClassFullResponse.from_class_list(classes)
 
 
 @router.get("/{class_id}")
@@ -60,6 +72,6 @@ async def delete_class(
 async def delete_many_class(
     repository: ClassRepositoryAdapterDep, ids: Annotated[list[int], Query()] = []
 ) -> Response:
-    """Delete a class by id"""
+    """Delete many classes by ids"""
     repository.delete_many(ids=ids)
     return NoContent

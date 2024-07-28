@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from server.models.database.institutional_event_db_model import InstitutionalEvent
-from server.models.http.exceptions.responses_exceptions import UnfetchDataError
+from server.utils.must_be_int import must_be_int
 
 
 class InstitutionalEventResponse(BaseModel):
@@ -24,10 +24,8 @@ class InstitutionalEventResponse(BaseModel):
     def from_institutional_event(
         cls, event: InstitutionalEvent
     ) -> "InstitutionalEventResponse":
-        if event.id is None:
-            raise UnfetchDataError("Institutional Event", "ID")
         return cls(
-            id=event.id,
+            id=must_be_int(event.id),
             title=event.title,
             description=event.description,
             start=event.start,

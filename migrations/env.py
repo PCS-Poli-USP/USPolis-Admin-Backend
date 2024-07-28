@@ -1,3 +1,4 @@
+import os
 import asyncio
 from logging.config import fileConfig
 
@@ -8,6 +9,11 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from sqlmodel import SQLModel  # NEW
 
 from server.db import engine  # noqa
+
+from dotenv import load_dotenv
+
+# Carregar variáveis do arquivo .env
+load_dotenv()
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -30,6 +36,13 @@ target_metadata = SQLModel.metadata             # UPDATED
 # ... etc.
 
 
+def get_url() -> str:
+    return f'{os.getenv("ALEMBIC_URL")}'
+
+
+config.set_main_option("sqlalchemy.url", get_url())
+
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
@@ -42,7 +55,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = get_url()
     context.configure(
         url=url,
         target_metadata=target_metadata,

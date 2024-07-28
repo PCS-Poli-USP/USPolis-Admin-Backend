@@ -1,17 +1,25 @@
-from typing import Annotated, Any
-from fastapi import APIRouter, Depends
+from typing import Any
+from fastapi import APIRouter, Response
 
 from server.deps.conflict_checker import ConflictCheckerDep
 from server.deps.repository_adapters.occurrence_repository_adapter import (
     OccurrenceRepositoryDep,
 )
 from server.models.database.schedule_db_model import Schedule
-from server.services.conflict_checker import ConflictChecker
 from server.models.http.requests.allocate_request_models import AllocateSchedule
 from server.models.http.responses.generic_responses import NoContent
+from server.models.http.responses.occurrence_response_models import OccurrenceResponse
 
 
 router = APIRouter(prefix="/occurrences", tags=["Occurrences"])
+
+
+@router.get("")
+def get_all_occurrences(
+    repository: OccurrenceRepositoryDep,
+) -> list[OccurrenceResponse]:
+    occurrences = repository.get_all()
+    return OccurrenceResponse.from_occurrence_list(occurrences)
 
 
 @router.post("/allocate-schedule")
