@@ -14,7 +14,7 @@ from server.services.security.buildings_permission_checker import (
 )
 
 
-class BuildingRespositoryAdapter:
+class BuildingRepositoryAdapter:
     def __init__(
         self,
         owned_building_ids: OwnedBuildingIdsDep,
@@ -56,5 +56,13 @@ class BuildingRespositoryAdapter:
         BuildingRepository.delete(id=id, session=self.session)
         self.session.commit()
 
+    def get_owned_buildings(self) -> list[Building]:
+        buildings = BuildingRepository.get_by_ids(
+            ids=self.owned_building_ids, session=self.session
+        )
+        return buildings
 
-BuildingRespositoryAdapterDep = Annotated[BuildingRespositoryAdapter, Depends()]
+
+BuildingRepositoryDep = Annotated[BuildingRepositoryAdapter, Depends()]
+
+BuildingRespositoryAdapterDep = Annotated[BuildingRepositoryAdapter, Depends()]
