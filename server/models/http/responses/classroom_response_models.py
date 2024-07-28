@@ -2,7 +2,9 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from server.models.database.classroom_db_model import Classroom
+from server.models.database.classroom_db_model import (
+    Classroom,
+)
 from server.models.http.exceptions.responses_exceptions import UnfetchDataError
 
 

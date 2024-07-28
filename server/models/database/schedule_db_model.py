@@ -1,6 +1,7 @@
 from datetime import date, time
 from typing import TYPE_CHECKING, Optional
 
+from sqlalchemy import Column, ForeignKey, Integer
 from sqlmodel import Field, Relationship, SQLModel
 
 from server.models.database.reservation_db_model import Reservation
@@ -27,8 +28,14 @@ class Schedule(SQLModel, table=True):
     month_week: MonthWeek | None = Field(default=None, nullable=True)
     all_day: bool = Field(default=False)
 
-    class_id: int | None = Field(foreign_key="class.id", nullable=True, default=None)
-    class_: "Class" = Relationship(back_populates="schedules")
+    # class_id: int | None = Field(foreign_key="class.id", nullable=True, default=None)
+    class_id: int | None = Field(
+        sa_column=Column(Integer, ForeignKey("class.id", ondelete="CASCADE")),
+        default=None,
+    )
+    class_: "Class" = Relationship(
+        back_populates="schedules"
+    )
 
     classroom_id: int | None = Field(
         foreign_key="classroom.id", nullable=True, default=None
