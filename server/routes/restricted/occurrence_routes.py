@@ -15,7 +15,9 @@ router = APIRouter(prefix="/occurrences", tags=["Occurrences"])
 
 
 @router.get("")
-def get_all_occurrences(repository: OccurrenceRepositoryDep) -> list[OccurrenceResponse]:
+def get_all_occurrences(
+    repository: OccurrenceRepositoryDep,
+) -> list[OccurrenceResponse]:
     occurrences = repository.get_all()
     return OccurrenceResponse.from_occurrence_list(occurrences)
 
@@ -26,8 +28,7 @@ def allocate_schedule(
     schedule_id: int,
     classroom_id: int,
 ) -> Schedule:
-    schedule = occurrence_repository.allocate_schedule(
-        schedule_id, classroom_id)
+    schedule = occurrence_repository.allocate_schedule(schedule_id, classroom_id)
     return schedule
 
 

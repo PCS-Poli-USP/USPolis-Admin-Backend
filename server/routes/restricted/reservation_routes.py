@@ -8,7 +8,10 @@ from server.models.http.requests.reservation_request_models import (
     ReservationUpdate,
 )
 from server.models.http.responses.generic_responses import NoContent
-from server.models.http.responses.reservation_response_models import ReservationResponse, ReservationWithOccurrencesResponse
+from server.models.http.responses.reservation_response_models import (
+    ReservationResponse,
+    ReservationFullResponse,
+)
 
 embed = Body(..., embed=True)
 
@@ -23,13 +26,14 @@ async def get_all_reservations(
     reservations = repository.get_all()
     return ReservationResponse.from_reservation_list(reservations)
 
-@router.get("/with-occurrences/")
-async def get_all_reservations_with_occurrences(
+
+@router.get("/full/")
+async def get_all_reservations_full(
     repository: ReservationRepositoryDep,
-) -> list[ReservationWithOccurrencesResponse]:
+) -> list[ReservationFullResponse]:
     """Get all reservations with occurrences on user buildings"""
     reservations = repository.get_all()
-    return ReservationWithOccurrencesResponse.from_reservation_list(reservations)
+    return ReservationFullResponse.from_reservation_list(reservations)
 
 
 @router.get("/{reservation_id}")

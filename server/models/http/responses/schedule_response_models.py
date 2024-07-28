@@ -2,7 +2,6 @@ from datetime import date, time
 
 from pydantic import BaseModel
 
-from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.schedule_db_model import Schedule
 from server.models.http.exceptions.responses_exceptions import UnfetchDataError
 from server.models.http.responses.occurrence_response_models import OccurrenceResponse
@@ -10,6 +9,7 @@ from server.utils.enums import month_week
 from server.utils.enums.month_week import MonthWeek
 from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.week_day import WeekDay
+from server.utils.must_be_int import must_be_int
 
 
 class ScheduleResponseBase(BaseModel):
@@ -37,7 +37,7 @@ class ScheduleResponseBase(BaseModel):
 class ScheduleResponse(ScheduleResponseBase):
     occurrence_ids: list[int] | None = None
     # When recurrence is custom is necessary
-    occurrences: list[Occurrence] | None = None
+    occurrences: list[OccurrenceResponse] | None = None
 
     @classmethod
     def from_schedule(cls, schedule: Schedule) -> "ScheduleResponse":
@@ -63,8 +63,8 @@ class ScheduleResponse(ScheduleResponseBase):
             occurrence_ids=cls.get_occurences_ids(schedule)
             if schedule.occurrences and schedule.recurrence == Recurrence.CUSTOM
             else None,
-            occurrences=schedule.occurrences
-            if schedule.recurrence == Recurrence.CUSTOM
+            occurrences=OccurrenceResponse.from_occurrence_list(schedule.occurrences)
+            if schedule.occurrences and schedule.recurrence == Recurrence.CUSTOM
             else None,
         )
 
@@ -84,15 +84,15 @@ class ScheduleResponse(ScheduleResponseBase):
         return ids
 
 
-class ScheduleWithOccurrencesResponse(ScheduleResponseBase):
+class ScheduleFullResponse(ScheduleResponseBase):
+    """Schedules with occurrences not optional"""
+
     occurrences: list[OccurrenceResponse]
 
     @classmethod
-    def from_schedule(cls, schedule: Schedule) -> "ScheduleWithOccurrencesResponse":
-        if schedule.id is None:
-            raise UnfetchDataError("Schedule", "ID")
+    def from_schedule(cls, schedule: Schedule) -> "ScheduleFullResponse":
         return cls(
-            id=schedule.id,
+            id=must_be_int(schedule.id),
             week_day=schedule.week_day,
             month_week=schedule.month_week,
             start_date=schedule.start_date,
@@ -108,9 +108,13 @@ class ScheduleWithOccurrencesResponse(ScheduleResponseBase):
             building=schedule.classroom.building.name if schedule.classroom else None,
             class_id=schedule.class_id,
             reservation_id=schedule.reservation.id if schedule.reservation else None,
-            occurrences=OccurrenceResponse.from_occurrence_list(schedule.occurrences) if schedule.occurrences else [],
+            occurrences=OccurrenceResponse.from_occurrence_list(schedule.occurrences)
+            if schedule.occurrences
+            else [],
         )
 
     @classmethod
-    def from_schedule_list(cls, schedules: list[Schedule]) -> list["ScheduleWithOccurrencesResponse"]:
+    def from_schedule_list(
+        cls, schedules: list[Schedule]
+    ) -> list["ScheduleFullResponse"]:
         return [cls.from_schedule(schedule) for schedule in schedules]

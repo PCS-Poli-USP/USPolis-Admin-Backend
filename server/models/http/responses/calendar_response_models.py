@@ -1,10 +1,10 @@
 from pydantic import BaseModel
 
 from server.models.database.calendar_db_model import Calendar
-from server.models.http.exceptions.responses_exceptions import UnfetchDataError
 from server.models.http.responses.holiday_category_response_models import (
     HolidayCategoryResponse,
 )
+from server.utils.must_be_int import must_be_int
 
 
 class CalendarResponse(BaseModel):
@@ -15,10 +15,8 @@ class CalendarResponse(BaseModel):
 
     @classmethod
     def from_calendar(cls, calendar: Calendar) -> "CalendarResponse":
-        if calendar.id is None:
-            raise UnfetchDataError("Calendar", "ID")
         return cls(
-            id=calendar.id,
+            id=must_be_int(calendar.id),
             name=calendar.name,
             categories=HolidayCategoryResponse.from_holiday_category_list(
                 calendar.categories

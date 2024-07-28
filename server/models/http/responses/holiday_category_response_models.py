@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 from server.models.database.holiday_category_db_model import HolidayCategory
 from server.models.database.holiday_db_model import Holiday
+from server.utils.must_be_int import must_be_int
 
 
 class HolidayCategoryResponse(BaseModel):
@@ -14,12 +15,8 @@ class HolidayCategoryResponse(BaseModel):
     def from_holiday_category(
         cls, holiday_category: HolidayCategory
     ) -> "HolidayCategoryResponse":
-        if holiday_category.id is None:
-            raise ValueError(
-                "HolidayCategory ID is None, try refreshing the session if it is newly created"
-            )
         return cls(
-            id=holiday_category.id,
+            id=must_be_int(holiday_category.id),
             name=holiday_category.name,
             created_by=holiday_category.created_by.name,
             holidays=holiday_category.holidays,

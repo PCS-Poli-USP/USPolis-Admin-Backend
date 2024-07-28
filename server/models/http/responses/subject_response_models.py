@@ -4,9 +4,9 @@ from pydantic import BaseModel
 
 from server.models.database.class_db_model import Class
 from server.models.database.subject_db_model import Subject
-from server.models.http.exceptions.responses_exceptions import UnfetchDataError
 from server.models.http.responses.building_response_models import BuildingResponse
 from server.utils.enums.subject_type import SubjectType
+from server.utils.must_be_int import must_be_int
 
 
 class SubjectResponse(BaseModel):
@@ -25,10 +25,8 @@ class SubjectResponse(BaseModel):
 
     @classmethod
     def from_subject(cls, subject: Subject) -> "SubjectResponse":
-        if subject.id is None:
-            raise UnfetchDataError("Subject", "ID")
         return cls(
-            id=subject.id,
+            id=must_be_int(subject.id),
             professors=subject.professors,
             building_ids=[
                 building.id for building in subject.buildings if (building.id)

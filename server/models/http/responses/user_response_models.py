@@ -3,8 +3,8 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from server.models.database.user_db_model import User
-from server.models.http.exceptions.responses_exceptions import UnfetchDataError
 from server.models.http.responses.building_response_models import BuildingResponse
+from server.utils.must_be_int import must_be_int
 
 
 class UserResponse(BaseModel):
@@ -19,10 +19,8 @@ class UserResponse(BaseModel):
 
     @classmethod
     def from_user(cls, user: User) -> "UserResponse":
-        if user.id is None:
-            raise UnfetchDataError("User", "ID")
         return cls(
-            id=user.id,
+            id=must_be_int(user.id),
             username=user.username,
             email=user.email,
             is_admin=user.is_admin,

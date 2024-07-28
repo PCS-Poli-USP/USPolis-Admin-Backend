@@ -3,7 +3,7 @@ from datetime import date as datetime_date
 from pydantic import BaseModel
 
 from server.models.database.occurrence_db_model import Occurrence
-from server.models.http.exceptions.responses_exceptions import UnfetchDataError
+from server.utils.must_be_int import must_be_int
 
 
 class OccurrenceBase(BaseModel):
@@ -18,10 +18,8 @@ class OccurrenceBase(BaseModel):
 class OccurrenceResponse(OccurrenceBase):
     @classmethod
     def from_occurrence(cls, occurrence: Occurrence) -> "OccurrenceResponse":
-        if occurrence.id is None:
-            raise UnfetchDataError("Occurrence", "ID")
         return cls(
-            id=occurrence.id,
+            id=must_be_int(occurrence.id),
             start_time=occurrence.start_time,
             end_time=occurrence.end_time,
             date=occurrence.date,

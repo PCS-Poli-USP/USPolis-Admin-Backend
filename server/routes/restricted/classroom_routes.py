@@ -8,7 +8,7 @@ from server.models.database.classroom_db_model import ClassroomWithConflictsIndi
 from server.models.http.requests.classroom_request_models import ClassroomRegister
 from server.models.http.responses.classroom_response_models import (
     ClassroomResponse,
-    ClassroomWithSchedulesResponse,
+    ClassroomFullResponse,
 )
 from server.models.http.responses.generic_responses import NoContent
 
@@ -28,6 +28,15 @@ async def get_all_classrooms(
     return ClassroomResponse.from_classroom_list(classrooms)
 
 
+@router.get("/full/")
+async def get_all_classrooms_full(
+    respository: ClassroomRepositoryDep,
+) -> list[ClassroomFullResponse]:
+    """Get all classrooms with schedules and occurrences"""
+    classrooms = respository.get_all()
+    return ClassroomFullResponse.from_classroom_list(classrooms)
+
+
 @router.get("/{id}")
 async def get_classroom(
     id: int, repository: ClassroomRepositoryDep
@@ -36,12 +45,13 @@ async def get_classroom(
     return ClassroomResponse.from_classroom(classroom)
 
 
-@router.get("/with-schedules/{id}")
-async def get_classroom_with_schedules(
+@router.get("/full/{id}")
+async def get_classroom_full(
     id: int, respository: ClassroomRepositoryDep
-) -> ClassroomWithSchedulesResponse:
+) -> ClassroomFullResponse:
+    """Get by ID a classrooms with schedules and occurrences"""
     classroom = respository.get_by_id(id)
-    return ClassroomWithSchedulesResponse.from_classroom(classroom)
+    return ClassroomFullResponse.from_classroom(classroom)
 
 
 @router.get("/with-conflict-count/{building_id}/{schedule_id}")
@@ -58,6 +68,7 @@ async def get_classrooms_with_conflicts_count(
 async def create_classroom(
     classroom_in: ClassroomRegister, repository: ClassroomRepositoryDep
 ) -> ClassroomResponse:
+    """Create a classroom"""
     classroom = repository.create(classroom_in)
     return ClassroomResponse.from_classroom(classroom)
 
