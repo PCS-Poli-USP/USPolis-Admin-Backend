@@ -32,3 +32,5 @@ class ForumPostResponse(BaseModel):
         cls, posts: list[ForumPost]
     ) -> list["ForumPostResponse"]:
         return [cls.from_forum_post(post) for post in posts]
+
+# class ForumReportResponse(BaseModel):

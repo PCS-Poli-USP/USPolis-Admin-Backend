@@ -14,3 +14,8 @@ def to_forumpost_model(postDTO: ForumPostRegister):
         content=postDTO.content,
         user_id=postDTO.user_id
     )
+
+
+class ForumReportRegister(BaseModel):
+    post_id: int
+    user_id: int
