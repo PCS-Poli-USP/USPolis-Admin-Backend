@@ -107,7 +107,7 @@ if __name__ == "__main__":
         WeekDay.WEDNESDAY.value,
         Recurrence.MONTHLY,
         date(2024, 6, 30),
-        date(2024, 8, 10),
-        MonthWeek.THIRD.value,
+        date(2024, 12, 7),
+        MonthWeek.LAST.value,
     )
     print(dates)

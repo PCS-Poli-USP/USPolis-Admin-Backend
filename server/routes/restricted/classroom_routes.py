@@ -6,7 +6,10 @@ from server.deps.repository_adapters.classroom_repository_adapter import (
 )
 from server.models.database.classroom_db_model import ClassroomWithConflictsIndicator
 from server.models.http.requests.classroom_request_models import ClassroomRegister
-from server.models.http.responses.classroom_response_models import ClassroomResponse
+from server.models.http.responses.classroom_response_models import (
+    ClassroomResponse,
+    ClassroomWithSchedulesResponse,
+)
 from server.models.http.responses.generic_responses import NoContent
 
 embed = Body(..., embed=True)
@@ -17,7 +20,7 @@ router = APIRouter(
 )
 
 
-@router.get("", response_model_by_alias=False)
+@router.get("")
 async def get_all_classrooms(
     repository: ClassroomRepositoryDep,
 ) -> list[ClassroomResponse]:
@@ -25,7 +28,7 @@ async def get_all_classrooms(
     return ClassroomResponse.from_classroom_list(classrooms)
 
 
-@router.get("/{id}", response_model_by_alias=False)
+@router.get("/{id}")
 async def get_classroom(
     id: int, repository: ClassroomRepositoryDep
 ) -> ClassroomResponse:
@@ -33,9 +36,15 @@ async def get_classroom(
     return ClassroomResponse.from_classroom(classroom)
 
 
-@router.get(
-    "/with-conflict-count/{building_id}/{schedule_id}"
-)
+@router.get("/with-schedules/{id}")
+async def get_classroom_with_schedules(
+    id: int, respository: ClassroomRepositoryDep
+) -> ClassroomWithSchedulesResponse:
+    classroom = respository.get_by_id(id)
+    return ClassroomWithSchedulesResponse.from_classroom(classroom)
+
+
+@router.get("/with-conflict-count/{building_id}/{schedule_id}")
 async def get_classrooms_with_conflicts_count(
     building_id: int, schedule_id: int, conflict_checker: ConflictCheckerDep
 ) -> list[ClassroomWithConflictsIndicator]:

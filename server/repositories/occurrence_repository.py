@@ -21,8 +21,9 @@ class OccurrenceRepository:
         occurrences = OccurrenceUtils.occurrences_from_schedules(schedule)
 
         previous_occurrences = schedule.occurrences
-        for occurrence in previous_occurrences:
-            session.delete(occurrence)
+        if previous_occurrences:
+            for occurrence in previous_occurrences:
+                session.delete(occurrence)
 
         schedule.occurrences = occurrences
         classroom.occurrences.extend(occurrences)
@@ -41,8 +42,9 @@ class OccurrenceRepository:
 
     @staticmethod
     def remove_schedule_allocation(schedule: Schedule, session: Session) -> None:
-        for occurrence in schedule.occurrences:
-            session.delete(occurrence)
+        if schedule.occurrences:
+            for occurrence in schedule.occurrences:
+                session.delete(occurrence)
         schedule.allocated = False
         schedule.classroom_id = None
         session.add(schedule)
@@ -85,13 +87,9 @@ class OccurrenceRepository:
                 id=input.classroom_id, session=session
             )
 
-        if schedule.id is None:
-            raise UnfetchDataError("Schedule", "ID")
-
         occurrences: list[Occurrence] = []
         for date in input.dates:
             occurrence = Occurrence(
-                schedule_id=schedule.id,
                 schedule=schedule,
                 classroom_id=input.classroom_id,
                 classroom=classroom,
@@ -100,7 +98,5 @@ class OccurrenceRepository:
                 date=date,
             )
             session.add(occurrence)
-            session.commit()
-            session.refresh(occurrence)
             occurrences.append(occurrence)
         return occurrences

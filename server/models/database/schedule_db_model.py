@@ -33,9 +33,7 @@ class Schedule(SQLModel, table=True):
         sa_column=Column(Integer, ForeignKey("class.id", ondelete="CASCADE")),
         default=None,
     )
-    class_: "Class" = Relationship(
-        back_populates="schedules"
-    )
+    class_: Optional["Class"] = Relationship(back_populates="schedules")
 
     classroom_id: int | None = Field(
         foreign_key="classroom.id", nullable=True, default=None
@@ -47,6 +45,6 @@ class Schedule(SQLModel, table=True):
     )
     reservation: Optional["Reservation"] = Relationship(back_populates="schedule")
 
-    occurrences: list["Occurrence"] = Relationship(
+    occurrences: list["Occurrence"] | None = Relationship(
         back_populates="schedule", sa_relationship_kwargs={"cascade": "delete"}
     )

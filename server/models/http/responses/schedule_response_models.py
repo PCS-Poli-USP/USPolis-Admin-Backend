@@ -2,8 +2,11 @@ from datetime import date, time
 
 from pydantic import BaseModel
 
+from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.schedule_db_model import Schedule
 from server.models.http.exceptions.responses_exceptions import UnfetchDataError
+from server.utils.enums import month_week
+from server.utils.enums.month_week import MonthWeek
 from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.week_day import WeekDay
 
@@ -11,7 +14,7 @@ from server.utils.enums.week_day import WeekDay
 class ScheduleResponseBase(BaseModel):
     id: int
     week_day: WeekDay | None = None
-    dates: list[date] | None = None
+    month_week: MonthWeek | None = None
     start_date: date
     end_date: date
     start_time: time
@@ -19,6 +22,9 @@ class ScheduleResponseBase(BaseModel):
     allocated: bool
     recurrence: Recurrence
     all_day: bool
+    occurrences: list[Occurrence] | None = (
+        None  # When recurrence is custom is necessary
+    )
 
 
 class ScheduleResponse(ScheduleResponseBase):
@@ -40,9 +46,7 @@ class ScheduleResponse(ScheduleResponseBase):
         return cls(
             id=schedule.id,
             week_day=schedule.week_day,
-            dates=[occurrence.date for occurrence in schedule.occurrences]
-            if schedule.occurrences
-            else None,
+            month_week=schedule.month_week,
             start_date=schedule.start_date,
             end_date=schedule.end_date,
             start_time=schedule.start_time,
@@ -57,7 +61,10 @@ class ScheduleResponse(ScheduleResponseBase):
             class_id=schedule.class_id,
             reservation_id=schedule.reservation.id if schedule.reservation else None,
             occurrence_ids=cls.get_occurences_ids(schedule)
-            if schedule.occurrences
+            if schedule.occurrences and schedule.recurrence == Recurrence.CUSTOM
+            else None,
+            occurrences=schedule.occurrences
+            if schedule.recurrence == Recurrence.CUSTOM
             else None,
         )
 
