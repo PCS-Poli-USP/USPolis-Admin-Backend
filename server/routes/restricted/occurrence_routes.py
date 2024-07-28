@@ -1,14 +1,15 @@
-from typing import Any
-
-from fastapi import APIRouter, Response
+from typing import Annotated, Any
+from fastapi import APIRouter, Depends
 
 from server.deps.conflict_checker import ConflictCheckerDep
 from server.deps.repository_adapters.occurrence_repository_adapter import (
     OccurrenceRepositoryDep,
 )
 from server.models.database.schedule_db_model import Schedule
+from server.services.conflict_checker import ConflictChecker
 from server.models.http.requests.allocate_request_models import AllocateSchedule
 from server.models.http.responses.generic_responses import NoContent
+
 
 router = APIRouter(prefix="/occurrences", tags=["Occurrences"])
 
@@ -39,7 +40,6 @@ def remove_schedule_allocation(
 ) -> Schedule:
     schedule = occurrence_repository.remove_schedule_allocation(schedule_id)
     return schedule
-
 
 @router.get("/get-all-conflicting-occurrences")
 def get_all_occurrences_grouped_by_classroom(
