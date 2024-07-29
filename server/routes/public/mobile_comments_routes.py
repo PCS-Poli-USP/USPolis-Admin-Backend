@@ -76,7 +76,6 @@ def send_email(
     sent_email = gmail_send_message(creds, html_content)
     return sent_email
 
-
 def gmail_login() -> Credentials:
     """Shows basic usage of the Gmail API.
     Lists the user's Gmail labels.
