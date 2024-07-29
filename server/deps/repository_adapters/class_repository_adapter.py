@@ -50,21 +50,23 @@ class ClassRepositoryAdapter:
         return new_class
 
     def update(self, id: int, input: ClassUpdate) -> Class:
-        class_permission_checker(user=self.user, class_=id, session=self.session)
-        updated_class = ClassRepository.update(id=id, input=input, session=self.session)
+        class_permission_checker(
+            user=self.user, class_=id, session=self.session)
+        updated_class = ClassRepository.update(
+            id=id, input=input, session=self.session)
         self.session.commit()
         self.session.refresh(updated_class)
-        for schedule in updated_class.schedules:
-            self.session.refresh(schedule)
         return updated_class
 
     def delete(self, id: int) -> None:
-        class_permission_checker(user=self.user, class_=id, session=self.session)
+        class_permission_checker(
+            user=self.user, class_=id, session=self.session)
         ClassRepository.delete(id=id, session=self.session)
         self.session.commit()
 
     def delete_many(self, ids: list[int]) -> None:
-        class_permission_checker(user=self.user, class_=ids, session=self.session)
+        class_permission_checker(
+            user=self.user, class_=ids, session=self.session)
         ClassRepository.delete_many(ids=ids, session=self.session)
         self.session.commit()
 

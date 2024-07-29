@@ -1,5 +1,7 @@
 from datetime import datetime
-from pydantic import BaseModel
+from typing import Self
+from fastapi import HTTPException, status
+from pydantic import BaseModel, model_validator
 
 from server.models.http.requests.schedule_request_models import (
     ScheduleRegister,
@@ -38,5 +40,36 @@ class ClassRegister(ClassRequestBase):
 class ClassUpdate(ClassRequestBase):
     """Class update input body"""
 
-    subject_id: int | None = None
-    schedules_data: list[ScheduleUpdate] | None = None
+    subject_id: int
+    schedules_data: list[ScheduleUpdate]
+
+    @model_validator(mode="after")
+    def check_class_body(self) -> Self:
+        professors = self.professors
+        subject_id = self.subject_id
+        schedules_data = self.schedules_data
+
+        if not professors:
+            raise ClassInvalidData("Professors")
+        if subject_id <= 0:
+            raise ClassInvalidData("Subject ID")
+        if not schedules_data:
+            raise ClassInvalidData("Schedules Data")
+        return self
+
+
+class ClassInvalidData(HTTPException):
+    def __init__(self, data_info: str) -> None:
+        super().__init__(
+            status.HTTP_400_BAD_REQUEST,
+            f"Class has invalid {data_info} value",
+        )
+
+
+class ClassConflictedData(HTTPException):
+    def __init__(self, first_data: str, second_data: str) -> None:
+        super().__init__(
+            status.HTTP_400_BAD_REQUEST,
+            f"Schedule must have {first_data} value or {
+                second_data} value, not both",
+        )

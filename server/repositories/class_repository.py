@@ -16,6 +16,7 @@ from server.repositories.schedule_repository import ScheduleRepository
 from server.repositories.subject_repository import SubjectRepository
 
 from server.utils.common_utils import compare_SQLModel_vectors_by_id
+from server.utils.schedule_utils import ScheduleUtils
 
 
 class ClassRepository:
@@ -112,9 +113,8 @@ class ClassRepository:
             if hasattr(updated_class, key):
                 setattr(updated_class, key, value)
 
-        if input.subject_id:
-            subject = SubjectRepository.get_by_id(id=input.subject_id, session=session)
-            updated_class.subject = subject
+        subject = SubjectRepository.get_by_id(id=input.subject_id, session=session)
+        updated_class.subject = subject
 
         reallocate = False
         if input.calendar_ids:
@@ -136,23 +136,13 @@ class ClassRepository:
                 reallocate = True
             updated_class.calendars = []
 
-        if input.schedules_data:
-            new_schedules = ScheduleRepository.update_class_schedules(
-                class_=updated_class, input=input.schedules_data, session=session
-            )
-            updated_class.schedules = new_schedules
+        # Only change schedules if is necessary (change calendars or change schedules)
+        if reallocate:
+             updated_class.schedules = ScheduleRepository.update_class_schedules(class_=updated_class, input=input.schedules_data, session=session)
         else:
-            if reallocate:
-                for schedule in updated_class.schedules:
-                    if schedule.allocated and schedule.classroom_id:
-                        classroom = ClassroomRepository.get_by_id(
-                            id=schedule.classroom_id, session=session
-                        )
-                        OccurrenceRepository.allocate_schedule(
-                            schedule, classroom=classroom, session=session
-                        )
+            if ScheduleUtils.has_schedule_diff_from_list(updated_class.schedules, input.schedules_data):
+                updated_class.schedules = ScheduleRepository.update_class_schedules(class_=updated_class, input=input.schedules_data, session=session)
 
-        session.add(updated_class)
         return updated_class
 
     @staticmethod
