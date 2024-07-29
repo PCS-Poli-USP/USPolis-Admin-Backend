@@ -39,10 +39,10 @@ class ClassRepositoryAdapter:
         return class_
 
     def create(self, input: ClassRegister) -> Class:
-        building = BuildingRepository.get_by_subject_id(
+        buildings = BuildingRepository.get_by_subject_id(
             subject_id=input.subject_id, session=self.session
         )
-        building_permission_checker(user=self.user, building=building)
+        building_permission_checker(user=self.user, building=buildings)
         new_class = ClassRepository.create(input=input, session=self.session)
         self.session.commit()
         for schedule in new_class.schedules:
