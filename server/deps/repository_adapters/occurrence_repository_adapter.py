@@ -27,14 +27,12 @@ class OccurrenceRepositoryAdapter:
     def __init__(
         self,
         owned_building_ids: OwnedBuildingIdsDep,
-        building: BuildingDep,
         session: SessionDep,
         user: UserDep,
         classroom_repo: ClassroomRepositoryDep,
         schedule_repo: ScheduleRepositoryDep,
     ):
         self.owned_building_ids = owned_building_ids
-        self.building = building
         self.session = session
         self.user = user
         self.owned_building_ids = owned_building_ids
