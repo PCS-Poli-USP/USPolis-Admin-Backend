@@ -62,9 +62,7 @@ class ClassResponse(ClassResponseBase):
             subject_code=_class.subject.code,
             subject_name=_class.subject.name,
             schedules=ScheduleResponse.from_schedule_list(_class.schedules),
-            calendar_ids=[calendar.id for calendar in _class.calendars if (calendar.id)]
-            if _class.calendars
-            else None,
+            calendar_ids=[calendar.id for calendar in _class.calendars if (calendar.id)],
             calendar_names=[calendar.name for calendar in _class.calendars]
             if _class.calendars
             else None,

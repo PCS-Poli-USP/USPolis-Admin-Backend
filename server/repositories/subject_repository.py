@@ -12,6 +12,7 @@ from server.models.http.requests.subject_request_models import (
     SubjectUpdate,
 )
 from server.repositories.building_repository import BuildingRepository
+from server.services.jupiter_crawler.crawler import JupiterCrawler
 
 
 class SubjectRepository:
@@ -94,21 +95,22 @@ class SubjectRepository:
         return new_subject
 
     @staticmethod
-    def crawler_create(
-        subject: Subject, session: SessionDep, building: BuildingDep
-    ) -> None:
-        try:
+    async def crawler_create_many(
+        subjects_codes: list[str], session: Session, building: BuildingDep
+    ) -> list[Subject]:
+        result: list[Subject] = []
+        for subject_code in subjects_codes:
+            subject = await JupiterCrawler.crawl_subject_static(subject_code)
+            subject.buildings = [building]
             session.add(subject)
+            result.append(subject)
+        try:
+            session.commit()
         except IntegrityError:
-            # subject_code already exists
-            # add building to existing subject
-            # it is NOT updating schedule's info and relations!
-            subject = SubjectRepository.get_by_code(code=subject.code, session=session)
-            if (
-                building not in subject.buildings
-            ):  # dont know if it works... its comparing objects
-                subject.buildings.append(building)
-                session.add(subject)
+            raise SubjectAlreadyOnOtherBuilding()
+        for subject in result:
+            session.refresh(subject)
+        return result
 
     @staticmethod
     def update(*, id: int, input: SubjectUpdate, session: Session) -> Subject:
@@ -138,3 +140,16 @@ class SubjectRepository:
 class SubjectNotFound(HTTPException):
     def __init__(self) -> None:
         super().__init__(status.HTTP_404_NOT_FOUND, f"Subject not found")
+class SubjectNotExists(HTTPException):
+    def __init__(self, subject_info: str) -> None:
+        super().__init__(
+            status.HTTP_404_NOT_FOUND, f"Subject {subject_info} not exists"
+        )
+
+
+class SubjectAlreadyOnOtherBuilding(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(
+            status.HTTP_400_BAD_REQUEST,
+            "Uma ou mais disciplinas já adicionadas ao sistema",
+        )

@@ -36,7 +36,7 @@ class Class(SQLModel, table=True):
     full_allocated: bool = Field(default=False)
     updated_at: datetime = Field(default=datetime.now())
 
-    calendars: list["Calendar"] | None = Relationship(
+    calendars: list["Calendar"] = Relationship(
         back_populates="classes",
         link_model=ClassCalendarLink,
     )

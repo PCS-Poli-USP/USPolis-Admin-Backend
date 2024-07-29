@@ -11,7 +11,7 @@ class OccurrenceUtils:
     # TODO: dont create occurrences on holidays
     # update/delete schedules
     @staticmethod
-    def occurrences_from_schedules(schedule: Schedule) -> list[Occurrence]:
+    def generate_occurrences(schedule: Schedule) -> list[Occurrence]:
         occurrences: list[Occurrence] = []
         if schedule.week_day is None and schedule.recurrence is not Recurrence.DAILY:
             raise ValueError("Week day is required with this Recurrence")
@@ -24,7 +24,16 @@ class OccurrenceUtils:
             schedule.end_date,
             schedule.month_week.value if schedule.month_week else None,
         )
+        calendars = []
+        if (schedule.class_):
+            calendars = schedule.class_.calendars
         for occ_date in dates:
+            if any(
+                calendar.dates()
+                for calendar in calendars
+                if occ_date in calendar.dates()
+            ):
+                continue
             occurrence = Occurrence(
                 date=occ_date,
                 start_time=schedule.start_time,

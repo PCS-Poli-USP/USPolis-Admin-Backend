@@ -31,7 +31,7 @@ class OccurrenceRepository:
     def allocate_schedule(
         schedule: Schedule, classroom: Classroom, session: Session
     ) -> None:
-        occurrences = OccurrenceUtils.occurrences_from_schedules(schedule)
+        occurrences = OccurrenceUtils.generate_occurrences(schedule)
 
         previous_occurrences = schedule.occurrences
         if previous_occurrences:
