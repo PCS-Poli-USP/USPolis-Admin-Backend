@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from server.deps.authenticate import BuildingDep, UserDep
+from server.deps.authenticate import UserDep
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
 from server.deps.repository_adapters.classroom_repository_adapter import (
     ClassroomRepositoryDep,
@@ -27,14 +27,12 @@ class OccurrenceRepositoryAdapter:
     def __init__(
         self,
         owned_building_ids: OwnedBuildingIdsDep,
-        building: BuildingDep,
         session: SessionDep,
         user: UserDep,
         classroom_repo: ClassroomRepositoryDep,
         schedule_repo: ScheduleRepositoryDep,
     ):
         self.owned_building_ids = owned_building_ids
-        self.building = building
         self.session = session
         self.user = user
         self.owned_building_ids = owned_building_ids

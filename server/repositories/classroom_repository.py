@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from fastapi import HTTPException, status
 from sqlalchemy.exc import NoResultFound
@@ -7,6 +8,9 @@ from sqlmodel import Session, col, select
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.user_db_model import User
 from server.models.http.requests.classroom_request_models import ClassroomRegister
+from server.utils.must_be_int import must_be_int
+
+from server.repositories.occurrence_repository import OccurrenceRepository
 
 
 class ClassroomRepository:
@@ -44,6 +48,7 @@ class ClassroomRepository:
             air_conditioning=classroom.air_conditioning,
             ignore_to_allocate=classroom.ignore_to_allocate,
             created_by=creator,
+            created_by_id=must_be_int(creator.id),
         )
         session.add(new_classroom)
         return new_classroom
@@ -103,6 +108,8 @@ class ClassroomRepository:
         classroom = ClassroomRepository.get_by_id_on_buildings(
             id=id, building_ids=building_ids, session=session
         )
+        for schedule in classroom.schedules:
+            OccurrenceRepository.remove_schedule_allocation(schedule, session=session)
         session.delete(classroom)
 
 

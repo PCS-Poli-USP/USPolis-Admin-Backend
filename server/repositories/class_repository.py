@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from fastapi import HTTPException, status
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
@@ -7,6 +8,7 @@ from server.models.database.class_db_model import Class
 from server.models.database.subject_building_link import SubjectBuildingLink
 from server.models.database.subject_db_model import Subject
 from server.models.http.requests.class_request_models import ClassRegister, ClassUpdate
+
 from server.repositories.calendar_repository import CalendarRepository
 from server.repositories.schedule_repository import ScheduleRepository
 from server.repositories.subject_repository import SubjectRepository
