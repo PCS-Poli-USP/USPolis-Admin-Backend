@@ -1,10 +1,10 @@
-from sqlmodel import Session
+from sqlmodel import Session, col, select, join
 
+from server.models.database.building_db_model import Building
 from server.models.database.class_db_model import Class
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.schedule_db_model import Schedule
-from server.models.http.exceptions.responses_exceptions import UnfetchDataError
 from server.models.http.requests.occurrence_request_models import (
     OccurenceManyRegister,
     OccurrenceRegister,
@@ -15,17 +15,33 @@ from server.utils.occurrence_utils import OccurrenceUtils
 
 class OccurrenceRepository:
     @staticmethod
+    def get_all_on_buildings(
+        building_ids: list[int], session: Session
+    ) -> list[Occurrence]:
+        statement = (
+            select(Occurrence)
+            .join(Classroom)
+            .join(Building)
+            .where(col(Building.id).in_(building_ids))
+        )
+        buildings = session.exec(statement).all()
+        return list(buildings)
+
+    @staticmethod
     def allocate_schedule(
         schedule: Schedule, classroom: Classroom, session: Session
     ) -> None:
-        occurrences = OccurrenceUtils.occurrences_from_schedules(schedule)
+        occurrences = OccurrenceUtils.generate_occurrences(schedule)
 
         previous_occurrences = schedule.occurrences
-        for occurrence in previous_occurrences:
-            session.delete(occurrence)
+        if previous_occurrences:
+            for occurrence in previous_occurrences:
+                session.delete(occurrence)
 
         schedule.occurrences = occurrences
         classroom.occurrences.extend(occurrences)
+
+        schedule.classroom = classroom
 
         schedule.allocated = True
 
@@ -33,21 +49,13 @@ class OccurrenceRepository:
         session.add(classroom)
 
     @staticmethod
-    def allocate_class(class_: Class, classroom: Classroom, session: Session) -> None:
-        for schedule in class_.schedules:
-            OccurrenceRepository.allocate_schedule(schedule, classroom, session)
-
-    @staticmethod
     def remove_schedule_allocation(schedule: Schedule, session: Session) -> None:
-        for occurrence in schedule.occurrences:
-            session.delete(occurrence)
+        if schedule.occurrences:
+            for occurrence in schedule.occurrences:
+                session.delete(occurrence)
         schedule.allocated = False
+        schedule.classroom_id = None
         session.add(schedule)
-
-    @staticmethod
-    def remove_class_allocation(class_: Class, session: Session) -> None:
-        for schedule in class_.schedules:
-            OccurrenceRepository.remove_schedule_allocation(schedule, session)
 
     @staticmethod
     def create_with_schedule(
@@ -82,13 +90,9 @@ class OccurrenceRepository:
                 id=input.classroom_id, session=session
             )
 
-        if schedule.id is None:
-            raise UnfetchDataError("Schedule", "ID")
-
         occurrences: list[Occurrence] = []
         for date in input.dates:
             occurrence = Occurrence(
-                schedule_id=schedule.id,
                 schedule=schedule,
                 classroom_id=input.classroom_id,
                 classroom=classroom,
@@ -97,7 +101,5 @@ class OccurrenceRepository:
                 date=date,
             )
             session.add(occurrence)
-            session.commit()
-            session.refresh(occurrence)
             occurrences.append(occurrence)
         return occurrences

@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import date, time
 from typing import Self
 
 from fastapi import HTTPException, status
@@ -15,8 +15,8 @@ from server.utils.enums.week_day import WeekDay
 class ScheduleBase(BaseModel):
     """Base for any schedule request of update or create"""
 
-    start_date: datetime
-    end_date: datetime
+    start_date: date
+    end_date: date
     start_time: time
     end_time: time
     recurrence: Recurrence = Recurrence.NONE
@@ -32,7 +32,7 @@ class ScheduleRegister(ScheduleBase):
     classroom_id: int | None = None
     week_day: WeekDay | None = None
     month_week: MonthWeek | None = None
-    dates: list[datetime] | None = None
+    dates: list[date] | None = None
 
     @model_validator(mode="after")
     def check_class_body(self) -> Self:
@@ -42,7 +42,6 @@ class ScheduleRegister(ScheduleBase):
         recurrence = self.recurrence
         dates = self.dates
         allocated = self.allocated
-        all_day = self.all_day
         classroom_id = self.classroom_id
         reservation_id = self.reservation_id
 
@@ -50,7 +49,7 @@ class ScheduleRegister(ScheduleBase):
         #     raise ValueError("Class Id and Reservation Id cannot be both empty")
 
         if class_id is not None and reservation_id is not None:
-            raise ScheduleInvalidData("Class Id", "Reservation Id")
+            raise ScheduleConflictedData("Class Id", "Reservation Id")
 
         if week_day is None:
             if recurrence != Recurrence.CUSTOM and recurrence != Recurrence.DAILY:
@@ -76,4 +75,12 @@ class ScheduleInvalidData(HTTPException):
         super().__init__(
             status.HTTP_400_BAD_REQUEST,
             f"Schedule with {schedule_info} has invalid {data_info} value",
+        )
+
+
+class ScheduleConflictedData(HTTPException):
+    def __init__(self, first_data: str, second_data: str) -> None:
+        super().__init__(
+            status.HTTP_400_BAD_REQUEST,
+            f"Schedule must have {first_data} value or {second_data} value, not both",
         )

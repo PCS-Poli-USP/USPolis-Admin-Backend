@@ -41,5 +41,10 @@ class ScheduleUtils:
             return True
         if schedule.end_time != schedule_input.end_time:
             return True
-
+        if schedule_input.dates and schedule.occurrences:
+            if len(schedule.occurrences) != len(schedule_input.dates):
+                return True
+            for i in range(len(schedule.occurrences)):
+                if schedule.occurrences[i].date != schedule_input.dates[i]:
+                    return True
         return False

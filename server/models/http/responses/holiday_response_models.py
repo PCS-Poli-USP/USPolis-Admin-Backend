@@ -2,6 +2,7 @@ from datetime import datetime, date
 from pydantic import BaseModel
 
 from server.models.database.holiday_db_model import Holiday
+from server.utils.must_be_int import must_be_int
 
 
 class HolidayResponse(BaseModel):
@@ -13,12 +14,8 @@ class HolidayResponse(BaseModel):
 
     @classmethod
     def from_holiday(cls, holiday: Holiday) -> "HolidayResponse":
-        if holiday.id is None:
-            raise ValueError(
-                "Holiday ID is None, try refresh session if it is newly created"
-            )
         return cls(
-            id=holiday.id,
+            id=must_be_int(holiday.id),
             category=holiday.category.name,
             date=holiday.date,
             updated_at=holiday.updated_at,
