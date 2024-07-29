@@ -10,6 +10,8 @@ from server.models.database.subject_db_model import Subject
 from server.models.http.requests.class_request_models import ClassRegister, ClassUpdate
 
 from server.repositories.calendar_repository import CalendarRepository
+from server.repositories.classroom_repository import ClassroomRepository
+from server.repositories.occurrence_repository import OccurrenceRepository
 from server.repositories.schedule_repository import ScheduleRepository
 from server.repositories.subject_repository import SubjectRepository
 
@@ -114,6 +116,7 @@ class ClassRepository:
             subject = SubjectRepository.get_by_id(id=input.subject_id, session=session)
             updated_class.subject = subject
 
+        reallocate = False
         if input.calendar_ids:
             calendars = CalendarRepository.get_by_ids(
                 ids=input.calendar_ids, session=session
@@ -124,14 +127,30 @@ class ClassRepository:
                     calendars, updated_class.calendars
                 ):
                     updated_class.calendars = calendars
+                    reallocate = True
             else:
                 updated_class.calendars = calendars
+                reallocate = True
+        else:
+            if len(updated_class.calendars) != 0:
+                reallocate = True
+            updated_class.calendars = []
 
         if input.schedules_data:
             new_schedules = ScheduleRepository.update_class_schedules(
                 class_=updated_class, input=input.schedules_data, session=session
             )
             updated_class.schedules = new_schedules
+        else:
+            if reallocate:
+                for schedule in updated_class.schedules:
+                    if schedule.allocated and schedule.classroom_id:
+                        classroom = ClassroomRepository.get_by_id(
+                            id=schedule.classroom_id, session=session
+                        )
+                        OccurrenceRepository.allocate_schedule(
+                            schedule, classroom=classroom, session=session
+                        )
 
         session.add(updated_class)
         return updated_class

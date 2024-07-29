@@ -34,9 +34,8 @@ class OccurrenceRepository:
         occurrences = OccurrenceUtils.generate_occurrences(schedule)
 
         previous_occurrences = schedule.occurrences
-        if previous_occurrences:
-            for occurrence in previous_occurrences:
-                session.delete(occurrence)
+        for occurrence in previous_occurrences:
+            session.delete(occurrence)
 
         schedule.occurrences = occurrences
         classroom.occurrences.extend(occurrences)
@@ -50,13 +49,12 @@ class OccurrenceRepository:
 
     @staticmethod
     def remove_schedule_allocation(schedule: Schedule, session: Session) -> None:
-        if schedule.occurrences:
-            if schedule.recurrence != Recurrence.CUSTOM:
-                for occurrence in schedule.occurrences:
-                    session.delete(occurrence)
-            else:
-                for occurrence in schedule.occurrences:
-                    occurrence.classroom = None
+        if schedule.recurrence != Recurrence.CUSTOM:
+            for occurrence in schedule.occurrences:
+                session.delete(occurrence)
+        else:
+            for occurrence in schedule.occurrences:
+                occurrence.classroom = None
         schedule.allocated = False
         schedule.classroom_id = None
         session.add(schedule)

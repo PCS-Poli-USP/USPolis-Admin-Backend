@@ -10,8 +10,7 @@ from server.utils.enums.class_type import ClassType
 
 class ClassRequestBase(BaseModel):
     """Base for any Class request of register or update"""
-
-    calendar_ids: list[int] | None = None
+    calendar_ids: list[int]
     start_date: datetime
     end_date: datetime
     code: str

@@ -33,8 +33,8 @@ class ClassResponseBase(BaseModel):
     subject_id: int
     subject_name: str
     subject_code: str
-    calendar_ids: list[int] | None = None
-    calendar_names: list[str] | None = None
+    calendar_ids: list[int]
+    calendar_names: list[str]
 
 
 class ClassResponse(ClassResponseBase):
@@ -62,10 +62,10 @@ class ClassResponse(ClassResponseBase):
             subject_code=_class.subject.code,
             subject_name=_class.subject.name,
             schedules=ScheduleResponse.from_schedule_list(_class.schedules),
-            calendar_ids=[calendar.id for calendar in _class.calendars if (calendar.id)],
-            calendar_names=[calendar.name for calendar in _class.calendars]
-            if _class.calendars
-            else None,
+            calendar_ids=[
+                calendar.id for calendar in _class.calendars if (calendar.id)
+            ],
+            calendar_names=[calendar.name for calendar in _class.calendars],
         )
 
     @classmethod
@@ -100,12 +100,10 @@ class ClassFullResponse(ClassResponseBase):
             subject_code=_class.subject.code,
             subject_name=_class.subject.name,
             schedules=ScheduleFullResponse.from_schedule_list(_class.schedules),
-            calendar_ids=[calendar.id for calendar in _class.calendars if (calendar.id)]
-            if _class.calendars
-            else None,
-            calendar_names=[calendar.name for calendar in _class.calendars]
-            if _class.calendars
-            else None,
+            calendar_ids=[
+                calendar.id for calendar in _class.calendars if (calendar.id)
+            ],
+            calendar_names=[calendar.name for calendar in _class.calendars],
         )
 
     @classmethod
