@@ -46,6 +46,5 @@ class BuildingNameAlreadyExists(HTTPException):
     def __init__(self, building_name: str) -> None:
         super().__init__(
             status.HTTP_409_CONFLICT,
-            f"Building {
-                building_name} already exists",
+            f"Building {building_name} already exists",
         )
