@@ -9,15 +9,15 @@ class MobileUserRepository:
         session.commit()
         session.refresh(new_user)
         return new_user
-    
+
     @staticmethod
-    def get_user_by_sub(*, sub: str, session: Session):
+    def get_user_by_sub(*, sub: str, session: Session) -> MobileUser:
         statement = select(MobileUser).where(col(MobileUser.sub) == sub)
         user = session.exec(statement).one()
         return user
-    
+
     @staticmethod
-    def get_user_by_id(*, id: int, session: Session):
+    def get_user_by_id(*, id: int, session: Session) -> MobileUser:
         statement = select(MobileUser).where(col(MobileUser.id) == id)
         user = session.exec(statement).one()
         return user
