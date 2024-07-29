@@ -28,6 +28,10 @@ class WeekDay(Enum):
             )
         return result
 
+    @classmethod
+    def to_str(cls, value: int) -> str:
+        dayOfWeek = ["seg", "ter", "qua", "qui", "sex", "sab", "dom"]
+        return dayOfWeek[value]
 
 class NoSuchWeekDay(Exception):
     pass
