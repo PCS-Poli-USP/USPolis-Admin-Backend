@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from server.deps.authenticate import BuildingDep, UserDep
+from server.deps.authenticate import UserDep
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
 from server.deps.repository_adapters.classroom_repository_adapter import (
     ClassroomRepositoryDep,

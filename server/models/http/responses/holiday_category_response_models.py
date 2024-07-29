@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 from server.models.database.holiday_category_db_model import HolidayCategory
-from server.models.database.holiday_db_model import Holiday
+from server.models.http.responses.holiday_response_models import HolidayResponse
 from server.utils.must_be_int import must_be_int
 
 
@@ -9,7 +9,7 @@ class HolidayCategoryResponse(BaseModel):
     id: int
     name: str
     created_by: str
-    holidays: list[Holiday]
+    holidays: list[HolidayResponse]
 
     @classmethod
     def from_holiday_category(
@@ -19,7 +19,7 @@ class HolidayCategoryResponse(BaseModel):
             id=must_be_int(holiday_category.id),
             name=holiday_category.name,
             created_by=holiday_category.created_by.name,
-            holidays=holiday_category.holidays,
+            holidays=HolidayResponse.from_holiday_list(holiday_category.holidays),
         )
 
     @classmethod

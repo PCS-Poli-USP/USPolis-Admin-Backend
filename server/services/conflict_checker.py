@@ -30,9 +30,11 @@ class OccurrenceConflictSpecification(BaseModel):
     start_time: time
     end_time: time
     date: date
-    subject_code: str
-    class_code: str
-    class_id: int
+    subject_code: str | None
+    class_code: str | None
+    class_id: int | None
+    reservation_name: str | None
+    reservation_id: int | None
 
 
 class ClassroomConflictsSpecification(BaseModel):
@@ -110,9 +112,23 @@ class ConflictChecker:
                             start_time=occurrence.start_time,
                             end_time=occurrence.end_time,
                             date=occurrence.date,
-                            subject_code=occurrence.schedule.class_.subject.code,
-                            class_code=occurrence.schedule.class_.code,
-                            class_id=must_be_int(occurrence.schedule.class_.id),
+                            subject_code=occurrence.schedule.class_.subject.code
+                            if occurrence.schedule.class_
+                            else None,
+                            class_code=occurrence.schedule.class_.code
+                            if occurrence.schedule.class_
+                            else None,
+                            class_id=must_be_int(occurrence.schedule.class_.id)
+                            if occurrence.schedule.class_
+                            else None,
+                            reservation_name=occurrence.schedule.reservation.name
+                            if occurrence.schedule.reservation
+                            else None,
+                            reservation_id=must_be_int(
+                                occurrence.schedule.reservation.id
+                            )
+                            if occurrence.schedule.reservation
+                            else None,
                         )
                         real_conflict_conflicts.append(real_occurrence)
                     if real_conflict_conflicts:

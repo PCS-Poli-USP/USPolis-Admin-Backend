@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
 class Holiday(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
+    name: str = Field()
     date: datetime_date = Field()
     updated_at: datetime = Field(default=datetime.now())
 

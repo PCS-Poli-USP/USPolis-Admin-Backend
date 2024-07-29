@@ -55,6 +55,7 @@ class HolidayRepository:
             raise UnfetchDataError("User", "ID")
 
         new_holiday = Holiday(
+            name=input.name,
             date=input.date,
             category_id=input.category_id,
             category=category,
@@ -73,10 +74,11 @@ class HolidayRepository:
     ) -> list[Holiday]:
         dates = input.dates
         category_id = input.category_id
+        name = input.name
         holidays = [
             HolidayRepository.create(
                 creator=creator,
-                input=HolidayRegister(category_id=category_id, date=date),
+                input=HolidayRegister(name=name, category_id=category_id, date=date),
                 session=session,
             )
             for date in dates
@@ -90,6 +92,7 @@ class HolidayRepository:
         holiday = HolidayRepository.get_by_id(id=id, session=session)
         if holiday.created_by_id != user.id:
             raise HolidayOperationNotAllowed("update", input.date.strftime("%d/%m/%Y"))
+        holiday.name = input.name
         holiday.date = input.date
         holiday.updated_at = datetime.now()
         session.add(holiday)
@@ -111,7 +114,8 @@ class HolidayInCategoryAlreadyExists(HTTPException):
     def __init__(self, holiday_info: str, category_info: str) -> None:
         super().__init__(
             status.HTTP_409_CONFLICT,
-            f"Holiday {holiday_info} in Category {category_info} already exists",
+            f"Holiday {holiday_info} in Category {
+                category_info} already exists",
         )
 
 
@@ -119,5 +123,6 @@ class HolidayOperationNotAllowed(HTTPException):
     def __init__(self, operation: str, holiday_info: str) -> None:
         super().__init__(
             status.HTTP_401_UNAUTHORIZED,
-            f"Only the creator is Allowed to {operation} Holiday {holiday_info}",
+            f"Only the creator is Allowed to {
+                operation} Holiday {holiday_info}",
         )

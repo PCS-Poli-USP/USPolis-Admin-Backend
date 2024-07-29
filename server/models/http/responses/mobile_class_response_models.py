@@ -1,12 +1,12 @@
-
-
 from datetime import date, datetime
 from pydantic import BaseModel
 
 from server.models.database.class_db_model import Class
 from server.models.database.classroom_db_model import Classroom
 from server.models.http.exceptions.responses_exceptions import UnfetchDataError
-from server.models.http.responses.mobile_schedule_response_models import MobileScheduleResponse
+from server.models.http.responses.mobile_schedule_response_models import (
+    MobileScheduleResponse,
+)
 
 
 class MobileClassResponse(BaseModel):
@@ -18,7 +18,6 @@ class MobileClassResponse(BaseModel):
     subject_name: str
     subject_code: str
     schedules: list[MobileScheduleResponse]
-    
     @classmethod
     def from_model(cls, _class: Class) -> "MobileClassResponse":
         if _class.id is None:
@@ -33,9 +32,9 @@ class MobileClassResponse(BaseModel):
             professors=_class.professors,
             subject_name=_class.subject.name,
             subject_code=_class.subject.code,
-            schedules=MobileScheduleResponse.from_schedule_list(_class.schedules)
+            schedules=MobileScheduleResponse.from_schedule_list(_class.schedules),
         )
 
     @classmethod
-    def from_model_list(cls, classes: list[Class]):
+    def from_model_list(cls, classes: list[Class]) -> list["MobileClassResponse"]:
         return [cls.from_model(u_class) for u_class in classes]

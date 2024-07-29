@@ -5,7 +5,7 @@ from server.models.validators.calendar.calendar_validator import CalendarValidat
 
 class CalendarRegister(BaseModel):
     name: str
-    categories_ids: list[int]
+    categories_ids: list[int] | None = None
 
     @field_validator("name")
     def validate_year(cls, name: str) -> str:
@@ -15,4 +15,4 @@ class CalendarRegister(BaseModel):
 
 
 class CalendarUpdate(CalendarRegister):
-    categories_ids: list[int] | None  # type: ignore
+    categories_ids: list[int] | None = None
