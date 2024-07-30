@@ -27,8 +27,15 @@ def upgrade() -> None:
     op.alter_column('classroom', 'building_id',
                existing_type=sa.INTEGER(),
                nullable=False)
-    op.add_column('holiday', sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False))
+    op.add_column('holiday', sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False, server_default='Sem nome'))
     # ### end Alembic commands ###
+
+    # Atualizando registros existentes com o valor padrão
+    op.execute("UPDATE holiday SET name = 'Sem nome' WHERE name IS NULL")
+
+    # Removendo o valor padrão da coluna
+    op.alter_column('holiday', 'name', server_default=None)
+
 
 
 def downgrade() -> None:
