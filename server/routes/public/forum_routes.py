@@ -16,6 +16,7 @@ embed = Body(..., embed=True)
 
 router = APIRouter(prefix="/mobile/forum", tags=["Forum"])
 
+
 @router.get("/posts")
 async def get_posts(class_id: int, session: SessionDep) -> list[ForumPostResponse]:
     """Get all posts"""

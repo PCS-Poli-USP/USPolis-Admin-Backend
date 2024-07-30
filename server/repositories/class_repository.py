@@ -138,10 +138,16 @@ class ClassRepository:
 
         # Only change schedules if is necessary (change calendars or change schedules)
         if reallocate:
-             updated_class.schedules = ScheduleRepository.update_class_schedules(class_=updated_class, input=input.schedules_data, session=session)
+            updated_class.schedules = ScheduleRepository.update_class_schedules(
+                class_=updated_class, input=input.schedules_data, session=session
+            )
         else:
-            if ScheduleUtils.has_schedule_diff_from_list(updated_class.schedules, input.schedules_data):
-                updated_class.schedules = ScheduleRepository.update_class_schedules(class_=updated_class, input=input.schedules_data, session=session)
+            if ScheduleUtils.has_schedule_diff_from_list(
+                updated_class.schedules, input.schedules_data
+            ):
+                updated_class.schedules = ScheduleRepository.update_class_schedules(
+                    class_=updated_class, input=input.schedules_data, session=session
+                )
 
         return updated_class
 

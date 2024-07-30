@@ -7,9 +7,9 @@ from fastapi import APIRouter
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow # type: ignore
-from googleapiclient.discovery import build # type: ignore
-from googleapiclient.errors import HttpError # type: ignore
+from google_auth_oauthlib.flow import InstalledAppFlow  # type: ignore
+from googleapiclient.discovery import build  # type: ignore
+from googleapiclient.errors import HttpError  # type: ignore
 
 from server.deps.session_dep import SessionDep
 from server.models.database.mobile_user_db_model import MobileUser
@@ -75,6 +75,7 @@ def send_email(
     creds = gmail_login()
     sent_email = gmail_send_message(creds, html_content)
     return sent_email
+
 
 def gmail_login() -> Credentials:
     """Shows basic usage of the Gmail API.

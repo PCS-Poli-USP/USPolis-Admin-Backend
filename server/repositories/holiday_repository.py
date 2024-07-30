@@ -5,13 +5,13 @@ from sqlmodel import col, select, Session
 
 from server.models.database.holiday_db_model import Holiday
 from server.models.database.user_db_model import User
-from server.models.http.exceptions.responses_exceptions import UnfetchDataError
 from server.models.http.requests.holiday_request_models import (
     HolidayManyRegister,
     HolidayRegister,
     HolidayUpdate,
 )
 from server.repositories.holiday_category_repository import HolidayCategoryRepository
+from server.utils.must_be_int import must_be_int
 
 
 class HolidayRepository:
@@ -44,16 +44,13 @@ class HolidayRepository:
         category = HolidayCategoryRepository.get_by_id(
             id=input.category_id, session=session
         )
-        if creator.id is None:
-            raise UnfetchDataError("User", "ID")
-
         new_holiday = Holiday(
             name=input.name,
             date=input.date,
             category_id=input.category_id,
             category=category,
             updated_at=datetime.now(),
-            created_by_id=creator.id,
+            created_by_id=must_be_int(creator.id),
             created_by=creator,
         )
         session.add(new_holiday)

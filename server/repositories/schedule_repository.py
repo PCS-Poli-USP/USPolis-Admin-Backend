@@ -164,9 +164,7 @@ class ScheduleRepository:
     def update_class_schedules(
         *, class_: Class, input: list[ScheduleUpdate], session: Session
     ) -> list[Schedule]:
-        """
-
-        """
+        """ """
         for schedule in class_.schedules:
             session.delete(schedule)
 

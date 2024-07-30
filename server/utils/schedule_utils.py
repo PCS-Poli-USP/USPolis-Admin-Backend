@@ -27,8 +27,11 @@ class ScheduleUtils:
                 schedule.end_time,
             ),
         )
+
     @staticmethod
-    def has_schedule_diff_from_list(schedules: list[Schedule], schedules_input: list[ScheduleUpdate]) -> bool:
+    def has_schedule_diff_from_list(
+        schedules: list[Schedule], schedules_input: list[ScheduleUpdate]
+    ) -> bool:
         if len(schedules) != len(schedules_input):
             return True
         for i in range(len(schedules)):
@@ -50,7 +53,11 @@ class ScheduleUtils:
             return True
         if schedule.end_time != schedule_input.end_time:
             return True
-        if schedule.recurrence == Recurrence.CUSTOM and schedule_input.dates and schedule.occurrences:
+        if (
+            schedule.recurrence == Recurrence.CUSTOM
+            and schedule_input.dates
+            and schedule.occurrences
+        ):
             if len(schedule.occurrences) != len(schedule_input.dates):
                 return True
             for i in range(len(schedule.occurrences)):

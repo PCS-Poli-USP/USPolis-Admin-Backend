@@ -33,5 +33,6 @@ class WeekDay(Enum):
         dayOfWeek = ["seg", "ter", "qua", "qui", "sex", "sab", "dom"]
         return dayOfWeek[value]
 
+
 class NoSuchWeekDay(Exception):
     pass

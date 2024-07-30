@@ -18,6 +18,7 @@ class MobileClassResponse(BaseModel):
     subject_name: str
     subject_code: str
     schedules: list[MobileScheduleResponse]
+
     @classmethod
     def from_model(cls, _class: Class) -> "MobileClassResponse":
         if _class.id is None:
