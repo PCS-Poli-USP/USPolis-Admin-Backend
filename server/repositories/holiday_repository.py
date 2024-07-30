@@ -41,13 +41,6 @@ class HolidayRepository:
 
     @staticmethod
     def create(*, creator: User, input: HolidayRegister, session: Session) -> Holiday:
-        if not HolidayRepository.check_date_is_valid(
-            category_id=input.category_id, date=input.date, session=session
-        ):
-            raise HolidayInCategoryAlreadyExists(
-                input.date.strftime("%d/%m/%Y"), str(input.category_id)
-            )
-
         category = HolidayCategoryRepository.get_by_id(
             id=input.category_id, session=session
         )
