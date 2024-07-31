@@ -10,6 +10,7 @@ class ForumPostResponse(BaseModel):
     user_name: str
     content : str | None
     class_id : int
+    subject_id: int
     created_at : datetime
 
     @classmethod
@@ -22,6 +23,7 @@ class ForumPostResponse(BaseModel):
             id = post.id,
             user_id = post.user_id,
             class_id = post.class_id,
+            subject_id=post.subject_id, 
             content = post.content,
             user_name = post.user.given_name+" "+post.user.family_name,
             created_at = post.created_at

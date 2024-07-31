@@ -1,5 +1,6 @@
-from datetime import date, datetime
+from datetime import datetime
 
+from sqlalchemy import func
 from sqlmodel import Field, Relationship, SQLModel
 
 from server.models.database.mobile_user_db_model import MobileUser
@@ -12,6 +13,9 @@ class ForumPost(SQLModel, table=True):
         foreign_key = "class.id"
     )
 
+    subject_id : int = Field(
+        foreign_key = "subject.id"
+    )
     content : str | None = Field()
 
     user_id : int = Field(
@@ -20,7 +24,7 @@ class ForumPost(SQLModel, table=True):
 
     user: "MobileUser" = Relationship()
 
-    created_at : date = Field(default=datetime.now())
+    created_at : datetime = Field(default=datetime.now())
     
     # reported_users : list[MobileUser] = Relationship(back_populates="id")
 

@@ -30,7 +30,7 @@ async def post_comment(comment_input: MobileCommentRegister,
         user = MobileUserRepository.get_user_by_id(id=comment.created_by_id, session=session)
     else:
         user = None
-    print(comment, user)
+    
     send_email(comment.comment, comment.email, user)
     comment = CommentRepository.create(new_comment=to_comment_model(comment_input), session=session)
     return MobileCommentResponse.from_model(comment)
@@ -90,7 +90,7 @@ def gmail_send_message(creds: Credentials, content):
         service = build("gmail", "v1", credentials=creds)
         message = MIMEText(content, 'html')
 
-        message["To"] = "joemakiyama@gmail.com"
+        message["To"] = "uspolis@usp.br"
         message["From"] = service.users().getProfile(userId="me").execute().get("emailAddress")
         message["Subject"] = "Comentário no app USPolis"
 
