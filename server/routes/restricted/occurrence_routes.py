@@ -49,6 +49,7 @@ def remove_schedule_allocation(
     schedule = occurrence_repository.remove_schedule_allocation(schedule_id)
     return schedule
 
+
 @router.get("/get-all-conflicting-occurrences")
 def get_all_occurrences_grouped_by_classroom(
     conflict_checker: ConflictCheckerDep,

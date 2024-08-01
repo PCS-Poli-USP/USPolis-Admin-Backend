@@ -1,5 +1,6 @@
 from server.models.database.schedule_db_model import Schedule
 from server.models.http.requests.schedule_request_models import ScheduleUpdate
+from server.utils.enums.recurrence import Recurrence
 
 
 class ScheduleUtils:
@@ -28,6 +29,17 @@ class ScheduleUtils:
         )
 
     @staticmethod
+    def has_schedule_diff_from_list(
+        schedules: list[Schedule], schedules_input: list[ScheduleUpdate]
+    ) -> bool:
+        if len(schedules) != len(schedules_input):
+            return True
+        for i in range(len(schedules)):
+            if ScheduleUtils.has_schedule_diff(schedules[i], schedules_input[i]):
+                return True
+        return False
+
+    @staticmethod
     def has_schedule_diff(schedule: Schedule, schedule_input: ScheduleUpdate) -> bool:
         if schedule.recurrence != schedule_input.recurrence:
             return True
@@ -41,7 +53,11 @@ class ScheduleUtils:
             return True
         if schedule.end_time != schedule_input.end_time:
             return True
-        if schedule_input.dates and schedule.occurrences:
+        if (
+            schedule.recurrence == Recurrence.CUSTOM
+            and schedule_input.dates
+            and schedule.occurrences
+        ):
             if len(schedule.occurrences) != len(schedule_input.dates):
                 return True
             for i in range(len(schedule.occurrences)):

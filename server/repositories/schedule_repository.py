@@ -141,11 +141,12 @@ class ScheduleRepository:
                 schedule=new_schedule, input=occurences_input, session=session
             )
             new_schedule.occurrences = occurences
+            session.add(new_schedule)
         else:
+            # schedule is add to sesion here
             OccurrenceRepository.allocate_schedule(
                 schedule=new_schedule, classroom=classroom, session=session
             )
-        session.add(new_schedule)
         return new_schedule
 
     @staticmethod
@@ -163,48 +164,23 @@ class ScheduleRepository:
     def update_class_schedules(
         *, class_: Class, input: list[ScheduleUpdate], session: Session
     ) -> list[Schedule]:
-        old_schedules = ScheduleUtils.sort_schedules(class_.schedules)
-        schedules_inputs = ScheduleUtils.sort_schedules_input(input)
-        new_schedules: list[Schedule] = []
-        old_size = len(old_schedules)
-        new_size = len(schedules_inputs)
+        """ """
+        for schedule in class_.schedules:
+            session.delete(schedule)
 
-        range_size = min(old_size, new_size)
-        for i in range(range_size):
-            schedule = old_schedules[i]
-            schedule_input = schedules_inputs[i]
-
-            if ScheduleUtils.has_schedule_diff(schedule, schedules_inputs[i]):
-                session.delete(schedule)
-                new_schedule = ScheduleRepository.create_with_class(
-                    class_input=class_, input=schedule_input, session=session
+        new_schedules = []
+        for schedule_input in input:
+            new_schedule = ScheduleRepository.create_with_class(
+                class_input=class_, input=schedule_input, session=session
+            )
+            if schedule_input.allocated and schedule_input.classroom_id:
+                classroom = ClassroomRepository.get_by_id(
+                    id=schedule_input.classroom_id, session=session
                 )
-                if schedule_input.allocated and schedule_input.classroom_id:
-                    classroom = ClassroomRepository.get_by_id(
-                        id=schedule_input.classroom_id, session=session
-                    )
-                    OccurrenceRepository.allocate_schedule(
-                        schedule=new_schedule, classroom=classroom, session=session
-                    )
-                new_schedules.append(new_schedule)
-            else:
-                new_schedules.append(schedule)
-
-        if old_size < new_size:
-            # Add the rest of schedules
-            for i in range(len(new_schedules), new_size):
-                schedule_input = schedules_inputs[i]
-                new_schedule = ScheduleRepository.create_with_class(
-                    class_input=class_, input=schedule_input, session=session
+                OccurrenceRepository.allocate_schedule(
+                    schedule=new_schedule, classroom=classroom, session=session
                 )
-                if schedule_input.allocated and schedule_input.classroom_id:
-                    classroom = ClassroomRepository.get_by_id(
-                        id=schedule_input.classroom_id, session=session
-                    )
-                    OccurrenceRepository.allocate_schedule(
-                        schedule=new_schedule, classroom=classroom, session=session
-                    )
-                new_schedules.append(new_schedule)
+            new_schedules.append(new_schedule)
 
         return new_schedules
 

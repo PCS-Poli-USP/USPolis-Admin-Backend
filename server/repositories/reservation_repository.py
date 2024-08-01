@@ -13,6 +13,7 @@ from server.models.http.requests.reservation_request_models import (
     ReservationUpdate,
 )
 from server.repositories.schedule_repository import ScheduleRepository
+from server.utils.must_be_int import must_be_int
 
 
 class ReservationRepository:
@@ -72,6 +73,7 @@ class ReservationRepository:
             description=input.description,
             updated_at=datetime.now(),
             classroom=classroom,
+            created_by_id=must_be_int(creator.id),
             created_by=creator,
         )
         schedule = ScheduleRepository.create_with_reservation(

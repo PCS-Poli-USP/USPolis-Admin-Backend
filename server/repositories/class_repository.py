@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from fastapi import HTTPException, status
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
@@ -7,11 +8,15 @@ from server.models.database.class_db_model import Class
 from server.models.database.subject_building_link import SubjectBuildingLink
 from server.models.database.subject_db_model import Subject
 from server.models.http.requests.class_request_models import ClassRegister, ClassUpdate
+
 from server.repositories.calendar_repository import CalendarRepository
+from server.repositories.classroom_repository import ClassroomRepository
+from server.repositories.occurrence_repository import OccurrenceRepository
 from server.repositories.schedule_repository import ScheduleRepository
 from server.repositories.subject_repository import SubjectRepository
 
 from server.utils.common_utils import compare_SQLModel_vectors_by_id
+from server.utils.schedule_utils import ScheduleUtils
 
 
 class ClassRepository:
@@ -108,10 +113,10 @@ class ClassRepository:
             if hasattr(updated_class, key):
                 setattr(updated_class, key, value)
 
-        if input.subject_id:
-            subject = SubjectRepository.get_by_id(id=input.subject_id, session=session)
-            updated_class.subject = subject
+        subject = SubjectRepository.get_by_id(id=input.subject_id, session=session)
+        updated_class.subject = subject
 
+        reallocate = False
         if input.calendar_ids:
             calendars = CalendarRepository.get_by_ids(
                 ids=input.calendar_ids, session=session
@@ -122,16 +127,28 @@ class ClassRepository:
                     calendars, updated_class.calendars
                 ):
                     updated_class.calendars = calendars
+                    reallocate = True
             else:
                 updated_class.calendars = calendars
+                reallocate = True
+        else:
+            if len(updated_class.calendars) != 0:
+                reallocate = True
+            updated_class.calendars = []
 
-        if input.schedules_data:
-            new_schedules = ScheduleRepository.update_class_schedules(
+        # Only change schedules if is necessary (change calendars or change schedules)
+        if reallocate:
+            updated_class.schedules = ScheduleRepository.update_class_schedules(
                 class_=updated_class, input=input.schedules_data, session=session
             )
-            updated_class.schedules = new_schedules
+        else:
+            if ScheduleUtils.has_schedule_diff_from_list(
+                updated_class.schedules, input.schedules_data
+            ):
+                updated_class.schedules = ScheduleRepository.update_class_schedules(
+                    class_=updated_class, input=input.schedules_data, session=session
+                )
 
-        session.add(updated_class)
         return updated_class
 
     @staticmethod

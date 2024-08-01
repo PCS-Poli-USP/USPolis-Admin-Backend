@@ -24,7 +24,9 @@ class OccurrenceUtils:
             schedule.end_date,
             schedule.month_week.value if schedule.month_week else None,
         )
-        calendars = schedule.class_.calendars or []
+        calendars = []
+        if schedule.class_:
+            calendars = schedule.class_.calendars
         for occ_date in dates:
             if any(
                 calendar.dates()

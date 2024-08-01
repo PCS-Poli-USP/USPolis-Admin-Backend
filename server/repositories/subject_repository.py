@@ -140,6 +140,8 @@ class SubjectRepository:
 class SubjectNotFound(HTTPException):
     def __init__(self) -> None:
         super().__init__(status.HTTP_404_NOT_FOUND, f"Subject not found")
+
+
 class SubjectNotExists(HTTPException):
     def __init__(self, subject_info: str) -> None:
         super().__init__(

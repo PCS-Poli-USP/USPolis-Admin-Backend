@@ -5,13 +5,13 @@ from sqlmodel import col, select, Session
 
 from server.models.database.holiday_db_model import Holiday
 from server.models.database.user_db_model import User
-from server.models.http.exceptions.responses_exceptions import UnfetchDataError
 from server.models.http.requests.holiday_request_models import (
     HolidayManyRegister,
     HolidayRegister,
     HolidayUpdate,
 )
 from server.repositories.holiday_category_repository import HolidayCategoryRepository
+from server.utils.must_be_int import must_be_int
 
 
 class HolidayRepository:
@@ -41,25 +41,16 @@ class HolidayRepository:
 
     @staticmethod
     def create(*, creator: User, input: HolidayRegister, session: Session) -> Holiday:
-        if not HolidayRepository.check_date_is_valid(
-            category_id=input.category_id, date=input.date, session=session
-        ):
-            raise HolidayInCategoryAlreadyExists(
-                input.date.strftime("%d/%m/%Y"), str(input.category_id)
-            )
-
         category = HolidayCategoryRepository.get_by_id(
             id=input.category_id, session=session
         )
-        if creator.id is None:
-            raise UnfetchDataError("User", "ID")
-
         new_holiday = Holiday(
+            name=input.name,
             date=input.date,
             category_id=input.category_id,
             category=category,
             updated_at=datetime.now(),
-            created_by_id=creator.id,
+            created_by_id=must_be_int(creator.id),
             created_by=creator,
         )
         session.add(new_holiday)
@@ -73,10 +64,11 @@ class HolidayRepository:
     ) -> list[Holiday]:
         dates = input.dates
         category_id = input.category_id
+        name = input.name
         holidays = [
             HolidayRepository.create(
                 creator=creator,
-                input=HolidayRegister(category_id=category_id, date=date),
+                input=HolidayRegister(name=name, category_id=category_id, date=date),
                 session=session,
             )
             for date in dates
@@ -90,6 +82,7 @@ class HolidayRepository:
         holiday = HolidayRepository.get_by_id(id=id, session=session)
         if holiday.created_by_id != user.id:
             raise HolidayOperationNotAllowed("update", input.date.strftime("%d/%m/%Y"))
+        holiday.name = input.name
         holiday.date = input.date
         holiday.updated_at = datetime.now()
         session.add(holiday)
@@ -111,7 +104,8 @@ class HolidayInCategoryAlreadyExists(HTTPException):
     def __init__(self, holiday_info: str, category_info: str) -> None:
         super().__init__(
             status.HTTP_409_CONFLICT,
-            f"Holiday {holiday_info} in Category {category_info} already exists",
+            f"Holiday {holiday_info} in Category {
+                category_info} already exists",
         )
 
 
@@ -119,5 +113,6 @@ class HolidayOperationNotAllowed(HTTPException):
     def __init__(self, operation: str, holiday_info: str) -> None:
         super().__init__(
             status.HTTP_401_UNAUTHORIZED,
-            f"Only the creator is Allowed to {operation} Holiday {holiday_info}",
+            f"Only the creator is Allowed to {
+                operation} Holiday {holiday_info}",
         )

@@ -24,8 +24,8 @@ class ClassroomBase(SQLModel):
     air_conditioning: bool = False
     updated_at: datetime = datetime.now()
 
-    created_by_id: int | None = Field(foreign_key="user.id", default=None)
-    building_id: int | None = Field(foreign_key="building.id", default=None)
+    created_by_id: int = Field(foreign_key="user.id")
+    building_id: int = Field(foreign_key="building.id")
 
 
 class Classroom(ClassroomBase, table=True):
@@ -39,7 +39,9 @@ class Classroom(ClassroomBase, table=True):
     created_by: "User" = Relationship()
     building: "Building" = Relationship(back_populates="classrooms")
     occurrences: list["Occurrence"] = Relationship(back_populates="classroom")
-    reservations: list["Reservation"] = Relationship(back_populates="classroom")
+    reservations: list["Reservation"] = Relationship(
+        back_populates="classroom", sa_relationship_kwargs={"cascade": "all, delete"}
+    )
     schedules: list["Schedule"] = Relationship(back_populates="classroom")
 
 

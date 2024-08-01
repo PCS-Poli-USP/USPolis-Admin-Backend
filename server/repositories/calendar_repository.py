@@ -1,6 +1,7 @@
 from fastapi import HTTPException, status
 from sqlmodel import Session, col, select
 from server.models.database.calendar_db_model import Calendar
+from server.models.database.holiday_category_db_model import HolidayCategory
 from server.models.database.user_db_model import User
 from server.models.http.requests.calendar_request_models import (
     CalendarRegister,
@@ -40,9 +41,11 @@ class CalendarRepository:
 
     @staticmethod
     def create(*, creator: User, input: CalendarRegister, session: Session) -> Calendar:
-        categories = HolidayCategoryRepository.get_by_ids(
-            ids=input.categories_ids, session=session
-        )
+        categories: list[HolidayCategory] = []
+        if input.categories_ids:
+            categories = HolidayCategoryRepository.get_by_ids(
+                ids=input.categories_ids, session=session
+            )
         new_calendar = Calendar(
             name=input.name,
             categories=categories,
@@ -61,7 +64,7 @@ class CalendarRepository:
         if calendar.created_by_id != user.id:
             raise CalendarOperationNotAllowed("Update", input.name)
         calendar.name = input.name
-        if input.categories_ids:
+        if input.categories_ids is not None:
             calendar.categories = HolidayCategoryRepository.get_by_ids(
                 ids=input.categories_ids, session=session
             )
@@ -89,5 +92,6 @@ class CalendarOperationNotAllowed(HTTPException):
     def __init__(self, operation: str, calendar_info: str) -> None:
         super().__init__(
             status.HTTP_401_UNAUTHORIZED,
-            f"Only the creator is Allowed to {operation} Calendar {calendar_info}",
+            f"Only the creator is Allowed to {
+                operation} Calendar {calendar_info}",
         )

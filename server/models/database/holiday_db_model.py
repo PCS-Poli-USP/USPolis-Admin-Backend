@@ -2,6 +2,7 @@ from datetime import date as datetime_date
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from sqlalchemy import UniqueConstraint
 from sqlmodel import Relationship, SQLModel, Field
 
 
@@ -11,7 +12,13 @@ if TYPE_CHECKING:
 
 
 class Holiday(SQLModel, table=True):
+    __table_args__ = (
+        UniqueConstraint(
+            "date", "category_id", name="unique_holiday_date_for_category"
+        ),
+    )
     id: int | None = Field(default=None, primary_key=True)
+    name: str = Field()
     date: datetime_date = Field()
     updated_at: datetime = Field(default=datetime.now())
 

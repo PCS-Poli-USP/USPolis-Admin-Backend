@@ -33,7 +33,5 @@ class Reservation(SQLModel, table=True):
         back_populates="reservation", sa_relationship_kwargs={"cascade": "delete"}
     )
 
-    created_by_id: int | None = Field(
-        default=None, index=True, foreign_key="user.id", nullable=False
-    )
+    created_by_id: int = Field(index=True, foreign_key="user.id", nullable=False)
     created_by: "User" = Relationship(back_populates="reservations")
