@@ -1,8 +1,7 @@
-from datetime import date, datetime
+from datetime import date
 from pydantic import BaseModel
 
 from server.models.database.class_db_model import Class
-from server.models.database.classroom_db_model import Classroom
 from server.models.http.exceptions.responses_exceptions import UnfetchDataError
 from server.models.http.responses.mobile_schedule_response_models import (
     MobileScheduleResponse,
@@ -17,6 +16,7 @@ class MobileClassResponse(BaseModel):
     professors: list[str]
     subject_name: str
     subject_code: str
+    subject_id: int
     schedules: list[MobileScheduleResponse]
 
     @classmethod
@@ -33,7 +33,8 @@ class MobileClassResponse(BaseModel):
             professors=_class.professors,
             subject_name=_class.subject.name,
             subject_code=_class.subject.code,
-            schedules=MobileScheduleResponse.from_schedule_list(_class.schedules),
+            subject_id=_class.subject_id,
+            schedules=MobileScheduleResponse.from_schedule_list(_class.schedules)
         )
 
     @classmethod
