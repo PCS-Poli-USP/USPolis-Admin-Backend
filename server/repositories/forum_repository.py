@@ -8,7 +8,6 @@ class ForumRepository:
         #new_post.created_at = datetime.now()
         new_post.report_count = 0
         # new_post.reported_users = []
-        print(new_post)
 
         session.add(new_post)
         session.commit()
