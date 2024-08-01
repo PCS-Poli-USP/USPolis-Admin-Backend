@@ -61,7 +61,7 @@ class CalendarRepository:
         *, id: int, input: CalendarUpdate, user: User, session: Session
     ) -> Calendar:
         calendar = CalendarRepository.get_by_id(id=id, session=session)
-        if calendar.created_by_id != user.id:
+        if not user.is_admin and calendar.created_by_id != user.id:
             raise CalendarOperationNotAllowed("Update", input.name)
         calendar.name = input.name
         if input.categories_ids is not None:
@@ -75,7 +75,7 @@ class CalendarRepository:
     @staticmethod
     def delete(*, id: int, user: User, session: Session) -> None:
         calendar = CalendarRepository.get_by_id(id=id, session=session)
-        if calendar.created_by_id != user.id:
+        if not user.is_admin and calendar.created_by_id != user.id:
             raise CalendarOperationNotAllowed("Delete", calendar.name)
         session.delete(calendar)
         session.commit()

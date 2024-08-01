@@ -80,7 +80,7 @@ class HolidayRepository:
         *, id: int, input: HolidayUpdate, user: User, session: Session
     ) -> Holiday:
         holiday = HolidayRepository.get_by_id(id=id, session=session)
-        if holiday.created_by_id != user.id:
+        if not user.is_admin and holiday.created_by_id != user.id:
             raise HolidayOperationNotAllowed("update", input.date.strftime("%d/%m/%Y"))
         holiday.name = input.name
         holiday.date = input.date
@@ -92,7 +92,7 @@ class HolidayRepository:
     @staticmethod
     def delete(*, id: int, user: User, session: Session) -> None:
         holiday = HolidayRepository.get_by_id(id=id, session=session)
-        if holiday.created_by_id != user.id:
+        if not user.is_admin and holiday.created_by_id != user.id:
             raise HolidayOperationNotAllowed(
                 "delete", holiday.date.strftime("%d/%m/%Y")
             )
