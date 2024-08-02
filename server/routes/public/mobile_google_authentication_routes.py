@@ -1,4 +1,5 @@
 import os
+from dotenv import load_dotenv
 from typing import Annotated
 from fastapi import APIRouter, Header
 
@@ -14,6 +15,8 @@ from server.models.http.responses.mobile_auth_user_response_models import (
 
 router = APIRouter(prefix="/mobile/authentication", tags=["Mobile", "Authenticate"])
 
+# Carregar variáveis do arquivo .env
+load_dotenv()
 
 @router.post("")
 async def authenticate_user(
@@ -22,7 +25,7 @@ async def authenticate_user(
     """Authenticates user with Google: if it is in our DB return user info"""
     # Specify the CLIENT_ID of the app that accesses the backend:
     idInfo = id_token.verify_oauth2_token(
-        idToken, requests.Request(), os.environ["G_AUTH_CLIENT_ID"]
+        idToken, requests.Request(), os.getenv("G_AUTH_CLIENT_ID")
     )
 
     # Or, if multiple clients access the backend server:
@@ -31,7 +34,7 @@ async def authenticate_user(
     #     raise ValueError('Could not verify audience.')
 
     # If the request specified a Google Workspace domain
-    if idInfo["hd"] != os.environ["G_AUTH_DOMAIN_NAME"] and idInfo["email_verified"]:
+    if idInfo["hd"] != os.getenv("G_AUTH_DOMAIN_NAME") and idInfo["email_verified"]:
         raise ValueError("Wrong domain name.")
 
     # ID token is valid. Get the user's Google Account ID from the decoded token.
@@ -48,7 +51,7 @@ async def create_new_user(
 ) -> AuthenticationResponse:
     """Validates the token and creates a new user and store its information in the DB (received from the Google API)"""
     userInfo = id_token.verify_oauth2_token(
-        idToken, requests.Request(), os.environ["G_AUTH_CLIENT_ID"]
+        idToken, requests.Request(), os.getenv("G_AUTH_CLIENT_ID")
     )
 
     newUser = MobileUser(
