@@ -52,7 +52,7 @@ class HolidayCategoryRepository:
         *, id: int, input: HolidayCategoryUpdate, user: User, session: Session
     ) -> HolidayCategory:
         holiday_category = HolidayCategoryRepository.get_by_id(id=id, session=session)
-        if holiday_category.created_by_id != user.id:
+        if not user.is_admin and holiday_category.created_by_id != user.id:
             raise HolidayCategoryOperationNotAllowed("update", holiday_category.name)
         holiday_category.name = input.name
         session.add(holiday_category)
@@ -62,7 +62,7 @@ class HolidayCategoryRepository:
     @staticmethod
     def delete(*, id: int, user: User, session: Session) -> None:
         holiday_category = HolidayCategoryRepository.get_by_id(id=id, session=session)
-        if holiday_category.created_by_id != user.id:
+        if not user.is_admin and holiday_category.created_by_id != user.id:
             raise HolidayCategoryOperationNotAllowed("delete", holiday_category.name)
         session.delete(holiday_category)
         session.commit()

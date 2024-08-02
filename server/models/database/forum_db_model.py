@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import datetime
 
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -10,14 +10,17 @@ class ForumPost(SQLModel, table=True):
 
     class_id: int = Field(foreign_key="class.id")
 
-    content: str | None = Field()
+    subject_id : int = Field(
+        foreign_key = "subject.id"
+    )
+    content : str | None = Field()
 
     user_id: int = Field(foreign_key="mobileuser.id", default=None, nullable=False)
 
     user: "MobileUser" = Relationship()
 
-    created_at: date = Field(default=datetime.now())
-
+    created_at : datetime = Field(default=datetime.now())
+    
     # reported_users : list[MobileUser] = Relationship(back_populates="id")
 
     report_count: int = Field(default=0)
