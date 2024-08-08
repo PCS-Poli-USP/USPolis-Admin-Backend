@@ -11,6 +11,7 @@ from typing import Any
 from bs4 import BeautifulSoup
 from httpx import AsyncClient
 
+from server.models.database.calendar_db_model import Calendar
 from server.models.database.class_db_model import Class
 from server.models.database.schedule_db_model import Schedule
 from server.models.database.subject_db_model import Subject
@@ -40,16 +41,18 @@ class JupiterCrawler:
 
     @staticmethod
     async def crawl_subject_static(
-        subject_code: str, page_content: bytes | None = None
+        subject_code: str, calendars: list[Calendar] = [], page_content: bytes | None = None
     ) -> Subject:
         crawler = JupiterCrawler(subject_code)
-        return await crawler.crawl_subject(page_content)
+        return await crawler.crawl_subject(calendars, page_content)
 
-    async def crawl_subject(self, page_content: bytes | None = None) -> Subject:
+    async def crawl_subject(self, calendars: list[Calendar] = [], page_content: bytes | None = None) -> Subject:
         if page_content is None:
             page_content = await self.request_html()
         self.__soup = self.__build_soap(page_content)
         crawled_classes = self.__extract_classes_info()
+        for class_ in crawled_classes: 
+            class_.calendars=calendars
 
         subject = Subject(
             code=self.__subject_code,
