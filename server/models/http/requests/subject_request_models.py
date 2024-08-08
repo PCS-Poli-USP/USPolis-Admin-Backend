@@ -6,6 +6,11 @@ from server.models.validators.subject.subject_validator import SubjectValidator
 from server.utils.enums.subject_type import SubjectType
 
 
+class CrawlSubject(BaseModel):
+    subject_codes: list[str]
+    calendar_ids: list[int]
+
+
 class SubjectRegister(BaseModel):
     building_ids: list[int]
     code: str

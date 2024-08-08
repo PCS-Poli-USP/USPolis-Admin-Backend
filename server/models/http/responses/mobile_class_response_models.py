@@ -6,6 +6,7 @@ from server.models.http.exceptions.responses_exceptions import UnfetchDataError
 from server.models.http.responses.mobile_schedule_response_models import (
     MobileScheduleResponse,
 )
+from server.utils.must_be_int import must_be_int
 
 
 class MobileClassResponse(BaseModel):
@@ -33,8 +34,8 @@ class MobileClassResponse(BaseModel):
             professors=_class.professors,
             subject_name=_class.subject.name,
             subject_code=_class.subject.code,
-            subject_id=_class.subject_id,
-            schedules=MobileScheduleResponse.from_schedule_list(_class.schedules)
+            subject_id=must_be_int(_class.subject_id),
+            schedules=MobileScheduleResponse.from_schedule_list(_class.schedules),
         )
 
     @classmethod
