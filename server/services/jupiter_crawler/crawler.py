@@ -51,14 +51,15 @@ class JupiterCrawler:
             page_content = await self.request_html()
         self.__soup = self.__build_soap(page_content)
         crawled_classes = self.__extract_classes_info()
-        for class_ in crawled_classes: 
-            class_.calendars=calendars
+        for class_ in crawled_classes:
+            class_.calendars = calendars
 
         subject = Subject(
             code=self.__subject_code,
             name=self.__get_subject_name(),
             classes=crawled_classes,
-            type=SubjectType.BIANNUAL,  # TODO: checar se disc. quadrimestral difere em algo no jupiter
+            # TODO: checar se disc. quadrimestral difere em algo no jupiter
+            type=SubjectType.BIANNUAL,
             professors=sorted(list(self.__subject_professors)),
             class_credit=0,
             work_credit=0,
@@ -76,11 +77,13 @@ class JupiterCrawler:
         return BeautifulSoup(content, "html.parser")
 
     def __get_subject_name(self) -> Any:
-        subject = self.__soup.find_all("b", text=re.compile("Disciplina:(.*)"))[0]
+        subject = self.__soup.find_all(
+            "b", text=re.compile("Disciplina:(.*)"))[0]
         return subject.get_text().replace(f"Disciplina: {self.__subject_code} - ", "")
 
     def __extract_classes_info(self) -> list[Class]:
-        classes_soups = self.__soup.find_all("div", attrs=CLASS_DIV_IDENTIFIERS)
+        classes_soups = self.__soup.find_all(
+            "div", attrs=CLASS_DIV_IDENTIFIERS)
         classes: list[Class] = []
         for index, class_soup in enumerate(classes_soups):
             try:
@@ -95,7 +98,8 @@ class JupiterCrawler:
                 student_numbers_table_rows = tables[2].find_all("tr")
 
                 general_info = self.__get_general_info(general_info_table_rows)
-                schedules_infos = self.__get_schedules_infos(schedules_table_rows)
+                schedules_infos = self.__get_schedules_infos(
+                    schedules_table_rows)
                 student_numbers_info = self.__get_student_numbers_info(
                     student_numbers_table_rows
                 )
@@ -129,7 +133,8 @@ class JupiterCrawler:
                 classes.append(class_)
             except Exception as e:
                 print(
-                    f"Ignoring exception trying to crawl {index}th class on {self.__subject_code} subject:\n",
+                    f"Ignoring exception trying to crawl {
+                        index}th class on {self.__subject_code} subject:\n",
                     e,
                 )
 
@@ -172,7 +177,8 @@ class JupiterCrawler:
                 and end_time == ""
                 and professor != ""
             ):
-                previous_schedule_info = schedules_infos[len(schedules_infos) - 1]
+                previous_schedule_info = schedules_infos[len(
+                    schedules_infos) - 1]
                 previous_schedule_info.professors.append(professor)
                 previous_schedule_info.professors = sorted(
                     previous_schedule_info.professors
@@ -186,7 +192,8 @@ class JupiterCrawler:
                 and end_time != ""
                 and professor != ""
             ):
-                previous_schedule_info = schedules_infos[len(schedules_infos) - 1]
+                previous_schedule_info = schedules_infos[len(
+                    schedules_infos) - 1]
                 week_day_as_enum = previous_schedule_info.week_day
             else:
                 week_day_as_enum = WeekDay.from_str(week_day)
