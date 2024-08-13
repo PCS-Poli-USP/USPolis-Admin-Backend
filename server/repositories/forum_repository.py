@@ -1,5 +1,7 @@
+from fastapi import HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, col, select
-from server.models.database.forum_db_model import ForumPost
+from server.models.database.forum_db_model import ForumPost, ForumPostReply
 
 class ForumRepository:
     @staticmethod
@@ -15,7 +17,7 @@ class ForumRepository:
         return new_post
 
     @staticmethod
-    def get_all_posts(*,subject_id: int, session: Session) -> list[ForumPost]:
+    def get_all_posts(*, subject_id: int, session: Session) -> list[ForumPost]:
         statement = select(ForumPost).where(col(ForumPost.subject_id)==subject_id)
         posts = session.exec(statement).all()
         return list(posts)
@@ -42,3 +44,27 @@ class ForumRepository:
         session.refresh(post)
 
         return post
+
+    @staticmethod
+    def create_reply(*, input: ForumPostReply, session: Session):
+        session.add(input)
+        
+        try:
+            session.commit()
+        except IntegrityError:
+            raise PostNotFoundException(input.forum_post_id)
+
+        session.refresh(input)
+        return input
+
+    @staticmethod
+    def get_all_replies(*, post_id: int ,session: Session):
+        statement = select(ForumPostReply).where(col(ForumPostReply.forum_post_id)==post_id)
+        replies = session.exec(statement).all()
+        return list(replies)
+
+class PostNotFoundException(HTTPException):
+    def __init__(self, post_id: int) -> None:
+        super().__init__(
+            status.HTTP_404_NOT_FOUND, f"Forum Post {post_id} does not exists"
+        )

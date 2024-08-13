@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Body
+from typing import Annotated
+from fastapi import APIRouter, Body, Header
 
 from server.deps.session_dep import SessionDep
 from server.models.database.forum_db_model import ForumPost
@@ -6,11 +7,14 @@ from server.models.http.requests.forum_request_models import (
     ForumPostRegister,
     to_forumpost_model,
     ForumReportRegister,
+    to_forumreply_model,
 )
 from server.models.http.responses.forum_post_response import (
+    ForumPostReplyResponse,
     ForumPostResponse,
 )
 from server.repositories.forum_repository import ForumRepository
+from server.utils.google_auth_utils import authenticate_with_google
 
 embed = Body(..., embed=True)
 
@@ -52,3 +56,27 @@ async def report_forum_post(
         pass
 
     return updated_post
+
+# Post Reply
+
+@router.post("/posts/{post_id}")
+async def create_forum_post_reply(
+    idToken: Annotated[str | None, Header()], post_id: int, input: ForumPostRegister, session: SessionDep
+) -> ForumPostReplyResponse:
+    """Create forum post reply"""
+    # authenticate before
+    authenticate_with_google(idToken)
+
+    reply = ForumRepository.create_reply(
+        input=to_forumreply_model(post_id, input),
+        session=session,
+    )
+    return ForumPostReplyResponse.from_forum_reply(reply)
+
+@router.get("/posts/{post_id}")
+async def get_forum_post_replies(
+    post_id: int, session: SessionDep
+) -> list[ForumPostReplyResponse]:
+    """Get all replies from a single post"""
+    replies = ForumRepository.get_all_replies(post_id=post_id, session=session)
+    return ForumPostReplyResponse.from_forum_post_reply_list(replies)
