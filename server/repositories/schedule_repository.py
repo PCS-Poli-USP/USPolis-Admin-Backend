@@ -5,12 +5,14 @@ from sqlmodel import Session, col, select
 
 from server.models.database.class_db_model import Class
 from server.models.database.classroom_db_model import Classroom
+from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.schedule_db_model import Schedule
 from server.models.http.requests.occurrence_request_models import OccurenceManyRegister
 from server.models.http.requests.schedule_request_models import (
     ScheduleRegister,
     ScheduleUpdate,
+    ScheduleUpdateOccurrences,
 )
 from server.repositories.classroom_repository import ClassroomRepository
 from server.repositories.occurrence_repository import OccurrenceRepository
@@ -206,6 +208,35 @@ class ScheduleRepository:
             return new_schedule
 
         return old_schedule
+
+    @staticmethod
+    def update_occurrences(
+        *, id: int, input: ScheduleUpdateOccurrences, session: Session
+    ) -> Schedule:
+        """Update schedule occurrences withou commit the session"""
+        schedule = ScheduleRepository.get_by_id(id=id, session=session)
+        occurrences_by_date = {
+            occurrence.date: occurrence for occurrence in schedule.occurrences
+        }
+        new_dates = set(input.dates)
+        current_dates = set(occurrences_by_date.keys())
+        dates_to_remove = current_dates - new_dates
+        dates_to_add = new_dates - current_dates
+        occurences_to_remove = [occurrences_by_date[date] for date in dates_to_remove]
+
+        for occurrence in occurences_to_remove:
+            session.delete(occurrence)
+            
+        for date in dates_to_add:
+            new_occurrence = Occurrence(
+                start_time=schedule.start_time,
+                end_time=schedule.end_time,
+                date=date,
+                classroom=schedule.classroom,
+                schedule=schedule,
+            )
+            session.add(new_occurrence)
+        return schedule
 
     @staticmethod
     def delete(*, id: int, session: Session) -> None:
