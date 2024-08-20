@@ -28,4 +28,5 @@ async def update_occurentes(
     schedule = ScheduleRepository.update_occurrences(
         id=schedule_id, input=input, session=session
     )
+    session.commit()
     return ScheduleFullResponse.from_schedule(schedule)

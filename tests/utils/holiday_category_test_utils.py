@@ -12,7 +12,7 @@ from server.routes.restricted.holiday_category_routes import (
 
 
 def make_holiday_category(name: str, user: User) -> HolidayCategory:
-    return HolidayCategory(name=name, created_by=user) # type: ignore
+    return HolidayCategory(name=name, created_by=user)  # type: ignore
 
 
 def make_holiday_category_register(name: str) -> HolidayCategoryRegister:

@@ -46,5 +46,5 @@ class Schedule(SQLModel, table=True):
     reservation: Optional["Reservation"] = Relationship(back_populates="schedule")
 
     occurrences: list["Occurrence"] = Relationship(
-        back_populates="schedule", sa_relationship_kwargs={"cascade": "delete"}
+        back_populates="schedule", sa_relationship_kwargs={"cascade": "all, delete"}
     )
