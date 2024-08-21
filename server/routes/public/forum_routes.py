@@ -61,11 +61,14 @@ async def report_forum_post(
 
 @router.post("/posts/{post_id}")
 async def create_forum_post_reply(
-    idToken: Annotated[str | None, Header()], post_id: int, input: ForumPostRegister, session: SessionDep
+    post_id: int,
+    input: ForumPostRegister, session: SessionDep,
+    authorization: str = Header(None),
 ) -> ForumPostReplyResponse:
     """Create forum post reply"""
+    
     # authenticate before
-    authenticate_with_google(idToken)
+    authenticate_with_google(authorization)
 
     reply = ForumRepository.create_reply(
         input=to_forumreply_model(post_id, input),
