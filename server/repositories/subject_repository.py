@@ -108,6 +108,7 @@ class SubjectRepository:
             try:
                 session.commit()
             except:
+                session.reset()
                 errors.append(subject_code)
         if len(errors) > 0:
             raise SubjectCreationError(subjects=errors)
