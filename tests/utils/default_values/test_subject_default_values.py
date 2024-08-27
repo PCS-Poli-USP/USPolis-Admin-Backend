@@ -1,6 +1,7 @@
 from datetime import datetime
 from server.utils.enums.subject_type import SubjectType
 
+
 class SubjectDefaultValues:
     CODE = "DEF0001"
     NAME: str = "default name"

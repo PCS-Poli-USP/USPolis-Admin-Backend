@@ -50,7 +50,9 @@ def test_building_get(db: Session, client: TestClient, user: User) -> None:
 def test_building_create(db: Session, client: TestClient, user: User) -> None:
     building_input = BuildingRegister(name=BuildingDefaultValues.NAME)
 
-    response = client.post("/admin/buildings", json={"name": BuildingDefaultValues.NAME})
+    response = client.post(
+        "/admin/buildings", json={"name": BuildingDefaultValues.NAME}
+    )
     assert response.status_code == status.HTTP_200_OK
 
     data = response.json()

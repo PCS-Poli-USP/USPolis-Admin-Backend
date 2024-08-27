@@ -7,6 +7,7 @@ from tests.services.jupiter_crawler.crawler_test_utils import JupiterCrawlerTest
 
 test_cases = JupiterCrawlerTestUtils.retrieve_subject_codes_to_test()
 
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize("subject_code", test_cases)
 async def test_crawler_parametrized(subject_code: str) -> None:

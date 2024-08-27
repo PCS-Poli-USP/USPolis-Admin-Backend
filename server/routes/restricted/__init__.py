@@ -14,6 +14,7 @@ from server.routes.restricted.holiday_routes import router as HolidayRouter
 from server.routes.restricted.institutional_event_routes import (
     router as InstitutionalEventRouter,
 )
+from server.routes.restricted.schedule_routes import router as ScheduleRouter
 from server.routes.restricted.occurrence_routes import router as OccurrenceRouter
 from server.routes.restricted.subject_routes import router as SubjectRouter
 from server.routes.restricted.user_routes import router as UserRouter
@@ -30,5 +31,6 @@ router.include_router(CalendarRouter)
 router.include_router(InstitutionalEventRouter)
 router.include_router(ClassRouter)
 router.include_router(ReservationRouter)
+router.include_router(ScheduleRouter)
 router.include_router(OccurrenceRouter)
 router.include_router(ConflictRouter)

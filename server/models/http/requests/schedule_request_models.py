@@ -77,6 +77,10 @@ class ScheduleUpdate(ScheduleRegister):
     pass
 
 
+class ScheduleUpdateOccurrences(BaseModel):
+    dates: list[date]
+
+
 class ScheduleInvalidData(HTTPException):
     def __init__(self, schedule_info: str, data_info: str) -> None:
         super().__init__(

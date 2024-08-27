@@ -44,7 +44,7 @@ async def post_comment(
         )
     else:
         user = None
-    
+
     send_email(comment.comment, comment.email, user)
     comment = CommentRepository.create(
         new_comment=to_comment_model(comment_input), session=session
@@ -110,7 +110,9 @@ def gmail_send_message(creds: Credentials, content: Any) -> Any:
         message = MIMEText(content, "html")
 
         message["To"] = "uspolis@usp.br"
-        message["From"] = service.users().getProfile(userId="me").execute().get("emailAddress")
+        message["From"] = (
+            service.users().getProfile(userId="me").execute().get("emailAddress")
+        )
         message["Subject"] = "Comentário no app USPolis"
 
         # encoded message

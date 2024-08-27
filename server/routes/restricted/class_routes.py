@@ -41,6 +41,15 @@ async def get_class(
     return ClassResponse.from_class(class_)
 
 
+@router.get("/{class_id}/full")
+async def get_class_full(
+    class_id: int, repository: ClassRepositoryAdapterDep
+) -> ClassFullResponse:
+    """Get a class by id with schedules and occurrences"""
+    class_ = repository.get_by_id(id=class_id)
+    return ClassFullResponse.from_class(class_)
+
+
 @router.post("")
 async def create_class(
     class_input: ClassRegister, repository: ClassRepositoryAdapterDep

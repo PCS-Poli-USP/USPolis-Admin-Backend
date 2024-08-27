@@ -15,14 +15,14 @@ from tests.utils.default_values.test_classroom_default_values import (
 def make_classroom(name: str, building: Building, user: User) -> Classroom:
     classroom = Classroom(
         name=name,
-        building=building, # type: ignore
+        building=building,  # type: ignore
         capacity=ClassroomDefaultValues.CAPACITY,
         floor=ClassroomDefaultValues.FLOOR,
         ignore_to_allocate=ClassroomDefaultValues.IGNORE_TO_ALLOCATE,
         accessibility=ClassroomDefaultValues.ACCESSIBILITY,
         projector=ClassroomDefaultValues.PROJECTOR,
         air_conditioning=ClassroomDefaultValues.AIR_CONDITIONING,
-        created_by=user, # type: ignore
+        created_by=user,  # type: ignore
         updated_at=datetime.now(),
     )
     return classroom

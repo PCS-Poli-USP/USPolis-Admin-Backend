@@ -12,6 +12,7 @@ from server.models.http.requests.subject_request_models import (
     SubjectUpdate,
 )
 from server.repositories.building_repository import BuildingRepository
+from server.repositories.calendar_repository import CalendarRepository
 from server.services.jupiter_crawler.crawler import JupiterCrawler
 
 
@@ -96,11 +97,15 @@ class SubjectRepository:
 
     @staticmethod
     async def crawler_create_many(
-        subjects_codes: list[str], session: Session, building: BuildingDep
+        subjects_codes: list[str],
+        calendar_ids: list[int],
+        session: Session,
+        building: BuildingDep,
     ) -> list[Subject]:
+        calendars = CalendarRepository.get_by_ids(ids=calendar_ids, session=session)
         result: list[Subject] = []
         for subject_code in subjects_codes:
-            subject = await JupiterCrawler.crawl_subject_static(subject_code)
+            subject = await JupiterCrawler.crawl_subject_static(subject_code, calendars)
             subject.buildings = [building]
             session.add(subject)
             result.append(subject)
