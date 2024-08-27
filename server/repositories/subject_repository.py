@@ -104,15 +104,19 @@ class SubjectRepository:
     ) -> list[Subject]:
         calendars = CalendarRepository.get_by_ids(ids=calendar_ids, session=session)
         result: list[Subject] = []
+        errors: list[str] = []
         for subject_code in subjects_codes:
             subject = await JupiterCrawler.crawl_subject_static(subject_code, calendars)
             subject.buildings = [building]
             session.add(subject)
             result.append(subject)
-        try:
-            session.commit()
-        except IntegrityError:
-            raise SubjectAlreadyOnOtherBuilding()
+            try:
+                session.commit()
+            except:
+                session.reset()
+                errors.append(subject_code)
+        if len(errors) > 0:
+            raise SubjectCreationError(subjects=errors)
         for subject in result:
             session.refresh(subject)
         return result
@@ -154,9 +158,9 @@ class SubjectNotExists(HTTPException):
         )
 
 
-class SubjectAlreadyOnOtherBuilding(HTTPException):
-    def __init__(self) -> None:
+class SubjectCreationError(HTTPException):
+    def __init__(self, subjects: list) -> None:
         super().__init__(
             status.HTTP_400_BAD_REQUEST,
-            "Uma ou mais disciplinas já adicionadas ao sistema",
+            f"Erro ao criar as seguintes disciplinas: {", ".join(subjects)}",
         )
