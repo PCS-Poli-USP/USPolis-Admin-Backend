@@ -1,5 +1,4 @@
 from fastapi import HTTPException, status
-from httpx import delete
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 
@@ -222,7 +221,8 @@ class ScheduleRepository:
         current_dates = set(occurrences_by_date.keys())
         dates_to_remove = current_dates - new_dates
         dates_to_add = new_dates - current_dates
-        occurences_to_remove = [occurrences_by_date[date] for date in dates_to_remove]
+        occurences_to_remove = [occurrences_by_date[date]
+                                for date in dates_to_remove]
         for occurrence in occurences_to_remove:
             session.delete(occurrence)
 

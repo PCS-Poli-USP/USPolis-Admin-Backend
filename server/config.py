@@ -7,7 +7,7 @@ from pydantic import BaseModel
 class Settings(BaseModel):
     """Server config settings."""
 
-    root_url: str = config("ROOT_URL", default="http://localhost:8080")  # type: ignore
+    root_url: str = config("ROOT_URL", default="http://localhost:8000")  # type: ignore
     port: str = config("PORT", default="8000")  # type: ignore
 
     # SQLAlchemy settings
