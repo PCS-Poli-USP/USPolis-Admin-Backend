@@ -26,6 +26,10 @@ jobs:
           python3 -m pip install -e .
           python3 -m pip install -e .[dev]
 
+      # - name: Run Tests
+      #   run: |
+      #     source venv/bin/activate
+      #     pytest
 
 
   cd:
@@ -38,10 +42,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # - name: Conectar com a máquina da USP
-      #   run: |
-      #     ssh ubuntu@200.144.244.245 -p 2222
-      #     ${{ secrets.USP_SERVER_PASSCODE }}
+      - name: Connect to USP Server Machine 
+        run: |
+          ssh ubuntu@200.144.244.245 -p 2222
+
+
+
+
+# ${{ secrets.USP_SERVER_PASSCODE }}
+# cd /diskb/home/backend
+# source venv/bin/activate
+# git pull
+# alembic upgrade heads
+
+
+
 
   #     - name: Cache node modules
   #       uses: actions/cache@v2
