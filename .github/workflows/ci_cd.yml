@@ -45,12 +45,8 @@ jobs:
       - name: Connect to USP Server Machine 
         run: |
           ssh ubuntu@200.144.244.245 -p 2222
-
-
-
-
-# ${{ secrets.USP_SERVER_PASSCODE }}
-# cd /diskb/home/backend
+          ${{ SSH_PASSCODE }}
+          cd /diskb/home/backend
 # source venv/bin/activate
 # git pull
 # alembic upgrade heads
