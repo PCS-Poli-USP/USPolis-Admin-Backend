@@ -3,8 +3,9 @@ from datetime import time
 
 
 class ClassroomSolicitationRegister(BaseModel):
+    classroom_id: int
+    building_id: int
     email: str
-    classroom: str
     start_time: time
     end_time: time
     capacity: int
@@ -12,4 +13,3 @@ class ClassroomSolicitationRegister(BaseModel):
 
 class ClassroomSolicitationUpdate(BaseModel):
     id: int
-    

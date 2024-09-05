@@ -26,6 +26,7 @@ from server.models.database import (  # noqa
     subject_db_model,
     user_building_link,
     user_db_model,
+    classroom_solicitation_db_model
 )
 
 engine = create_engine(f"{CONFIG.db_uri}/{CONFIG.db_database}")
