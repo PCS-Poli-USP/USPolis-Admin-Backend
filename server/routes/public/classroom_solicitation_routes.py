@@ -22,4 +22,5 @@ def create_classroom_solicitation(
 ) -> ClassroomSolicitationResponse:
     """Create a class reservation solicitation"""
     solicitation = ClassroomSolicitationRepository.create(input=input, session=session)
+    session.commit()
     return ClassroomSolicitationResponse.from_solicitation(solicitation)

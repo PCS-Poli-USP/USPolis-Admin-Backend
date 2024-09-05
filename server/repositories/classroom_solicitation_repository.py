@@ -19,6 +19,16 @@ class ClassroomSolicitationRepository:
         return solicitation
 
     @staticmethod
+    def get_by_id_on_buildings(
+        building_ids: list[int], session: Session
+    ) -> list[ClassroomSolicitation]:
+        statement = select(ClassroomSolicitation).where(
+            col(ClassroomSolicitation.building_id).in_(building_ids)
+        )
+        solicitations = session.exec(statement).all()
+        return list(solicitations)
+
+    @staticmethod
     def create(
         input: ClassroomSolicitationRegister, session: Session
     ) -> ClassroomSolicitation:
@@ -31,6 +41,8 @@ class ClassroomSolicitationRepository:
             classroom=classroom,
             building_id=must_be_int(building.id),
             building=building,
+            date=input.date,
+            reason=input.reason,
             email=input.email,
             start_time=input.start_time,
             end_time=input.end_time,
@@ -45,7 +57,7 @@ class ClassroomSolicitationRepository:
         solicitation.approved = True
         solicitation.denied = False
         solicitation.closed = True
-        solicitation.upated_at = datetime.now()
+        solicitation.updated_at = datetime.now()
         session.add(solicitation)
         return solicitation
 
@@ -55,6 +67,6 @@ class ClassroomSolicitationRepository:
         solicitation.approved = False
         solicitation.denied = True
         solicitation.closed = True
-        solicitation.upated_at = datetime.now()
+        solicitation.updated_at = datetime.now()
         session.add(solicitation)
         return solicitation

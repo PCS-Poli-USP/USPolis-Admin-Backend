@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import datetime, time, date as date_type
 from typing import TYPE_CHECKING
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -17,6 +17,8 @@ class ClassroomSolicitation(SQLModel, table=True):
     building_id: int = Field(foreign_key="building.id")
     building: "Building" = Relationship(back_populates="solicitations")
 
+    reason: str
+    date: date_type
     start_time: time
     end_time: time
     capacity: int

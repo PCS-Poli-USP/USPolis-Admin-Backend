@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import datetime, time, date as date_type
 from pydantic import BaseModel
 
 from server.models.database.classroom_solicitation_db_model import ClassroomSolicitation
@@ -11,6 +11,8 @@ class ClassroomSolicitationResponse(BaseModel):
     classroom: str
     building_id: int
     building: str
+    date: date_type
+    reason: str
     email: str
     start_time: time
     end_time: time
@@ -31,6 +33,8 @@ class ClassroomSolicitationResponse(BaseModel):
             classroom=solicitation.classroom.name,
             building_id=solicitation.building_id,
             building=solicitation.building.name,
+            date=solicitation.date,
+            reason=solicitation.reason,
             email=solicitation.email,
             start_time=solicitation.start_time,
             end_time=solicitation.end_time,
