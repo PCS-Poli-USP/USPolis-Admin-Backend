@@ -6,9 +6,7 @@ class ForumRepository:
     @staticmethod
     def create(*, input: ForumPost, session: Session) -> ForumPost:
         new_post = input
-        # new_post.created_at = datetime.now()
         new_post.report_count = 0
-        # new_post.reported_users = []
 
         session.add(new_post)
         session.commit()

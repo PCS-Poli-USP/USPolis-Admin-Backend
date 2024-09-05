@@ -18,7 +18,9 @@ from server.routes.restricted.schedule_routes import router as ScheduleRouter
 from server.routes.restricted.occurrence_routes import router as OccurrenceRouter
 from server.routes.restricted.subject_routes import router as SubjectRouter
 from server.routes.restricted.user_routes import router as UserRouter
-from server.routes.restricted.classroom_soliciation_routes import router as ClassroomSolicitationRouter
+from server.routes.restricted.classroom_soliciation_routes import (
+    router as ClassroomSolicitationRouter,
+)
 
 router = APIRouter(dependencies=[Depends(authenticate)])
 

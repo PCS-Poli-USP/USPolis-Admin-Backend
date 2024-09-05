@@ -9,7 +9,9 @@ from server.routes.public.mobile_google_authentication_routes import (
     router as MobileGAuth,
 )
 from server.routes.public.mobile_programs_routes import router as ProgramsRouter
-from server.routes.public.classroom_solicitation_routes import router as ClassroomSolicitationRouter
+from server.routes.public.classroom_solicitation_routes import (
+    router as ClassroomSolicitationRouter,
+)
 
 router = APIRouter()
 

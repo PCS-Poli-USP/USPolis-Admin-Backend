@@ -46,7 +46,7 @@ class Classroom(ClassroomBase, table=True):
         back_populates="classroom", sa_relationship_kwargs={"cascade": "all, delete"}
     )
     schedules: list["Schedule"] = Relationship(back_populates="classroom")
-    soliciations: list["ClassroomSolicitation"] = Relationship(
+    solicitations: list["ClassroomSolicitation"] = Relationship(
         back_populates="classroom"
     )
 

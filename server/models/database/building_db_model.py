@@ -32,6 +32,6 @@ class Building(SQLModel, table=True):
     )
     updated_at: datetime = Field(default=datetime.now())
 
-    soliciations: list["ClassroomSolicitation"] = Relationship(
+    solicitations: list["ClassroomSolicitation"] = Relationship(
         back_populates="building"
     )
