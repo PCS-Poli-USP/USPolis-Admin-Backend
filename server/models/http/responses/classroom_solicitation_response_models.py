@@ -2,6 +2,7 @@ from datetime import datetime, time, date as date_type
 from pydantic import BaseModel
 
 from server.models.database.classroom_solicitation_db_model import ClassroomSolicitation
+from server.utils.enums.reservation_type import ReservationType
 from server.utils.must_be_int import must_be_int
 
 
@@ -13,6 +14,7 @@ class ClassroomSolicitationResponse(BaseModel):
     building: str
     date: date_type
     reason: str
+    reservation_type: ReservationType
     email: str
     start_time: time
     end_time: time
@@ -35,6 +37,7 @@ class ClassroomSolicitationResponse(BaseModel):
             building=solicitation.building.name,
             date=solicitation.date,
             reason=solicitation.reason,
+            reservation_type=solicitation.reservation_type,
             email=solicitation.email,
             start_time=solicitation.start_time,
             end_time=solicitation.end_time,

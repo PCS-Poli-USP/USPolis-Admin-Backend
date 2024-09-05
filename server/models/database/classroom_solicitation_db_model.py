@@ -2,6 +2,8 @@ from datetime import datetime, time, date as date_type
 from typing import TYPE_CHECKING
 from sqlmodel import Field, Relationship, SQLModel
 
+from server.utils.enums.reservation_type import ReservationType
+
 
 if TYPE_CHECKING:
     from server.models.database.building_db_model import Building
@@ -18,6 +20,7 @@ class ClassroomSolicitation(SQLModel, table=True):
     building: "Building" = Relationship(back_populates="solicitations")
 
     reason: str
+    reservation_type: ReservationType
     date: date_type
     start_time: time
     end_time: time

@@ -43,6 +43,7 @@ class ClassroomSolicitationRepository:
             building=building,
             date=input.date,
             reason=input.reason,
+            reservation_type=input.reservation_type,
             email=input.email,
             start_time=input.start_time,
             end_time=input.end_time,
