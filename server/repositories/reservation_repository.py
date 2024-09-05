@@ -6,6 +6,7 @@ from sqlmodel import col, select, Session
 
 from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
+from server.models.database.classroom_solicitation_db_model import ClassroomSolicitation
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.user_db_model import User
 from server.models.http.requests.reservation_request_models import (
@@ -87,6 +88,28 @@ class ReservationRepository:
         return reservation
 
     @staticmethod
+    def create_by_solicitation(
+        creator: User, solicitation: ClassroomSolicitation, session: Session
+    ) -> Reservation:
+        reservation = Reservation(
+            name="Reserva para usuário X",
+            type=solicitation.reservation_type,
+            description=solicitation.reason,
+            updated_at=datetime.now(),
+            classroom=solicitation.classroom,
+            created_by_id=must_be_int(creator.id),
+            created_by=creator,
+        )
+        schedule = ScheduleRepository.create_with_reservation_and_solicitation(
+            reservation=reservation,
+            solicitation=solicitation,
+            session=session,
+        )
+        reservation.schedule = schedule
+        session.add(reservation)
+        return reservation
+
+    @staticmethod
     def update_on_buildings(
         *,
         id: int,
@@ -103,7 +126,7 @@ class ReservationRepository:
         reservation.description = input.description
         reservation.classroom = classroom
 
-        schedule = ScheduleRepository.update_reservation_schedule(
+        ScheduleRepository.update_reservation_schedule(
             reservation=reservation,
             input=input.schedule_data,
             classroom=classroom,
@@ -126,5 +149,5 @@ class ReservationNotFound(HTTPException):
     def __init__(self, id: int):
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Classroom with id {id} not found",
+            detail=f"Reservation with id {id} not found",
         )

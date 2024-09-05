@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Body
 
+from server.deps.authenticate import UserDep
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
 from server.deps.session_dep import SessionDep
 from server.models.http.responses.classroom_solicitation_response_models import (
@@ -7,6 +8,10 @@ from server.models.http.responses.classroom_solicitation_response_models import 
 )
 from server.repositories.classroom_solicitation_repository import (
     ClassroomSolicitationRepository,
+)
+from server.repositories.reservation_repository import ReservationRepository
+from server.services.security.classroom_solicitation_permission_checker import (
+    classroom_solicitation_permission_checker,
 )
 
 embed = Body(..., embed=True)
@@ -26,11 +31,17 @@ def get_classroom_solicitations(
 
 @router.put("/approve/{solicitation_id}")
 def aprove_classroom_solicitation(
-    solicitation_id: int, session: SessionDep
+    solicitation_id: int,
+    session: SessionDep,
+    user: UserDep,
 ) -> ClassroomSolicitationResponse:
     """Aprove a class reservation solicitation"""
+    classroom_solicitation_permission_checker(user, solicitation_id, session)
     solicitation = ClassroomSolicitationRepository.approve(
         id=solicitation_id, session=session
+    )
+    ReservationRepository.create_by_solicitation(
+        creator=user, solicitation=solicitation, session=session
     )
     session.commit()
     return ClassroomSolicitationResponse.from_solicitation(solicitation)
@@ -38,9 +49,10 @@ def aprove_classroom_solicitation(
 
 @router.put("/deny/{solicitation_id}")
 def deny_classroom_solicitation(
-    solicitation_id: int, session: SessionDep
+    solicitation_id: int, session: SessionDep, user: UserDep
 ) -> ClassroomSolicitationResponse:
     """Deny a class reservation solicitation"""
+    classroom_solicitation_permission_checker(user, solicitation_id, session)
     solicitation = ClassroomSolicitationRepository.deny(
         id=solicitation_id, session=session
     )
