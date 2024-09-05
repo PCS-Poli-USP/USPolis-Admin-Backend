@@ -5,7 +5,6 @@ from server.deps.repository_adapters.building_repository_adapter import (
 )
 from server.models.database.building_db_model import Building
 from server.models.http.responses.building_response_models import BuildingResponse
-from server.repositories.building_repository import BuildingRepository
 
 embed = Body(..., embed=True)
 
