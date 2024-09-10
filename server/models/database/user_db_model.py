@@ -11,6 +11,9 @@ if TYPE_CHECKING:
     from server.models.database.holiday_category_db_model import HolidayCategory
     from server.models.database.holiday_db_model import Holiday
     from server.models.database.reservation_db_model import Reservation
+    from server.models.database.classroom_solicitation_db_model import (
+        ClassroomSolicitation,
+    )
 
 
 class User(SQLModel, table=True):
@@ -39,3 +42,4 @@ class User(SQLModel, table=True):
     holidays: list["Holiday"] = Relationship(back_populates="created_by")
     calendars: list["Calendar"] = Relationship(back_populates="created_by")
     reservations: list["Reservation"] = Relationship(back_populates="created_by")
+    solicitations: list["ClassroomSolicitation"] = Relationship(back_populates="user")

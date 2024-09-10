@@ -9,11 +9,16 @@ from server.models.database.classroom_db_model import Classroom
 from server.models.database.classroom_solicitation_db_model import ClassroomSolicitation
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.user_db_model import User
+from server.models.http.requests.classroom_solicitation_request_models import (
+    ClassroomSolicitationApprove,
+)
 from server.models.http.requests.reservation_request_models import (
     ReservationRegister,
     ReservationUpdate,
 )
+from server.models.http.requests.schedule_request_models import ScheduleRegister
 from server.repositories.schedule_repository import ScheduleRepository
+from server.utils.enums.recurrence import Recurrence
 from server.utils.must_be_int import must_be_int
 
 
@@ -73,6 +78,7 @@ class ReservationRepository:
             type=input.type,
             description=input.description,
             updated_at=datetime.now(),
+            classroom_id=must_be_int(classroom.id),
             classroom=classroom,
             created_by_id=must_be_int(creator.id),
             created_by=creator,
@@ -89,24 +95,43 @@ class ReservationRepository:
 
     @staticmethod
     def create_by_solicitation(
-        creator: User, solicitation: ClassroomSolicitation, session: Session
+        creator: User,
+        input: ClassroomSolicitationApprove,
+        solicitation: ClassroomSolicitation,
+        classroom: Classroom,
+        session: Session,
     ) -> Reservation:
         reservation = Reservation(
-            name="Reserva para usuário X",
+            name=f"Solicitada por {creator.name}",
             type=solicitation.reservation_type,
             description=solicitation.reason,
             updated_at=datetime.now(),
-            classroom=solicitation.classroom,
+            classroom_id=must_be_int(classroom.id),
+            classroom=classroom,
             created_by_id=must_be_int(creator.id),
             created_by=creator,
-        )
-        schedule = ScheduleRepository.create_with_reservation_and_solicitation(
-            reservation=reservation,
             solicitation=solicitation,
+        )
+        session.add(reservation)
+        schedule_input = ScheduleRegister(
+            dates=solicitation.dates,
+            start_date=min(solicitation.dates),
+            end_date=max(solicitation.dates),
+            recurrence=Recurrence.CUSTOM,
+            start_time=input.start_time,
+            end_time=input.end_time,
+            allocated=True,
+            reservation_id=reservation.id,
+            classroom_id=classroom.id,
+        )
+        schedule = ScheduleRepository.create_with_reservation(
+            reservation=reservation,
+            input=schedule_input,
+            classroom=classroom,
             session=session,
         )
+        session.add(schedule)
         reservation.schedule = schedule
-        session.add(reservation)
         return reservation
 
     @staticmethod

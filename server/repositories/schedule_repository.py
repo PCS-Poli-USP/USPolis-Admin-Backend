@@ -4,7 +4,6 @@ from sqlmodel import Session, col, select
 
 from server.models.database.class_db_model import Class
 from server.models.database.classroom_db_model import Classroom
-from server.models.database.classroom_solicitation_db_model import ClassroomSolicitation
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.schedule_db_model import Schedule
@@ -149,39 +148,6 @@ class ScheduleRepository:
             OccurrenceRepository.allocate_schedule(
                 schedule=new_schedule, classroom=classroom, session=session
             )
-        return new_schedule
-
-    @staticmethod
-    def create_with_reservation_and_solicitation(
-        reservation: Reservation, solicitation: ClassroomSolicitation, session: Session
-    ) -> Schedule:
-        new_schedule = Schedule(
-            start_date=solicitation.date,
-            end_date=solicitation.date,
-            recurrence=Recurrence.CUSTOM,
-            month_week=None,
-            all_day=False,
-            allocated=True,
-            week_day=None,
-            start_time=solicitation.start_time,
-            end_time=solicitation.end_time,
-            class_id=None,
-            class_=None,
-            reservation_id=reservation.id,
-            reservation=reservation,
-            classroom_id=solicitation.classroom_id,
-        )
-        occurrences_input = OccurenceManyRegister(
-            classroom_id=solicitation.classroom_id,
-            start_time=solicitation.start_time,
-            end_time=solicitation.end_time,
-            dates=[solicitation.date],
-        )
-        occurrences = OccurrenceRepository.create_many_with_schedule(
-            schedule=new_schedule, input=occurrences_input, session=session
-        )
-        new_schedule.occurrences = occurrences
-        session.add(new_schedule)
         return new_schedule
 
     @staticmethod

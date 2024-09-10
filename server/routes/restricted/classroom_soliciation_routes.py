@@ -3,13 +3,19 @@ from fastapi import APIRouter, Body
 from server.deps.authenticate import UserDep
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
 from server.deps.session_dep import SessionDep
+from server.models.http.requests.classroom_solicitation_request_models import (
+    ClassroomSolicitationApprove,
+    ClassroomSolicitationRegister,
+)
 from server.models.http.responses.classroom_solicitation_response_models import (
     ClassroomSolicitationResponse,
 )
+from server.repositories.classroom_repository import ClassroomRepository
 from server.repositories.classroom_solicitation_repository import (
     ClassroomSolicitationRepository,
 )
 from server.repositories.reservation_repository import ReservationRepository
+from server.repositories.user_repository import UserRepository
 from server.services.security.classroom_solicitation_permission_checker import (
     classroom_solicitation_permission_checker,
 )
@@ -29,9 +35,22 @@ def get_classroom_solicitations(
     return ClassroomSolicitationResponse.from_solicitation_list(solicitations)
 
 
+@router.post("")
+def create_classroom_solicitation(
+    input: ClassroomSolicitationRegister, session: SessionDep, user: UserDep
+) -> ClassroomSolicitationResponse:
+    """Create a class reservation solicitation"""
+    solicitation = ClassroomSolicitationRepository.create(
+        requester=user, input=input, session=session
+    )
+    session.commit()
+    return ClassroomSolicitationResponse.from_solicitation(solicitation)
+
+
 @router.put("/approve/{solicitation_id}")
 def aprove_classroom_solicitation(
     solicitation_id: int,
+    input: ClassroomSolicitationApprove,
     session: SessionDep,
     user: UserDep,
 ) -> ClassroomSolicitationResponse:
@@ -40,9 +59,19 @@ def aprove_classroom_solicitation(
     solicitation = ClassroomSolicitationRepository.approve(
         id=solicitation_id, session=session
     )
-    ReservationRepository.create_by_solicitation(
-        creator=user, solicitation=solicitation, session=session
+    classroom = ClassroomRepository.get_by_id(
+        id=input.classroom_id,
+        session=session,
     )
+    reservation = ReservationRepository.create_by_solicitation(
+        creator=user,
+        input=input,
+        solicitation=solicitation,
+        classroom=classroom,
+        session=session,
+    )
+    solicitation.reservation = reservation
+    session.refresh(solicitation)
     session.commit()
     return ClassroomSolicitationResponse.from_solicitation(solicitation)
 

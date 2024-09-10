@@ -1,6 +1,7 @@
 from datetime import datetime
 from sqlmodel import Session, col, select
 from server.models.database.classroom_solicitation_db_model import ClassroomSolicitation
+from server.models.database.user_db_model import User
 from server.models.http.requests.classroom_solicitation_request_models import (
     ClassroomSolicitationRegister,
 )
@@ -30,21 +31,25 @@ class ClassroomSolicitationRepository:
 
     @staticmethod
     def create(
-        input: ClassroomSolicitationRegister, session: Session
+        requester: User, input: ClassroomSolicitationRegister, session: Session
     ) -> ClassroomSolicitation:
         building = BuildingRepository.get_by_id(id=input.building_id, session=session)
-        classroom = ClassroomRepository.get_by_id(
-            id=input.classroom_id, session=session
-        )
+        classroom = None
+        if input.classroom_id:
+            classroom = ClassroomRepository.get_by_id(
+                id=input.classroom_id, session=session
+            )
         solicitation = ClassroomSolicitation(
-            classroom_id=must_be_int(classroom.id),
+            classroom_id=must_be_int(classroom.id) if classroom else None,
             classroom=classroom,
             building_id=must_be_int(building.id),
             building=building,
-            date=input.date,
+            user_id=must_be_int(requester.id),
+            user=requester,
+            dates=input.dates,
             reason=input.reason,
+            reservation_id=None,
             reservation_type=input.reservation_type,
-            email=input.email,
             start_time=input.start_time,
             end_time=input.end_time,
             capacity=input.capacity,
