@@ -1,12 +1,12 @@
-"""Create ClassroomSolicitation Table
+"""Create Classroom Solicitation Table
 
-Revision ID: ed91511a5f1c
+Revision ID: 9abf3e835628
 Revises: c075df6534bb
-Create Date: 2024-09-05 18:57:47.363999
+Create Date: 2024-09-09 15:04:18.181756
 
 """
 
-from collections.abc import Sequence
+from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
@@ -15,10 +15,10 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision: str = "ed91511a5f1c"
-down_revision: str | None = "c075df6534bb"
-branch_labels: str | Sequence[str] | None = None
-depends_on: str | Sequence[str] | None = None
+revision: str = "9abf3e835628"
+down_revision: Union[str, None] = "c075df6534bb"
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
@@ -26,18 +26,19 @@ def upgrade() -> None:
     op.create_table(
         "classroomsolicitation",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("email", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("classroom_id", sa.Integer(), nullable=False),
+        sa.Column("classroom_id", sa.Integer(), nullable=True),
         sa.Column("building_id", sa.Integer(), nullable=False),
+        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.Column("reservation_id", sa.Integer(), nullable=True),
         sa.Column("reason", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column(
             "reservation_type",
             postgresql.ENUM(name="reservationtype", create_type=False),
             nullable=False,
         ),
-        sa.Column("date", sa.Date(), nullable=False),
-        sa.Column("start_time", sa.Time(), nullable=False),
-        sa.Column("end_time", sa.Time(), nullable=False),
+        sa.Column("dates", sa.ARRAY(sa.Date()), nullable=True),
+        sa.Column("start_time", sa.Time(), nullable=True),
+        sa.Column("end_time", sa.Time(), nullable=True),
         sa.Column("capacity", sa.Integer(), nullable=False),
         sa.Column("approved", sa.Boolean(), nullable=False),
         sa.Column("denied", sa.Boolean(), nullable=False),
@@ -51,6 +52,14 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["classroom_id"],
             ["classroom.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["reservation_id"],
+            ["reservation.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["user_id"],
+            ["user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
