@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from server.models.database.forum_db_model import ForumPost, ForumPostReply
+from server.models.database.forum_db_model import ForumPost
 
 
 class ForumPostRegister(BaseModel):
@@ -17,13 +17,13 @@ def to_forumpost_model(postDTO: ForumPostRegister) -> ForumPost:
         subject_id=postDTO.subject_id
     )
 
-def to_forumreply_model(post_id: int, replyDTO: ForumPostRegister) -> ForumPostReply:
-    return ForumPostReply(
+def to_forumreply_model(post_id: int, replyDTO: ForumPostRegister) -> ForumPost:
+    return ForumPost(
         class_id=replyDTO.class_id,
         content=replyDTO.content,
         user_id=replyDTO.user_id,
         subject_id=replyDTO.subject_id,
-        forum_post_id=post_id
+        reply_of_post_id=post_id
     )
 
 class ForumReportRegister(BaseModel):

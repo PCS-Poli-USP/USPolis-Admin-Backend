@@ -1,4 +1,5 @@
 from typing import Annotated
+from typing import Any
 from fastapi import APIRouter, Body, Header
 
 from server.deps.session_dep import SessionDep
@@ -15,6 +16,7 @@ from server.models.http.responses.forum_post_response import (
 )
 from server.repositories.forum_repository import ForumRepository
 from server.utils.google_auth_utils import authenticate_with_google
+from server.services.gmail_service import gmail_login, gmail_send_message
 
 embed = Body(..., embed=True)
 
@@ -30,17 +32,34 @@ async def get_posts(subject_id: int, session: SessionDep) -> list[ForumPostRespo
 
 @router.post("/posts")
 async def create_forum_post(
-    input: ForumPostRegister, session: SessionDep
+    input: ForumPostRegister, session: SessionDep, authorization: str = Header(None),
 ) -> ForumPostResponse:
-    """Create forum post"""
+    """Create a forum post"""
+    # authenticate before creating and saving a post
+    authenticate_with_google(authorization)
+
     forum_post = ForumRepository.create(
         input=to_forumpost_model(input),
-        session=session,
+        session=session
     )
     return ForumPostResponse.from_forum_post(forum_post)
 
+@router.delete("/posts/{post_id}")
+async def delete_forum_post(
+    post_id: int,
+    session: SessionDep,
+    authorization: str = Header(None)
+):
+    """Soft delete (disable) a forum post"""
+    # authenticate (perhaps its better to use cognito and the admin)
+    authenticate_with_google(authorization)
 
-@router.post("/report-post")
+    ForumRepository.disable_post(
+        post_id=post_id,
+        session=session
+    )
+
+@router.post("/report")
 async def report_forum_post(
     input: ForumReportRegister, session: SessionDep
 ) -> ForumPost:
@@ -52,22 +71,35 @@ async def report_forum_post(
     )
 
     if updated_post.report_count == 10:
-        # TODO: Send EMail To Warning A Report
-        pass
+        send_email(updated_post)
 
     return updated_post
 
-# Post Reply
+def send_email(
+    post: ForumPost
+) -> Any:
+    html_content = f"""
+        <h1> Um postagem foi denunciada {post.report_count} vezes! </h1>
+        <h2> Dados da postagem </h2>
+        <p>Post ID: {post.id}</p>
+        <p>Conteúdo: {post.content}</p>
+        <p>Autor da postagem: {post.user}</p>
+    """
+    creds = gmail_login()
+    sent_email = gmail_send_message(creds, html_content)
+    return sent_email
 
+# Post Reply
 @router.post("/posts/{post_id}")
 async def create_forum_post_reply(
     post_id: int,
-    input: ForumPostRegister, session: SessionDep,
+    input: ForumPostRegister, 
+    session: SessionDep,
     authorization: str = Header(None),
 ) -> ForumPostReplyResponse:
     """Create forum post reply"""
     
-    # authenticate before
+    # authenticate before creating and saving reply
     authenticate_with_google(authorization)
 
     reply = ForumRepository.create_reply(
