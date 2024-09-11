@@ -42,15 +42,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Run remote command via SSH
-        uses: D3rHase/ssh-command-action@latest
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSCODE }}
           port: ${{ secrets.SSH_PORT }}
-          user: ${{ secrets.SSH_USER }}
-          private_key: ${{ secrets.SSH_PASSCODE }}
-          host_fingerprint: ${{ secrets.HOST_FINGERPRINT }}
-          command: echo 'Hello, World!'
+          script: whoami
+
+      # - name: Run remote command via SSH
+      #   uses: D3rHase/ssh-command-action@latest
+      #   with:
+      #     host: ${{ secrets.SSH_HOST }}
+      #     port: ${{ secrets.SSH_PORT }}
+      #     user: ${{ secrets.SSH_USER }}
+      #     private_key: ${{ secrets.SSH_PASSCODE }}
+      #     command: echo 'Hello, World!'
 
       - name: Notify Command Success
         run: echo "Command executed on ${{ secrets.HOST }} successfully!"
