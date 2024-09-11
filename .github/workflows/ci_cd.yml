@@ -42,11 +42,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Connect to USP Server Machine 
-        run: |
-          ssh ubuntu@200.144.244.245 -p 2222
-          ${{ secrets.SSH_PASSCODE }}
-          cd /diskb/home/backend
+      - name: Run remote command via SSH
+        uses: D3rHase/ssh-command-action@latest
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          user: ${{ secrets.SSH_USER }}
+          private_key: ${{ secrets.SSH_PASSCODE }}
+          command: echo 'Hello, World!'
+
+      - name: Notify Command Success
+        run: echo "Command executed on ${{ secrets.HOST }} successfully!"
+# - name: Connect to USP Server Machine 
+#   run: |
+#     ssh ubuntu@200.144.244.245 -p 2222
+#     ${{ secrets.SSH_PASSCODE }}
+#     cd /diskb/home/backend
 # source venv/bin/activate
 # git pull
 # alembic upgrade heads
