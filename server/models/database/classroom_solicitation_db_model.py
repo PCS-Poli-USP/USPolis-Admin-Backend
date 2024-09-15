@@ -27,7 +27,8 @@ class ClassroomSolicitation(SQLModel, table=True):
     reservation_id: int | None = Field(foreign_key="reservation.id", nullable=True)
     reservation: Optional["Reservation"] = Relationship(back_populates="solicitation")
 
-    reason: str
+    reason: str | None = Field(nullable=True, default=None)
+    reservation_title: str
     reservation_type: ReservationType
     dates: list[date] = Field(sa_column=Column(ARRAY(Date)), min_length=1)
     start_time: time | None = Field(nullable=True, default=None)

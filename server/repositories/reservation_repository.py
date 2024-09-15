@@ -74,9 +74,9 @@ class ReservationRepository:
         session: Session,
     ) -> Reservation:
         reservation = Reservation(
-            name=input.name,
+            title=input.title,
             type=input.type,
-            description=input.description,
+            reason=input.reason,
             updated_at=datetime.now(),
             classroom_id=must_be_int(classroom.id),
             classroom=classroom,
@@ -102,9 +102,9 @@ class ReservationRepository:
         session: Session,
     ) -> Reservation:
         reservation = Reservation(
-            name=f"Solicitada por {creator.name}",
+            title=solicitation.reservation_title,
             type=solicitation.reservation_type,
-            description=solicitation.reason,
+            reason=solicitation.reason,
             updated_at=datetime.now(),
             classroom_id=must_be_int(classroom.id),
             classroom=classroom,
@@ -146,9 +146,9 @@ class ReservationRepository:
         reservation = ReservationRepository.get_by_id_on_buildings(
             id=id, building_ids=building_ids, session=session
         )
-        reservation.name = input.name
+        reservation.title = input.title
         reservation.type = input.type
-        reservation.description = input.description
+        reservation.reason = input.reason
         reservation.classroom = classroom
 
         ScheduleRepository.update_reservation_schedule(

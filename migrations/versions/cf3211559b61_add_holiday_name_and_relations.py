@@ -43,10 +43,7 @@ def upgrade() -> None:
     op.execute("UPDATE holiday SET name = 'Sem nome' WHERE name IS NULL")
 
     # Removendo o valor padrão da coluna e opcional
-    op.alter_column('holiday', 'name',
-                    nullable=False,
-                    server_default=None
-                    )
+    op.alter_column("holiday", "name", nullable=False, server_default=None)
 
 
 def downgrade() -> None:

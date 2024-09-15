@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import UniqueConstraint
 from sqlmodel import Relationship, SQLModel, Field
 
 from server.utils.enums.reservation_type import ReservationType
@@ -17,9 +16,9 @@ if TYPE_CHECKING:
 
 class Reservation(SQLModel, table=True):
     id: int | None = Field(primary_key=True, default=None)
-    name: str = Field()
+    title: str = Field()
     type: ReservationType = Field()
-    description: str | None = Field(nullable=True, default=None)
+    reason: str | None = Field(nullable=True, default=None)
     updated_at: datetime = Field(default=datetime.now())
 
     classroom_id: int = Field(foreign_key="classroom.id", nullable=False)

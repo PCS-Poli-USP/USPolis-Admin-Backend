@@ -15,7 +15,6 @@ from server.repositories.classroom_solicitation_repository import (
     ClassroomSolicitationRepository,
 )
 from server.repositories.reservation_repository import ReservationRepository
-from server.repositories.user_repository import UserRepository
 from server.services.security.classroom_solicitation_permission_checker import (
     classroom_solicitation_permission_checker,
 )

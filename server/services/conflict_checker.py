@@ -1,4 +1,3 @@
-from typing import Any
 from datetime import date, time
 
 from pydantic import BaseModel
@@ -33,7 +32,7 @@ class OccurrenceConflictSpecification(BaseModel):
     subject_code: str | None
     class_code: str | None
     class_id: int | None
-    reservation_name: str | None
+    reservation_title: str | None
     reservation_id: int | None
 
 
@@ -121,7 +120,7 @@ class ConflictChecker:
                             class_id=must_be_int(occurrence.schedule.class_.id)
                             if occurrence.schedule.class_
                             else None,
-                            reservation_name=occurrence.schedule.reservation.name
+                            reservation_title=occurrence.schedule.reservation.title
                             if occurrence.schedule.reservation
                             else None,
                             reservation_id=must_be_int(

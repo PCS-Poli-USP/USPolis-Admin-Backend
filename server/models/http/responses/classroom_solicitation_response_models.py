@@ -13,7 +13,8 @@ class ClassroomSolicitationResponse(BaseModel):
     building_id: int
     building: str
     dates: list[date]
-    reason: str
+    reason: str | None
+    reservation_title: str
     reservation_type: ReservationType
     user_id: int
     user: str
@@ -39,6 +40,7 @@ class ClassroomSolicitationResponse(BaseModel):
             building=solicitation.building.name,
             dates=solicitation.dates,
             reason=solicitation.reason,
+            reservation_title=solicitation.reservation_title,
             reservation_type=solicitation.reservation_type,
             user_id=solicitation.user_id,
             user=solicitation.user.name,
