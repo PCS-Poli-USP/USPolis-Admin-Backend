@@ -6,7 +6,7 @@ Create Date: 2024-07-29 14:01:10.072493
 
 """
 
-from typing import Sequence, Union
+from collections.abc import Sequence
 
 from alembic import op
 import sqlalchemy as sa
@@ -15,9 +15,9 @@ import sqlmodel
 
 # revision identifiers, used by Alembic.
 revision: str = "cf3211559b61"
-down_revision: Union[str, None] = "2a4d06849f24"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = "2a4d06849f24"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -33,8 +33,8 @@ def upgrade() -> None:
         sa.Column(
             "name",
             sqlmodel.sql.sqltypes.AutoString(),
-            nullable=False,
-            server_default="Sem nome",
+            nullable=True,
+            server_default=None,
         ),
     )
     # ### end Alembic commands ###
@@ -42,8 +42,11 @@ def upgrade() -> None:
     # Atualizando registros existentes com o valor padrão
     op.execute("UPDATE holiday SET name = 'Sem nome' WHERE name IS NULL")
 
-    # Removendo o valor padrão da coluna
-    op.alter_column("holiday", "name", server_default=None)
+    # Removendo o valor padrão da coluna e opcional
+    op.alter_column('holiday', 'name',
+                    nullable=False,
+                    server_default=None
+                    )
 
 
 def downgrade() -> None:
