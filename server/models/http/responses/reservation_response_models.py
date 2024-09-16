@@ -3,9 +3,7 @@ from pydantic import BaseModel
 
 from server.models.database.reservation_db_model import Reservation
 from server.models.http.exceptions.responses_exceptions import UnfetchDataError
-from server.models.http.responses.classroom_solicitation_response_models import (
-    ClassroomSolicitationResponse,
-)
+
 from server.models.http.responses.schedule_response_models import (
     ScheduleResponse,
     ScheduleFullResponse,
@@ -32,7 +30,7 @@ class ReservationResponseBase(BaseModel):
     created_by_id: int
     created_by: str
 
-    solicitation: ClassroomSolicitationResponse | None
+    requester: str | None
 
 
 class ReservationResponse(ReservationResponseBase):
@@ -56,9 +54,7 @@ class ReservationResponse(ReservationResponseBase):
             schedule=ScheduleResponse.from_schedule(reservation.schedule),
             created_by_id=must_be_int(reservation.created_by_id),
             created_by=reservation.created_by.name,
-            solicitation=ClassroomSolicitationResponse.from_solicitation(
-                reservation.solicitation
-            )
+            requester=reservation.solicitation.user.name
             if reservation.solicitation
             else None,
         )
@@ -91,9 +87,7 @@ class ReservationFullResponse(ReservationResponseBase):
             schedule=ScheduleFullResponse.from_schedule(reservation.schedule),
             created_by_id=must_be_int(reservation.created_by_id),
             created_by=reservation.created_by.name,
-            solicitation=ClassroomSolicitationResponse.from_solicitation(
-                reservation.solicitation
-            )
+            requester=reservation.solicitation.user.name
             if reservation.solicitation
             else None,
         )

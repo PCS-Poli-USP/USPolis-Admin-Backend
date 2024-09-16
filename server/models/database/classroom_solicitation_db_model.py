@@ -37,5 +37,6 @@ class ClassroomSolicitation(SQLModel, table=True):
     approved: bool = Field(default=False)
     denied: bool = Field(default=False)
     closed: bool = Field(default=False)
+    closed_by: str | None = Field(nullable=True, default=None)
     created_at: datetime = Field(default=datetime.now())
     updated_at: datetime = Field(default=datetime.now())

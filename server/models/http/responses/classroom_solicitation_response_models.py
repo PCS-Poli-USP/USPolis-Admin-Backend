@@ -25,6 +25,7 @@ class ClassroomSolicitationResponse(BaseModel):
     approved: bool
     denied: bool
     closed: bool
+    closed_by: str | None
     created_at: datetime
     updated_at: datetime
 
@@ -51,6 +52,7 @@ class ClassroomSolicitationResponse(BaseModel):
             approved=solicitation.approved,
             denied=solicitation.denied,
             closed=solicitation.closed,
+            closed_by=solicitation.closed_by,
             created_at=solicitation.created_at,
             updated_at=solicitation.updated_at,
         )
