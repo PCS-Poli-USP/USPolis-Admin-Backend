@@ -59,21 +59,23 @@ class ClassroomSolicitationRepository:
         return solicitation
 
     @staticmethod
-    def approve(id: int, session: Session) -> ClassroomSolicitation:
+    def approve(id: int, user: User, session: Session) -> ClassroomSolicitation:
         solicitation = ClassroomSolicitationRepository.get_by_id(id=id, session=session)
         solicitation.approved = True
         solicitation.denied = False
         solicitation.closed = True
+        solicitation.closed_by = user.name
         solicitation.updated_at = datetime.now()
         session.add(solicitation)
         return solicitation
 
     @staticmethod
-    def deny(id: int, session: Session) -> ClassroomSolicitation:
+    def deny(id: int, user: User, session: Session) -> ClassroomSolicitation:
         solicitation = ClassroomSolicitationRepository.get_by_id(id=id, session=session)
         solicitation.approved = False
         solicitation.denied = True
         solicitation.closed = True
+        solicitation.closed_by = user.name
         solicitation.updated_at = datetime.now()
         session.add(solicitation)
         return solicitation

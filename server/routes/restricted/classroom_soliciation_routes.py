@@ -56,7 +56,7 @@ def aprove_classroom_solicitation(
     """Aprove a class reservation solicitation"""
     classroom_solicitation_permission_checker(user, solicitation_id, session)
     solicitation = ClassroomSolicitationRepository.approve(
-        id=solicitation_id, session=session
+        id=solicitation_id, user=user, session=session
     )
     classroom = ClassroomRepository.get_by_id(
         id=input.classroom_id,
@@ -82,7 +82,7 @@ def deny_classroom_solicitation(
     """Deny a class reservation solicitation"""
     classroom_solicitation_permission_checker(user, solicitation_id, session)
     solicitation = ClassroomSolicitationRepository.deny(
-        id=solicitation_id, session=session
+        id=solicitation_id, user=user, session=session
     )
     session.commit()
     return ClassroomSolicitationResponse.from_solicitation(solicitation)
