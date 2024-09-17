@@ -1,6 +1,8 @@
 name: CI/CD
 
-on: [push, pull_request]
+push:
+  branches:
+    - develop
   # push:
   #   branches:
   #     - main
@@ -49,19 +51,15 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSCODE }}
           port: ${{ secrets.SSH_PORT }}
-          script: whoami
-
-      # - name: Run remote command via SSH
-      #   uses: D3rHase/ssh-command-action@latest
-      #   with:
-      #     host: ${{ secrets.SSH_HOST }}
-      #     port: ${{ secrets.SSH_PORT }}
-      #     user: ${{ secrets.SSH_USER }}
-      #     private_key: ${{ secrets.SSH_PASSCODE }}
-      #     command: echo 'Hello, World!'
+          script: |
+            git pull origin develop
+            alembic upgrade heads
+            ./start_uspolis_back.sh >> /home/ubuntu/script_log.log 2>&1
 
       - name: Notify Command Success
         run: echo "Command executed on ${{ secrets.HOST }} successfully!"
+
+        
 # - name: Connect to USP Server Machine 
 #   run: |
 #     ssh ubuntu@200.144.244.245 -p 2222
@@ -74,23 +72,3 @@ jobs:
 
 
 
-  #     - name: Cache node modules
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: ~/.cache/yarn # Cache para Yarn
-  #         key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-yarn-
-
-  #     - name: Instalar dependências com Yarn
-  #       run: yarn install --frozen-lockfile
-
-  #     - name: Setup Expo and EAS
-  #       uses: expo/expo-github-action@v8
-  #       with:
-  #         eas-version: latest
-  #         packager: yarn
-  #         token: ${{ secrets.EAS_EXPO_TOKEN }}
-
-  #     - name: Build
-  #       run: EXPO_APPLE_APP_SPECIFIC_PASSWORD=${{ secrets.EAS_APPLE_APP_SPECIFIC_PASSWORD }} eas build --platform all --profile production --non-interactive --auto-submit-with-profile=preview --no-wait
