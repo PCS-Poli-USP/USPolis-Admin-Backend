@@ -44,6 +44,12 @@ async def get_classroom(
     classroom = repository.get_by_id(id)
     return ClassroomResponse.from_classroom(classroom)
 
+@router.get("/building/{building_id}")
+async def get_classrooms_by_building(building_id: int, repository: ClassroomRepositoryDep) -> list[ClassroomResponse]:
+    """Get all classrooms on building"""
+    classrooms = repository.get_all_on_building(building_id)
+    return ClassroomResponse.from_classroom_list(classrooms)
+
 
 @router.get("/full/{id}")
 async def get_classroom_full(
