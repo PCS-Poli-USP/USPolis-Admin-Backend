@@ -50,6 +50,7 @@ jobs:
           password: ${{ secrets.SSH_PASSCODE }}
           port: ${{ secrets.SSH_PORT }}
           script: |
+            cd /diskb/home/backend
             git pull origin develop
             alembic upgrade heads
             ./start_uspolis_back.sh >> /home/ubuntu/script_log.log 2>&1
