@@ -1,8 +1,6 @@
 name: CI/CD
 
-push:
-  branches:
-    - develop
+on: [push, pull_request]
   # push:
   #   branches:
   #     - main
@@ -58,7 +56,6 @@ jobs:
 
       - name: Notify Command Success
         run: echo "Command executed on ${{ secrets.HOST }} successfully!"
-
         
 # - name: Connect to USP Server Machine 
 #   run: |
