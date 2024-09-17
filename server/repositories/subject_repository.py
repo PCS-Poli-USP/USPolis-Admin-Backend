@@ -12,6 +12,7 @@ from server.models.http.requests.subject_request_models import (
     SubjectUpdate,
 )
 from server.repositories.building_repository import BuildingRepository
+from server.repositories.calendar_repository import CalendarRepository
 from server.services.jupiter_crawler.crawler import JupiterCrawler
 
 
@@ -96,18 +97,26 @@ class SubjectRepository:
 
     @staticmethod
     async def crawler_create_many(
-        subjects_codes: list[str], session: Session, building: BuildingDep
+        subjects_codes: list[str],
+        calendar_ids: list[int],
+        session: Session,
+        building: BuildingDep,
     ) -> list[Subject]:
+        calendars = CalendarRepository.get_by_ids(ids=calendar_ids, session=session)
         result: list[Subject] = []
+        errors: list[str] = []
         for subject_code in subjects_codes:
-            subject = await JupiterCrawler.crawl_subject_static(subject_code)
+            subject = await JupiterCrawler.crawl_subject_static(subject_code, calendars)
             subject.buildings = [building]
             session.add(subject)
             result.append(subject)
-        try:
-            session.commit()
-        except IntegrityError:
-            raise SubjectAlreadyOnOtherBuilding()
+            try:
+                session.commit()
+            except:
+                session.reset()
+                errors.append(subject_code)
+        if len(errors) > 0:
+            raise SubjectCreationError(subjects=errors)
         for subject in result:
             session.refresh(subject)
         return result
@@ -149,9 +158,9 @@ class SubjectNotExists(HTTPException):
         )
 
 
-class SubjectAlreadyOnOtherBuilding(HTTPException):
-    def __init__(self) -> None:
+class SubjectCreationError(HTTPException):
+    def __init__(self, subjects: list) -> None:
         super().__init__(
             status.HTTP_400_BAD_REQUEST,
-            "Uma ou mais disciplinas já adicionadas ao sistema",
+            f"Erro ao criar as seguintes disciplinas: {", ".join(subjects)}",
         )

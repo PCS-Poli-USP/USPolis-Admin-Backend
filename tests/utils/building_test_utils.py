@@ -36,7 +36,7 @@ def add_building(session: Session, name: str, user: User) -> int:
     building = make_building(name, user)
     session.add(building)
     session.commit()
-    return building.id # type: ignore
+    return building.id  # type: ignore
 
 
 def check_name_exists(db: Session, name: str) -> bool:

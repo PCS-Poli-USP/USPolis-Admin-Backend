@@ -7,6 +7,7 @@ from server.deps.repository_adapters.subject_repository_adapter import (
 from server.deps.session_dep import SessionDep
 from server.models.database.subject_db_model import Subject
 from server.models.http.requests.subject_request_models import (
+    CrawlSubject,
     SubjectRegister,
     SubjectUpdate,
 )
@@ -37,10 +38,13 @@ async def get_subject(
 
 @router.post("/crawl")
 async def crawl_subjects(
-    building: BuildingDep, session: SessionDep, subjects_list: list[str] = embed
+    building: BuildingDep, session: SessionDep, input: CrawlSubject
 ) -> list[Subject]:
     subjects = await SubjectRepository.crawler_create_many(
-        building=building, session=session, subjects_codes=subjects_list
+        building=building,
+        session=session,
+        calendar_ids=input.calendar_ids,
+        subjects_codes=input.subject_codes,
     )
     return subjects
 

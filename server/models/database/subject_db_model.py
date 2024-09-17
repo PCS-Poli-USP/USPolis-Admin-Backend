@@ -29,4 +29,6 @@ class Subject(SQLModel, table=True):
     buildings: list["Building"] = Relationship(
         back_populates="subjects", link_model=SubjectBuildingLink
     )
-    classes: list["Class"] = Relationship(back_populates="subject")
+    classes: list["Class"] = Relationship(
+        back_populates="subject", sa_relationship_kwargs={"cascade": "all, delete"}
+    )

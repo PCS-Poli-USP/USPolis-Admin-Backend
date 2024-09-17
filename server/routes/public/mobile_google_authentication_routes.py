@@ -19,6 +19,7 @@ router = APIRouter(prefix="/mobile/authentication", tags=["Mobile", "Authenticat
 # Carregar variáveis do arquivo .env
 load_dotenv()
 
+
 @router.post("")
 async def authenticate_user(
     idToken: Annotated[str | None, Header()], session: SessionDep
