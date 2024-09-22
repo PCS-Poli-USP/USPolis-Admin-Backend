@@ -29,6 +29,8 @@ dependencies = [
     "google-auth-httplib2",
     "google-auth-oauthlib",
     "httpx",
+    "Jinja2",
+    "smtplib",
 ]
 
 [project.optional-dependencies]
