@@ -91,6 +91,24 @@ class ConflictChecker:
 
         return classrooms_with_conflicts
 
+    def classrooms_with_conflicts_indicator_for_time(
+        self, building_id: int, start_time: time, end_time: time
+    ) -> list[ClassroomWithConflictsIndicator]:
+        classrooms = self.classroom_repository.get_all_on_building(building_id)
+
+        classrooms_with_conflicts: list[ClassroomWithConflictsIndicator] = []
+        for classroom in classrooms:
+            count = self.__count_conflicts_time_in_classroom(
+                start_time, end_time, classroom
+            )
+            classroom_with_conflicts = ClassroomWithConflictsIndicator.from_classroom(
+                classroom
+            )
+            classroom_with_conflicts.conflicts = count
+            classrooms_with_conflicts.append(classroom_with_conflicts)
+
+        return classrooms_with_conflicts
+
     def conflicts_for_allowed_buildings(self) -> list[BuildingConflictSpecification]:
         allowed_buildings = self.building_repository.get_owned_buildings()
         result: list[BuildingConflictSpecification] = []
@@ -161,6 +179,15 @@ class ConflictChecker:
                 schedule_occurrence.classroom_id = classroom.id
                 if classroom_occurrence.conflicts_with(schedule_occurrence):
                     count += 1
+        return count
+
+    def __count_conflicts_time_in_classroom(
+        self, start_time: time, end_time: time, classroom: Classroom
+    ) -> int:
+        count = 0
+        for classroom_occurrence in classroom.occurrences:
+            if classroom_occurrence.conflicts_with_time(start_time, end_time):
+                count += 1
         return count
 
     def __get_grouped_conflicting_occurrences_in_list(

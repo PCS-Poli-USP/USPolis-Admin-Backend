@@ -1,3 +1,4 @@
+from datetime import time
 from fastapi import APIRouter, Body, Response
 
 from server.deps.conflict_checker import ConflictCheckerDep
@@ -44,8 +45,11 @@ async def get_classroom(
     classroom = repository.get_by_id(id)
     return ClassroomResponse.from_classroom(classroom)
 
+
 @router.get("/building/{building_id}")
-async def get_classrooms_by_building(building_id: int, repository: ClassroomRepositoryDep) -> list[ClassroomResponse]:
+async def get_classrooms_by_building(
+    building_id: int, repository: ClassroomRepositoryDep
+) -> list[ClassroomResponse]:
     """Get all classrooms on building"""
     classrooms = repository.get_all_on_building(building_id)
     return ClassroomResponse.from_classroom_list(classrooms)
@@ -66,6 +70,19 @@ async def get_classrooms_with_conflicts_count(
 ) -> list[ClassroomWithConflictsIndicator]:
     classrooms = conflict_checker.classrooms_with_conflicts_indicator_for_schedule(
         building_id, schedule_id
+    )
+    return classrooms
+
+
+@router.get("/with-conflict-count/{building_id}")
+async def get_classroom_with_conflicts_count_for_time(
+    building_id: int,
+    start_time: time,
+    end_time: time,
+    conflict_checker: ConflictCheckerDep,
+) -> list[ClassroomWithConflictsIndicator]:
+    classrooms = conflict_checker.classrooms_with_conflicts_indicator_for_time(
+        building_id, start_time, end_time
     )
     return classrooms
 

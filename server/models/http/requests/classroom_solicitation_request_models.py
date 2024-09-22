@@ -15,11 +15,12 @@ class ClassroomSolicitationRegister(BaseModel):
     capacity: int
 
 
-class ClassroomSolicitationUpdate(BaseModel):
-    id: int
-
-
 class ClassroomSolicitationApprove(BaseModel):
     classroom_id: int
+    classroom_name: str
     start_time: time
     end_time: time
+
+
+class ClassroomSolicitationDeny(BaseModel):
+    justification: str

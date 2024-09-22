@@ -48,3 +48,11 @@ class Occurrence(SQLModel, table=True):
                 )
             )
         )
+
+    def conflicts_with_time(self, start_time: time, end_time: time) -> bool:
+        return (
+            self.start_time <= start_time <= end_time
+            or start_time <= self.start_time <= end_time
+            or (self.start_time <= start_time and self.end_time >= end_time)
+            or (start_time <= self.start_time and end_time >= self.end_time)
+        )
