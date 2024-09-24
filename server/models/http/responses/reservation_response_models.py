@@ -32,12 +32,8 @@ class ReservationResponseBase(BaseModel):
 
     requester: str | None
 
-
-class ReservationResponse(ReservationResponseBase):
-    schedule: ScheduleResponse
-
     @classmethod
-    def from_reservation(cls, reservation: Reservation) -> "ReservationResponse":
+    def from_reservation(cls, reservation: Reservation) -> "ReservationResponseBase":
         if reservation.classroom.building is None:
             raise UnfetchDataError("Classroom", "Building")
         return cls(
@@ -51,12 +47,23 @@ class ReservationResponse(ReservationResponseBase):
             classroom_id=must_be_int(reservation.classroom_id),
             classroom_name=reservation.classroom.name,
             schedule_id=must_be_int(reservation.schedule.id),
-            schedule=ScheduleResponse.from_schedule(reservation.schedule),
             created_by_id=must_be_int(reservation.created_by_id),
             created_by=reservation.created_by.name,
             requester=reservation.solicitation.user.name
             if reservation.solicitation
             else None,
+        )
+
+
+class ReservationResponse(ReservationResponseBase):
+    schedule: ScheduleResponse
+
+    @classmethod
+    def from_reservation(cls, reservation: Reservation) -> "ReservationResponse":
+        base = ReservationResponseBase.from_reservation(reservation)
+        return cls(
+            **base.model_dump(),
+            schedule=ScheduleResponse.from_schedule(reservation.schedule),
         )
 
     @classmethod
@@ -71,25 +78,10 @@ class ReservationFullResponse(ReservationResponseBase):
 
     @classmethod
     def from_reservation(cls, reservation: Reservation) -> "ReservationFullResponse":
-        if reservation.classroom.building is None:
-            raise UnfetchDataError("Classroom", "Building")
+        base = ReservationResponseBase.from_reservation(reservation)
         return cls(
-            id=must_be_int(reservation.id),
-            title=reservation.title,
-            type=reservation.type,
-            reason=reservation.reason,
-            updated_at=reservation.updated_at,
-            building_id=must_be_int(reservation.classroom.building_id),
-            building_name=reservation.classroom.building.name,
-            classroom_id=must_be_int(reservation.classroom_id),
-            classroom_name=reservation.classroom.name,
-            schedule_id=must_be_int(reservation.schedule.id),
+            **base.model_dump(),
             schedule=ScheduleFullResponse.from_schedule(reservation.schedule),
-            created_by_id=must_be_int(reservation.created_by_id),
-            created_by=reservation.created_by.name,
-            requester=reservation.solicitation.user.name
-            if reservation.solicitation
-            else None,
         )
 
     @classmethod

@@ -41,10 +41,10 @@ class EmailService:
         # send email
 
         # Anexa a imagem
-        with open(f'{image_path}/uspolis.logo.png', 'rb') as img:
+        with open(f"{image_path}/uspolis.logo.png", "rb") as img:
             img_data = img.read()
-            image = MIMEImage(img_data, name='logo.png')
-            image.add_header('Content-ID', '<logo>')
+            image = MIMEImage(img_data, name="logo.png")
+            image.add_header("Content-ID", "<logo>")
             msg.attach(image)
 
         with SMTP_SSL(CONFIG.mail_host, CONFIG.mail_port) as smtp:
