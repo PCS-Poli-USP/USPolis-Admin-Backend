@@ -18,9 +18,11 @@ class Occurrence(SQLModel, table=True):
     classroom_id: int | None = Field(
         default=None, foreign_key="classroom.id", nullable=True
     )
-    classroom: Optional["Classroom"] = Relationship(back_populates="occurrences")
+    classroom: Optional["Classroom"] = Relationship(
+        back_populates="occurrences")
 
-    schedule_id: int | None = Field(default=None, index=True, foreign_key="schedule.id")
+    schedule_id: int | None = Field(
+        default=None, index=True, foreign_key="schedule.id")
     schedule: "Schedule" = Relationship(back_populates="occurrences")
 
     def __eq__(self, other: object) -> bool:
@@ -50,9 +52,14 @@ class Occurrence(SQLModel, table=True):
         )
 
     def conflicts_with_time(self, start_time: time, end_time: time) -> bool:
-        return (
-            self.start_time <= start_time <= end_time
-            or start_time <= self.start_time <= end_time
-            or (self.start_time <= start_time and self.end_time >= end_time)
-            or (start_time <= self.start_time and end_time >= self.end_time)
-        )
+        if (self.start_time < start_time and self.end_time > end_time):
+            return True
+        if (self.start_time > start_time and self.start_time < end_time):
+            return True
+        if (self.end_time > start_time and self.end_time < end_time):
+            return True
+        if (start_time < self.start_time and end_time > self.end_time):
+            return True
+        if (self.start_time == start_time and self.end_time == end_time):
+            return True
+        return False
