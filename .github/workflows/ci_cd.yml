@@ -45,7 +45,6 @@ jobs:
       - name: Check Alembic Migration Version
         id: alembicChecker
         uses: DevGlitch/alembic-migration-checker@v1.1
-        output: 
         with:
           db_url: ${{ secrets.DB_URL }}  
           migrations_path: ./migrations/
