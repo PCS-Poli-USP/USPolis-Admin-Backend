@@ -49,7 +49,8 @@ jobs:
       #     db_url: ${{ secrets.DB_URL }}  
       #     migrations_path: ./migrations/
 
-      - name: executing remote ssh commands using password
+      - name: check Alembic migration
+        id: alembicChecker
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -72,9 +73,9 @@ jobs:
 
 
       - name: executing remote ssh commands using password
-        if: 
+        if: ${{failure() && steps.alembicChecker == 'failure'}}
         uses: appleboy/ssh-action@v1.0.3
-        with: env.new_migrations == 'true'
+        with: 
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSCODE }}
