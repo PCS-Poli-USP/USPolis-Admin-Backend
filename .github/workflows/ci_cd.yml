@@ -42,17 +42,39 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Check Alembic Migration Version
-        id: alembicChecker
-        uses: DevGlitch/alembic-migration-checker@v1.1
-        with:
-          db_url: ${{ secrets.DB_URL }}  
-          migrations_path: ./migrations/
+      # - name: Check Alembic Migration Version
+      #   id: alembicChecker
+      #   uses: DevGlitch/alembic-migration-checker@v1.1
+      #   with:
+      #     db_url: ${{ secrets.DB_URL }}  
+      #     migrations_path: ./migrations/
 
       - name: executing remote ssh commands using password
-        if: steps.alembicChecker.outputs  == 0
         uses: appleboy/ssh-action@v1.0.3
         with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSCODE }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd /diskb/home/backend
+            git pull origin develop
+            . /diskb/home/backend/.venv/bin/activate
+            alembic heads > heads_output.txt
+            alembic current > current_output.txt
+            if cmp -s heads_output.txt current_output.txt; then
+              echo "No new migrations to apply."
+              echo "new_migrations=false" >> $GITHUB_ENV
+            else
+              echo "New migrations found."
+              echo "new_migrations=true" >> $GITHUB_ENV
+            fi
+
+
+      - name: executing remote ssh commands using password
+        if: 
+        uses: appleboy/ssh-action@v1.0.3
+        with: env.new_migrations == 'true'
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSCODE }}
