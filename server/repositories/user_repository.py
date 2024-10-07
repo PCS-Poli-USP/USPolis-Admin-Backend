@@ -1,6 +1,7 @@
 from sqlmodel import Session, col, select
 
 from server.deps.cognito_client import ICognitoClient
+from server.models.database.user_building_link import UserBuildingLink
 from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister
 from server.repositories.building_repository import BuildingRepository
@@ -22,6 +23,16 @@ class UserRepository:
     @staticmethod
     def get_all(*, session: Session) -> list[User]:
         statement = select(User)
+        users = session.exec(statement).all()
+        return list(users)
+
+    @staticmethod
+    def get_all_on_building(*, building_id: int, session: Session) -> list[User]:
+        statement = (
+            select(User)
+            .join(UserBuildingLink)
+            .where(UserBuildingLink.building_id == building_id)
+        )
         users = session.exec(statement).all()
         return list(users)
 

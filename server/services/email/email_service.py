@@ -53,17 +53,18 @@ class EmailService:
 
     @staticmethod
     def send_solicitation_request_email(
-        user: User,
+        users: list[User],
         solicitation: ClassroomSolicitation,
         background_tasks: BackgroundTasks,
     ) -> None:
-        template = env.get_template("/solicitations/solicitation-request.html")
-        body = template.render(
-            data=SolicitationRequestedMail.from_solicitation(user, solicitation)
-        )
-        subject = "Reserva de Sala - USPolis"
-        context = MailSend(to=[user.email], subject=subject, body=body)
-        EmailService.send_email(context, background_tasks)
+        template = env.get_template("/solicitations/solicitation-requested.html")
+        for user in users:
+            body = template.render(
+                data=SolicitationRequestedMail.from_solicitation(user, solicitation)
+            )
+            subject = "Reserva de Sala - USPolis"
+            context = MailSend(to=[user.email], subject=subject, body=body)
+            EmailService.send_email(context, background_tasks)
 
     @staticmethod
     def send_solicitation_approved_email(

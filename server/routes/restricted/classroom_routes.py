@@ -83,8 +83,10 @@ async def get_classroom_with_conflicts_count_for_time(
     dates: Annotated[list[date], Query()],
     conflict_checker: ConflictCheckerDep,
 ) -> list[ClassroomWithConflictsIndicator]:
-    classrooms = conflict_checker.classrooms_with_conflicts_indicator_for_time_and_dates(
-        building_id, start_time, end_time, dates
+    classrooms = (
+        conflict_checker.classrooms_with_conflicts_indicator_for_time_and_dates(
+            building_id, start_time, end_time, dates
+        )
     )
     return classrooms
 

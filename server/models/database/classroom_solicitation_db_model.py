@@ -1,7 +1,7 @@
 from datetime import datetime, time, date
 from typing import TYPE_CHECKING, Optional
 from sqlmodel import Field, Relationship, SQLModel
-from sqlalchemy import Column, ARRAY, Date
+from sqlalchemy import CheckConstraint, Column, ARRAY, Date
 
 from server.utils.enums.reservation_type import ReservationType
 
@@ -14,9 +14,17 @@ if TYPE_CHECKING:
 
 
 class ClassroomSolicitation(SQLModel, table=True):
+    __table_args__ = (
+        CheckConstraint(
+            "(classroom_id IS NOT NULL) OR (required_classroom = FALSE)",
+            name="check_required_classroom_with_classroom_id_not_null",
+        ),
+    )
+
     id: int | None = Field(primary_key=True, default=None)
     classroom_id: int | None = Field(foreign_key="classroom.id", nullable=True)
     classroom: Optional["Classroom"] = Relationship(back_populates="solicitations")
+    required_classroom: bool = Field(default=False)
 
     building_id: int = Field(foreign_key="building.id")
     building: "Building" = Relationship(back_populates="solicitations")

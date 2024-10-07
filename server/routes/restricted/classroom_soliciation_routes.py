@@ -24,6 +24,7 @@ from server.repositories.classroom_solicitation_repository import (
     ClassroomSolicitationRepository,
 )
 from server.repositories.reservation_repository import ReservationRepository
+from server.repositories.user_repository import UserRepository
 from server.services.email.email_service import EmailService
 from server.services.security.classroom_solicitation_permission_checker import (
     classroom_solicitation_permission_checker,
@@ -58,13 +59,20 @@ def get_classroom_solicitations(
 
 @router.post("")
 def create_classroom_solicitation(
-    input: ClassroomSolicitationRegister, session: SessionDep, user: UserDep
+    input: ClassroomSolicitationRegister,
+    session: SessionDep,
+    user: UserDep,
+    background_tasks: BackgroundTasks,
 ) -> ClassroomSolicitationResponse:
     """Create a class reservation solicitation"""
     solicitation = ClassroomSolicitationRepository.create(
         requester=user, input=input, session=session
     )
+    users = UserRepository.get_all_on_building(
+        building_id=input.building_id, session=session
+    )
     session.commit()
+    EmailService.send_solicitation_request_email(users, solicitation, background_tasks)
     return ClassroomSolicitationResponse.from_solicitation(solicitation)
 
 

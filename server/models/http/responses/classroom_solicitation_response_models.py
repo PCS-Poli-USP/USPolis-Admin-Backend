@@ -10,6 +10,7 @@ class ClassroomSolicitationResponse(BaseModel):
     id: int
     classroom_id: int | None
     classroom: str | None
+    required_classroom: bool
     building_id: int
     building: str
     dates: list[date]
@@ -37,6 +38,7 @@ class ClassroomSolicitationResponse(BaseModel):
             id=must_be_int(solicitation.id),
             classroom_id=solicitation.classroom_id,
             classroom=solicitation.classroom.name if solicitation.classroom else None,
+            required_classroom=solicitation.required_classroom,
             building_id=solicitation.building_id,
             building=solicitation.building.name,
             dates=solicitation.dates,

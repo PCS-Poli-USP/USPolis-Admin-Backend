@@ -5,6 +5,7 @@ from server.utils.enums.reservation_type import ReservationType
 
 class ClassroomSolicitationRegister(BaseModel):
     classroom_id: int | None = None
+    required_classroom: bool
     building_id: int
     reason: str | None = None
     reservation_title: str
