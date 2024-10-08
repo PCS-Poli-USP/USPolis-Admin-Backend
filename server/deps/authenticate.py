@@ -9,6 +9,7 @@ from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.user_repository import UserRepository
+from server.services.auth.authentication_client import AuthenticationClient
 
 security = HTTPBearer()
 
@@ -16,12 +17,12 @@ security = HTTPBearer()
 def authenticate(
     request: Request,
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-    cognito_client: CognitoClientDep,
     session: SessionDep,
 ) -> User:
     token = credentials.credentials
-    username = cognito_client.get_username_by_token(token)
-    user: User = UserRepository.get_by_username(username=username, session=session)
+    auth_client = AuthenticationClient(token)
+    email = auth_client.get_email()
+    user: User = UserRepository.get_by_email(email=email, session=session)
     request.state.current_user = user
     return user
 
