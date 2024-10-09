@@ -12,6 +12,7 @@ from server.repositories.mobile_user_repository import MobileUserRepository
 from server.models.http.responses.mobile_auth_user_response_models import (
     AuthenticationResponse,
 )
+from server.utils.google_auth_utils import authenticate_with_google
 
 router = APIRouter(prefix="/mobile/authentication", tags=["Mobile", "Authenticate"])
 
@@ -24,21 +25,7 @@ async def authenticate_user(
     idToken: Annotated[str | None, Header()], session: SessionDep
 ) -> AuthenticationResponse:
     """Authenticates user with Google: if it is in our DB return user info"""
-    # Specify the CLIENT_ID of the app that accesses the backend:
-    idInfo = id_token.verify_oauth2_token(
-        idToken, requests.Request(), os.getenv("G_AUTH_CLIENT_ID")
-    )
-
-    # Or, if multiple clients access the backend server:
-    # idinfo = id_token.verify_oauth2_token(token, requests.Request())
-    # if idinfo['aud'] not in [CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]:
-    #     raise ValueError('Could not verify audience.')
-
-    # If the request specified a Google Workspace domain
-    if idInfo["hd"] != os.getenv("G_AUTH_DOMAIN_NAME") and idInfo["email_verified"]:
-        raise ValueError("Wrong domain name.")
-
-    # ID token is valid. Get the user's Google Account ID from the decoded token.
+    idInfo = authenticate_with_google(idToken)
 
     sub = idInfo["sub"]
 
