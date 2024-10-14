@@ -1,87 +1,66 @@
 from datetime import datetime
-from typing import Self
-from beanie import Document, Link
-from fastapi import HTTPException, status
-from bson import ObjectId
-from pydantic import BaseModel
+from typing import TYPE_CHECKING
 
-from server.models.database.building_db_model import Building
-from server.models.database.user_db_model import User
+from sqlalchemy import UniqueConstraint
+from sqlmodel import Field, Relationship, SQLModel
+
+from server.utils.must_be_int import must_be_int
+
+if TYPE_CHECKING:
+    from server.models.database.building_db_model import Building
+    from server.models.database.occurrence_db_model import Occurrence
+    from server.models.database.reservation_db_model import Reservation
+    from server.models.database.schedule_db_model import Schedule
+    from server.models.database.user_db_model import User
 
 
-class ClassroomSchedule(BaseModel):
-    pass
-
-
-class Classroom(Document):
-    building: Link[Building]
+class ClassroomBase(SQLModel):
     name: str
     capacity: int
     floor: int
-    ignore_to_allocate: bool | None
-    accessibility: bool
-    projector: bool
-    air_conditioning: bool
-    created_by: Link[User]
-    updated_at: datetime
+    ignore_to_allocate: bool = False
+    accessibility: bool = False
+    projector: bool = False
+    air_conditioning: bool = False
+    updated_at: datetime = datetime.now()
 
-    class Settings:
-        name = "classrooms"
-        indexes = [[("building", 1), ("name", 1)]]
+    created_by_id: int = Field(foreign_key="user.id")
+    building_id: int = Field(foreign_key="building.id")
 
-    @classmethod
-    async def by_id(cls, id: str) -> Self:
-        classroom = await cls.get(id)
-        if classroom is None:
-            raise ClassroomNotFound(id)
-        return classroom
 
-    @classmethod
-    async def by_building_and_classroom(
-        cls, building_id: str, classroom_name: str
-    ) -> Self:
-        classroom = await cls.find_one(
-            {"building.$id": ObjectId(building_id), "name": classroom_name}
-        )
-        if classroom is None:
-            raise ClassroomInBuildingNotFound(classroom_name, building_id)
-        return classroom
+class Classroom(ClassroomBase, table=True):
+    __table_args__ = (
+        UniqueConstraint(
+            "name", "building_id", name="unique_classroom_name_for_building"
+        ),
+    )
+    id: int | None = Field(primary_key=True, default=None)
 
-    @classmethod
-    async def check_classroom_name_exists(
-        cls, building_id: str, classroom_name: str
-    ) -> bool:
-        """Check if a classroom name exist in a building"""
-        return (
-            await cls.find_one(
-                {"building.$id": ObjectId(building_id), "name": classroom_name}
-            )
-            is not None
-        )
+    created_by: "User" = Relationship()
+    building: "Building" = Relationship(back_populates="classrooms")
+    occurrences: list["Occurrence"] = Relationship(back_populates="classroom")
+    reservations: list["Reservation"] = Relationship(
+        back_populates="classroom", sa_relationship_kwargs={"cascade": "all, delete"}
+    )
+    schedules: list["Schedule"] = Relationship(back_populates="classroom")
+
+
+class ClassroomWithConflictsIndicator(ClassroomBase):
+    id: int
+    conflicts: int = 0
 
     @classmethod
-    async def check_classroom_name_is_valid(
-        cls, building_id: str, classroom_id: str, name: str
-    ) -> bool:
-        """Check if the classroom name is valid, i.e not used by other classroom in a building"""
-        classroom = await cls.find_one(
-            {"building.$id": ObjectId(building_id), "name": name}
-        )
-        if classroom is None:
-            return True
-        return str(classroom.id) == classroom_id
-
-
-class ClassroomNotFound(HTTPException):
-    def __init__(self, classroom_info: str) -> None:
-        super().__init__(
-            status.HTTP_404_NOT_FOUND, f"Classroom {classroom_info} not found"
-        )
-
-
-class ClassroomInBuildingNotFound(HTTPException):
-    def __init__(self, classroom_info: str, building_info: str) -> None:
-        super().__init__(
-            status.HTTP_404_NOT_FOUND,
-            f"Classroom {classroom_info} in Building {building_info} not found",
+    def from_classroom(cls, classroom: Classroom) -> "ClassroomWithConflictsIndicator":
+        return cls(
+            id=must_be_int(classroom.id),
+            name=classroom.name,
+            capacity=classroom.capacity,
+            floor=classroom.floor,
+            ignore_to_allocate=classroom.ignore_to_allocate,
+            accessibility=classroom.accessibility,
+            projector=classroom.projector,
+            air_conditioning=classroom.air_conditioning,
+            updated_at=classroom.updated_at,
+            created_by_id=classroom.created_by_id,
+            building_id=classroom.building_id,
         )

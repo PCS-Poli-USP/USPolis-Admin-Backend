@@ -10,15 +10,25 @@ authors = [
 ]
 dependencies = [
     "bcrypt~=4.0",
-    "beanie~=1.23",
     "fastapi~=0.104",
     "fastapi-jwt>=0.2",
     "fastapi-mail~=1.4",
     "python-decouple~=3.8",
     "uvicorn~=0.24",
+    "pydantic==2.7",
     "boto3",
     "requests",
-    "beautifulsoup4"
+    "sqlmodel",
+    "beautifulsoup4",
+    "psycopg2-binary",
+    "tenacity",
+    "pytz",
+    "alembic",
+    "asyncpg",
+    "google-api-python-client",
+    "google-auth-httplib2",
+    "google-auth-oauthlib",
+    "httpx",
 ]
 
 [project.optional-dependencies]
@@ -26,7 +36,8 @@ dev = [
     "mypy",
     "ruff",
     "types-requests",
-    "types-beautifulsoup4"
+    "types-beautifulsoup4",
+    "types-pytz"
 ]
 test = [
     "asgi-lifespan~=2.1",

@@ -1,18 +1,20 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
+from server.routes.public.forum_routes import router as ForumRouter
+from server.routes.public.mobile_classes_routes import router as MobileClassRouter
+from server.routes.public.mobile_institutional_events_routes import (
+    router as MobileInstitutionalEventsRouter,
+)
+from server.routes.public.mobile_comments_routes import router as MobileCommentsRouter
+from server.routes.public.mobile_google_authentication_routes import (
+    router as MobileGAuth,
+)
+from server.routes.public.mobile_programs_routes import router as ProgramsRouter
 
-from server.routes.public.building_routes import router as BuildingRouter
-from server.routes.public.classroom_routes import router as ClassroomRouter
-from server.routes.public.subject_routes import router as SubjectRouter
-from server.routes.public.user_routes import router as UserRouter
-from server.routes.public.holiday_category_routes import router as HolidayCateryRouter
-from server.routes.public.holiday_routes import router as HolidayRouter
-from server.services.auth.authenticate import authenticate
+router = APIRouter()
 
-router = APIRouter(dependencies=[Depends(authenticate)])
-
-router.include_router(BuildingRouter)
-router.include_router(ClassroomRouter)
-router.include_router(SubjectRouter)
-router.include_router(UserRouter)
-router.include_router(HolidayCateryRouter)
-router.include_router(HolidayRouter)
+router.include_router(ForumRouter)
+router.include_router(MobileClassRouter)
+router.include_router(MobileInstitutionalEventsRouter)
+router.include_router(MobileCommentsRouter)
+router.include_router(MobileGAuth)
+router.include_router(ProgramsRouter)

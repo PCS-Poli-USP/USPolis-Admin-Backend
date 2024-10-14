@@ -6,7 +6,13 @@ from server.models.validators.subject.subject_validator import SubjectValidator
 from server.utils.enums.subject_type import SubjectType
 
 
+class CrawlSubject(BaseModel):
+    subject_codes: list[str]
+    calendar_ids: list[int]
+
+
 class SubjectRegister(BaseModel):
+    building_ids: list[int]
     code: str
     name: str
     professors: list[str]
@@ -21,3 +27,13 @@ class SubjectRegister(BaseModel):
         if not SubjectValidator.validate_subject_code(code):
             raise ValueError("Subject Code must have 7 characters")
         return code
+
+    @field_validator("building_ids")
+    def validate_buildings(cls, building_ids: list[int]) -> list[int]:
+        if len(building_ids) == 0:
+            raise ValueError("Buildings must not be empty")
+        return building_ids
+
+
+class SubjectUpdate(SubjectRegister):
+    pass

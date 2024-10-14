@@ -1,29 +1,31 @@
-from datetime import datetime
+from datetime import datetime, date
 from pydantic import BaseModel
 
 from server.models.database.holiday_db_model import Holiday
-from server.utils.enums.holiday_type import HolidayType
+from server.utils.must_be_int import must_be_int
+
 
 class HolidayResponse(BaseModel):
-    id: str
+    id: int
+    name: str
+    category_id: int
     category: str
-    date: datetime
-    type: HolidayType
+    date: date
     updated_at: datetime
     created_by: str
 
     @classmethod
-    async def from_holiday(cls, holiday: Holiday) -> "HolidayResponse":
-        await holiday.fetch_all_links()
+    def from_holiday(cls, holiday: Holiday) -> "HolidayResponse":
         return cls(
-            id=str(holiday.id),
-            category=holiday.category.name, # type: ignore
+            id=must_be_int(holiday.id),
+            name=holiday.name,
+            category_id=must_be_int(holiday.category.id),
+            category=holiday.category.name,
             date=holiday.date,
-            type=holiday.type,
             updated_at=holiday.updated_at,
-            created_by=holiday.created_by.name,  # type: ignore
+            created_by=holiday.created_by.name,
         )
 
     @classmethod
-    async def from_holiday_list(cls, holidays: list[Holiday]) -> list["HolidayResponse"]:
-        return [await cls.from_holiday(holiday) for holiday in holidays]
+    def from_holiday_list(cls, holidays: list[Holiday]) -> list["HolidayResponse"]:
+        return [cls.from_holiday(holiday) for holiday in holidays]

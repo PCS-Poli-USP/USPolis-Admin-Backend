@@ -1,47 +1,64 @@
 """Pytest fixtures."""
 
-from collections.abc import AsyncIterator
+from collections.abc import Generator
 
-import pytest_asyncio
-from asgi_lifespan import LifespanManager
+import pytest
 from decouple import config  # type: ignore [import-untyped]
-from fastapi import FastAPI
-from httpx import AsyncClient
+from fastapi.testclient import TestClient
+from sqlalchemy import text
+from sqlmodel import Session
 
 from server.config import CONFIG
-from server.models.database.user_db_model import User
-from tests.utils.user_test_utils import get_test_admin_user
 
-# Override config settings before loading the app
 CONFIG.testing = True
-CONFIG.mongo_uri = config(
-    "TEST_MONGO_URI", default="mongodb://localhost:27017")  # type: ignore
-CONFIG.mongo_db_name = config(
-    "TEST_MONGO_DB_NAME", default="uspolis-test")  # type: ignore
+CONFIG.override_auth = True
+CONFIG.override_cognito_client = True
+CONFIG.db_uri = config("TEST_DATABASE_URI")  # type: ignore
+CONFIG.db_database = config("TEST_DATABASE_NAME", default="uspolis-test")  # type: ignore
 
-from server.app import app  # noqa: E402
+from server.app import app  # noqa
+from server.models.database.building_db_model import Building  # noqa  # noqa
+from server.models.database.user_db_model import User  # noqa
+from server.repositories.user_repository import UserRepository  # noqa
+from server.scripts.initial_data import init_db  # noqa
+from server.db import engine  # noqa
+
+# create function to delete all data from tables
+with Session(engine) as session:
+    statement = text("""
+    CREATE OR REPLACE FUNCTION truncate_tables(username IN VARCHAR) RETURNS void AS $$
+    DECLARE
+        statements CURSOR FOR
+            SELECT tablename FROM pg_tables
+            WHERE tableowner = username AND schemaname = 'public';
+    BEGIN
+        FOR stmt IN statements LOOP
+            EXECUTE 'TRUNCATE TABLE ' || quote_ident(stmt.tablename) || ' CASCADE;';
+        END LOOP;
+    END;
+    $$ LANGUAGE plpgsql;
+    """)
+    session.execute(statement)
+    session.commit()
 
 
-async def clear_database(app: FastAPI) -> None:
-    """Empty the test database."""
-    async for collection in await app.db.list_collections():  # type: ignore[attr-defined]
-        await app.db[collection["name"]].delete_many({})  # type: ignore
+@pytest.fixture(autouse=True)
+def db() -> Generator[Session, None, None]:
+    with Session(engine) as session:
+        init_db(session)
+        yield session
+        statement = text("SELECT truncate_tables('postgres');")
+        session.execute(statement)
+        session.commit()
 
 
-@pytest_asyncio.fixture(autouse=False)
-async def client() -> AsyncIterator[AsyncClient]:
-    """Async server client that handles lifespan and teardown."""
-    async with LifespanManager(app):
-        async with AsyncClient(app=app, base_url="http://test") as _client:  # type: ignore
-            try:
-                yield _client
-            except Exception as exc:
-                print(exc)
-            finally:
-                await clear_database(app)
+@pytest.fixture(scope="module")
+def client() -> Generator[TestClient, None, None]:
+    with TestClient(app) as c:
+        yield c
 
 
-@pytest_asyncio.fixture(autouse=False)
-async def user() -> AsyncIterator[User]:
-    user = await get_test_admin_user()
+@pytest.fixture(autouse=False)
+def user(db: Session) -> Generator[User, None, None]:
+    user = UserRepository.get_by_username(session=db, username=CONFIG.mock_username)
     yield user

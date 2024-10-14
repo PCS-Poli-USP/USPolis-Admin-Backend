@@ -1,6 +1,8 @@
+# type: ignore
+
 from server.models.database.subject_db_model import Subject
 from server.models.http.requests.subject_request_models import SubjectRegister
-from server.routes.public.subject_routes import SubjectCodeAlreadyExists
+from server.routes.restricted.subject_routes import SubjectCodeAlreadyExists
 from tests.utils.default_values.test_subject_default_values import SubjectDefaultValues
 
 

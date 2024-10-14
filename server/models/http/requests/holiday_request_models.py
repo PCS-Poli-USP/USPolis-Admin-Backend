@@ -1,16 +1,26 @@
-from pydantic import BaseModel
 from datetime import datetime
 
-from server.utils.enums.holiday_type import HolidayType
+from pydantic import BaseModel, field_validator
 
 
-class HolidayRegister(BaseModel):
-    category_id: str
+class HolidayBase(BaseModel):
+    category_id: int
+    name: str
+
+    @field_validator("name")
+    def validate_year(cls, name: str) -> str:
+        if len(name) == 0:
+            raise ValueError("Holiday name must don't be empty")
+        return name
+
+
+class HolidayRegister(HolidayBase):
     date: datetime
-    type: HolidayType
 
 
-class HolidayUpdate(BaseModel):
-    category_id: str
+class HolidayUpdate(HolidayBase):
     date: datetime
-    type: HolidayType
+
+
+class HolidayManyRegister(HolidayBase):
+    dates: list[datetime]

@@ -1,44 +1,50 @@
-from datetime import datetime
+from datetime import date
+
 from pydantic import BaseModel
 
+from server.models.database.class_db_model import Class
 from server.models.database.subject_db_model import Subject
-from server.utils.enums.subject_type import SubjectType
 from server.models.http.responses.building_response_models import BuildingResponse
+from server.utils.enums.subject_type import SubjectType
+from server.utils.must_be_int import must_be_int
 
 
 class SubjectResponse(BaseModel):
-    id: str
-    buildings: list[BuildingResponse] | None = None
+    id: int
+    building_ids: list[int]
+    buildings: list[BuildingResponse]
+    classes: list[Class]
     code: str
     name: str
     professors: list[str]
     type: SubjectType
     class_credit: int
     work_credit: int
-    activation: datetime
-    desactivation: datetime | None = None
+    activation: date
+    desactivation: date | None = None
 
     @classmethod
-    async def from_subject(cls, subject: Subject) -> "SubjectResponse":
-        await subject.fetch_all_links()
+    def from_subject(cls, subject: Subject) -> "SubjectResponse":
         return cls(
-            id=str(subject.id),
+            id=must_be_int(subject.id),
+            professors=subject.professors,
+            building_ids=[
+                building.id for building in subject.buildings if (building.id)
+            ],
+            buildings=[
+                BuildingResponse.from_building(building)
+                for building in subject.buildings
+            ],
+            classes=subject.classes,
             code=subject.code,
             name=subject.name,
-            professors=subject.professors,
-            buildings=[
-                await BuildingResponse.from_building(building)  # type: ignore
-                for building in subject.buildings
-            ]
-            if subject.buildings
-            else None,
             type=subject.type,
             class_credit=subject.class_credit,
             work_credit=subject.work_credit,
             activation=subject.activation,
-            desactivation=subject.desactivation if subject.desactivation else None,
+            desactivation=subject.deactivation if subject.deactivation else None,
         )
 
     @classmethod
-    async def from_subject_list(cls, subjects: list[Subject]) -> list["SubjectResponse"]:
-        return [await cls.from_subject(subject) for subject in subjects]
+    def from_subject_list(cls, subjects: list[Subject]) -> list["SubjectResponse"]:
+        return [cls.from_subject(subject) for subject in subjects]

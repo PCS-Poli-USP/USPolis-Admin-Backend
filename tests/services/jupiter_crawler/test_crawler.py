@@ -7,6 +7,7 @@ from tests.services.jupiter_crawler.crawler_test_utils import JupiterCrawlerTest
 
 test_cases = JupiterCrawlerTestUtils.retrieve_subject_codes_to_test()
 
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize("subject_code", test_cases)
 async def test_crawler_parametrized(subject_code: str) -> None:
@@ -19,9 +20,6 @@ async def test_crawler_parametrized(subject_code: str) -> None:
 
 
 async def _crawler(subject_code: str) -> dict:
-    with open("output.txt", "w") as file:
-        file.write("Hello, world!")
-
     page_contents = JupiterCrawlerTestUtils.retrieve_html_contents()
     result = await JupiterCrawler.crawl_subject_static(
         subject_code, page_contents[subject_code]

@@ -1,8 +1,7 @@
-from datetime import datetime
+from datetime import datetime, time
 
 from pydantic import BaseModel
 
-from server.utils.day_time import DayTime
 from server.utils.enums.class_type import ClassType
 from server.utils.enums.week_day import WeekDay
 
@@ -18,8 +17,8 @@ class GeneralInfo(BaseModel):
 class ScheduleInfo(BaseModel):
     week_day: WeekDay
     professors: list[str]
-    start_time: DayTime
-    end_time: DayTime
+    start_time: time
+    end_time: time
 
 
 class StudentNumbersInfo(BaseModel):
@@ -27,25 +26,3 @@ class StudentNumbersInfo(BaseModel):
     subscribers: int
     pendings: int
     enrolled: int
-
-
-class CrawledSchedule(ScheduleInfo):
-    start_date: datetime
-    end_date: datetime
-
-
-class CrawledClass(GeneralInfo, StudentNumbersInfo):
-    schedules: list[CrawledSchedule]
-    professors: list[str]
-
-
-class CrawledSubject(BaseModel):
-    classes: list[CrawledClass]
-    code: str
-    name: str
-    professors: list[str]
-    class_type: ClassType
-    class_credit: int
-    work_credit: int
-    activation: datetime
-    deactivation: datetime
