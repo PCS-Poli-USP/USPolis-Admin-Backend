@@ -1,5 +1,7 @@
 from datetime import date, time
 
+from collections import defaultdict
+
 from pydantic import BaseModel
 
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
@@ -39,13 +41,13 @@ class OccurrenceConflictSpecification(BaseModel):
 class ClassroomConflictsSpecification(BaseModel):
     id: int
     name: str
-    conflicts: list[list[OccurrenceConflictSpecification]]
+    conflicts: dict[str, list]
 
 
 class BuildingConflictSpecification(BaseModel):
     id: int
     name: str
-    conflicts: list[ClassroomConflictsSpecification]
+    conflicts: list
 
 
 class ConflictChecker:
@@ -120,11 +122,11 @@ class ConflictChecker:
             )
             for classroom in building.classrooms:
                 conflicts = self.__conflicts_for_classroom(classroom)
-                real_conflicts = []
+                classroom_conflicts: dict[str, list] = defaultdict(list)
                 for conflict in conflicts:
-                    real_conflict_conflicts = []
+                    conflict_specs: list[OccurrenceConflictSpecification] = []
                     for occurrence in conflict:
-                        real_occurrence = OccurrenceConflictSpecification(
+                        conflict_specification = OccurrenceConflictSpecification(
                             id=must_be_int(occurrence.id),
                             start_time=occurrence.start_time,
                             end_time=occurrence.end_time,
@@ -147,15 +149,23 @@ class ConflictChecker:
                             if occurrence.schedule.reservation
                             else None,
                         )
-                        real_conflict_conflicts.append(real_occurrence)
-                    if real_conflict_conflicts:
-                        real_conflicts.append(real_conflict_conflicts)
-                if real_conflicts:
+                        conflict_specs.append(conflict_specification)
+                    for conflict_spec in conflict_specs:
+                        identifier = (
+                            conflict_spec.subject_code + " - " + conflict_spec.class_code
+                            if conflict_spec.subject_code is not None
+                            and conflict_spec.class_code is not None
+                            else "N/A"
+                        )
+                        classroom_conflicts[identifier].append(conflict_specs)
+
+
+                if classroom_conflicts:
                     on_building_result.conflicts.append(
                         ClassroomConflictsSpecification(
                             id=must_be_int(classroom.id),
                             name=classroom.name,
-                            conflicts=real_conflicts,
+                            conflicts=classroom_conflicts,
                         )
                     )
             result.append(on_building_result)

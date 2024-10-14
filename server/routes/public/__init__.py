@@ -9,6 +9,7 @@ from server.routes.public.mobile_google_authentication_routes import (
     router as MobileGAuth,
 )
 from server.routes.public.mobile_programs_routes import router as ProgramsRouter
+from server.routes.public.user_routes import router as UserRouter
 
 router = APIRouter()
 
@@ -18,3 +19,4 @@ router.include_router(MobileInstitutionalEventsRouter)
 router.include_router(MobileCommentsRouter)
 router.include_router(MobileGAuth)
 router.include_router(ProgramsRouter)
+router.include_router(UserRouter)

@@ -20,5 +20,6 @@ async def get_current_user(
 @router.get("/{building_id}")
 async def get_users_on_building(building_id: int, session: SessionDep) -> list[User]:
     """Get users on building"""
-    users = UserRepository.get_all_on_building(building_id=building_id, session=session)
+    users = UserRepository.get_all_on_building(
+        building_id=building_id, session=session)
     return users
