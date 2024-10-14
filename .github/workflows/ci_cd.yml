@@ -1,9 +1,7 @@
 name: CI/CD
 
 on:
-  pull_request:
-    types:
-      - opened
+  push:
     branches:
       - develop
 
