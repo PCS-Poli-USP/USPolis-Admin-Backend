@@ -82,7 +82,7 @@ jobs:
           script: |
             cd /diskb/home/backend
             git pull origin develop
-            . /diskb/home/backend/.venv/bin/activate
+            ./diskb/home/backend/.venv/bin/activate
             ./start_uspolis_back.sh >> /home/ubuntu/script_log.log 2>&1
 
       - name: Notify Command Success
