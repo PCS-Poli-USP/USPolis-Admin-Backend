@@ -37,10 +37,8 @@ class UserRepository:
         creator: User | None,
         user_in: UserRegister,
         session: Session,
-        cognito_client: ICognitoClient,
+        cognito_client: ICognitoClient | None,
     ) -> User:
-        cognito_id = cognito_client.create_user(user_in.username, user_in.email)
-
         buildings = None
         if user_in.building_ids is not None:
             buildings = BuildingRepository.get_by_ids(
@@ -52,7 +50,7 @@ class UserRepository:
             username=user_in.username,
             email=user_in.email,
             is_admin=user_in.is_admin,
-            cognito_id=cognito_id,
+            cognito_id="discontinued",
             created_by=creator,
             buildings=buildings or [],
         )

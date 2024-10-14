@@ -143,7 +143,7 @@ class ConflictChecker:
                         conflict_specs.append(conflict_specification)
                     for conflict_spec in conflict_specs:
                         identifier = (
-                            conflict_spec.subject_code + conflict_spec.class_code
+                            conflict_spec.subject_code + " - " + conflict_spec.class_code
                             if conflict_spec.subject_code is not None
                             and conflict_spec.class_code is not None
                             else "N/A"
