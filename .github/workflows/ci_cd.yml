@@ -75,7 +75,6 @@ jobs:
 
 
       - name: executing remote ssh commands using password
-        if: ${{failure() && steps.alembicChecker == 'failure'}}
         uses: appleboy/ssh-action@v1.0.3
         with: 
           host: ${{ secrets.SSH_HOST }}
