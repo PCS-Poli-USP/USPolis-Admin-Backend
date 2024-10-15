@@ -11,15 +11,6 @@ embed = Body(..., embed=True)
 router = APIRouter(prefix="/buildings", tags=["Buildings"])
 
 
-@router.get("")
-async def get_all_buildings(
-    repository: BuildingRespositoryAdapterDep,
-) -> list[BuildingResponse]:
-    """Get all buildings"""
-    buildings = repository.get_all()
-    return BuildingResponse.from_building_list(buildings)
-
-
 @router.get("/{building_id}")
 async def get_building(
     building_id: int, repository: BuildingRespositoryAdapterDep

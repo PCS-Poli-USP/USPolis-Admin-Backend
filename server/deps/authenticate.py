@@ -3,14 +3,13 @@ from typing import Annotated
 from fastapi import Depends, Header, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from server.deps.cognito_client import CognitoClientDep
 from server.deps.session_dep import SessionDep
 from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.user_repository import UserRepository
 from server.services.auth.authentication_client import AuthUserInfo, AuthenticationClient
-from sqlalchemy.exc import IntegrityError, NoResultFound
+from sqlalchemy.exc import NoResultFound
 
 security = HTTPBearer()
 
@@ -29,7 +28,8 @@ def authenticate(
     session: SessionDep,
 ) -> User:
     try:
-        user: User = UserRepository.get_by_email(email=user_info.email, session=session)
+        user: User = UserRepository.get_by_email(
+            email=user_info.email, session=session)
     except NoResultFound:
         raise HTTPException(403, "Email not registered")
     request.state.current_user = user

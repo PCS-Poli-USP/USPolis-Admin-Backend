@@ -22,23 +22,6 @@ router = APIRouter(
 )
 
 
-@router.get("")
-async def get_all_classrooms(
-    repository: ClassroomRepositoryDep,
-) -> list[ClassroomResponse]:
-    classrooms = repository.get_all()
-    return ClassroomResponse.from_classroom_list(classrooms)
-
-
-@router.get("/full/")
-async def get_all_classrooms_full(
-    respository: ClassroomRepositoryDep,
-) -> list[ClassroomFullResponse]:
-    """Get all classrooms with schedules and occurrences"""
-    classrooms = respository.get_all()
-    return ClassroomFullResponse.from_classroom_list(classrooms)
-
-
 @router.get("/{id}")
 async def get_classroom(
     id: int, repository: ClassroomRepositoryDep

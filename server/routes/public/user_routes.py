@@ -1,7 +1,4 @@
-from typing import Annotated
-from fastapi import APIRouter, Body, Header
-from google.oauth2 import id_token
-from google.auth.transport import requests
+from fastapi import APIRouter, Body
 
 from server.deps.session_dep import SessionDep
 from server.deps.authenticate import GoogleAuthenticate
@@ -11,8 +8,9 @@ from server.repositories.user_repository import UserRepository
 from server.models.http.requests.user_request_models import UserRegister
 
 
-router = APIRouter(prefix="/users", tags=["Users"])
+router = APIRouter(prefix="/users", tags=["Users", "Public"])
 embed = Body(..., embed=True)
+
 
 @router.post("/register")
 def register(user_info: GoogleAuthenticate, session: SessionDep, username: str = embed) -> None:
