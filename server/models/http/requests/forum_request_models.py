@@ -29,3 +29,11 @@ def to_forumreply_model(post_id: int, replyDTO: ForumPostRegister) -> ForumPost:
 class ForumReportRegister(BaseModel):
     post_id: int
     user_id: int
+
+class ForumPostLike(BaseModel):
+    post_id: int
+    user_id: int
+    like_state: bool
+
+class ForumUserLikesRegister(BaseModel):
+    user_id: int

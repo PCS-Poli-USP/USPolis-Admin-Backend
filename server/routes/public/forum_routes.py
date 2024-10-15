@@ -9,10 +9,12 @@ from server.models.http.requests.forum_request_models import (
     to_forumpost_model,
     ForumReportRegister,
     to_forumreply_model,
+    ForumPostLike,
 )
 from server.models.http.responses.forum_post_response import (
     ForumPostReplyResponse,
     ForumPostResponse,
+    ForumUserLikesReponse
 )
 from server.repositories.forum_repository import ForumRepository
 from server.utils.google_auth_utils import authenticate_with_google
@@ -114,4 +116,26 @@ async def get_forum_post_replies(
 ) -> list[ForumPostReplyResponse]:
     """Get all replies from a single post"""
     replies = ForumRepository.get_all_replies(post_id=post_id, session=session)
+
     return ForumPostReplyResponse.from_forum_post_reply_list(replies)
+
+@router.post("/posts/{post_id}/liked")
+async def update_forum_post_like(
+    post_id: int,
+    input: ForumPostLike,
+    session: SessionDep
+) ->  ForumPost:
+    """Change post like reaction state"""
+    like_changed_post = ForumRepository.change_forum_post_like(post_id=post_id, mobile_user_id=input.user_id, like_state=input.like_state ,session=session, )
+
+    return like_changed_post
+
+@router.get("/userLikes")
+async def get_user_forum_likes(
+    user_id: int,
+    session: SessionDep
+) ->  list[ForumUserLikesReponse]:
+    """Get user forum likes"""
+    user_forum_likes = ForumRepository.get_user_forum_likes(user_id=user_id, session=session )
+
+    return ForumUserLikesReponse.from_user_forum_likes_list(user_forum_likes)

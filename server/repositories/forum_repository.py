@@ -4,6 +4,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, col, select
 from server.models.database.forum_db_model import ForumPost 
 from server.models.database.forum_post_report_link import ForumPostReportLink
+from server.models.database.forum_post_reacts_link import ForumPostReactsLink
+
 
 
 class ForumRepository:
@@ -103,6 +105,54 @@ class ForumRepository:
             col(ForumPost.enabled) == True)
         replies = session.exec(statement).all()
         return list(replies)
+    
+    @staticmethod
+    def change_forum_post_like(
+        *, post_id: int, mobile_user_id: int, like_state: bool, session: Session
+    ) -> ForumPost:
+
+        statement = select(ForumPost).where(col(ForumPost.id) == post_id)
+
+        user_statement = select(ForumPostReactsLink).where(
+            col(ForumPostReactsLink.mobile_user_id)==mobile_user_id,
+            col(ForumPostReactsLink.forum_post_id)==post_id
+        )
+            
+        post = session.exec(statement).one()
+        liked_post = session.exec(user_statement).first()
+
+        # Create or Update
+        if liked_post == None:
+            new_react = ForumPostReactsLink(forum_post_id=post_id, mobile_user_id=mobile_user_id, post_like=like_state)
+            session.add(new_react)
+
+        else:
+            liked_post.post_like = like_state
+
+            session.add(liked_post)
+
+        # Update Like Count
+        likes_statement = select(ForumPostReactsLink).where(
+            col(ForumPostReactsLink.forum_post_id)==post_id,
+            col(ForumPostReactsLink.post_like)==True
+        )
+        post.likes_count = len(list(session.exec(likes_statement).all()))
+
+        session.add(post)
+        session.commit()
+        session.refresh(post)
+
+        return post
+    
+    @staticmethod
+    def get_user_forum_likes(*, user_id: int ,session: Session):
+        statement = select(ForumPostReactsLink).where(
+            col(ForumPostReactsLink.mobile_user_id)==user_id,
+            col(ForumPostReactsLink.post_like) == True
+        )
+        user_liked_posts = session.exec(statement).all()
+        return list(user_liked_posts)
+
 
 class PostNotFoundException(HTTPException):
     def __init__(self, post_id: int) -> None:
