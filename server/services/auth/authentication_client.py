@@ -6,6 +6,7 @@ from google.auth.transport import requests
 from google.auth.exceptions import InvalidValue, MalformedError
 from pydantic import BaseModel
 from fastapi import status
+from server.config import CONFIG
 
 
 class AuthUserInfo(BaseModel):
@@ -33,7 +34,7 @@ class AuthenticationClient:
             userInfo = id_token.verify_oauth2_token(
                 self.token,
                 requests.Request(),
-                "903358108153-kj9u7e4liu19cm73lr6hlhi876smdscj.apps.googleusercontent.com",
+                CONFIG.google_auth_secret,
             )
         except InvalidValue:
             traceback.print_exc()

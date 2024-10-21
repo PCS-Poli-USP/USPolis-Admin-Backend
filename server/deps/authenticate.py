@@ -8,7 +8,11 @@ from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.user_repository import UserRepository
-from server.services.auth.authentication_client import AuthUserInfo, AuthenticationClient
+from server.services.auth.authentication_client import (
+    AuthUserInfo,
+    AuthenticationClient,
+)
+from server.models.http.requests.user_request_models import UserRegister
 from sqlalchemy.exc import NoResultFound
 
 security = HTTPBearer()
@@ -28,10 +32,18 @@ def authenticate(
     session: SessionDep,
 ) -> User:
     try:
-        user: User = UserRepository.get_by_email(
-            email=user_info.email, session=session)
+        user: User = UserRepository.get_by_email(email=user_info.email, session=session)
     except NoResultFound:
-        raise HTTPException(403, "Email not registered")
+        user = UserRepository.create(
+            user_in=UserRegister(
+                email=user_info.email,
+                name=user_info.name,
+                building_ids=None,
+                is_admin=False,
+            ),
+            creator=None,
+            session=session,
+        )
     request.state.current_user = user
     return user
 

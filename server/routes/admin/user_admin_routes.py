@@ -3,7 +3,6 @@ from datetime import datetime
 from fastapi import APIRouter, Body, HTTPException, Response
 
 from server.deps.authenticate import UserDep
-from server.deps.cognito_client import CognitoClientDep
 from server.deps.session_dep import SessionDep
 from server.models.http.requests.user_request_models import UserRegister, UserUpdate
 from server.models.http.responses.generic_responses import NoContent
@@ -28,13 +27,11 @@ async def create_user(
     user_input: UserRegister,
     user: UserDep,
     session: SessionDep,
-    cognito_client: CognitoClientDep,
 ) -> UserResponse:
     """Create new user."""
     new_user = UserRepository.create(
         creator=user,
         user_in=user_input,
-        cognito_client=cognito_client,
         session=session,
     )
     session.refresh(new_user)
@@ -73,13 +70,12 @@ async def delete_user(
     user_id: int,
     current_user: UserDep,
     session: SessionDep,
-    cognito_client: CognitoClientDep,
 ) -> Response:
     """Delete a user by id"""
     if current_user.id == user_id:
         raise HTTPException(400, "Cannot delete self")
 
     UserRepository.delete(
-        user_id=user_id, session=session, cognito_client=cognito_client
+        user_id=user_id, session=session
     )
     return NoContent
