@@ -37,7 +37,9 @@ async def get_my_buildings(
 
 
 @router.get("/my-classrooms")
-async def get_my_classrooms(repository: ClassroomRepositoryDep,) -> list[ClassroomResponse]:
+async def get_my_classrooms(
+    repository: ClassroomRepositoryDep,
+) -> list[ClassroomResponse]:
     """Get all classrooms for authenticated user"""
     classrooms = repository.get_all()
     return ClassroomResponse.from_classroom_list(classrooms)
@@ -46,6 +48,5 @@ async def get_my_classrooms(repository: ClassroomRepositoryDep,) -> list[Classro
 @router.get("/{building_id}")
 async def get_users_on_building(building_id: int, session: SessionDep) -> list[User]:
     """Get users on building"""
-    users = UserRepository.get_all_on_building(
-        building_id=building_id, session=session)
+    users = UserRepository.get_all_on_building(building_id=building_id, session=session)
     return users
