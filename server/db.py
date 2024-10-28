@@ -14,6 +14,7 @@ from server.models.database import (  # noqa
     class_db_model,
     classroom_db_model,
     forum_db_model,
+    forum_post_report_link,
     holiday_category_db_model,
     holiday_db_model,
     institutional_event_db_model,
