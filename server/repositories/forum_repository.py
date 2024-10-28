@@ -144,15 +144,6 @@ class ForumRepository:
 
         return post
     
-    @staticmethod
-    def get_user_forum_likes(*, user_id: int ,session: Session):
-        statement = select(ForumPostReactsLink).where(
-            col(ForumPostReactsLink.mobile_user_id)==user_id,
-            col(ForumPostReactsLink.post_like) == True
-        )
-        user_liked_posts = session.exec(statement).all()
-        return list(user_liked_posts)
-
 
 class PostNotFoundException(HTTPException):
     def __init__(self, post_id: int) -> None:
