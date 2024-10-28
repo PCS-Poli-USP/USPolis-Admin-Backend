@@ -3,7 +3,7 @@ from typing import Any
 from fastapi import HTTPException
 from google.oauth2 import id_token
 from google.auth.transport import requests
-from google.auth.exceptions import InvalidValue, MalformedError
+from google.auth.exceptions import InvalidValue, MalformedError, RefreshError
 from pydantic import BaseModel
 from fastapi import status
 
@@ -35,6 +35,9 @@ class AuthenticationClient:
                 requests.Request(),
                 "903358108153-kj9u7e4liu19cm73lr6hlhi876smdscj.apps.googleusercontent.com",
             )
+        except RefreshError:
+            traceback.print_exc()
+            raise ExpiredAuthTokenException()
         except InvalidValue:
             traceback.print_exc()
             raise InvalidAuthTokenException()
@@ -50,3 +53,7 @@ class AuthenticationClient:
 class InvalidAuthTokenException(HTTPException):
     def __init__(self) -> None:
         super().__init__(status.HTTP_401_UNAUTHORIZED, "Token invalid")
+
+class ExpiredAuthTokenException(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(status.HTTP_401_UNAUTHORIZED, "Token expired")
