@@ -4,7 +4,6 @@ from sqlmodel import Session
 from server.models.database.class_db_model import Class
 from server.models.database.user_db_model import User
 from server.repositories.building_repository import BuildingRepository
-from server.repositories.class_repository import ClassRepository
 
 
 def class_permission_checker(

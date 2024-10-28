@@ -1,6 +1,7 @@
 from sqlmodel import Session, col, select
 
 from server.deps.cognito_client import ICognitoClient
+from server.models.database.user_building_link import UserBuildingLink
 from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister
 from server.repositories.building_repository import BuildingRepository
@@ -10,6 +11,12 @@ class UserRepository:
     @staticmethod
     def get_by_id(*, user_id: int, session: Session) -> User:
         statement = select(User).where(col(User.id) == user_id)
+        user = session.exec(statement).one()
+        return user
+
+    @staticmethod
+    def get_by_email(*, email: str, session: Session) -> User:
+        statement = select(User).where(col(User.email) == email)
         user = session.exec(statement).one()
         return user
 
@@ -26,15 +33,23 @@ class UserRepository:
         return list(users)
 
     @staticmethod
+    def get_all_on_building(*, building_id: int, session: Session) -> list[User]:
+        statement = (
+            select(User)
+            .join(UserBuildingLink)
+            .where(UserBuildingLink.building_id == building_id)
+        )
+        users = session.exec(statement).all()
+        return list(users)
+
+    @staticmethod
     def create(
         *,
         creator: User | None,
         user_in: UserRegister,
         session: Session,
-        cognito_client: ICognitoClient,
+        cognito_client: ICognitoClient | None,
     ) -> User:
-        cognito_id = cognito_client.create_user(user_in.username, user_in.email)
-
         buildings = None
         if user_in.building_ids is not None:
             buildings = BuildingRepository.get_by_ids(
@@ -46,7 +61,7 @@ class UserRepository:
             username=user_in.username,
             email=user_in.email,
             is_admin=user_in.is_admin,
-            cognito_id=cognito_id,
+            cognito_id="discontinued",
             created_by=creator,
             buildings=buildings or [],
         )

@@ -4,6 +4,9 @@ from pydantic import BaseModel
 
 from server.models.database.user_db_model import User
 from server.models.http.responses.building_response_models import BuildingResponse
+from server.models.http.responses.classroom_solicitation_response_models import (
+    ClassroomSolicitationResponse,
+)
 from server.utils.must_be_int import must_be_int
 
 
@@ -15,6 +18,7 @@ class UserResponse(BaseModel):
     name: str
     created_by: str | None = None
     buildings: list[BuildingResponse] | None = None
+    solicitations: list[ClassroomSolicitationResponse]
     updated_at: datetime
 
     @classmethod
@@ -31,6 +35,9 @@ class UserResponse(BaseModel):
             ]
             if user.buildings
             else None,
+            solicitations=ClassroomSolicitationResponse.from_solicitation_list(
+                user.solicitations
+            ),
             updated_at=user.updated_at,
         )
 

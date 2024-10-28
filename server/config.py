@@ -18,6 +18,12 @@ class Settings(BaseModel):
     first_superuser_name: str = config("FIRST_SUPERUSER_NAME", "admin")  # type: ignore
     first_superuser_username: str = config("FIRST_SUPERUSER_USERNAME", "admin")  # type: ignore
 
+    # Email
+    mail_host: str = config("MAIL_HOST", default="smtp.gmail.com")  # type: ignore
+    mail_address: str = config("MAIL_ADDRESS")  # type: ignore
+    mail_password: str = config("MAIL_PASSWORD")  # type: ignore
+    mail_port: int = config("MAIL_PORT", default=465, cast=int)  # type: ignore
+
     # AWS
     aws_region_name: str = config("AWS_REGION")  # type: ignore
     aws_access_key_id: str = config("AWS_ACCESS_KEY_ID")  # type: ignore

@@ -3,25 +3,37 @@ from typing import Annotated
 from fastapi import Depends, Header, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from server.deps.cognito_client import CognitoClientDep
 from server.deps.session_dep import SessionDep
 from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.user_repository import UserRepository
+from server.services.auth.authentication_client import (
+    AuthUserInfo,
+    AuthenticationClient,
+)
+from sqlalchemy.exc import NoResultFound
 
 security = HTTPBearer()
 
 
+def google_authenticate(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+) -> AuthUserInfo:
+    token = credentials.credentials
+    auth_client = AuthenticationClient(token)
+    return auth_client.get_user_info()
+
+
 def authenticate(
     request: Request,
-    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-    cognito_client: CognitoClientDep,
+    user_info: Annotated[AuthUserInfo, Depends(google_authenticate)],
     session: SessionDep,
 ) -> User:
-    token = credentials.credentials
-    username = cognito_client.get_username_by_token(token)
-    user: User = UserRepository.get_by_username(username=username, session=session)
+    try:
+        user: User = UserRepository.get_by_email(email=user_info.email, session=session)
+    except NoResultFound:
+        raise HTTPException(403, "Email not registered")
     request.state.current_user = user
     return user
 
@@ -50,5 +62,6 @@ def building_authenticate(
 
 
 # exports:
+GoogleAuthenticate = Annotated[AuthUserInfo, Depends(google_authenticate)]
 UserDep = Annotated[User, Depends(authenticate)]
 BuildingDep = Annotated[Building, Depends(building_authenticate)]
