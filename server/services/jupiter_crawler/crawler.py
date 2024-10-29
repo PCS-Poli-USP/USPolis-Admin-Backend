@@ -134,8 +134,7 @@ class JupiterCrawler:
                 classes.append(class_)
             except Exception as e:
                 print(
-                    f"Ignoring exception trying to crawl {
-                        index}th class on {self.__subject_code} subject:\n",
+                    f"Ignoring exception trying to crawl {index}th class on {self.__subject_code} subject:\n",
                     e,
                 )
 

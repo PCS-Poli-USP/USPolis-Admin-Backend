@@ -12,13 +12,13 @@ class UserRepository:
         statement = select(User).where(col(User.id) == user_id)
         user = session.exec(statement).one()
         return user
-    
+
     @staticmethod
     def get_by_email(*, email: str, session: Session) -> User:
         statement = select(User).where(col(User.email) == email)
         user = session.exec(statement).one()
         return user
-    
+
     @staticmethod
     def get_all(*, session: Session) -> list[User]:
         statement = select(User)

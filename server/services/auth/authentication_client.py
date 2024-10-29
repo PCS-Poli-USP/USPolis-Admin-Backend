@@ -84,3 +84,7 @@ class AuthenticationClient:
 class InvalidAuthTokenException(HTTPException):
     def __init__(self) -> None:
         super().__init__(status.HTTP_401_UNAUTHORIZED, "Token invalid")
+
+class ExpiredAuthTokenException(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(status.HTTP_401_UNAUTHORIZED, "Token expired")
