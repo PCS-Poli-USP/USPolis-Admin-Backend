@@ -8,8 +8,8 @@ from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.user_repository import UserRepository
+from server.services.auth.auth_user_info import AuthUserInfo
 from server.services.auth.authentication_client import (
-    AuthUserInfo,
     AuthenticationClient,
 )
 from server.models.http.requests.user_request_models import UserRegister

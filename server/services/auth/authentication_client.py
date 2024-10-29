@@ -1,25 +1,9 @@
 import requests
 from typing import Any
 from fastapi import HTTPException
-from pydantic import BaseModel
 from fastapi import status
 from server.config import CONFIG
-
-
-class AuthUserInfo(BaseModel):
-    email: str
-    email_verified: bool
-    name: str
-    picture: str
-
-    @staticmethod
-    def from_dict(info: dict[str, Any]) -> "AuthUserInfo":
-        return AuthUserInfo(
-            email=info["email"],
-            email_verified=info["email_verified"],
-            name=info["name"],
-            picture=info["picture"],
-        )
+from server.services.auth.auth_user_info import AuthUserInfo
 
 
 class AuthenticationClient:
