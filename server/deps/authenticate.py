@@ -22,8 +22,7 @@ def google_authenticate(
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> AuthUserInfo:
     access_token = credentials.credentials
-    auth_client = AuthenticationClient(access_token)
-    return auth_client.get_user_info()
+    return AuthenticationClient.get_user_info(access_token)
 
 
 def authenticate(
