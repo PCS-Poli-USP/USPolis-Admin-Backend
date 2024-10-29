@@ -30,7 +30,8 @@ class Settings(BaseModel):
     aws_user_pool_id: str = config("AWS_USER_POOL_ID")  # type: ignore
 
     # GOOGLE AUTH
-    google_auth_secret: str = config("GOOGLE_AUTH_SECRET") # type: ignore
+    google_auth_client_id: str = config("GOOGLE_AUTH_CLIENT_ID") # type: ignore
+    google_auth_client_secret: str = config("GOOGLE_AUTH_CLIENT_SECRET") # type: ignore
 
     # Testing / Development:
     testing: bool = config("TESTING", default=False, cast=bool)

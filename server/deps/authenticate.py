@@ -21,8 +21,8 @@ security = HTTPBearer()
 def google_authenticate(
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> AuthUserInfo:
-    token = credentials.credentials
-    auth_client = AuthenticationClient(token)
+    access_token = credentials.credentials
+    auth_client = AuthenticationClient(access_token)
     return auth_client.get_user_info()
 
 

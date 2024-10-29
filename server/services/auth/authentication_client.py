@@ -1,8 +1,8 @@
 import traceback
+import requests
 from typing import Any
 from fastapi import HTTPException
 from google.oauth2 import id_token
-from google.auth.transport import requests
 from google.auth.exceptions import InvalidValue, MalformedError
 from pydantic import BaseModel
 from fastapi import status
@@ -26,23 +26,31 @@ class AuthUserInfo(BaseModel):
 
 
 class AuthenticationClient:
-    def __init__(self, token: str):
-        self.token = token
+    def __init__(self, access_token: str):
+        self.access_token = access_token
+
+    def verify_access_token(self) -> Any:
+        token_info_url = "https://oauth2.googleapis.com/tokeninfo"
+        params = {"access_token": self.access_token}
+
+        response = requests.get(token_info_url, params=params)
+        if response.status_code == 200:
+            # Token is valid
+            token_info = response.json()
+            return token_info  # Contains user_id, scopes, etc.
+        else:
+            raise HTTPException(status_code=401, detail="Code invalid or expired")
 
     def get_user_info(self) -> AuthUserInfo:
-        try:
-            userInfo = id_token.verify_oauth2_token(
-                self.token,
-                requests.Request(),
-                CONFIG.google_auth_secret,
-            )
-        except InvalidValue:
-            traceback.print_exc()
-            raise InvalidAuthTokenException()
-        except MalformedError:
-            # traceback.print_exc()
-            raise InvalidAuthTokenException()
-        return AuthUserInfo.from_dict(userInfo)
+        userinfo_url = "https://www.googleapis.com/oauth2/v3/userinfo"
+        headers = {"Authorization": f"Bearer {self.access_token}"}
+
+        response = requests.get(userinfo_url, headers=headers)
+        if response.status_code == 200:
+            user_info = response.json()
+            return AuthUserInfo.from_dict(user_info)
+        else:
+            raise HTTPException(status_code=401, detail="Error getting user info from access token")
 
     def get_email(self) -> str:
         return self.get_user_info().email
