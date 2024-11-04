@@ -8,12 +8,4 @@ class UserUpdate(BaseModel):
 
 class UserRegister(UserUpdate):
     name: str
-    username: str
     email: EmailStr
-
-    @field_validator("username")
-    @classmethod
-    def check_no_spaces(cls, v: str) -> str:
-        if " " in v:
-            raise ValueError("Username must not contain spaces")
-        return v

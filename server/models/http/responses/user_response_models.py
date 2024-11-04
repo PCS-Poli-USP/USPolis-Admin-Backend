@@ -12,7 +12,6 @@ from server.utils.must_be_int import must_be_int
 
 class UserResponse(BaseModel):
     id: int
-    username: str
     email: str
     is_admin: bool
     name: str
@@ -25,7 +24,6 @@ class UserResponse(BaseModel):
     def from_user(cls, user: User) -> "UserResponse":
         return cls(
             id=must_be_int(user.id),
-            username=user.username,
             email=user.email,
             is_admin=user.is_admin,
             name=user.name,

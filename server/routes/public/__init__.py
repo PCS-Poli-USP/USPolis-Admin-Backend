@@ -9,11 +9,11 @@ from server.routes.public.mobile_google_authentication_routes import (
     router as MobileGAuth,
 )
 from server.routes.public.mobile_programs_routes import router as ProgramsRouter
-from server.routes.public.user_routes import router as UserRouter
 from server.routes.public.building_routes import router as BuildingRouter
 from server.routes.public.class_routes import router as ClassRouter
 from server.routes.public.classroom_routes import router as ClassroomRouter
 from server.routes.public.reservation_routes import router as ReservationRouter
+from server.routes.public.auth_route import router as AuthRouter
 
 
 router = APIRouter()
@@ -24,8 +24,8 @@ router.include_router(MobileInstitutionalEventsRouter)
 router.include_router(MobileCommentsRouter)
 router.include_router(MobileGAuth)
 router.include_router(ProgramsRouter)
-router.include_router(UserRouter)
 router.include_router(BuildingRouter)
 router.include_router(ClassRouter)
 router.include_router(ClassroomRouter)
 router.include_router(ReservationRouter)
+router.include_router(AuthRouter)

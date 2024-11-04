@@ -16,7 +16,6 @@ class Settings(BaseModel):
     first_superuser_email: str = config("FIRST_SUPERUSER_EMAIL", "amdmin@uspolis.com")  # type: ignore
     first_superuser_password: str = config("FIRST_SUPERUSER_PASSWORD", "admin")  # type: ignore
     first_superuser_name: str = config("FIRST_SUPERUSER_NAME", "admin")  # type: ignore
-    first_superuser_username: str = config("FIRST_SUPERUSER_USERNAME", "admin")  # type: ignore
 
     # Email
     mail_host: str = config("MAIL_HOST", default="smtp.gmail.com")  # type: ignore
@@ -30,14 +29,17 @@ class Settings(BaseModel):
     aws_secret_access_key: str = config("AWS_SECRET_ACCESS_KEY")  # type: ignore
     aws_user_pool_id: str = config("AWS_USER_POOL_ID")  # type: ignore
 
+    # GOOGLE AUTH
+    google_auth_client_id: str = config("GOOGLE_AUTH_CLIENT_ID") # type: ignore
+    google_auth_client_secret: str = config("GOOGLE_AUTH_CLIENT_SECRET") # type: ignore
+
     # Testing / Development:
     testing: bool = config("TESTING", default=False, cast=bool)
     override_auth: bool = config("OVERRIDE_AUTH", default=False, cast=bool)
     override_cognito_client: bool = config(
         "OVERRIDE_COGNITO_CLIENT", default=False, cast=bool
     )
-
-    mock_username: str = config("MOCK_USERNAME", default="admin")  # type: ignore
+    mock_email: str = config("MOCK_EMAIL", default="uspolis@usp.br")  # type: ignore
 
 
 CONFIG = Settings()
