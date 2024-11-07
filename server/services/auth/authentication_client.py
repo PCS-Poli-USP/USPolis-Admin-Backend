@@ -9,7 +9,7 @@ from server.services.auth.auth_user_info import AuthUserInfo
 class AuthenticationClient:
     token_url = "https://oauth2.googleapis.com/token"
     token_info_url = "https://oauth2.googleapis.com/tokeninfo"
-    redirect_uri = "http://localhost:3000/auth-callback"
+    redirect_uri = CONFIG.google_auth_redirect_uri
 
     @staticmethod
     def verify_access_token(access_token: str) -> Any:
