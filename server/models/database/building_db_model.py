@@ -10,6 +10,9 @@ if TYPE_CHECKING:
     from server.models.database.classroom_db_model import Classroom
     from server.models.database.subject_db_model import Subject
     from server.models.database.user_db_model import User
+    from server.models.database.classroom_solicitation_db_model import (
+        ClassroomSolicitation,
+    )
 
 
 class Building(SQLModel, table=True):
@@ -28,3 +31,7 @@ class Building(SQLModel, table=True):
         back_populates="buildings", link_model=SubjectBuildingLink
     )
     updated_at: datetime = Field(default=datetime.now())
+
+    solicitations: list["ClassroomSolicitation"] = Relationship(
+        back_populates="building"
+    )

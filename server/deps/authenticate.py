@@ -3,25 +3,46 @@ from typing import Annotated
 from fastapi import Depends, Header, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from server.deps.cognito_client import CognitoClientDep
 from server.deps.session_dep import SessionDep
 from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.user_repository import UserRepository
+from server.services.auth.auth_user_info import AuthUserInfo
+from server.services.auth.authentication_client import (
+    AuthenticationClient,
+)
+from server.models.http.requests.user_request_models import UserRegister
+from sqlalchemy.exc import NoResultFound
 
 security = HTTPBearer()
 
 
+def google_authenticate(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+) -> AuthUserInfo:
+    access_token = credentials.credentials
+    return AuthenticationClient.get_user_info(access_token)
+
+
 def authenticate(
     request: Request,
-    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-    cognito_client: CognitoClientDep,
+    user_info: Annotated[AuthUserInfo, Depends(google_authenticate)],
     session: SessionDep,
 ) -> User:
-    token = credentials.credentials
-    username = cognito_client.get_username_by_token(token)
-    user: User = UserRepository.get_by_username(username=username, session=session)
+    try:
+        user: User = UserRepository.get_by_email(email=user_info.email, session=session)
+    except NoResultFound:
+        user = UserRepository.create(
+            user_in=UserRegister(
+                email=user_info.email,
+                name=user_info.name,
+                building_ids=None,
+                is_admin=False,
+            ),
+            creator=None,
+            session=session,
+        )
     request.state.current_user = user
     return user
 
@@ -50,5 +71,6 @@ def building_authenticate(
 
 
 # exports:
+GoogleAuthenticate = Annotated[AuthUserInfo, Depends(google_authenticate)]
 UserDep = Annotated[User, Depends(authenticate)]
 BuildingDep = Annotated[Building, Depends(building_authenticate)]

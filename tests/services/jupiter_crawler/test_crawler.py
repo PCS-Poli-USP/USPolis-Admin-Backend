@@ -22,7 +22,8 @@ async def test_crawler_parametrized(subject_code: str) -> None:
 async def _crawler(subject_code: str) -> dict:
     page_contents = JupiterCrawlerTestUtils.retrieve_html_contents()
     result = await JupiterCrawler.crawl_subject_static(
-        subject_code, page_contents[subject_code]
+        subject_code,
+        page_contents[subject_code],  # type: ignore
     )
 
     result_json: dict = json.loads(result.model_dump_json())

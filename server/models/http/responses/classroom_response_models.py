@@ -5,8 +5,7 @@ from pydantic import BaseModel
 from server.models.database.classroom_db_model import (
     Classroom,
 )
-from server.models.http.responses.occurrence_response_models import OccurrenceResponse
-from server.models.http.responses.schedule_response_models import ScheduleResponse
+from server.models.http.responses.schedule_response_models import ScheduleFullResponse
 from server.utils.must_be_int import must_be_int
 
 
@@ -26,12 +25,8 @@ class ClassroomResponseBase(BaseModel):
     building_id: int
     building: str
 
-
-class ClassroomResponse(ClassroomResponseBase):
-    """Classroom commom response without schedules and occurrences"""
-
     @classmethod
-    def from_classroom(cls, classroom: Classroom) -> "ClassroomResponse":
+    def from_classroom(cls, classroom: Classroom) -> "ClassroomResponseBase":
         return cls(
             id=must_be_int(classroom.id),
             name=classroom.name,
@@ -48,6 +43,17 @@ class ClassroomResponse(ClassroomResponseBase):
             building=classroom.building.name,
         )
 
+
+class ClassroomResponse(ClassroomResponseBase):
+    """Classroom commom response without schedules and occurrences"""
+
+    @classmethod
+    def from_classroom(cls, classroom: Classroom) -> "ClassroomResponse":
+        base = ClassroomResponseBase.from_classroom(classroom)
+        return cls(
+            **base.model_dump(),
+        )
+
     @classmethod
     def from_classroom_list(
         cls, classrooms: list[Classroom]
@@ -58,27 +64,14 @@ class ClassroomResponse(ClassroomResponseBase):
 class ClassroomFullResponse(ClassroomResponseBase):
     """Classroom with schedules and occurrences"""
 
-    schedules: list[ScheduleResponse]
-    occurrences: list[OccurrenceResponse]
+    schedules: list[ScheduleFullResponse]
 
     @classmethod
     def from_classroom(cls, classroom: Classroom) -> "ClassroomFullResponse":
+        base = ClassroomResponseBase.from_classroom(classroom)
         return cls(
-            id=must_be_int(classroom.id),
-            name=classroom.name,
-            capacity=classroom.capacity,
-            floor=classroom.floor,
-            ignore_to_allocate=classroom.ignore_to_allocate,
-            accessibility=classroom.accessibility,
-            projector=classroom.projector,
-            air_conditioning=classroom.air_conditioning,
-            updated_at=classroom.updated_at,
-            created_by_id=must_be_int(classroom.created_by_id),
-            created_by=classroom.created_by.name,
-            building_id=must_be_int(classroom.building_id),
-            building=classroom.building.name,
-            schedules=ScheduleResponse.from_schedule_list(classroom.schedules),
-            occurrences=OccurrenceResponse.from_occurrence_list(classroom.occurrences),
+            **base.model_dump(),
+            schedules=ScheduleFullResponse.from_schedule_list(classroom.schedules),
         )
 
     @classmethod

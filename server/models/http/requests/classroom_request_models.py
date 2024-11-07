@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import time, date
 
 
 class ClassroomRegister(BaseModel):
@@ -14,3 +15,9 @@ class ClassroomRegister(BaseModel):
 
 class ClassroomUpdate(ClassroomRegister):
     pass
+
+
+class ClassroomConflictCheck(BaseModel):
+    start_time: time
+    end_time: time
+    dates: list[date]

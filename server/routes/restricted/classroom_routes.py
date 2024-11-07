@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Body, Response
+from datetime import date, time
+from typing import Annotated
+from fastapi import APIRouter, Body, Query, Response
 
 from server.deps.conflict_checker import ConflictCheckerDep
 from server.deps.repository_adapters.classroom_repository_adapter import (
@@ -20,29 +22,21 @@ router = APIRouter(
 )
 
 
-@router.get("")
-async def get_all_classrooms(
-    repository: ClassroomRepositoryDep,
-) -> list[ClassroomResponse]:
-    classrooms = repository.get_all()
-    return ClassroomResponse.from_classroom_list(classrooms)
-
-
-@router.get("/full/")
-async def get_all_classrooms_full(
-    respository: ClassroomRepositoryDep,
-) -> list[ClassroomFullResponse]:
-    """Get all classrooms with schedules and occurrences"""
-    classrooms = respository.get_all()
-    return ClassroomFullResponse.from_classroom_list(classrooms)
-
-
 @router.get("/{id}")
 async def get_classroom(
     id: int, repository: ClassroomRepositoryDep
 ) -> ClassroomResponse:
     classroom = repository.get_by_id(id)
     return ClassroomResponse.from_classroom(classroom)
+
+
+@router.get("/building/{building_id}")
+async def get_classrooms_by_building(
+    building_id: int, repository: ClassroomRepositoryDep
+) -> list[ClassroomResponse]:
+    """Get all classrooms on building"""
+    classrooms = repository.get_all_on_building(building_id)
+    return ClassroomResponse.from_classroom_list(classrooms)
 
 
 @router.get("/full/{id}")
@@ -60,6 +54,22 @@ async def get_classrooms_with_conflicts_count(
 ) -> list[ClassroomWithConflictsIndicator]:
     classrooms = conflict_checker.classrooms_with_conflicts_indicator_for_schedule(
         building_id, schedule_id
+    )
+    return classrooms
+
+
+@router.get("/with-conflict-count/{building_id}")
+async def get_classroom_with_conflicts_count_for_time(
+    building_id: int,
+    start_time: time,
+    end_time: time,
+    dates: Annotated[list[date], Query()],
+    conflict_checker: ConflictCheckerDep,
+) -> list[ClassroomWithConflictsIndicator]:
+    classrooms = (
+        conflict_checker.classrooms_with_conflicts_indicator_for_time_and_dates(
+            building_id, start_time, end_time, dates
+        )
     )
     return classrooms
 

@@ -7,7 +7,7 @@ from server.repositories.user_repository import UserRepository
 
 
 async def authenticate_mock(request: Request, session: SessionDep) -> User:
-    username: str = CONFIG.mock_username
-    user: User = UserRepository.get_by_username(username=username, session=session)
+    email: str = CONFIG.mock_email
+    user: User = UserRepository.get_by_email(email=email, session=session)
     request.state.current_user = user
     return user
