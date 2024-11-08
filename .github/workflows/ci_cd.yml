@@ -1,10 +1,8 @@
 name: CI/CD
 
-on:
-  pull_request:
-    types:
-      - opened
-    branches:
+on: 
+  push: 
+    branches: 
       - main
 
 jobs:

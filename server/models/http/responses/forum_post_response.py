@@ -2,6 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel
 from server.models.database.forum_db_model import ForumPost
 from server.models.database.forum_post_reacts_link import ForumPostReactsLink
+from server.repositories.forum_repository import ForumRepository
 from sqlmodel import Session, col, select
 
 class ForumPostResponse(BaseModel):
@@ -19,21 +20,6 @@ class ForumPostResponse(BaseModel):
     @classmethod
     def from_forum_post(cls, mobile_user_id: int, post: ForumPost, session: Session) -> "ForumPostResponse":
 
-        user_statement = select(ForumPostReactsLink).where(
-            col(ForumPostReactsLink.mobile_user_id)==mobile_user_id,
-            col(ForumPostReactsLink.forum_post_id)==post.id
-        )
-
-        user_liked_this_post = False
-        
-        if user_statement != None:
-            user_like_post = session.exec(user_statement).first()
-
-            if user_like_post != None:   
-                user_liked_this_post = user_like_post.post_like
-
-
-
         return cls(
             id = post.id,
             user_id = post.user_id,
@@ -44,7 +30,7 @@ class ForumPostResponse(BaseModel):
             created_at = post.created_at,
             replies_count = post.replies_count,
             likes_count = post.likes_count,
-            user_liked = user_liked_this_post
+            user_liked = ForumRepository.get_post_like_reaction(mobile_user_id=mobile_user_id, post_id= post.id, session=session )
         )
 
     @classmethod
@@ -57,19 +43,6 @@ class ForumPostReplyResponse(ForumPostResponse):
     @classmethod
     def from_forum_reply(cls, reply: ForumPost, mobile_user_id: int, session: Session) -> "ForumPostReplyResponse":
 
-        user_statement = select(ForumPostReactsLink).where(
-            col(ForumPostReactsLink.mobile_user_id)==mobile_user_id,
-            col(ForumPostReactsLink.forum_post_id)==reply.id
-        )
-
-        user_liked_this_reply = False
-        
-        if user_statement != None:
-            user_like_reply = session.exec(user_statement).first()
-
-            if user_like_reply != None:   
-                user_liked_this_reply = user_like_reply.post_like
-
         return cls(
             id = reply.id,
             reply_of_post_id = reply.reply_of_post_id,
@@ -81,7 +54,7 @@ class ForumPostReplyResponse(ForumPostResponse):
             created_at = reply.created_at,
             replies_count = reply.replies_count,
             likes_count = reply.likes_count,
-            user_liked = user_liked_this_reply,
+            user_liked = ForumRepository.get_post_like_reaction(mobile_user_id=mobile_user_id, post_id= reply.id, session=session ),
         )
 
     @classmethod

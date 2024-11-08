@@ -21,12 +21,28 @@ class ForumRepository:
         return new_post
 
     @staticmethod
-    def get_all_posts(*, subject_id: int, session: Session) -> list[ForumPost]:
+    def get_post_like_reaction(mobile_user_id: int, post_id: int, session:Session):
+        user_statement = select(ForumPostReactsLink).where(
+            col(ForumPostReactsLink.mobile_user_id)==mobile_user_id,
+            col(ForumPostReactsLink.forum_post_id)==post_id
+        )
+
+        user_liked_this_post = False
+        user_like_post = session.exec(user_statement).first()
+
+        if user_like_post != None:   
+            user_liked_this_post = user_like_post.post_like
+
+        return user_liked_this_post
+
+    @staticmethod
+    def get_all_posts(*, subject_id: int, mobile_user_id: int, session: Session) -> list[ForumPost]:
         statement = select(ForumPost).where(
             col(ForumPost.subject_id)==subject_id, 
             col(ForumPost.reply_of_post_id)==None,
             col(ForumPost.enabled) == True)
         posts = session.exec(statement).all()
+
         return list(posts)
 
     @staticmethod
@@ -104,6 +120,7 @@ class ForumRepository:
             col(ForumPost.reply_of_post_id)==post_id,
             col(ForumPost.enabled) == True)
         replies = session.exec(statement).all()
+        
         return list(replies)
     
     @staticmethod

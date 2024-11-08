@@ -27,7 +27,8 @@ router = APIRouter(prefix="/mobile/forum", tags=["Forum"])
 @router.get("/posts")
 async def get_posts(subject_id: int, user_id:int, session: SessionDep) -> list[ForumPostResponse]:
     """Get all posts"""
-    posts = ForumRepository.get_all_posts(subject_id=subject_id, session=session)
+    posts = ForumRepository.get_all_posts(subject_id=subject_id, mobile_user_id=user_id, session=session)
+    
     return ForumPostResponse.from_forum_post_list(user_id, posts, session)
 
 
@@ -43,8 +44,8 @@ async def create_forum_post(
         input=to_forumpost_model(input),
         session=session
     )
-    mobile_user_id=3
-    return ForumPostResponse.from_forum_post(mobile_user_id, forum_post, session)
+    
+    return ForumPostResponse.from_forum_post(input.user_id, forum_post, session)
 
 @router.delete("/posts/{post_id}")
 async def delete_forum_post(
