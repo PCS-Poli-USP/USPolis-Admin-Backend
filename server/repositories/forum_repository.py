@@ -1,5 +1,6 @@
 from datetime import datetime
 from fastapi import HTTPException, status
+from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, col, select
 from server.models.database.forum_db_model import ForumPost 
@@ -21,7 +22,7 @@ class ForumRepository:
         return new_post
 
     @staticmethod
-    def get_post_like_reaction(mobile_user_id: int, post_id: int, session:Session):
+    def get_post_like_reaction(mobile_user_id: int | None, post_id: int, session:Session):
         user_statement = select(ForumPostReactsLink).where(
             col(ForumPostReactsLink.mobile_user_id)==mobile_user_id,
             col(ForumPostReactsLink.forum_post_id)==post_id
@@ -36,11 +37,27 @@ class ForumRepository:
         return user_liked_this_post
 
     @staticmethod
-    def get_all_posts(*, subject_id: int, mobile_user_id: int, session: Session) -> list[ForumPost]:
+    def get_all_posts(*, subject_id: int, filter_tags: list[int] | None, session: Session) -> list[ForumPost]:
+        """Returns all posts matching, ordered by desceding creation date (newer first), the filter_tags criteria as follows:\n
+        - Each filter tags must be an prime number (e.g.: 2, 3, 5...)
+        - Multiple filter tags will be the multiplication of corresponding tag numbers: (e.g.: 10 = 2*5 - tags 2 and 5)
+        - If a post has no filter, its filter_tags will be 1 (not a prime multiplication)
+        - To search, all posts with ANY filter_tags combination received from the request are going to be returned 
+            - e.g.:filter_tags = [2, 5, 3], from request, means posts with the following filter_tags will be returned: [2, 5, 3, 10, 6, 15, 30]
+        """
         statement = select(ForumPost).where(
             col(ForumPost.subject_id)==subject_id, 
             col(ForumPost.reply_of_post_id)==None,
-            col(ForumPost.enabled) == True)
+            col(ForumPost.enabled) == True) \
+            .order_by(col(ForumPost.created_at).desc())
+        
+        if filter_tags != None:
+            # if there are filter tags, use them to search
+            filter_expressions = []
+            for tag in filter_tags:
+                filter_expressions.append(col(ForumPost.filter_tags)%tag==0)
+            statement = statement.filter(or_(*filter_expressions))
+
         posts = session.exec(statement).all()
 
         return list(posts)
@@ -101,6 +118,8 @@ class ForumRepository:
             replies_count = len(list(session.exec(replies_statement).all())) + 1 # Adds the current reply to counter
             post = session.exec(select(ForumPost).where(col(ForumPost.id) == input.reply_of_post_id)).first()
             
+            if post == None:
+                raise PostNotFoundException(input.reply_of_post_id) # type: ignore
             post.replies_count = replies_count
             
             input.created_at = datetime.now()
@@ -109,7 +128,7 @@ class ForumRepository:
             session.add(post)
             session.commit()
         except IntegrityError:
-            raise PostNotFoundException(input.reply_of_post_id)
+            raise PostNotFoundException(input.reply_of_post_id) # type: ignore
 
         session.refresh(input)
         return input
@@ -118,7 +137,8 @@ class ForumRepository:
     def get_all_replies(*, post_id: int ,session: Session):
         statement = select(ForumPost).where(
             col(ForumPost.reply_of_post_id)==post_id,
-            col(ForumPost.enabled) == True)
+            col(ForumPost.enabled) == True) \
+            .order_by(col(ForumPost.created_at).asc())
         replies = session.exec(statement).all()
         
         return list(replies)
