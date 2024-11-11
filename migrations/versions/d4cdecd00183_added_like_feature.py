@@ -14,7 +14,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = 'd4cdecd00183'
-down_revision: Union[str, None] = '5fc1e85f84a3'
+down_revision: Union[str, None] = '9ffe46f33c09'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -29,7 +29,6 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['mobile_user_id'], ['mobileuser.id'], ),
     sa.PrimaryKeyConstraint('forum_post_id', 'mobile_user_id')
     )
-    op.drop_table('forumpostreply')
     op.add_column('forumpost', sa.Column('likes_count', sa.Integer(), nullable=True))
     op.alter_column('forumpost', 'enabled',
                existing_type=sa.BOOLEAN(),
@@ -43,20 +42,5 @@ def downgrade() -> None:
                existing_type=sa.BOOLEAN(),
                nullable=True)
     op.drop_column('forumpost', 'likes_count')
-    op.create_table('forumpostreply',
-    sa.Column('id', sa.INTEGER(), autoincrement=True, nullable=False),
-    sa.Column('forum_post_id', sa.INTEGER(), autoincrement=False, nullable=False),
-    sa.Column('class_id', sa.INTEGER(), autoincrement=False, nullable=False),
-    sa.Column('subject_id', sa.INTEGER(), autoincrement=False, nullable=False),
-    sa.Column('content', sa.VARCHAR(), autoincrement=False, nullable=True),
-    sa.Column('user_id', sa.INTEGER(), autoincrement=False, nullable=False),
-    sa.Column('created_at', postgresql.TIMESTAMP(), autoincrement=False, nullable=False),
-    sa.Column('report_count', sa.INTEGER(), autoincrement=False, nullable=False),
-    sa.ForeignKeyConstraint(['class_id'], ['class.id'], name='forumpostreply_class_id_fkey'),
-    sa.ForeignKeyConstraint(['forum_post_id'], ['forumpost.id'], name='forumpostreply_forum_post_id_fkey'),
-    sa.ForeignKeyConstraint(['subject_id'], ['subject.id'], name='forumpostreply_subject_id_fkey'),
-    sa.ForeignKeyConstraint(['user_id'], ['mobileuser.id'], name='forumpostreply_user_id_fkey'),
-    sa.PrimaryKeyConstraint('id', name='forumpostreply_pkey')
-    )
     op.drop_table('forumpostreactslink')
     # ### end Alembic commands ###
