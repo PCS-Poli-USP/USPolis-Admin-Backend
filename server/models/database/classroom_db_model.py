@@ -12,6 +12,9 @@ if TYPE_CHECKING:
     from server.models.database.reservation_db_model import Reservation
     from server.models.database.schedule_db_model import Schedule
     from server.models.database.user_db_model import User
+    from server.models.database.classroom_solicitation_db_model import (
+        ClassroomSolicitation,
+    )
 
 
 class ClassroomBase(SQLModel):
@@ -43,6 +46,9 @@ class Classroom(ClassroomBase, table=True):
         back_populates="classroom", sa_relationship_kwargs={"cascade": "all, delete"}
     )
     schedules: list["Schedule"] = Relationship(back_populates="classroom")
+    solicitations: list["ClassroomSolicitation"] = Relationship(
+        back_populates="classroom"
+    )
 
 
 class ClassroomWithConflictsIndicator(ClassroomBase):

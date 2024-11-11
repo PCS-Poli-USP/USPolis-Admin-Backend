@@ -16,22 +16,6 @@ embed = Body(..., embed=True)
 router = APIRouter(prefix="/classes", tags=["Classes"])
 
 
-@router.get("")
-async def get_all_classes(repository: ClassRepositoryAdapterDep) -> list[ClassResponse]:
-    """Get all classes"""
-    classes = repository.get_all()
-    return ClassResponse.from_class_list(classes)
-
-
-@router.get("/full/")
-async def get_all_classes_full(
-    repository: ClassRepositoryAdapterDep,
-) -> list[ClassFullResponse]:
-    """Get all classes with schedules and occurrences"""
-    classes = repository.get_all()
-    return ClassFullResponse.from_class_list(classes)
-
-
 @router.get("/{class_id}")
 async def get_class(
     class_id: int, repository: ClassRepositoryAdapterDep

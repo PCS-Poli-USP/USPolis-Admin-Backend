@@ -21,7 +21,7 @@ from server.services.gmail_service import gmail_login, gmail_send_message
 
 embed = Body(..., embed=True)
 
-router = APIRouter(prefix="/mobile/forum", tags=["Forum"])
+router = APIRouter(prefix="/mobile/forum", tags=["Forum", "Mobile"])
 
 
 @router.get("/posts")

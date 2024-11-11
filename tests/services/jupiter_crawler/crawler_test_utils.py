@@ -47,7 +47,8 @@ class JupiterCrawlerTestUtils:
         for subject_code, content in contents_dict.items():
             print(subject_code)
             results[subject_code] = await JupiterCrawler.crawl_subject_static(
-                subject_code, content
+                subject_code,
+                content,  # type: ignore
             )
 
         cls._save_reference_results(results)

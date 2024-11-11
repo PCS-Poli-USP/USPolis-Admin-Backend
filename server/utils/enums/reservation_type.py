@@ -24,6 +24,18 @@ class ReservationType(Enum):
             return cls.OTHER
         raise NoSuchReservationType(f"Reservation type {value} is not valid.")
 
+    @classmethod
+    def to_str(cls, value: "ReservationType") -> str:
+        match value:
+            case ReservationType.EXAM:
+                return "Prova"
+            case ReservationType.MEETING:
+                return "Reunião"
+            case ReservationType.EVENT:
+                return "Evento"
+            case ReservationType.OTHER:
+                return "Outro"
+
 
 class NoSuchReservationType(Exception):
     pass

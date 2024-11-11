@@ -4,24 +4,26 @@ from pydantic import BaseModel
 
 from server.models.database.user_db_model import User
 from server.models.http.responses.building_response_models import BuildingResponse
+from server.models.http.responses.classroom_solicitation_response_models import (
+    ClassroomSolicitationResponse,
+)
 from server.utils.must_be_int import must_be_int
 
 
 class UserResponse(BaseModel):
     id: int
-    username: str
     email: str
     is_admin: bool
     name: str
     created_by: str | None = None
     buildings: list[BuildingResponse] | None = None
+    solicitations: list[ClassroomSolicitationResponse]
     updated_at: datetime
 
     @classmethod
     def from_user(cls, user: User) -> "UserResponse":
         return cls(
             id=must_be_int(user.id),
-            username=user.username,
             email=user.email,
             is_admin=user.is_admin,
             name=user.name,
@@ -31,6 +33,9 @@ class UserResponse(BaseModel):
             ]
             if user.buildings
             else None,
+            solicitations=ClassroomSolicitationResponse.from_solicitation_list(
+                user.solicitations
+            ),
             updated_at=user.updated_at,
         )
 

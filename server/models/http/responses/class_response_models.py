@@ -36,12 +36,8 @@ class ClassResponseBase(BaseModel):
     calendar_ids: list[int]
     calendar_names: list[str]
 
-
-class ClassResponse(ClassResponseBase):
-    schedules: list[ScheduleResponse]
-
     @classmethod
-    def from_class(cls, _class: Class) -> "ClassResponse":
+    def from_class(cls, _class: Class) -> "ClassResponseBase":
         return cls(
             id=must_be_int(_class.id),
             start_date=_class.start_date,
@@ -61,11 +57,24 @@ class ClassResponse(ClassResponseBase):
             subject_id=must_be_int(_class.subject.id),
             subject_code=_class.subject.code,
             subject_name=_class.subject.name,
-            schedules=ScheduleResponse.from_schedule_list(_class.schedules),
             calendar_ids=[
                 calendar.id for calendar in _class.calendars if (calendar.id)
             ],
             calendar_names=[calendar.name for calendar in _class.calendars],
+        )
+
+
+class ClassResponse(ClassResponseBase):
+    """Class basic response"""
+
+    schedules: list[ScheduleResponse]
+
+    @classmethod
+    def from_class(cls, _class: Class) -> "ClassResponse":
+        base = ClassResponseBase.from_class(_class)
+        return cls(
+            **base.model_dump(),
+            schedules=ScheduleResponse.from_schedule_list(_class.schedules),
         )
 
     @classmethod
@@ -80,30 +89,10 @@ class ClassFullResponse(ClassResponseBase):
 
     @classmethod
     def from_class(cls, _class: Class) -> "ClassFullResponse":
+        base = ClassResponseBase.from_class(_class)
         return cls(
-            id=must_be_int(_class.id),
-            start_date=_class.start_date,
-            end_date=_class.end_date,
-            code=_class.code,
-            professors=_class.professors,
-            type=_class.type,
-            vacancies=_class.vacancies,
-            subscribers=_class.subscribers,
-            pendings=_class.pendings,
-            air_conditionating=_class.air_conditionating,
-            accessibility=_class.accessibility,
-            projector=_class.projector,
-            ignore_to_allocate=_class.ignore_to_allocate,
-            full_allocated=_class.full_allocated,
-            updated_at=_class.updated_at,
-            subject_id=must_be_int(_class.subject.id),
-            subject_code=_class.subject.code,
-            subject_name=_class.subject.name,
+            **base.model_dump(),
             schedules=ScheduleFullResponse.from_schedule_list(_class.schedules),
-            calendar_ids=[
-                calendar.id for calendar in _class.calendars if (calendar.id)
-            ],
-            calendar_names=[calendar.name for calendar in _class.calendars],
         )
 
     @classmethod

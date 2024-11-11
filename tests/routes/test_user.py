@@ -1,7 +1,6 @@
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
-from server.mocks.services.cognito_client_mock import CognitoClientMock
 from server.models.database.building_db_model import Building  # noqa
 from server.models.database.user_db_model import User  # noqa
 from server.models.http.requests.user_request_models import UserRegister
@@ -20,7 +19,6 @@ def test_user_create(client: TestClient, user: User, db: Session) -> None:
         session=db,
         user_in=my_user,
         creator=user,
-        cognito_client=CognitoClientMock(),
     )
     resp = client.get("/admin/users")
     assert resp.status_code == 200

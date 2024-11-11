@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<head>
+    <title>Password has been changed</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+        .email-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .logo {
+            display: flex;
+            max-width: 200px;
+            align-items: center;
+        }
+        .logo-image {
+            max-width: 150px;
+            margin-bottom: 16px;
+        }
+        .logo-text {
+            font-size: 75px;
+            font-weight: bold;
+            margin-left: 10px;
+            color: #408080;
+        }
+        .button {
+            color: #fff;
+            background-color: #007BFF;
+            border-color: #007BFF;
+            border-radius: .25rem;
+            text-decoration: none;
+            padding: .375rem .75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="logo">
+          <img src="cid:logo" alt="Uspolis-Logo" class="logo-image">
+          <div class="logo-text">USPolis</div>
+        </div>
+        <p>Caro(a) {{ data.username }},</p>
+        <p>
+          A sua solicitação foi <b>aprovada</b>!<br>
+        </p>
+        <p>
+            <br>
+            <b>Local e Horários definidos:</b> <br>
+            <br>
+            <b>Prédio: </b> {{ data.building }}<br>
+            <b>Sala: </b> {{ data.approved_classroom }}<br>
+            <b>Horário: </b> {{ data.approved_time }}<br>
+
+        </p>
+
+        <p>
+            <br>
+            <b>Detalhes da solicitação:</b> <br>
+            <br>
+            <b>Título: </b> {{ data.title }}<br>
+            <b>Tipo: </b> {{ data.type }}<br>
+            <b>Prédio: </b> {{ data.building }}<br>
+            <b>Sala: </b> {{ data.classroom }}<br>
+            <b>Horário: </b> {{ data.time }}<br>
+            <b>Datas: </b> {{ data.dates }}<br>
+            <b>Capacidade: </b> {{ data.capacity }}<br>
+
+        </p>
+            <br>
+            Atenciosamente, <br>
+            Equipe USPolis
+        </p>
+        <p>ATENÇÃO! Este e-mail é apenas informativo, não é necessário respondê-lo.</p>
+    </div>
+</body>
+</html>

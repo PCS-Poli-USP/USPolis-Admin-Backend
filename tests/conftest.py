@@ -60,5 +60,5 @@ def client() -> Generator[TestClient, None, None]:
 
 @pytest.fixture(autouse=False)
 def user(db: Session) -> Generator[User, None, None]:
-    user = UserRepository.get_by_username(session=db, username=CONFIG.mock_username)
+    user = UserRepository.get_by_email(session=db, email=CONFIG.mock_email)
     yield user
