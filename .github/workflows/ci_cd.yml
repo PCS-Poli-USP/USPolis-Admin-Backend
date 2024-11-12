@@ -1,9 +1,9 @@
 name: CI/CD
 
-on:
-  push:
-    branches:
-      - develop
+on: 
+  push: 
+    branches: 
+      - main
 
 jobs:
   ci:
@@ -88,16 +88,6 @@ jobs:
       - name: Notify Command Success
         run: echo "Command executed on ${{ secrets.HOST }} successfully!"
               
-        
-# - name: Connect to USP Server Machine 
-#   run: |
-#     ssh ubuntu@200.144.244.245 -p 2222
-#     ${{ secrets.SSH_PASSCODE }}
-#     cd /diskb/home/backend
-# source venv/bin/activate
-# git pull
-# alembic upgrade heads
-
 
 
 
