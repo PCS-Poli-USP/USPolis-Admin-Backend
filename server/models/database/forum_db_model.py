@@ -9,7 +9,7 @@ from server.models.database.forum_post_reacts_link import ForumPostReactsLink
 
 
 class ForumPost(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
+    id: int = Field(default=None, primary_key=True)
 
     class_id: int = Field(
         foreign_key="class.id"
@@ -40,3 +40,5 @@ class ForumPost(SQLModel, table=True):
     liked_by_users: list[MobileUser] = Relationship(link_model=ForumPostReactsLink)
 
     likes_count: int = Field(default=0)
+
+    filter_tags: int = Field(default=1)
