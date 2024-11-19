@@ -182,6 +182,19 @@ class ForumRepository:
         return post
     
 
+    @staticmethod
+    def get_search_result_posts(subject_id: int, keyword:str, session: Session) -> list[ForumPost]:
+
+        search_term = f"%{keyword}%"
+
+        search_statement = select(ForumPost).where(
+            col(ForumPost.subject_id)==subject_id,
+            ForumPost.content.ilike(search_term) 
+        ).order_by(col(ForumPost.created_at).desc())
+        results = session.exec(search_statement).all()
+
+        return list(results)
+
 class PostNotFoundException(HTTPException):
     def __init__(self, post_id: int) -> None:
         super().__init__(

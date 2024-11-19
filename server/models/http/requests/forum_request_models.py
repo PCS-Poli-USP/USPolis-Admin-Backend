@@ -43,3 +43,6 @@ class ForumPostLike(BaseModel):
 
 class ForumUserLikesRegister(BaseModel):
     user_id: int
+
+class ForumSearch(BaseModel):
+    keyword: str
