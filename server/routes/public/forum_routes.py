@@ -10,7 +10,6 @@ from server.models.http.requests.forum_request_models import (
     ForumReportRegister,
     to_forumreply_model,
     ForumPostLike,
-    ForumSearch
 )
 from server.models.http.responses.forum_post_response import (
     ForumPostReplyResponse,
@@ -144,15 +143,3 @@ async def update_forum_post_like(
     like_changed_post = ForumRepository.change_forum_post_like(post_id=post_id, mobile_user_id=input.user_id, like_state=input.like_state ,session=session, )
 
     return like_changed_post
-
- 
-@router.post("/posts/{subject_id}/search")
-async def get_posts_by_keyword(
-    subject_id: int,
-    input: ForumSearch,
-    session: SessionDep
-)-> list[ForumPostReplyResponse]:
-    """Get searched posts by keyword"""
-    search_results = ForumRepository.get_search_result_posts(subject_id=subject_id, keyword=input.keyword, session=session)
-    
-    return ForumPostReplyResponse.from_forum_post_reply_list(search_results, 0, session)
