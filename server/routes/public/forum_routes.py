@@ -1,6 +1,6 @@
-from typing import Annotated
+from typing import List
 from typing import Any
-from fastapi import APIRouter, Body, Header
+from fastapi import APIRouter, Body, Header, Query
 
 from server.deps.session_dep import SessionDep
 from server.models.database.forum_db_model import ForumPost
@@ -25,10 +25,19 @@ router = APIRouter(prefix="/mobile/forum", tags=["Forum", "Mobile"])
 
 
 @router.get("/posts")
-async def get_posts(subject_id: int, user_id:int, session: SessionDep) -> list[ForumPostResponse]:
-    """Get all posts"""
-    posts = ForumRepository.get_all_posts(subject_id=subject_id, mobile_user_id=user_id, session=session)
-    
+async def get_posts(
+    session: SessionDep,
+    subject_id: int,
+    user_id: int | None = None,
+    filter_tags: List[int] = Query(None)
+) -> list[ForumPostResponse]:
+    """Get all posts by tags, also gets all posts reaction information based on the user_id"""
+    posts = ForumRepository.get_all_posts(
+        subject_id=subject_id,
+        filter_tags=filter_tags,
+        session=session
+    )
+
     return ForumPostResponse.from_forum_post_list(user_id, posts, session)
 
 
@@ -36,7 +45,7 @@ async def get_posts(subject_id: int, user_id:int, session: SessionDep) -> list[F
 async def create_forum_post(
     input: ForumPostRegister, session: SessionDep, authorization: str = Header(None),
 ) -> ForumPostResponse:
-    """Create a forum post"""
+    """Create a forum post with provided tags"""
     # authenticate before creating and saving a post
     authenticate_with_google(authorization)
 
