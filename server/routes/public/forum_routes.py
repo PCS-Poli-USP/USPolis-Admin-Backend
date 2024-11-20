@@ -30,12 +30,16 @@ async def get_posts(
     session: SessionDep,
     subject_id: int,
     user_id: int | None = None,
-    filter_tags: List[int] = Query(None)
+    filter_tags: List[int] = Query(None),
+    search_keyword: str | None = None
 ) -> list[ForumPostResponse]:
-    """Get all posts by tags, also gets all posts reaction information based on the user_id"""
+    """Get all posts by tags, also gets all posts reaction information based on the user_id
+        If have a search keyword in the request, return posts with that word
+    """
     posts = ForumRepository.get_all_posts(
         subject_id=subject_id,
         filter_tags=filter_tags,
+        search_keyword=search_keyword, 
         session=session
     )
 
