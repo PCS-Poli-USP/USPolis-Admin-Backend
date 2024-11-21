@@ -25,7 +25,7 @@ async def authenticate_user(
     idToken: Annotated[str | None, Header()], session: SessionDep
 ) -> AuthenticationResponse:
     """Authenticates user with Google: if it is in our DB return user info"""
-    if idToken == None:
+    if idToken is None:
         raise ValueError("Invalid idToken")
     idInfo = authenticate_with_google(idToken)
 

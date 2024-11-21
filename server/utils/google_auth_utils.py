@@ -1,8 +1,10 @@
 import os
+from typing import Any
 from google.oauth2 import id_token
 from google.auth.transport import requests
 
-def authenticate_with_google(idToken: str):
+
+def authenticate_with_google(idToken: str) -> Any:
     # Specify the CLIENT_ID of the app that accesses the backend:
     idInfo = id_token.verify_oauth2_token(
         idToken, requests.Request(), os.getenv("G_AUTH_CLIENT_ID")

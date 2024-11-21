@@ -1,4 +1,3 @@
-from typing import List
 from typing import Any
 from fastapi import APIRouter, Body, Header, Query
 
@@ -29,13 +28,11 @@ async def get_posts(
     session: SessionDep,
     subject_id: int,
     user_id: int | None = None,
-    filter_tags: List[int] = Query(None)
+    filter_tags: list[int] = Query(None),
 ) -> list[ForumPostResponse]:
     """Get all posts by tags, also gets all posts reaction information based on the user_id"""
     posts = ForumRepository.get_all_posts(
-        subject_id=subject_id,
-        filter_tags=filter_tags,
-        session=session
+        subject_id=subject_id, filter_tags=filter_tags, session=session
     )
 
     return ForumPostResponse.from_forum_post_list(user_id, posts, session)
@@ -43,33 +40,31 @@ async def get_posts(
 
 @router.post("/posts")
 async def create_forum_post(
-    input: ForumPostRegister, session: SessionDep, authorization: str = Header(None),
+    input: ForumPostRegister,
+    session: SessionDep,
+    authorization: str = Header(None),
 ) -> ForumPostResponse:
     """Create a forum post with provided tags"""
     # authenticate before creating and saving a post
     authenticate_with_google(authorization)
 
     forum_post = ForumRepository.create(
-        input=to_forumpost_model(input),
-        session=session
+        input=to_forumpost_model(input), session=session
     )
-    
+
     return ForumPostResponse.from_forum_post(input.user_id, forum_post, session)
+
 
 @router.delete("/posts/{post_id}")
 async def delete_forum_post(
-    post_id: int,
-    session: SessionDep,
-    authorization: str = Header(None)
-):
+    post_id: int, session: SessionDep, authorization: str = Header(None)
+) -> None:
     """Soft delete (disable) a forum post"""
     # authenticate (perhaps its better to use cognito and the admin)
     authenticate_with_google(authorization)
 
-    ForumRepository.disable_post(
-        post_id=post_id,
-        session=session
-    )
+    ForumRepository.disable_post(post_id=post_id, session=session)
+
 
 @router.post("/report")
 async def report_forum_post(
@@ -87,9 +82,8 @@ async def report_forum_post(
 
     return updated_post
 
-def send_email(
-    post: ForumPost
-) -> Any:
+
+def send_email(post: ForumPost) -> Any:
     html_content = f"""
         <h1> Um postagem foi denunciada {post.report_count} vezes! </h1>
         <h2> Dados da postagem </h2>
@@ -101,16 +95,17 @@ def send_email(
     sent_email = gmail_send_message(creds, html_content)
     return sent_email
 
+
 # Post Reply
 @router.post("/posts/{post_id}")
 async def create_forum_post_reply(
     post_id: int,
-    input: ForumPostRegister, 
+    input: ForumPostRegister,
     session: SessionDep,
     authorization: str = Header(None),
 ) -> ForumPostReplyResponse:
     """Create forum post reply"""
-    
+
     # authenticate before creating and saving reply
     authenticate_with_google(authorization)
 
@@ -120,24 +115,27 @@ async def create_forum_post_reply(
     )
     return ForumPostReplyResponse.from_forum_reply(reply, input.user_id, session)
 
+
 @router.get("/posts/{post_id}")
 async def get_forum_post_replies(
-    post_id: int, user_id:int, session: SessionDep
+    post_id: int, user_id: int, session: SessionDep
 ) -> list[ForumPostReplyResponse]:
     """Get all replies from a single post"""
     replies = ForumRepository.get_all_replies(post_id=post_id, session=session)
 
     return ForumPostReplyResponse.from_forum_post_reply_list(replies, user_id, session)
 
+
 @router.post("/posts/{post_id}/liked")
 async def update_forum_post_like(
-    post_id: int,
-    input: ForumPostLike,
-    session: SessionDep
-) ->  ForumPost:
+    post_id: int, input: ForumPostLike, session: SessionDep
+) -> ForumPost:
     """Change post like reaction state"""
-    like_changed_post = ForumRepository.change_forum_post_like(post_id=post_id, mobile_user_id=input.user_id, like_state=input.like_state ,session=session, )
+    like_changed_post = ForumRepository.change_forum_post_like(
+        post_id=post_id,
+        mobile_user_id=input.user_id,
+        like_state=input.like_state,
+        session=session,
+    )
 
     return like_changed_post
-
-
