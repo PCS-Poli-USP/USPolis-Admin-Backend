@@ -29,16 +29,20 @@ async def get_posts(
     session: SessionDep,
     subject_id: int,
     user_id: int | None = None,
-    filter_tags: List[int] = Query(None)
-) -> list[ForumPostResponse]:
-    """Get all posts by tags, also gets all posts reaction information based on the user_id"""
+    filter_tags: List[int] = Query(None),
+    search_keyword: str | None = None
+) -> list[ForumPostReplyResponse]:
+    """Get all posts by tags, also gets all posts reaction information based on the user_id
+        If a search keyword is present in the request, return posts with that word
+    """
     posts = ForumRepository.get_all_posts(
         subject_id=subject_id,
         filter_tags=filter_tags,
+        search_keyword=search_keyword, 
         session=session
     )
 
-    return ForumPostResponse.from_forum_post_list(user_id, posts, session)
+    return ForumPostReplyResponse.from_forum_post_reply_list(posts, user_id, session)
 
 
 @router.post("/posts")
@@ -139,5 +143,3 @@ async def update_forum_post_like(
     like_changed_post = ForumRepository.change_forum_post_like(post_id=post_id, mobile_user_id=input.user_id, like_state=input.like_state ,session=session, )
 
     return like_changed_post
-
-
