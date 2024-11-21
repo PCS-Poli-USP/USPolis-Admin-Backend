@@ -44,7 +44,7 @@ class ForumRepository:
         - If a post has no filter, its filter_tags will be 1 (not a prime multiplication)
         - To search, all posts with ANY filter_tags combination received from the request are going to be returned 
             - e.g.:filter_tags = [2, 5, 3], from request, means posts with the following filter_tags will be returned: [2, 5, 3, 10, 6, 15, 30]
-        Return posts filtered by keyword, if have one in the request
+        Return posts filtered by keyword, if it was found in the request
         """
         statement = select(ForumPost).where(
             col(ForumPost.subject_id)==subject_id, 
@@ -56,7 +56,6 @@ class ForumRepository:
             search_term = f"%{search_keyword}%"
             statement = select(ForumPost).where(
                 col(ForumPost.subject_id)==subject_id, 
-                col(ForumPost.reply_of_post_id)==None,
                 col(ForumPost.enabled) == True,
                 ForumPost.content.ilike(search_term)) \
                 .order_by(col(ForumPost.created_at).desc())
@@ -191,8 +190,6 @@ class ForumRepository:
 
         return post
     
-
-
 class PostNotFoundException(HTTPException):
     def __init__(self, post_id: int) -> None:
         super().__init__(

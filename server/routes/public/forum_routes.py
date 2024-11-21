@@ -31,9 +31,9 @@ async def get_posts(
     user_id: int | None = None,
     filter_tags: List[int] = Query(None),
     search_keyword: str | None = None
-) -> list[ForumPostResponse]:
+) -> list[ForumPostReplyResponse]:
     """Get all posts by tags, also gets all posts reaction information based on the user_id
-        If have a search keyword in the request, return posts with that word
+        If a search keyword is present in the request, return posts with that word
     """
     posts = ForumRepository.get_all_posts(
         subject_id=subject_id,
@@ -42,7 +42,7 @@ async def get_posts(
         session=session
     )
 
-    return ForumPostResponse.from_forum_post_list(user_id, posts, session)
+    return ForumPostReplyResponse.from_forum_post_reply_list(posts, user_id, session)
 
 
 @router.post("/posts")
