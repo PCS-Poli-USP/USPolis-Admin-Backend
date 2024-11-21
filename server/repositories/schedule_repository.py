@@ -31,6 +31,12 @@ class ScheduleRepository:
         statement = select(Schedule).where(col(Schedule.id) == id)
         schedule = session.exec(statement).one()
         return schedule
+    
+    @staticmethod
+    def get_all_unallocated(*, session: Session) -> list[Schedule]:
+        statement = select(Schedule).where(Schedule.allocated == False)  # noqa: E712
+        schedules = session.exec(statement).all()
+        return list(schedules)
 
     @staticmethod
     def get_all_on_class(*, class_: Class, session: Session) -> list[Schedule]:
