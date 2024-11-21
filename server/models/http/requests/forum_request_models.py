@@ -8,7 +8,7 @@ class ForumPostRegister(BaseModel):
     content: str
     class_id: int
     subject_id: int
-    filter_tags: list[int] | None
+    filter_tags: list[int] | None = None
 
 def to_forumpost_model(postDTO: ForumPostRegister) -> ForumPost:
     calculated_tag = 1
