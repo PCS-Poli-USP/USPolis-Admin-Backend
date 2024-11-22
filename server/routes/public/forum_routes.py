@@ -4,6 +4,7 @@ from fastapi import APIRouter, Body, Header, Query
 
 from server.deps.session_dep import SessionDep
 from server.models.database.forum_db_model import ForumPost
+from server.models.database.subject_db_model import Subject
 from server.models.http.requests.forum_request_models import (
     ForumPostRegister,
     to_forumpost_model,
@@ -16,6 +17,7 @@ from server.models.http.responses.forum_post_response import (
     ForumPostResponse,
 )
 from server.repositories.forum_repository import ForumRepository
+from server.repositories.subject_repository import SubjectNotFound, SubjectRepository
 from server.utils.google_auth_utils import authenticate_with_google
 from server.services.gmail_service import gmail_login, gmail_send_message
 
@@ -49,9 +51,22 @@ async def get_posts(
 async def create_forum_post(
     input: ForumPostRegister, session: SessionDep, authorization: str = Header(None),
 ) -> ForumPostResponse:
-    """Create a forum post with provided tags"""
+    """Create a forum post with provided tags. The General Forum is associeted with subject_id == -1"""
     # authenticate before creating and saving a post
     authenticate_with_google(authorization)
+
+    if input.subject_id == -1:
+        globalForumSubject: Subject
+        try:
+            globalForumSubject = SubjectRepository.get_by_name(name="Forum Geral", session=session)
+            print("Procurou geral")
+        except SubjectNotFound:
+            globalForumSubject = SubjectRepository.create_general_forum(id=input.subject_id, name="Forum Geral", session=session)
+            print("Criou geral")
+
+        input.subject_id = globalForumSubject.id # type: ignore
+        input.class_id = None
+        print("Colocou id no input", input, globalForumSubject)
 
     forum_post = ForumRepository.create(
         input=to_forumpost_model(input),

@@ -9,7 +9,7 @@ class ForumPostResponse(BaseModel):
     user_id: int
     user_name: str
     content : str | None
-    class_id : int
+    class_id : int | None
     subject_id: int
     created_at : datetime
     replies_count: int
