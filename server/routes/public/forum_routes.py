@@ -59,14 +59,11 @@ async def create_forum_post(
         globalForumSubject: Subject
         try:
             globalForumSubject = SubjectRepository.get_by_name(name="Forum Geral", session=session)
-            print("Procurou geral")
         except SubjectNotFound:
             globalForumSubject = SubjectRepository.create_general_forum(id=input.subject_id, name="Forum Geral", session=session)
-            print("Criou geral")
 
         input.subject_id = globalForumSubject.id # type: ignore
         input.class_id = None
-        print("Colocou id no input", input, globalForumSubject)
 
     forum_post = ForumRepository.create(
         input=to_forumpost_model(input),
