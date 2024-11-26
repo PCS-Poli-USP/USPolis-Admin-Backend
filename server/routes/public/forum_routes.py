@@ -4,6 +4,7 @@ from fastapi import APIRouter, Body, Header, Query
 
 from server.deps.session_dep import SessionDep
 from server.models.database.forum_db_model import ForumPost
+from server.models.database.subject_db_model import Subject
 from server.models.http.requests.forum_request_models import (
     ForumPostRegister,
     to_forumpost_model,
@@ -16,6 +17,7 @@ from server.models.http.responses.forum_post_response import (
     ForumPostResponse,
 )
 from server.repositories.forum_repository import ForumRepository
+from server.repositories.subject_repository import SubjectNotFound, SubjectRepository
 from server.utils.google_auth_utils import authenticate_with_google
 from server.services.gmail_service import gmail_login, gmail_send_message
 
@@ -29,25 +31,39 @@ async def get_posts(
     session: SessionDep,
     subject_id: int,
     user_id: int | None = None,
-    filter_tags: List[int] = Query(None)
-) -> list[ForumPostResponse]:
-    """Get all posts by tags, also gets all posts reaction information based on the user_id"""
+    filter_tags: List[int] = Query(None),
+    search_keyword: str | None = None
+) -> list[ForumPostReplyResponse]:
+    """Get all posts by tags, also gets all posts reaction information based on the user_id
+        If a search keyword is present in the request, return posts with that word
+    """
     posts = ForumRepository.get_all_posts(
         subject_id=subject_id,
         filter_tags=filter_tags,
+        search_keyword=search_keyword, 
         session=session
     )
 
-    return ForumPostResponse.from_forum_post_list(user_id, posts, session)
+    return ForumPostReplyResponse.from_forum_post_reply_list(posts, user_id, session)
 
 
 @router.post("/posts")
 async def create_forum_post(
     input: ForumPostRegister, session: SessionDep, authorization: str = Header(None),
 ) -> ForumPostResponse:
-    """Create a forum post with provided tags"""
+    """Create a forum post with provided tags. The General Forum is associeted with subject_id == -1"""
     # authenticate before creating and saving a post
     authenticate_with_google(authorization)
+
+    if input.subject_id == -1:
+        globalForumSubject: Subject
+        try:
+            globalForumSubject = SubjectRepository.get_by_name(name="Forum Geral", session=session)
+        except SubjectNotFound:
+            globalForumSubject = SubjectRepository.create_general_forum(id=input.subject_id, name="Forum Geral", session=session)
+
+        input.subject_id = globalForumSubject.id # type: ignore
+        input.class_id = None
 
     forum_post = ForumRepository.create(
         input=to_forumpost_model(input),
@@ -139,5 +155,3 @@ async def update_forum_post_like(
     like_changed_post = ForumRepository.change_forum_post_like(post_id=post_id, mobile_user_id=input.user_id, like_state=input.like_state ,session=session, )
 
     return like_changed_post
-
-

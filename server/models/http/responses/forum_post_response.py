@@ -9,7 +9,7 @@ class ForumPostResponse(BaseModel):
     user_id: int
     user_name: str
     content : str | None
-    class_id : int
+    class_id : int | None
     subject_id: int
     created_at : datetime
     replies_count: int
@@ -40,7 +40,7 @@ class ForumPostReplyResponse(ForumPostResponse):
     reply_of_post_id: int | None
 
     @classmethod
-    def from_forum_reply(cls, reply: ForumPost, mobile_user_id: int, session: Session) -> "ForumPostReplyResponse":
+    def from_forum_reply(cls, reply: ForumPost, mobile_user_id: int | None, session: Session) -> "ForumPostReplyResponse":
 
         return cls(
             id = reply.id,
@@ -57,5 +57,5 @@ class ForumPostReplyResponse(ForumPostResponse):
         )
 
     @classmethod
-    def from_forum_post_reply_list(cls, replies: list[ForumPost], mobile_user_id: int, session: Session) -> list["ForumPostReplyResponse"]:
+    def from_forum_post_reply_list(cls, replies: list[ForumPost], mobile_user_id: int | None, session: Session) -> list["ForumPostReplyResponse"]:
         return [cls.from_forum_reply(reply, mobile_user_id, session) for reply in replies]
