@@ -24,4 +24,4 @@ async def handle_google_auth_error(request, exc: GoogleAuthError) -> JSONRespons
 def add_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(IntegrityError, handle_integrity_error)  # type: ignore [arg-type]
     app.add_exception_handler(NoResultFound, handle_no_result_found)  # type: ignore [arg-type]
-    app.add_exception_handler(GoogleAuthError, handle_google_auth_error)
+    app.add_exception_handler(GoogleAuthError, handle_google_auth_error) # type: ignore [arg-type]

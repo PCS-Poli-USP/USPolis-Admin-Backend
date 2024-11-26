@@ -37,13 +37,14 @@ class ForumRepository:
         return user_liked_this_post
 
     @staticmethod
-    def get_all_posts(*, subject_id: int, filter_tags: list[int] | None, session: Session) -> list[ForumPost]:
+    def get_all_posts(*, subject_id: int, filter_tags: list[int] | None, search_keyword: str | None,session: Session) -> list[ForumPost]:
         """Returns all posts matching, ordered by desceding creation date (newer first), the filter_tags criteria as follows:\n
         - Each filter tags must be an prime number (e.g.: 2, 3, 5...)
         - Multiple filter tags will be the multiplication of corresponding tag numbers: (e.g.: 10 = 2*5 - tags 2 and 5)
         - If a post has no filter, its filter_tags will be 1 (not a prime multiplication)
         - To search, all posts with ANY filter_tags combination received from the request are going to be returned 
             - e.g.:filter_tags = [2, 5, 3], from request, means posts with the following filter_tags will be returned: [2, 5, 3, 10, 6, 15, 30]
+        Return posts filtered by keyword, if it was found in the request
         """
         statement = select(ForumPost).where(
             col(ForumPost.subject_id)==subject_id, 
@@ -51,6 +52,14 @@ class ForumRepository:
             col(ForumPost.enabled) == True) \
             .order_by(col(ForumPost.created_at).desc())
         
+        if search_keyword != None:
+            search_term = f"%{search_keyword}%"
+            statement = select(ForumPost).where(
+                col(ForumPost.subject_id)==subject_id, 
+                col(ForumPost.enabled) == True,
+                ForumPost.content.ilike(search_term)) \
+                .order_by(col(ForumPost.created_at).desc())
+            
         if filter_tags != None:
             # if there are filter tags, use them to search
             filter_expressions = []
@@ -181,7 +190,6 @@ class ForumRepository:
 
         return post
     
-
 class PostNotFoundException(HTTPException):
     def __init__(self, post_id: int) -> None:
         super().__init__(
