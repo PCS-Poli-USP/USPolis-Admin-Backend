@@ -38,9 +38,7 @@ class ClassRepository:
         return list(classes)
 
     @staticmethod
-    def get_all_on_subject(
-        *, subject_id: int, session: Session
-    ) -> list[Class]:
+    def get_all_on_subject(*, subject_id: int, session: Session) -> list[Class]:
         statement = (
             select(Class)
             .join(Subject)
@@ -85,11 +83,9 @@ class ClassRepository:
 
     @staticmethod
     def create(*, input: ClassRegister, session: Session) -> Class:
-        subject = SubjectRepository.get_by_id(
-            id=input.subject_id, session=session)
+        subject = SubjectRepository.get_by_id(id=input.subject_id, session=session)
         calendars = (
-            CalendarRepository.get_by_ids(
-                ids=input.calendar_ids, session=session)
+            CalendarRepository.get_by_ids(ids=input.calendar_ids, session=session)
             if input.calendar_ids
             else None
         )
@@ -125,8 +121,7 @@ class ClassRepository:
             if hasattr(updated_class, key):
                 setattr(updated_class, key, value)
 
-        subject = SubjectRepository.get_by_id(
-            id=input.subject_id, session=session)
+        subject = SubjectRepository.get_by_id(id=input.subject_id, session=session)
         updated_class.subject = subject
 
         reallocate = False

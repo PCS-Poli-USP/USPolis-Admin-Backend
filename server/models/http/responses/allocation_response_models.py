@@ -23,11 +23,9 @@ class RRule(BaseModel):
     @classmethod
     def from_schedule(cls, schedule: Schedule) -> "RRule":
         byweekday = []
-        if (schedule.week_day):
-            byweekday.append(
-                WeekDay.to_rrule(schedule.week_day.value)
-            )
-        if (schedule.recurrence == Recurrence.DAILY):
+        if schedule.week_day:
+            byweekday.append(WeekDay.to_rrule(schedule.week_day.value))
+        if schedule.recurrence == Recurrence.DAILY:
             byweekday = ["MO", "TH", "WE", "TU", "FR"]
 
         return cls(
@@ -135,8 +133,7 @@ class EventExtendedProps(BaseModel):
     def from_occurrence(cls, occurrence: Occurrence) -> "EventExtendedProps":
         data = cls()
         if occurrence.schedule.class_:
-            data.class_data = ClassExtendedData.from_schedule(
-                occurrence.schedule)
+            data.class_data = ClassExtendedData.from_schedule(occurrence.schedule)
         if occurrence.schedule.reservation:
             data.reservation_data = ReservationExtendedData.from_reservation(
                 occurrence.schedule.reservation

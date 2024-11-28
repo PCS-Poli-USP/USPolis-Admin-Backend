@@ -31,7 +31,7 @@ class ScheduleRepository:
         statement = select(Schedule).where(col(Schedule.id) == id)
         schedule = session.exec(statement).one()
         return schedule
-    
+
     @staticmethod
     def get_all_unallocated(*, session: Session) -> list[Schedule]:
         statement = select(Schedule).where(Schedule.allocated == False)  # noqa: E712

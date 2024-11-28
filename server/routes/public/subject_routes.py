@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, Body
 
 from server.models.http.responses.subject_response_models import SubjectResponse

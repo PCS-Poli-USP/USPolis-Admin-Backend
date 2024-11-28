@@ -20,7 +20,6 @@ embed = Body(..., embed=True)
 router = APIRouter(prefix="/subjects", tags=["Subjects"])
 
 
-
 @router.get("/{subject_id}")
 async def get_subject(
     subject_id: int, repository: SubjectRepositoryDep

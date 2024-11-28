@@ -10,10 +10,7 @@ from server.models.database.forum_post_reacts_link import ForumPostReactsLink
 class ForumPost(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
 
-    class_id: int | None = Field(
-        foreign_key="class.id",
-        nullable=True
-    )
+    class_id: int | None = Field(foreign_key="class.id", nullable=True)
 
     subject_id: int = Field(foreign_key="subject.id")
 

@@ -30,17 +30,17 @@ async def get_posts(
     session: SessionDep,
     subject_id: int,
     user_id: int | None = None,
-    filter_tags: List[int] = Query(None),
-    search_keyword: str | None = None
+    filter_tags: list[int] = Query(None),
+    search_keyword: str | None = None,
 ) -> list[ForumPostReplyResponse]:
     """Get all posts by tags, also gets all posts reaction information based on the user_id
-        If a search keyword is present in the request, return posts with that word
+    If a search keyword is present in the request, return posts with that word
     """
     posts = ForumRepository.get_all_posts(
         subject_id=subject_id,
         filter_tags=filter_tags,
-        search_keyword=search_keyword, 
-        session=session
+        search_keyword=search_keyword,
+        session=session,
     )
 
     return ForumPostReplyResponse.from_forum_post_reply_list(posts, user_id, session)
@@ -59,11 +59,15 @@ async def create_forum_post(
     if input.subject_id == -1:
         globalForumSubject: Subject
         try:
-            globalForumSubject = SubjectRepository.get_by_name(name="Forum Geral", session=session)
+            globalForumSubject = SubjectRepository.get_by_name(
+                name="Forum Geral", session=session
+            )
         except SubjectNotFound:
-            globalForumSubject = SubjectRepository.create_general_forum(id=input.subject_id, name="Forum Geral", session=session)
+            globalForumSubject = SubjectRepository.create_general_forum(
+                id=input.subject_id, name="Forum Geral", session=session
+            )
 
-        input.subject_id = globalForumSubject.id # type: ignore
+        input.subject_id = globalForumSubject.id  # type: ignore
         input.class_id = None
 
     forum_post = ForumRepository.create(

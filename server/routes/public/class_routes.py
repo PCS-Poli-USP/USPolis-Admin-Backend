@@ -33,6 +33,5 @@ async def get_all_classes_by_subject(
     subject_id: int, session: SessionDep
 ) -> list[ClassResponse]:
     """Get all classes by subject"""
-    classes = ClassRepository.get_all_on_subject(
-        subject_id=subject_id, session=session)
+    classes = ClassRepository.get_all_on_subject(subject_id=subject_id, session=session)
     return ClassResponse.from_class_list(classes)
