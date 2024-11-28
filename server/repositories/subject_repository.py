@@ -1,10 +1,9 @@
-from ast import Sub
+from datetime import date
 from fastapi import HTTPException, status
-from sqlalchemy.exc import IntegrityError, NoResultFound
+from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 
 from server.deps.authenticate import BuildingDep
-from server.deps.session_dep import SessionDep
 from server.models.database.subject_building_link import SubjectBuildingLink
 from server.models.database.subject_db_model import Subject
 from server.models.http.requests.subject_request_models import (
@@ -14,6 +13,7 @@ from server.models.http.requests.subject_request_models import (
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.calendar_repository import CalendarRepository
 from server.services.jupiter_crawler.crawler import JupiterCrawler
+from server.utils.enums.subject_type import SubjectType
 
 
 class SubjectRepository:
@@ -145,6 +145,31 @@ class SubjectRepository:
         session.delete(subject)
         session.commit()
 
+    @staticmethod
+    def create_general_forum(*,id: int, name: str, session: Session) -> Subject:
+        new_subject = Subject(
+            id=id,
+            name=name,
+            code="",
+            professors=[],
+            type= SubjectType.OTHER,
+            work_credit=0,
+            class_credit=0,
+            activation=date.today(),
+        )
+        session.add(new_subject)
+        session.commit()
+        session.refresh(new_subject)
+        return new_subject
+    
+    @staticmethod
+    def get_by_name(*, name: str, session: Session) -> Subject:
+        statement = select(Subject).where(Subject.name == name)
+        try:
+            subject = session.exec(statement).one()
+            return subject
+        except NoResultFound:
+            raise SubjectNotFound()
 
 class SubjectNotFound(HTTPException):
     def __init__(self) -> None:

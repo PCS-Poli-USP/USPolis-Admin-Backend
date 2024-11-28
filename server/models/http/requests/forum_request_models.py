@@ -6,9 +6,9 @@ from server.models.database.forum_db_model import ForumPost
 class ForumPostRegister(BaseModel):
     user_id: int
     content: str
-    class_id: int
+    class_id: int | None = None
     subject_id: int
-    filter_tags: list[int] | None
+    filter_tags: list[int] | None = None
 
 
 def to_forumpost_model(postDTO: ForumPostRegister) -> ForumPost:
