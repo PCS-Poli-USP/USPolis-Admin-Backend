@@ -38,6 +38,17 @@ class ClassRepository:
         return list(classes)
 
     @staticmethod
+    def get_all_on_subject(*, subject_id: int, session: Session) -> list[Class]:
+        statement = (
+            select(Class)
+            .join(Subject)
+            .where(col(Subject.id) == subject_id)
+            .distinct()  # avoid duplicates
+        )
+        classes = session.exec(statement).all()
+        return list(classes)
+
+    @staticmethod
     def get_by_id(*, id: int, session: Session) -> Class:
         statement = select(Class).where(col(Class.id) == id)
         _class = session.exec(statement).one()

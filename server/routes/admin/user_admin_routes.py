@@ -75,7 +75,5 @@ async def delete_user(
     if current_user.id == user_id:
         raise HTTPException(400, "Cannot delete self")
 
-    UserRepository.delete(
-        user_id=user_id, session=session
-    )
+    UserRepository.delete(user_id=user_id, session=session)
     return NoContent

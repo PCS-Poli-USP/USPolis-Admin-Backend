@@ -17,6 +17,7 @@ from server.utils.must_be_int import must_be_int
 
 router = APIRouter(prefix="/mobile/comments", tags=["Mobile", "Comments"])
 
+
 @router.post("")
 async def post_comment(
     comment_input: MobileCommentRegister, session: SessionDep
@@ -29,7 +30,7 @@ async def post_comment(
         )
     else:
         user = None
-    
+
     send_email(comment.comment, comment.email, user)
     comment = CommentRepository.create(
         new_comment=to_comment_model(comment_input), session=session

@@ -15,6 +15,7 @@ SCOPES = [
     "https://www.googleapis.com/auth/gmail.readonly",
 ]
 
+
 def gmail_login() -> Credentials:
     """Shows basic usage of the Gmail API.
     Lists the user's Gmail labels.

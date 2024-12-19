@@ -1,3 +1,4 @@
+from datetime import date
 from sqlmodel import Session, col, select
 
 from server.models.database.building_db_model import Building
@@ -25,6 +26,16 @@ class OccurrenceRepository:
         )
         buildings = session.exec(statement).all()
         return list(buildings)
+
+    @staticmethod
+    def get_all_on_interval(
+        start: date, end: date, session: Session
+    ) -> list[Occurrence]:
+        statement = select(Occurrence).where(
+            Occurrence.date >= start, Occurrence.date <= end
+        )
+        occurrences = session.exec(statement).all()
+        return list(occurrences)
 
     @staticmethod
     def allocate_schedule(
@@ -96,14 +107,14 @@ class OccurrenceRepository:
             )
 
         occurrences: list[Occurrence] = []
-        for date in input.dates:
+        for dt in input.dates:
             occurrence = Occurrence(
                 schedule=schedule,
                 classroom_id=input.classroom_id,
                 classroom=classroom,
                 start_time=input.start_time,
                 end_time=input.end_time,
-                date=date,
+                date=dt,
             )
             session.add(occurrence)
             occurrences.append(occurrence)

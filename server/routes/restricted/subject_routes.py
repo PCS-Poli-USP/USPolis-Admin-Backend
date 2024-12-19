@@ -20,13 +20,6 @@ embed = Body(..., embed=True)
 router = APIRouter(prefix="/subjects", tags=["Subjects"])
 
 
-@router.get("")
-async def get_all_subjects(repository: SubjectRepositoryDep) -> list[SubjectResponse]:
-    """Get all subjects"""
-    subjects = repository.get_all()
-    return SubjectResponse.from_subject_list(subjects)
-
-
 @router.get("/{subject_id}")
 async def get_subject(
     subject_id: int, repository: SubjectRepositoryDep

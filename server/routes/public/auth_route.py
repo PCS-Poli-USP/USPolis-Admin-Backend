@@ -2,7 +2,6 @@ from fastapi import APIRouter, Body, HTTPException
 
 from pydantic import BaseModel
 
-from server.config import CONFIG
 from server.deps.authenticate import AuthenticationClient
 
 embed = Body(..., embed=True)
