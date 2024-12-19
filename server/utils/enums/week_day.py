@@ -33,6 +33,11 @@ class WeekDay(Enum):
         dayOfWeek = ["seg", "ter", "qua", "qui", "sex", "sab", "dom"]
         return dayOfWeek[value]
 
+    @classmethod
+    def to_rrule(cls, value: int) -> str:
+        dayOfWeek = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"]
+        return dayOfWeek[value]
+
 
 class NoSuchWeekDay(Exception):
     pass

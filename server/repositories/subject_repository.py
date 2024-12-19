@@ -146,13 +146,13 @@ class SubjectRepository:
         session.commit()
 
     @staticmethod
-    def create_general_forum(*,id: int, name: str, session: Session) -> Subject:
+    def create_general_forum(*, id: int, name: str, session: Session) -> Subject:
         new_subject = Subject(
             id=id,
             name=name,
             code="",
             professors=[],
-            type= SubjectType.OTHER,
+            type=SubjectType.OTHER,
             work_credit=0,
             class_credit=0,
             activation=date.today(),
@@ -161,7 +161,7 @@ class SubjectRepository:
         session.commit()
         session.refresh(new_subject)
         return new_subject
-    
+
     @staticmethod
     def get_by_name(*, name: str, session: Session) -> Subject:
         statement = select(Subject).where(Subject.name == name)
@@ -170,6 +170,7 @@ class SubjectRepository:
             return subject
         except NoResultFound:
             raise SubjectNotFound()
+
 
 class SubjectNotFound(HTTPException):
     def __init__(self) -> None:

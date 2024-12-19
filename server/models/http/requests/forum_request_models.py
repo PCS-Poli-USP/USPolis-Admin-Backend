@@ -10,9 +10,10 @@ class ForumPostRegister(BaseModel):
     subject_id: int
     filter_tags: list[int] | None = None
 
+
 def to_forumpost_model(postDTO: ForumPostRegister) -> ForumPost:
     calculated_tag = 1
-    if postDTO.filter_tags :
+    if postDTO.filter_tags:
         for tag in postDTO.filter_tags:
             calculated_tag = calculated_tag * tag
     return ForumPost(
@@ -20,8 +21,9 @@ def to_forumpost_model(postDTO: ForumPostRegister) -> ForumPost:
         content=postDTO.content,
         user_id=postDTO.user_id,
         subject_id=postDTO.subject_id,
-        filter_tags=calculated_tag
+        filter_tags=calculated_tag,
     )
+
 
 def to_forumreply_model(post_id: int, replyDTO: ForumPostRegister) -> ForumPost:
     return ForumPost(
@@ -29,17 +31,20 @@ def to_forumreply_model(post_id: int, replyDTO: ForumPostRegister) -> ForumPost:
         content=replyDTO.content,
         user_id=replyDTO.user_id,
         subject_id=replyDTO.subject_id,
-        reply_of_post_id=post_id
+        reply_of_post_id=post_id,
     )
+
 
 class ForumReportRegister(BaseModel):
     post_id: int
     user_id: int
 
+
 class ForumPostLike(BaseModel):
     post_id: int
     user_id: int
     like_state: bool
+
 
 class ForumUserLikesRegister(BaseModel):
     user_id: int
