@@ -62,7 +62,7 @@ def load_csv_to_db(csv_file: str) -> None:
                             projector=row['projector'], # type: ignore
                             air_conditioning=row['air_conditioning'], # type: ignore
                             updated_at=row['updated_at'], # type: ignore
-                            created_by_id=row['created_by_id'], # type: ignore
+                            created_by_id=3, # type: ignore
                             building_id=row['building_id'], # type: ignore
                             id=row['id'], # type: ignore
                         )
