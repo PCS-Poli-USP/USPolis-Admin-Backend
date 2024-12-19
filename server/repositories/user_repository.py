@@ -67,7 +67,9 @@ class UserRepository:
 
     @staticmethod
     def delete(
-        *, user_id: int, session: Session,
+        *,
+        user_id: int,
+        session: Session,
     ) -> None:
         user = UserRepository.get_by_id(user_id=user_id, session=session)
         session.delete(user)

@@ -10,9 +10,12 @@ from server.routes.public.mobile_google_authentication_routes import (
 )
 from server.routes.public.mobile_programs_routes import router as ProgramsRouter
 from server.routes.public.building_routes import router as BuildingRouter
-from server.routes.public.class_routes import router as ClassRouter
 from server.routes.public.classroom_routes import router as ClassroomRouter
+from server.routes.public.subject_routes import router as SubjectRouter
+from server.routes.public.class_routes import router as ClassRouter
 from server.routes.public.reservation_routes import router as ReservationRouter
+from server.routes.public.occurrence_routes import router as OccurrenceRouter
+from server.routes.public.allocation_routes import router as AllocationRouter
 from server.routes.public.auth_route import router as AuthRouter
 
 
@@ -25,7 +28,10 @@ router.include_router(MobileCommentsRouter)
 router.include_router(MobileGAuth)
 router.include_router(ProgramsRouter)
 router.include_router(BuildingRouter)
-router.include_router(ClassRouter)
 router.include_router(ClassroomRouter)
+router.include_router(SubjectRouter)
+router.include_router(ClassRouter)
 router.include_router(ReservationRouter)
+router.include_router(OccurrenceRouter)
+router.include_router(AllocationRouter)
 router.include_router(AuthRouter)

@@ -11,10 +11,8 @@ from server.deps.repository_adapters.schedule_repository_adapter import (
     ScheduleRepositoryDep,
 )
 from server.deps.session_dep import SessionDep
-from server.models.database.class_db_model import Class
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.schedule_db_model import Schedule
-from server.repositories.class_repository import ClassRepository
 from server.models.http.requests.allocate_request_models import AllocateSchedule
 from server.repositories.occurrence_repository import OccurrenceRepository
 from server.services.security.buildings_permission_checker import (

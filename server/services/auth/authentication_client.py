@@ -38,7 +38,6 @@ class AuthenticationClient:
 
     @staticmethod
     def exchange_auth_code_for_tokens(auth_code: str) -> tuple[str, str | None]:
-
         data = {
             "code": auth_code,
             "client_id": CONFIG.google_auth_client_id,
@@ -84,6 +83,7 @@ class AuthenticationClient:
 class InvalidAuthTokenException(HTTPException):
     def __init__(self) -> None:
         super().__init__(status.HTTP_401_UNAUTHORIZED, "Token invalid")
+
 
 class ExpiredAuthTokenException(HTTPException):
     def __init__(self) -> None:

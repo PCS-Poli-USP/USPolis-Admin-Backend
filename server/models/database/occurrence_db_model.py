@@ -18,11 +18,9 @@ class Occurrence(SQLModel, table=True):
     classroom_id: int | None = Field(
         default=None, foreign_key="classroom.id", nullable=True
     )
-    classroom: Optional["Classroom"] = Relationship(
-        back_populates="occurrences")
+    classroom: Optional["Classroom"] = Relationship(back_populates="occurrences")
 
-    schedule_id: int | None = Field(
-        default=None, index=True, foreign_key="schedule.id")
+    schedule_id: int | None = Field(default=None, index=True, foreign_key="schedule.id")
     schedule: "Schedule" = Relationship(back_populates="occurrences")
 
     def __eq__(self, other: object) -> bool:
