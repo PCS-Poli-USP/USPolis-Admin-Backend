@@ -22,5 +22,5 @@ def update_sequence(table_name: str, column_name: str) -> None:
         session.commit()
 
 # Atualize as tabelas necessárias
-update_sequence("buildings", "id")
-update_sequence("classrooms", "id")
+update_sequence("building", "id")
+update_sequence("classroom", "id")
