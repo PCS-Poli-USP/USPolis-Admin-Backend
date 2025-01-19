@@ -69,8 +69,8 @@ class ForumRepository:
                 select(ForumPost)
                 .where(
                     col(ForumPost.subject_id) == subject_id,
-                    col(ForumPost.enabled) == True,
-                    ForumPost.content.ilike(search_term),
+                    col(ForumPost.enabled) == True,  # noqa: E712
+                    ForumPost.content.ilike(search_term), # type: ignore
                 )
                 .order_by(col(ForumPost.created_at).desc())
             )

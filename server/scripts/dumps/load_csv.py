@@ -53,27 +53,26 @@ def load_csv_to_db(csv_file: str) -> None:
                     # session.add(building)
 
                     # Caso você tenha uma tabela Classroom também no CSV
-                    if True:
-                        classroom = classroom_db_model.Classroom(
-                            name=row["name"],  # type: ignore
-                            capacity=row["capacity"],  # type: ignore
-                            floor=row["floor"],  # type: ignore
-                            ignore_to_allocate=True
-                            if row["ignore_to_allocate"] == "t"
-                            else False,  # type: ignore
-                            accessibility=True
-                            if row["accessibility"] == "t"
-                            else False,  # type: ignore
-                            projector=True if row["projector"] == "t" else False,  # type: ignore
-                            air_conditioning=True
-                            if row["air_conditioning"] == "t"
-                            else False,  # type: ignore
-                            updated_at=row["updated_at"],  # type: ignore
-                            created_by_id=1,  # type: ignore
-                            building_id=row["building_id"],  # type: ignore
-                            id=row["id"],  # type: ignore
-                        )
-                        session.add(classroom)
+                    classroom = classroom_db_model.Classroom(
+                        name=row["name"],  # type: ignore
+                        capacity=row["capacity"],  # type: ignore
+                        floor=row["floor"],  # type: ignore
+                        ignore_to_allocate=True
+                        if row["ignore_to_allocate"] == "t"
+                        else False,  # type: ignore
+                        accessibility=True
+                        if row["accessibility"] == "t"
+                        else False,  # type: ignore
+                        projector=True if row["projector"] == "t" else False,  # type: ignore
+                        air_conditioning=True
+                        if row["air_conditioning"] == "t"
+                        else False,  # type: ignore
+                        updated_at=row["updated_at"],  # type: ignore
+                        created_by_id=1,  # type: ignore
+                        building_id=row["building_id"],  # type: ignore
+                        id=row["id"],  # type: ignore
+                    )
+                    session.add(classroom)
 
                 # Commit para salvar todas as instâncias no banco
                 session.commit()
