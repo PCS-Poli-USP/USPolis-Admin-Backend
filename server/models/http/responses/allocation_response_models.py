@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from datetime import time, date as datetime_date
 
+from server.models.database.building_db_model import Building
+from server.models.database.classroom_db_model import Classroom
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.schedule_db_model import Schedule
@@ -225,3 +227,56 @@ class EventResponse(BaseModel):
     @classmethod
     def from_schedule_list(cls, schedules: list[Schedule]) -> list["EventResponse"]:
         return [EventResponse.from_schedule(schedule) for schedule in schedules]
+
+
+class ResourceResponse(BaseModel):
+    id: str
+    parentId: str | None = None
+    title: str
+
+    @classmethod
+    def from_building(cls, building: Building) -> list["ResourceResponse"]:
+        """Returns a list of resources, the first one is the building and the rest are the classrooms of the building"""
+        resources: list[ResourceResponse] = []
+        resources.append(cls(id=building.name, title=building.name))
+        classrooms_resources = ResourceResponse.from_classroom_list(
+            building.classrooms if building.classrooms else []
+        )
+        resources.extend(classrooms_resources)
+        return resources
+
+    @classmethod
+    def from_building_list(cls, buildings: list[Building]) -> list["ResourceResponse"]:
+        resources: list[ResourceResponse] = []
+        for building in buildings:
+            resources.extend(ResourceResponse.from_building(building))
+        return resources
+
+    @classmethod
+    def from_classroom(cls, classroom: Classroom) -> "ResourceResponse":
+        return cls(
+            id=f"{classroom.building.name}-{classroom.name}",
+            parentId=str(classroom.building.name),
+            title=classroom.name,
+        )
+
+    @classmethod
+    def from_classroom_list(
+        cls, classrooms: list[Classroom]
+    ) -> list["ResourceResponse"]:
+        return [ResourceResponse.from_classroom(classroom) for classroom in classrooms]
+
+    @classmethod
+    def unnallocated_building(cls) -> "ResourceResponse":
+        return cls(
+            id=AllocationEnum.UNALLOCATED_BUILDING_ID.value[0],
+            title=AllocationEnum.UNALLOCATED.value[0],
+        )
+
+    @classmethod
+    def unnallocated_classroom(cls) -> "ResourceResponse":
+        return cls(
+            id=f"{AllocationEnum.UNALLOCATED_BUILDING_ID.value[0]}-{AllocationEnum.UNALLOCATED_CLASSROOM_ID.value[0]}",
+            parentId=AllocationEnum.UNALLOCATED_BUILDING_ID.value[0],
+            title=AllocationEnum.UNALLOCATED.value[0],
+        )
