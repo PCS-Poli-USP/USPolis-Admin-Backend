@@ -8,7 +8,6 @@ from server.utils.enums.week_day import WeekDay
 
 
 class OccurrenceUtils:
-    # TODO: dont create occurrences on holidays
     # update/delete schedules
     @staticmethod
     def generate_occurrences(schedule: Schedule) -> list[Occurrence]:
@@ -115,10 +114,9 @@ class OccurrenceUtils:
 
 if __name__ == "__main__":
     dates = OccurrenceUtils._dates_for_recurrence(
-        WeekDay.WEDNESDAY.value,
-        Recurrence.MONTHLY,
-        date(2024, 6, 30),
-        date(2024, 12, 7),
-        MonthWeek.LAST.value,
+        WeekDay.TUESDAY.value,
+        Recurrence.WEEKLY,
+        date(2025, 1, 21),
+        date(2025, 2, 18),
     )
     print(dates)
