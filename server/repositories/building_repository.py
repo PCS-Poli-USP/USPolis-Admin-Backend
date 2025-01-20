@@ -28,6 +28,14 @@ class BuildingRepository:
         if building is None:
             raise BuildingNotFound(str(id))
         return building
+    
+    @staticmethod
+    def get_by_name(name: str, *, session: Session) -> Building:
+        statement = select(Building).where(col(Building.name) == name)
+        building = session.exec(statement).first()
+        if building is None:
+            raise BuildingNotFound(name)
+        return building
 
     @staticmethod
     def get_by_ids(*, ids: list[int], session: Session) -> list[Building]:
