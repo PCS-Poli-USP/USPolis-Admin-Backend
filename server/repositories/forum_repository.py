@@ -57,13 +57,13 @@ class ForumRepository:
             select(ForumPost)
             .where(
                 col(ForumPost.subject_id) == subject_id,
-                col(ForumPost.reply_of_post_id) == None,
-                col(ForumPost.enabled) == True,
+                col(ForumPost.reply_of_post_id) == None,  # noqa: E711
+                col(ForumPost.enabled) == True,  # noqa: E712
             )
             .order_by(col(ForumPost.created_at).desc())
         )
 
-        if search_keyword != None:
+        if search_keyword is not None:
             search_term = f"%{search_keyword}%"
             statement = (
                 select(ForumPost)
@@ -75,7 +75,7 @@ class ForumRepository:
                 .order_by(col(ForumPost.created_at).desc())
             )
 
-        if filter_tags != None:
+        if filter_tags is not None:
             # if there are filter tags, use them to search
             filter_expressions = []
             for tag in filter_tags:
