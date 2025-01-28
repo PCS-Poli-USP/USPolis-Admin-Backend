@@ -17,9 +17,10 @@ def update_sequence(table_name: str, column_name: str) -> None:
                     false
                 )
             """),
-            {"table_name": table_name, "column_name": column_name}
+            {"table_name": table_name, "column_name": column_name},
         )
         session.commit()
+
 
 # Atualize as tabelas necessárias
 update_sequence("building", "id")
