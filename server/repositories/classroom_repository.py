@@ -7,6 +7,7 @@ from sqlmodel import Session, col, select
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.user_db_model import User
 from server.models.http.requests.classroom_request_models import ClassroomRegister
+from server.models.page_models import Page, PaginationInput
 from server.utils.must_be_int import must_be_int
 
 from server.repositories.occurrence_repository import OccurrenceRepository
@@ -17,6 +18,14 @@ class ClassroomRepository:
     def get_all(*, session: Session) -> list[Classroom]:
         classrooms = list(session.exec(select(Classroom)).all())
         return classrooms
+
+    @staticmethod
+    def get_all_paginated(
+        *, pagination: PaginationInput, session: Session
+    ) -> Page[Classroom]:
+        statement = select(Classroom)
+        page = Page.paginate(statement, pagination, session)
+        return page
 
     @staticmethod
     def get_by_id(*, id: int, session: Session) -> Classroom:
