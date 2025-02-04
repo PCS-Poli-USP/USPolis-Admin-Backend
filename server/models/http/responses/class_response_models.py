@@ -31,6 +31,7 @@ class ClassResponseBase(BaseModel):
     updated_at: datetime
 
     subject_id: int
+    subject_building_ids: list[int]
     subject_name: str
     subject_code: str
     calendar_ids: list[int]
@@ -55,6 +56,9 @@ class ClassResponseBase(BaseModel):
             full_allocated=_class.full_allocated,
             updated_at=_class.updated_at,
             subject_id=must_be_int(_class.subject.id),
+            subject_building_ids=[
+                building.id for building in _class.subject.buildings if (building.id)
+            ],
             subject_code=_class.subject.code,
             subject_name=_class.subject.name,
             calendar_ids=[
