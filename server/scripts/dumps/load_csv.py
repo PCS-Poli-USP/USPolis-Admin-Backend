@@ -27,32 +27,38 @@ from server.models.database import (  # noqa
     classroom_solicitation_db_model,
 )
 
-
-# Cria o engine de conexão com o banco de dados
 engine = create_engine(f"{CONFIG.db_uri}/{CONFIG.db_database}")
 
 
-# Função para ler o CSV e salvar no banco de dados
-def load_csv_to_db(csv_file: str) -> None:
+def load_building_csv_to_db(csv_file: str) -> None:
     try:
         with open(csv_file, encoding="utf-8") as file:
-            # Lê os dados do CSV
-            reader = csv.DictReader(file)  # Leitor com cabeçalho do CSV
+            reader = csv.DictReader(file)
 
             with Session(engine) as session:
                 for row in reader:
-                    # # Cria a instância da entidade Building
-                    # building = building_db_model.Building(
-                    #     id=row['id'], # type: ignore
-                    #     name=row['name'],
-                    #     created_by_id=1, # type: ignore
-                    #     updated_at=row['updated_at'] # type: ignore
-                    # )
+                    building = building_db_model.Building(
+                        name=row["name"],
+                        created_by_id=1,  # type: ignore
+                        updated_at=row["updated_at"],  # type: ignore
+                    )
+                    session.add(building)
 
-                    # # Adiciona o Building ao banco de dados
-                    # session.add(building)
+                session.commit()
 
-                    # Caso você tenha uma tabela Classroom também no CSV
+        print("Prédios carregados com sucesso no banco de dados!")
+
+    except Exception as e:
+        print(f"Erro ao carregar os dados do CSV: {e}")
+
+
+def load_classroom_csv_to_db(csv_file: str) -> None:
+    try:
+        with open(csv_file, encoding="utf-8") as file:
+            reader = csv.DictReader(file)
+
+            with Session(engine) as session:
+                for row in reader:
                     classroom = classroom_db_model.Classroom(
                         name=row["name"],  # type: ignore
                         capacity=row["capacity"],  # type: ignore
@@ -60,9 +66,7 @@ def load_csv_to_db(csv_file: str) -> None:
                         ignore_to_allocate=True
                         if row["ignore_to_allocate"] == "t"
                         else False,  # type: ignore
-                        accessibility=True
-                        if row["accessibility"] == "t"
-                        else False,  # type: ignore
+                        accessibility=True if row["accessibility"] == "t" else False,  # type: ignore
                         projector=True if row["projector"] == "t" else False,  # type: ignore
                         air_conditioning=True
                         if row["air_conditioning"] == "t"
@@ -70,11 +74,9 @@ def load_csv_to_db(csv_file: str) -> None:
                         updated_at=row["updated_at"],  # type: ignore
                         created_by_id=1,  # type: ignore
                         building_id=row["building_id"],  # type: ignore
-                        id=row["id"],  # type: ignore
                     )
                     session.add(classroom)
 
-                # Commit para salvar todas as instâncias no banco
                 session.commit()
 
         print("Dados carregados com sucesso no banco de dados!")
@@ -83,8 +85,6 @@ def load_csv_to_db(csv_file: str) -> None:
         print(f"Erro ao carregar os dados do CSV: {e}")
 
 
-# Caminho para o arquivo CSV
-csv_file = "classroom.csv"
-
 # Chama a função para carregar os dados
-load_csv_to_db(csv_file)
+# load_building_csv_to_db("buildings.csv")
+load_classroom_csv_to_db("classroom.csv")
