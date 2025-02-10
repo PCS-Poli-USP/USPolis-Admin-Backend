@@ -4,8 +4,6 @@ from sqlmodel import Session, col, select
 
 from server.models.database.building_db_model import Building
 from server.models.database.class_db_model import Class
-from server.models.database.classroom_db_model import Classroom
-from server.models.database.schedule_db_model import Schedule
 from server.models.database.subject_building_link import SubjectBuildingLink
 from server.models.database.subject_db_model import Subject
 from server.models.database.user_db_model import User
@@ -55,10 +53,12 @@ class BuildingRepository:
     def get_by_class_id(*, class_id: int, session: Session) -> list[Building]:
         statement = (
             select(Building)
-            .join(Classroom)
-            .join(Schedule)
-            .where(col(Schedule.class_id) == class_id)
-            .distinct()
+            .join(SubjectBuildingLink)
+            .where(col(Building.id) == SubjectBuildingLink.building_id)
+            .join(Subject)
+            .where(col(Subject.id) == SubjectBuildingLink.subject_id)
+            .join(Class)
+            .where(col(Class.id) == class_id)
         )
 
         try:

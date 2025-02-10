@@ -20,7 +20,10 @@ class AuthenticationClient:
             token_info = response.json()
             return token_info
         else:
-            raise HTTPException(status_code=401, detail="Code invalid or expired")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Code invalid or expired",
+            )
 
     @staticmethod
     def get_user_info(access_token: str) -> AuthUserInfo:
@@ -33,7 +36,8 @@ class AuthenticationClient:
             return AuthUserInfo.from_dict(user_info)
         else:
             raise HTTPException(
-                status_code=401, detail="Error getting user info from access token"
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Error getting user info from access token",
             )
 
     @staticmethod
@@ -55,7 +59,9 @@ class AuthenticationClient:
             return access_token, refresh_token
         else:
             print("Error exchanging auth code for tokens:", response_data)
-            raise HTTPException(status_code=401, detail=response_data)
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail=response_data
+            )
 
     @staticmethod
     def refresh_access_token(refresh_token: str) -> Any:
@@ -77,7 +83,10 @@ class AuthenticationClient:
             access_token = response_data["access_token"]
             return access_token
         else:
-            raise HTTPException(status_code=401, detail="Error refreshing token")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Error refreshing token",
+            )
 
 
 class InvalidAuthTokenException(HTTPException):
