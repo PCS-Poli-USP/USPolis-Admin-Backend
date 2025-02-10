@@ -39,6 +39,5 @@ class ForumPost(SQLModel, table=True):
     )
 
     likes_count: int = Field(default=0)
-    
 
     filter_tags: int = Field(default=1)

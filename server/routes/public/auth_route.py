@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, Body, HTTPException, status
 
 from pydantic import BaseModel
 
@@ -24,7 +24,9 @@ async def get_tokens(auth_code: str) -> AuthResponse:
         auth_code
     )
     if access_token is None or refresh_token is None:
-        raise HTTPException(status_code=401, detail="null token received")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="null token received"
+        )
     return AuthResponse(access_token=access_token, refresh_token=refresh_token)
 
 

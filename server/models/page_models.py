@@ -71,9 +71,3 @@ class Page(BaseModel, Generic[T]):
             page_size=len(items),  # can differ from the requested page_size
             page=current_page,  # can differ from the requested page
         )
-
-
-
-
-
-
