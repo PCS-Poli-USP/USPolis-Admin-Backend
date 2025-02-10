@@ -26,7 +26,6 @@ class ForumPost(SQLModel, table=True):
 
     reported_by_users: list[MobileUser] = Relationship(
         link_model=ForumPostReportLink,
-        sa_relationship_kwargs={"cascade": "all, delete"},
     )
 
     report_count: int = Field(default=0)
@@ -37,9 +36,9 @@ class ForumPost(SQLModel, table=True):
 
     liked_by_users: list[MobileUser] = Relationship(
         link_model=ForumPostReactsLink,
-        sa_relationship_kwargs={"cascade": "all, delete"},
     )
 
     likes_count: int = Field(default=0)
+    
 
     filter_tags: int = Field(default=1)
