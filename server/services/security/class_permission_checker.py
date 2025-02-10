@@ -51,7 +51,7 @@ def __class_obj_permission_checker(user: User, class_: Class, session: Session) 
     buildings_set = set(buildings_ids)
     users_set = set([building.id for building in user.buildings])
     if len(buildings_set.intersection(users_set)) == 0:
-        raise ForbiddenClassAccess([class_.id]) # type: ignore
+        raise ForbiddenClassAccess([class_.id])  # type: ignore
 
 
 def __class_list_permission_checker(
