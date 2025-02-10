@@ -4,6 +4,8 @@ from sqlmodel import Session, col, select
 
 from server.models.database.building_db_model import Building
 from server.models.database.class_db_model import Class
+from server.models.database.classroom_db_model import Classroom
+from server.models.database.schedule_db_model import Schedule
 from server.models.database.subject_building_link import SubjectBuildingLink
 from server.models.database.subject_db_model import Subject
 from server.models.database.user_db_model import User
@@ -28,7 +30,7 @@ class BuildingRepository:
         if building is None:
             raise BuildingNotFound(str(id))
         return building
-    
+
     @staticmethod
     def get_by_name(name: str, *, session: Session) -> Building:
         statement = select(Building).where(col(Building.name) == name)
@@ -44,31 +46,26 @@ class BuildingRepository:
         return buildings
 
     @staticmethod
-    def get_by_class(*, class_: Class, session: Session) -> Building:
-        statement = (
-            select(Building)
-            .join(Subject)
-            .join(Class)
-            .where(col(Class.id) == must_be_int(class_.id))
+    def get_by_class(*, class_: Class, session: Session) -> list[Building]:
+        return BuildingRepository.get_by_class_id(
+            class_id=must_be_int(class_.id), session=session
         )
-
-        try:
-            building = session.exec(statement).one()
-        except NoResultFound:
-            raise BuildingNotFound(f"Class {class_.id}")
-        return building
 
     @staticmethod
-    def get_by_class_id(*, class_id: int, session: Session) -> Building:
+    def get_by_class_id(*, class_id: int, session: Session) -> list[Building]:
         statement = (
-            select(Building).join(Subject).join(Class).where(col(Class.id) == class_id)
+            select(Building)
+            .join(Classroom)
+            .join(Schedule)
+            .where(col(Schedule.class_id) == class_id)
+            .distinct()
         )
 
         try:
-            building = session.exec(statement).one()
+            buildings = session.exec(statement).all()
         except NoResultFound:
             raise BuildingNotFound(f"Class ${class_id}")
-        return building
+        return list(buildings)
 
     @staticmethod
     def get_by_subject_id(*, subject_id: int, session: Session) -> list[Building]:

@@ -4,6 +4,7 @@ from sqlmodel import Session
 from server.models.database.class_db_model import Class
 from server.models.database.user_db_model import User
 from server.repositories.building_repository import BuildingRepository
+from server.utils.must_be_int import must_be_int
 
 
 def class_permission_checker(
@@ -31,30 +32,50 @@ def class_permission_checker(
 
 
 def __class_id_permission_checker(user: User, class_id: int, session: Session) -> None:
-    current = BuildingRepository.get_by_class_id(class_id=class_id, session=session)
-    if user.buildings is None or current.id not in [
-        building.id for building in user.buildings
-    ]:
+    if user.buildings is None:
+        raise ForbiddenClassAccess([class_id])
+
+    buildings = BuildingRepository.get_by_class_id(class_id=class_id, session=session)
+    buildings_ids = [must_be_int(building.id) for building in buildings]
+    buildings_set = set(buildings_ids)
+    users_set = set([building.id for building in user.buildings])
+    if len(buildings_set.intersection(users_set)) == 0:
         raise ForbiddenClassAccess([class_id])
 
 
 def __class_obj_permission_checker(user: User, class_: Class, session: Session) -> None:
-    current = BuildingRepository.get_by_class(class_=class_, session=session)
-    if user.buildings is None or current not in user.buildings:
+    if user.buildings is None:
         raise ForbiddenClassAccess([class_.id])  # type: ignore
+    buildings = BuildingRepository.get_by_class(class_=class_, session=session)
+    buildings_ids = [must_be_int(building.id) for building in buildings]
+    buildings_set = set(buildings_ids)
+    users_set = set([building.id for building in user.buildings])
+    if len(buildings_set.intersection(users_set)) == 0:
+        raise ForbiddenClassAccess([class_.id]) # type: ignore
 
 
 def __class_list_permission_checker(
     user: User, classes: list[int] | list[Class], session: Session
 ) -> None:
-    buildings_ids = [
-        BuildingRepository.get_by_class(class_=class_, session=session).id
-        if isinstance(class_, Class)
-        else BuildingRepository.get_by_class_id(class_id=class_, session=session).id
-        for class_ in classes
-    ]
-    if user.buildings is None or not set(buildings_ids).issubset(
-        set([building.id for building in user.buildings])
+    buildings_ids: list[int] = []
+    for class_ in classes:
+        if isinstance(class_, Class):
+            buildings = BuildingRepository.get_by_class(class_=class_, session=session)
+            buildings_ids.extend([must_be_int(building.id) for building in buildings])
+        else:
+            buildings = BuildingRepository.get_by_class_id(
+                class_id=class_, session=session
+            )
+            buildings_ids.extend([must_be_int(building.id) for building in buildings])
+
+    if (
+        user.buildings is None
+        or len(
+            set(buildings_ids).intersection(
+                set([building.id for building in user.buildings])
+            )
+        )
+        == 0
     ):
         classes_ids: list[int] = []
         for class_ in classes:

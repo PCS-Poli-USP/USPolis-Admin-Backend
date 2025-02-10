@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from server.models.database.calendar_db_model import Calendar
     from server.models.database.schedule_db_model import Schedule
     from server.models.database.subject_db_model import Subject
+    from server.models.database.forum_db_model import ForumPost
 
 
 class Class(SQLModel, table=True):
@@ -49,3 +50,5 @@ class Class(SQLModel, table=True):
         foreign_key="subject.id", index=True, default=None, nullable=False
     )
     subject: "Subject" = Relationship(back_populates="classes")
+
+    posts: list["ForumPost"] = Relationship(cascade_delete=True)
