@@ -112,7 +112,7 @@ class SubjectRepository:
             result.append(subject)
             try:
                 session.commit()
-            except:
+            except:  # noqa: E722
                 session.reset()
                 errors.append(subject_code)
         if len(errors) > 0:
@@ -174,7 +174,7 @@ class SubjectRepository:
 
 class SubjectNotFound(HTTPException):
     def __init__(self) -> None:
-        super().__init__(status.HTTP_404_NOT_FOUND, f"Subject not found")
+        super().__init__(status.HTTP_404_NOT_FOUND, "Subject not found")
 
 
 class SubjectNotExists(HTTPException):
@@ -188,5 +188,5 @@ class SubjectCreationError(HTTPException):
     def __init__(self, subjects: list) -> None:
         super().__init__(
             status.HTTP_400_BAD_REQUEST,
-            f"Erro ao criar as seguintes disciplinas: {", ".join(subjects)}",
+            f"Erro ao criar as seguintes disciplinas: {', '.join(subjects)}",
         )
