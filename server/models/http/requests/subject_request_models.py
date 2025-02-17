@@ -11,6 +11,10 @@ class CrawlSubject(BaseModel):
     calendar_ids: list[int]
 
 
+class UpdateCrawlSubject(BaseModel):
+    subject_codes: list[str]
+
+
 class SubjectRegister(BaseModel):
     building_ids: list[int]
     code: str

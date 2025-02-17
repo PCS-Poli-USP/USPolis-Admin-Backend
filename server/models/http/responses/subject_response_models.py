@@ -48,3 +48,11 @@ class SubjectResponse(BaseModel):
     @classmethod
     def from_subject_list(cls, subjects: list[Subject]) -> list["SubjectResponse"]:
         return [cls.from_subject(subject) for subject in subjects]
+
+
+class SubjectCrawlResponse(BaseModel):
+    update: bool = False
+    codes: list[str]
+    failed: list[str]
+    sucess: list[str]
+    errors: list[str]
