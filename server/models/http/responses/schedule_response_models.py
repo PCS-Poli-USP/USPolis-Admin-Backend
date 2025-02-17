@@ -25,6 +25,7 @@ class ScheduleResponseBase(BaseModel):
 
     class_id: int | None = None
     subject: str | None = None
+    subject_code: str | None = None
     class_code: str | None = None
 
     reservation_id: int | None = None
@@ -55,6 +56,7 @@ class ScheduleResponseBase(BaseModel):
             building=schedule.classroom.building.name if schedule.classroom else None,
             class_id=schedule.class_id,
             subject=schedule.class_.subject.name if schedule.class_ else None,
+            subject_code=schedule.class_.subject.code if schedule.class_ else None,
             class_code=schedule.class_.code if schedule.class_ else None,
             reservation_id=schedule.reservation.id if schedule.reservation else None,
             reservation=schedule.reservation.title if schedule.reservation else None,

@@ -4,7 +4,9 @@ from server.deps.authenticate import UserDep
 from server.deps.repository_adapters.class_repository_adapter import (
     ClassRepositoryAdapterDep,
 )
-from server.deps.repository_adapters.reservation_repository_adapter import ReservationRepositoryDep
+from server.deps.repository_adapters.reservation_repository_adapter import (
+    ReservationRepositoryDep,
+)
 from server.deps.repository_adapters.subject_repository_adapter import (
     SubjectRepositoryDep,
 )
@@ -71,6 +73,7 @@ async def get_my_classrooms(
     """Get all classrooms for authenticated user"""
     classrooms = repository.get_all()
     return ClassroomResponse.from_classroom_list(classrooms)
+
 
 @router.get("/my-reservations")
 async def get_my_reservations(

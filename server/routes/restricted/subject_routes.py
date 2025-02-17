@@ -5,14 +5,17 @@ from server.deps.repository_adapters.subject_repository_adapter import (
     SubjectRepositoryDep,
 )
 from server.deps.session_dep import SessionDep
-from server.models.database.subject_db_model import Subject
 from server.models.http.requests.subject_request_models import (
     CrawlSubject,
     SubjectRegister,
     SubjectUpdate,
+    UpdateCrawlSubject,
 )
 from server.models.http.responses.generic_responses import NoContent
-from server.models.http.responses.subject_response_models import SubjectResponse
+from server.models.http.responses.subject_response_models import (
+    SubjectCrawlResponse,
+    SubjectResponse,
+)
 from server.repositories.subject_repository import SubjectRepository
 
 embed = Body(..., embed=True)
@@ -32,14 +35,23 @@ async def get_subject(
 @router.post("/crawl")
 async def crawl_subjects(
     building: BuildingDep, session: SessionDep, input: CrawlSubject
-) -> list[Subject]:
-    subjects = await SubjectRepository.crawler_create_many(
+) -> SubjectCrawlResponse:
+    response = await SubjectRepository.crawler_create_many(
         building=building,
         session=session,
         calendar_ids=input.calendar_ids,
         subjects_codes=input.subject_codes,
     )
-    return subjects
+    return response
+
+
+@router.patch("/crawl")
+async def update_crawl_subjects(
+    session: SessionDep,
+    input: UpdateCrawlSubject,
+) -> SubjectCrawlResponse:
+    response = await SubjectRepository.crawler_update_many(input.subject_codes, session)
+    return response
 
 
 @router.post("")
