@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from fastapi import HTTPException, status
 from pydantic import BaseModel, field_validator
 
 from server.models.validators.subject.subject_validator import SubjectValidator
@@ -29,15 +30,23 @@ class SubjectRegister(BaseModel):
     @field_validator("code")
     def validate_code(cls, code: str) -> str:
         if not SubjectValidator.validate_subject_code(code):
-            raise ValueError("Subject Code must have 7 characters")
+            raise SubjectInvalidData("Subject Code must have 7 characters")
         return code
 
     @field_validator("building_ids")
     def validate_buildings(cls, building_ids: list[int]) -> list[int]:
         if len(building_ids) == 0:
-            raise ValueError("Buildings must not be empty")
+            raise SubjectInvalidData("Buildings must not be empty")
         return building_ids
 
 
 class SubjectUpdate(SubjectRegister):
     pass
+
+
+class SubjectInvalidData(HTTPException):
+    def __init__(self, detail: str) -> None:
+        super().__init__(
+            status.HTTP_400_BAD_REQUEST,
+            detail=detail,
+        )

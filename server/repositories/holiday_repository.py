@@ -44,6 +44,9 @@ class HolidayRepository:
         category = HolidayCategoryRepository.get_by_id(
             id=input.category_id, session=session
         )
+        if not creator.is_admin and creator.id != category.created_by_id:
+            raise HolidayOperationNotAllowed("create", input.date.strftime("%d/%m/%Y"))
+        
         new_holiday = Holiday(
             name=input.name,
             date=input.date,
@@ -112,7 +115,7 @@ class HolidayInCategoryAlreadyExists(HTTPException):
 class HolidayOperationNotAllowed(HTTPException):
     def __init__(self, operation: str, holiday_info: str) -> None:
         super().__init__(
-            status.HTTP_401_UNAUTHORIZED,
+            status.HTTP_403_FORBIDDEN,
             f"Only the creator is Allowed to {
                 operation} Holiday {holiday_info}",
         )

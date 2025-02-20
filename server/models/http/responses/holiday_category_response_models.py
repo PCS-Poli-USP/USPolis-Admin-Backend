@@ -7,6 +7,7 @@ from server.utils.must_be_int import must_be_int
 
 class HolidayCategoryResponse(BaseModel):
     id: int
+    owner_id: int
     name: str
     created_by: str
     holidays: list[HolidayResponse]
@@ -17,6 +18,7 @@ class HolidayCategoryResponse(BaseModel):
     ) -> "HolidayCategoryResponse":
         return cls(
             id=must_be_int(holiday_category.id),
+            owner_id=must_be_int(holiday_category.created_by.id),
             name=holiday_category.name,
             created_by=holiday_category.created_by.name,
             holidays=HolidayResponse.from_holiday_list(holiday_category.holidays),
