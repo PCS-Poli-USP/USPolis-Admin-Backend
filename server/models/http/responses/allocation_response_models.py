@@ -43,6 +43,7 @@ class RRule(BaseModel):
 class BaseExtendedData(BaseModel):
     building: str
     classroom: str
+    classroom_capacity: int | None = None
     recurrence: Recurrence
     week_day: WeekDay | None = None
     month_week: MonthWeek | None = None
@@ -56,6 +57,7 @@ class BaseExtendedData(BaseModel):
         return cls(
             building=reservation.classroom.building.name,
             classroom=reservation.classroom.name,
+            classroom_capacity=reservation.classroom.capacity,
             recurrence=reservation.schedule.recurrence,
             week_day=reservation.schedule.week_day,
             month_week=reservation.schedule.month_week,
@@ -74,6 +76,9 @@ class BaseExtendedData(BaseModel):
             classroom=schedule.classroom.name
             if schedule.classroom
             else AllocationEnum.UNALLOCATED.value[0],
+            classroom_capacity=schedule.classroom.capacity
+            if schedule.classroom
+            else None,
             recurrence=schedule.recurrence,
             week_day=schedule.week_day,
             month_week=schedule.month_week,
@@ -162,6 +167,7 @@ class EventResponse(BaseModel):
 
     classroom_id: int | None = None
     classroom: str | None = None
+    classroom_capacity: int | None = None
     rrule: RRule | None = None
     allDay: bool
 
@@ -187,6 +193,9 @@ class EventResponse(BaseModel):
             end=f"{occurrence.date}T{occurrence.end_time}",
             classroom_id=occurrence.classroom_id,
             classroom=occurrence.classroom.name if occurrence.classroom else None,
+            classroom_capacity=occurrence.classroom.capacity
+            if occurrence.classroom
+            else None,
             allDay=occurrence.schedule.all_day,
             resourceId=resource,
             extendedProps=EventExtendedProps.from_occurrence(occurrence),

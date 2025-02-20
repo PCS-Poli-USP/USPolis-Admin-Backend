@@ -28,6 +28,7 @@ class ClassRequestBase(BaseModel):
     projector: bool
 
     ignore_to_allocate: bool
+    
 
 
 class ClassRegister(ClassRequestBase):
@@ -35,6 +36,17 @@ class ClassRegister(ClassRequestBase):
 
     subject_id: int
     schedules_data: list[ScheduleRegister]
+
+    @model_validator(mode="after")
+    def check_class_body(self) -> Self:
+        subject_id = self.subject_id
+        schedules_data = self.schedules_data
+
+        if subject_id <= 0:
+            raise ClassInvalidData("Subject ID")
+        if not schedules_data:
+            raise ClassInvalidData("Schedules Data")
+        return self
 
 
 class ClassUpdate(ClassRequestBase):
@@ -45,12 +57,9 @@ class ClassUpdate(ClassRequestBase):
 
     @model_validator(mode="after")
     def check_class_body(self) -> Self:
-        professors = self.professors
         subject_id = self.subject_id
         schedules_data = self.schedules_data
 
-        if not professors:
-            raise ClassInvalidData("Professors")
         if subject_id <= 0:
             raise ClassInvalidData("Subject ID")
         if not schedules_data:

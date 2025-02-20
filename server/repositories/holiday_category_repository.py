@@ -71,6 +71,6 @@ class HolidayCategoryRepository:
 class HolidayCategoryOperationNotAllowed(HTTPException):
     def __init__(self, operation: str, holiday_category_info: str) -> None:
         super().__init__(
-            status.HTTP_401_UNAUTHORIZED,
+            status.HTTP_403_FORBIDDEN,
             f"Only the creator is Allowed to {operation} HolidayCategory {holiday_category_info}",
         )

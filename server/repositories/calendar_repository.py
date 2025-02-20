@@ -91,7 +91,7 @@ class CalendarNotExists(HTTPException):
 class CalendarOperationNotAllowed(HTTPException):
     def __init__(self, operation: str, calendar_info: str) -> None:
         super().__init__(
-            status.HTTP_401_UNAUTHORIZED,
+            status.HTTP_403_FORBIDDEN,
             f"Only the creator is Allowed to {
                 operation} Calendar {calendar_info}",
         )

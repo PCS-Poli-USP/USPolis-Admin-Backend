@@ -9,6 +9,7 @@ from server.utils.must_be_int import must_be_int
 
 class CalendarResponse(BaseModel):
     id: int
+    owner_id: int
     name: str
     categories: list[HolidayCategoryResponse]
     created_by: str
@@ -17,6 +18,7 @@ class CalendarResponse(BaseModel):
     def from_calendar(cls, calendar: Calendar) -> "CalendarResponse":
         return cls(
             id=must_be_int(calendar.id),
+            owner_id=must_be_int(calendar.created_by.id),
             name=calendar.name,
             categories=HolidayCategoryResponse.from_holiday_category_list(
                 calendar.categories
