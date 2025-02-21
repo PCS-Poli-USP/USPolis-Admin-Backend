@@ -19,7 +19,7 @@ class ScheduleBase(BaseModel):
     end_date: date
     start_time: time
     end_time: time
-    recurrence: Recurrence = Recurrence.NONE
+    recurrence: Recurrence
     all_day: bool = False
     allocated: bool = False
 

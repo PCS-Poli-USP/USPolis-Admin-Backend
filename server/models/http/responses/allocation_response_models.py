@@ -180,7 +180,8 @@ class EventResponse(BaseModel):
 
     @classmethod
     def from_occurrence(cls, occurrence: Occurrence) -> "EventResponse":
-        resource = AllocationEnum.UNALLOCATED_CLASSROOM_ID.value[0]
+        resource = f"{AllocationEnum.UNALLOCATED_BUILDING_ID.value[0]}-{
+            AllocationEnum.UNALLOCATED_CLASSROOM_ID.value[0]}"
         if occurrence.schedule.classroom:
             resource = f"{
                 occurrence.schedule.classroom.building.name}-{occurrence.schedule.classroom.name}"
@@ -206,7 +207,7 @@ class EventResponse(BaseModel):
         )
 
     @classmethod
-    def from_schedule(cls, schedule: Schedule) -> "EventResponse":
+    def from_schedule(cls, schedule: Schedule) -> list["EventResponse"]:
         resource = f"{AllocationEnum.UNALLOCATED_BUILDING_ID.value[0]}-{
             AllocationEnum.UNALLOCATED_CLASSROOM_ID.value[0]}"
         if schedule.classroom:
@@ -217,19 +218,25 @@ class EventResponse(BaseModel):
             title = schedule.class_.subject.code
         if schedule.reservation:
             title = f"Reserva - {schedule.reservation.title}"
-
-        return cls(
-            id=str(schedule.id),
-            title=title,
-            start=f"{schedule.start_date}T{schedule.start_time}",
-            end=f"{schedule.end_date}T{schedule.end_time}",
-            classroom_id=schedule.classroom_id,
-            classroom=schedule.classroom.name if schedule.classroom else None,
-            rrule=RRule.from_schedule(schedule),
-            allDay=schedule.all_day,
-            resourceId=resource,
-            extendedProps=EventExtendedProps.from_schedule(schedule),
-        )
+        if schedule.recurrence == Recurrence.CUSTOM:
+            return [
+                EventResponse.from_occurrence(occurrence)
+                for occurrence in schedule.occurrences
+            ]
+        return [
+            cls(
+                id=str(schedule.id),
+                title=title,
+                start=f"{schedule.start_date}T{schedule.start_time}",
+                end=f"{schedule.end_date}T{schedule.end_time}",
+                classroom_id=schedule.classroom_id,
+                classroom=schedule.classroom.name if schedule.classroom else None,
+                rrule=RRule.from_schedule(schedule),
+                allDay=schedule.all_day,
+                resourceId=resource,
+                extendedProps=EventExtendedProps.from_schedule(schedule),
+            )
+        ]
 
     @classmethod
     def from_occurrence_list(
@@ -239,7 +246,10 @@ class EventResponse(BaseModel):
 
     @classmethod
     def from_schedule_list(cls, schedules: list[Schedule]) -> list["EventResponse"]:
-        return [EventResponse.from_schedule(schedule) for schedule in schedules]
+        events = []
+        for schedule in schedules:
+            events.extend(EventResponse.from_schedule(schedule))
+        return events
 
 
 class ResourceResponse(BaseModel):

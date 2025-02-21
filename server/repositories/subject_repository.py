@@ -234,6 +234,8 @@ class SubjectRepository:
                 failed.append(subject_code)
                 continue
 
+            subject.classes.sort(key=lambda x: x.code)
+            updated.classes.sort(key=lambda x: x.code)
             for i in range(len(subject.classes)):
                 SubjectRepository.__update_crawled_class_core_data(
                     subject.classes[i], updated.classes[i], session
