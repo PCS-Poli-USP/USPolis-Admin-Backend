@@ -30,10 +30,14 @@ class RRule(BaseModel):
         if schedule.recurrence == Recurrence.DAILY:
             byweekday = ["MO", "TH", "WE", "TU", "FR"]
 
+        freq = schedule.recurrence.value.lower()
+        if schedule.recurrence == Recurrence.BIWEEKLY:
+            freq = "weekly"
+
         return cls(
             dtstart=f"{schedule.start_date}T{schedule.start_time}",
             until=f"{schedule.end_date}T{schedule.end_time}",
-            freq=schedule.recurrence.value.lower(),
+            freq=freq,
             interval=2 if schedule.recurrence == Recurrence.BIWEEKLY else 1,
             byweekday=byweekday,
             bysetpos=schedule.month_week.value if schedule.month_week else None,
