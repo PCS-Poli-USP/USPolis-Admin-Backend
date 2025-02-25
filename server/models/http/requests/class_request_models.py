@@ -28,7 +28,6 @@ class ClassRequestBase(BaseModel):
     projector: bool
 
     ignore_to_allocate: bool
-    
 
 
 class ClassRegister(ClassRequestBase):

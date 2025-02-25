@@ -46,7 +46,7 @@ class HolidayRepository:
         )
         if not creator.is_admin and creator.id != category.created_by_id:
             raise HolidayOperationNotAllowed("create", input.date.strftime("%d/%m/%Y"))
-        
+
         new_holiday = Holiday(
             name=input.name,
             date=input.date,
