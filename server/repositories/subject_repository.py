@@ -177,11 +177,15 @@ class SubjectRepository:
 
             try:
                 session.commit()
-                sucess.append(subject_code)
+                sucess.append(
+                    f"{subject_code} - {len(subject.classes)} turmas cadastradas"
+                )
             except Exception as e:  # noqa: E722
                 print(e)
                 session.reset()
-                errors.append("Erro ao salvar informações da disciplina {subject_code}")
+                errors.append(
+                    f"Erro ao salvar informações da disciplina {subject_code}"
+                )
                 failed.append(subject_code)
 
         return SubjectCrawlResponse(

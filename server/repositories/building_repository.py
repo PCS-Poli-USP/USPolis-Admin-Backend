@@ -72,7 +72,7 @@ class BuildingRepository:
         statement = (
             select(Building)
             .join(SubjectBuildingLink)
-            .where(col(Subject.id) == subject_id)
+            .where(col(SubjectBuildingLink.subject_id) == subject_id)
         )
 
         try:
