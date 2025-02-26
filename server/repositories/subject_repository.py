@@ -33,6 +33,7 @@ class SubjectRepository:
             select(Subject)
             .join(SubjectBuildingLink)
             .where(col(SubjectBuildingLink.building_id).in_(building_ids))
+            .distinct()
         )
         subjects = session.exec(statement).all()
         return list(subjects)
