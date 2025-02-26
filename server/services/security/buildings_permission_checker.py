@@ -53,7 +53,7 @@ def __building_list_permission_checker(
         user_building_ids = [building.id for building in user.buildings]
         building_set = set(building_ids)
         user_set = set(user_building_ids)
-        if not user_set.intersection(building_set):
+        if not building_set.issubset(user_set):
             allowed = False
     else:
         allowed = False
@@ -68,7 +68,7 @@ def __building_list_permission_checker(
             ]
         )
         raise ForbiddenBuildingAccess(
-            f"Usuário não tem permissão para acessar um dos prédios {names}"
+            f"Usuário não tem permissão para acessar um ou mais prédios: {names}"
         )
 
 
