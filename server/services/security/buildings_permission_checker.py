@@ -31,7 +31,7 @@ def __building_id_permission_checker(user: User, building_id: int) -> None:
     ]:
         raise ForbiddenBuildingAccess(
             f"Usuário não tem permissão para acessar o prédio com ID {building_id}"
-        )  # type: ignore
+        )
 
 
 def __building_obj_permission_checker(user: User, building: Building) -> None:
