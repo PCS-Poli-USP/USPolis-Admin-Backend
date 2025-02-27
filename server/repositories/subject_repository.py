@@ -197,7 +197,7 @@ class SubjectRepository:
                         )
                 if len(old_set) > 0:
                     sucess.append(
-                        f"{subject_code} - {len(new_classes_set)} novas turmas cadastradas no prédio {building.name} e {len(old_set)} turmas já cadastradas"
+                        f"{subject_code} - {len(new_classes_set)} novas turmas cadastradas pelo prédio {building.name} e {len(old_set)} turmas já cadastradas"
                     )
             except Exception as e:  # noqa: E722
                 print(e)
