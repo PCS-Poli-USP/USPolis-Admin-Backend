@@ -62,7 +62,6 @@ class JupiterCrawler:
             code=self.__subject_code,
             name=self.__get_subject_name(),
             classes=crawled_classes,
-            # TODO: checar se disc. quadrimestral difere em algo no jupiter
             type=SubjectType.BIANNUAL,
             professors=sorted(list(self.__subject_professors)),
             class_credit=0,

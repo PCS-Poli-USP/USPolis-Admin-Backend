@@ -109,7 +109,6 @@ class SubjectRepository:
         old.work_credit = new.work_credit
         old.activation = new.activation
         old.deactivation = new.deactivation
-        session.add(old)
 
     @staticmethod
     def __update_crawled_subject_class_data(
@@ -141,7 +140,6 @@ class SubjectRepository:
         for subject_code in subjects_codes:
             try:
                 old = SubjectRepository.get_by_code(code=subject_code, session=session)
-
             except SubjectNotFound:
                 old = None
 
@@ -149,7 +147,6 @@ class SubjectRepository:
                 subject = await JupiterCrawler.crawl_subject_static(
                     subject_code, calendars
                 )
-
             except Exception as e:  # noqa: E722
                 print(e)
                 errors.append(
@@ -158,29 +155,50 @@ class SubjectRepository:
                 failed.append(subject_code)
                 continue
 
+            new_classes_set = set()
+            old_set = set()
+            has_add_to_building = False
             if old is not None:
-                if len(old.classes) != 0:
-                    errors.append("Disciplina já possui turmas cadastradas")
-                    failed.append(subject_code)
-                    continue
+                if len(old.classes) != len(subject.classes):
+                    old_set = set([class_.code for class_ in old.classes])
+                    crawled_set = set([class_.code for class_ in subject.classes])
+                    new_classes_set = crawled_set - old_set
+                    new_classes = [
+                        class_
+                        for class_ in subject.classes
+                        if class_.code in new_classes_set
+                    ]
+                    for class_ in new_classes:
+                        class_.subject_id = old.id
+                        class_.subject = old
+                        session.add(class_)
 
                 SubjectRepository.__update_crawled_subject_core_data(
                     old, subject, session
                 )
-
-                for class_ in subject.classes:
-                    class_.subject = old
-                    class_.subject_id = old.id
-                    session.add(class_)
+                if building not in old.buildings:
+                    has_add_to_building = True
+                    old.buildings.append(building)
+                session.add(old)
             else:
                 subject.buildings = [building]
                 session.add(subject)
 
             try:
                 session.commit()
-                sucess.append(
-                    f"{subject_code} - {len(subject.classes)} turmas cadastradas"
-                )
+                if old is None or len(old_set) == 0:
+                    if len(old_set) == 0:
+                        sucess.append(
+                            f"{subject_code} - {len(new_classes_set)} turmas cadastradas"
+                        )
+                    if len(old_set) == 0 and has_add_to_building:
+                        sucess.append(
+                            f"{subject_code} - adicionado ao prédio {building.name}"
+                        )
+                if len(old_set) > 0:
+                    sucess.append(
+                        f"{subject_code} - {len(new_classes_set)} novas turmas cadastradas no prédio {building.name} e {len(old_set)} turmas já cadastradas"
+                    )
             except Exception as e:  # noqa: E722
                 print(e)
                 session.reset()
