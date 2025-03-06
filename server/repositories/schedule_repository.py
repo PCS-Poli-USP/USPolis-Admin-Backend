@@ -68,7 +68,7 @@ class ScheduleRepository:
         if schedule.class_:
             buildings = schedule.class_.subject.buildings
             building_ids = [building.id for building in buildings]
-            if not set(building_ids).issubset(set(owned_building_ids)):
+            if len(set(building_ids).intersection(set(owned_building_ids))) == 0:
                 raise ScheduleNotFound()
         elif schedule.reservation:
             building = schedule.reservation.classroom.building
