@@ -39,7 +39,7 @@ def load_building_csv_to_db(csv_file: str) -> None:
                 for row in reader:
                     building = building_db_model.Building(
                         name=row["name"],
-                        created_by_id=1,  # type: ignore
+                        created_by_id=1,
                         updated_at=row["updated_at"],  # type: ignore
                     )
                     session.add(building)
