@@ -4,6 +4,8 @@ from sqlmodel import Session, col, select
 
 from server.models.database.building_db_model import Building
 from server.models.database.class_db_model import Class
+from server.models.database.classroom_db_model import Classroom
+from server.models.database.schedule_db_model import Schedule
 from server.models.database.subject_building_link import SubjectBuildingLink
 from server.models.database.subject_db_model import Subject
 from server.models.http.requests.class_request_models import ClassRegister, ClassUpdate
@@ -20,6 +22,20 @@ class ClassRepository:
     @staticmethod
     def get_all(*, session: Session) -> list[Class]:
         statement = select(Class)
+        classes = session.exec(statement).all()
+        return list(classes)
+
+    @staticmethod
+    def get_all_allocated_on_building(
+        *, building_id: int, session: Session
+    ) -> list[Class]:
+        statement = (
+            select(Class)
+            .join(Schedule)
+            .join(Classroom)
+            .where(col(Classroom.building_id) == (building_id))
+            .distinct()  # avoid duplicates
+        )
         classes = session.exec(statement).all()
         return list(classes)
 
@@ -51,13 +67,19 @@ class ClassRepository:
     @staticmethod
     def get_by_id(*, id: int, session: Session) -> Class:
         statement = select(Class).where(col(Class.id) == id)
-        _class = session.exec(statement).one()
-        return _class
+        try:
+            class_ = session.exec(statement).one()
+        except NoResultFound:
+            raise ClassNotFound()
+        return class_
 
     @staticmethod
     def get_by_id_on_building(id: int, building: Building, session: Session) -> Class:
         statement = select(Class).where(col(Class.id) == id)
-        class_ = session.exec(statement).one()
+        try:
+            class_ = session.exec(statement).one()
+        except NoResultFound:
+            raise ClassNotFound()
 
         if building not in class_.subject.buildings:
             raise ClassNotFound()
@@ -175,5 +197,5 @@ class ClassRepository:
 class ClassNotFound(HTTPException):
     def __init__(self) -> None:
         super().__init__(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Class not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Turma não encontrada"
         )
