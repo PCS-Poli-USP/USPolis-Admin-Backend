@@ -24,7 +24,6 @@ class SubjectRepositoryAdapter:
         self.user = user
 
     def get_by_id(self, id: int) -> Subject:
-        subject_permission_checker(user=self.user, subject=id)
         return SubjectRepository.get_by_id_on_buildings(
             id=id,
             building_ids=self.owned_building_ids,

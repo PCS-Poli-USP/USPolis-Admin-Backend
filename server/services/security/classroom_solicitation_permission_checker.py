@@ -41,14 +41,18 @@ def __solicitation_id_permission_checker(
     if user.buildings is None or solicitation.building.id not in [
         building.id for building in user.buildings
     ]:
-        raise ForbiddenClassroomSolicitationAccess([solicitation_id])
+        raise ForbiddenClassroomSolicitationAccess(
+            "Usuário não tem permissão para acessar a solicitação de sala"
+        )
 
 
 def __building_obj_permission_checker(
     user: User, solicitation: ClassroomSolicitation
 ) -> None:
     if user.buildings is None or solicitation.building not in user.buildings:
-        raise ForbiddenClassroomSolicitationAccess([solicitation.id])  # type: ignore
+        raise ForbiddenClassroomSolicitationAccess(
+            "Usuário não tem permissão para acessar a solicitação de sala"
+        )
 
 
 def __building_list_permission_checker(
@@ -65,13 +69,14 @@ def __building_list_permission_checker(
     if user.buildings is None or not set(building_ids).issubset(
         set([building.id for building in user.buildings])
     ):
-        raise ForbiddenClassroomSolicitationAccess(building_ids)  # type: ignore
+        raise ForbiddenClassroomSolicitationAccess(
+            "Usuário não tem permissão para acessar uma ou mais solicitações de sala"
+        )
 
 
 class ForbiddenClassroomSolicitationAccess(HTTPException):
-    def __init__(self, solicitation_ids: list[int]):
+    def __init__(self, detail: str):
         super().__init__(
             status_code=403,
-            detail=f"User do not have access to solicitation: {
-                solicitation_ids}",
+            detail=detail,
         )

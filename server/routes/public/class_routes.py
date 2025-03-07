@@ -40,12 +40,12 @@ async def get_all_classes_by_subject(
 
 
 @router.get("/building/{building_name}")
-async def get_all_classes_by_building_name(
+async def get_all_classes_allocated_by_building_name(
     building_name: str, session: SessionDep
 ) -> list[ClassResponse]:
     """Get all classes by building name"""
     building = BuildingRepository.get_by_name(name=building_name, session=session)
-    classes = ClassRepository.get_all_on_buildings(
-        building_ids=[must_be_int(building.id)], session=session
+    classes = ClassRepository.get_all_allocated_on_building(
+        building_id=must_be_int(building.id), session=session
     )
     return ClassResponse.from_class_list(classes)
