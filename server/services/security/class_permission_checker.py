@@ -33,14 +33,18 @@ def class_permission_checker(
 
 def __class_id_permission_checker(user: User, class_id: int, session: Session) -> None:
     if user.buildings is None:
-        raise ForbiddenClassAccess([class_id])
+        raise ForbiddenClassAccess(
+            f"Usuário não tem permissão para acessar a turma de ID {class_id}"
+        )
 
     buildings = BuildingRepository.get_by_class_id(class_id=class_id, session=session)
     buildings_ids = [must_be_int(building.id) for building in buildings]
     buildings_set = set(buildings_ids)
     users_set = set([building.id for building in user.buildings])
     if len(buildings_set.intersection(users_set)) == 0:
-        raise ForbiddenClassAccess([class_id])
+        raise ForbiddenClassAccess(
+            f"Usuário não tem permissão para acessar a turma de ID {class_id}"
+        )
 
 
 def __class_obj_permission_checker(user: User, class_: Class, session: Session) -> None:
@@ -51,7 +55,9 @@ def __class_obj_permission_checker(user: User, class_: Class, session: Session) 
     buildings_set = set(buildings_ids)
     users_set = set([building.id for building in user.buildings])
     if len(buildings_set.intersection(users_set)) == 0:
-        raise ForbiddenClassAccess([class_.id])  # type: ignore
+        raise ForbiddenClassAccess(
+            f"Usuário não tem permissão para acessar a turma {class_.subject.code} -{class_.code}"
+        )
 
 
 def __class_list_permission_checker(
@@ -84,12 +90,14 @@ def __class_list_permission_checker(
                     classes_ids.append(class_.id)
             else:
                 classes_ids.append(class_)
-        raise ForbiddenClassAccess(classes_ids)
+        raise ForbiddenClassAccess(
+            "Usuário não tem permissão para acessar uma ou mais turmas"
+        )
 
 
 class ForbiddenClassAccess(HTTPException):
-    def __init__(self, class_ids: list[int]):
+    def __init__(self, detail: str):
         super().__init__(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"User do not have access to class: {class_ids}",
+            detail=detail,
         )

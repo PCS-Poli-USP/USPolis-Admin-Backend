@@ -1,4 +1,4 @@
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 from sqlmodel import Session
 
 from server.models.database.classroom_db_model import Classroom
@@ -37,12 +37,12 @@ def __classroom_id_permission_checker(
     if user.buildings is None or classroom.building_id not in [
         building.id for building in user.buildings
     ]:
-        raise ForbiddenClassroomAccess([classroom_id])
+        raise ForbiddenClassroomAccess("Usuário não tem permissão para acessar a sala")
 
 
 def __classroom_obj_permission_checker(user: User, classroom: Classroom) -> None:
     if user.buildings is None or classroom.building not in user.buildings:
-        raise ForbiddenClassroomAccess([classroom.id])  # type: ignore
+        raise ForbiddenClassroomAccess("Usuário não tem permissão para acessar a sala")
 
 
 def __classroom_list_permission_checker(
@@ -57,12 +57,14 @@ def __classroom_list_permission_checker(
     if user.buildings is None or not set(buildings_ids).issubset(
         set([building.id for building in user.buildings])
     ):
-        raise ForbiddenClassroomAccess(classroom_ids)  # type: ignore
+        raise ForbiddenClassroomAccess(
+            "Usuario não tem permissão para acessar uma ou mais salas"
+        )
 
 
 class ForbiddenClassroomAccess(HTTPException):
-    def __init__(self, classroom_ids: list[int]):
+    def __init__(self, detail: str):
         super().__init__(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"User do not have access to classrooms: {classroom_ids}",
+            status_code=403,
+            detail=detail,
         )
