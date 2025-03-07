@@ -49,7 +49,7 @@ def __subject_obj_permission_checker(user: User, subject: Subject) -> None:
     must_be_int(subject.id)
     building_ids = [building.id for building in subject.buildings]
     user_buildings_ids = [building.id for building in user.buildings]
-    if not set(building_ids).issubset(set(user_buildings_ids)):
+    if len(set(building_ids).intersection(set(user_buildings_ids))) == 0:
         raise ForbiddenSubjectAccess(
             f"Usuário não tem permissão para acessar a disciplina {subject.code}"
         )
