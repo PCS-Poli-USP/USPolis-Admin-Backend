@@ -8,7 +8,7 @@ from server.repositories.schedule_repository import ScheduleRepository
 
 def schedule_permission_checker(
     user: User,
-    schedule: int | Schedule | list[int] | list[Schedule],
+    schedule: int | Schedule,
     session: Session,
 ) -> None:
     """
@@ -25,10 +25,7 @@ def schedule_permission_checker(
     if isinstance(schedule, int):
         __schedule_id_permission_checker(user, schedule, session)
     elif isinstance(schedule, Schedule):
-        # __classroom_obj_permission_checker(user, schedule) TODO
-        return
-    elif isinstance(schedule, list):
-        # __classroom_list_permission_checker(user, schedule, session) TODO
+        __schedule_obj_permission_checker(user, schedule)
         return
 
 
@@ -36,30 +33,39 @@ def __schedule_id_permission_checker(
     user: User, schedule_id: int, session: Session
 ) -> None:
     schedule = ScheduleRepository.get_by_id(id=schedule_id, session=session)
+    __schedule_obj_permission_checker(user, schedule)
+
+
+def __schedule_obj_permission_checker(user: User, schedule: Schedule) -> None:
     if schedule.classroom:
         if user.buildings is None or schedule.classroom.building_id not in [
             building.id for building in user.buildings
         ]:
-            raise ForbiddenScheduleAccess([schedule_id])
+            raise ForbiddenScheduleAccess(
+                "Usuário não tem permissão para acessar a agenda alocada em uma sala"
+            )
     else:
         if user.buildings is None:
-            raise ForbiddenScheduleAccess([schedule_id])
+            raise ForbiddenScheduleAccess(
+                f"Usuário não tem permissão para acessar a agenda de ID {schedule.id}"
+            )
         user_buildings_ids = set([building.id for building in user.buildings])
         if schedule.class_:
             buildings_ids = [
                 building.id for building in schedule.class_.subject.buildings
             ]
-            if not set(buildings_ids).issubset(user_buildings_ids):
-                raise ForbiddenScheduleAccess([schedule_id])
+            if len(set(buildings_ids).intersection(user_buildings_ids)) == 0:
+                raise ForbiddenScheduleAccess(
+                    f"Usuário não tem permissão para acessar a agenda de ID {schedule.id}"
+                )
         if schedule.reservation:
             buildings_ids = [schedule.reservation.classroom.building_id]
-            if not set(buildings_ids).issubset(user_buildings_ids):
-                raise ForbiddenScheduleAccess([schedule_id])
+            if len(set(buildings_ids).intersection(user_buildings_ids)) == 0:
+                raise ForbiddenScheduleAccess(
+                    f"Usuário não tem permissão para acessar a agenda da reserva {schedule.reservation.title}"
+                )
 
 
 class ForbiddenScheduleAccess(HTTPException):
-    def __init__(self, schedule_ids: list[int]):
-        super().__init__(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"User do not have access to schedules: {schedule_ids}",
-        )
+    def __init__(self, detail: str) -> None:
+        super().__init__(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
