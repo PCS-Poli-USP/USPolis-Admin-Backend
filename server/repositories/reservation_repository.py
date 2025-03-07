@@ -38,6 +38,7 @@ class ReservationRepository:
             .join(Classroom)
             .join(Building)
             .where(col(Building.id).in_(building_ids))
+            .distinct()
         )
         reservations = list(session.exec(statement).all())
         return reservations
