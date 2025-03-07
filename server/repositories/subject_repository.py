@@ -186,19 +186,24 @@ class SubjectRepository:
 
             try:
                 session.commit()
-                if old is None or len(old_set) == 0:
+                if old is not None:
                     if len(old_set) == 0:
                         sucess.append(
                             f"{subject_code} - {len(new_classes_set)} turmas cadastradas"
                         )
-                    if len(old_set) == 0 and has_add_to_building:
+                    if has_add_to_building:
                         sucess.append(
                             f"{subject_code} - adicionado ao prédio {building.name}"
                         )
-                if len(old_set) > 0:
+                    if len(old_set) > 0:
+                        sucess.append(
+                            f"{subject_code} - {len(new_classes_set)} novas turmas cadastradas pelo prédio {building.name} e {len(old_set)} turmas já cadastradas"
+                        )
+                else:
                     sucess.append(
-                        f"{subject_code} - {len(new_classes_set)} novas turmas cadastradas pelo prédio {building.name} e {len(old_set)} turmas já cadastradas"
+                        f"{subject_code} - {len(subject.classes)} turmas cadastradas"
                     )
+
             except Exception as e:  # noqa: E722
                 print(e)
                 session.reset()

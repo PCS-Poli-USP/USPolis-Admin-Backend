@@ -15,10 +15,12 @@ from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.schedule_db_model import Schedule
 from server.models.http.requests.allocate_request_models import AllocateSchedule
 from server.repositories.occurrence_repository import OccurrenceRepository
-from server.services.security.buildings_permission_checker import (
-    building_permission_checker,
+from server.services.security.classrooms_permission_checker import (
+    classroom_permission_checker,
 )
-from server.utils.must_be_int import must_be_int
+from server.services.security.schedule_permission_checker import (
+    schedule_permission_checker,
+)
 
 
 class OccurrenceRepositoryAdapter:
@@ -58,15 +60,7 @@ class OccurrenceRepositoryAdapter:
     ) -> None:
         for pair in schedule_classroom_pairs:
             schedule = self.schedule_repo.get_by_id(pair.schedule_id)
-            if schedule.class_ is None and schedule.reservation is not None:
-                building_permission_checker(
-                    self.user, schedule.reservation.classroom.building
-                )
-            if schedule.class_ is not None:
-                building_permission_checker(
-                    self.user, schedule.class_.subject.buildings
-                )
-
+            schedule_permission_checker(self.user, schedule, self.session)
             if pair.classroom_id == -1:
                 OccurrenceRepository.remove_schedule_allocation(
                     schedule=schedule, session=self.session
@@ -74,7 +68,7 @@ class OccurrenceRepositoryAdapter:
                 continue
 
             classroom = self.classroom_repo.get_by_id(pair.classroom_id)
-            building_permission_checker(self.user, must_be_int(classroom.building_id))
+            classroom_permission_checker(self.user, classroom, self.session)
 
             OccurrenceRepository.allocate_schedule(
                 schedule=schedule, classroom=classroom, session=self.session
