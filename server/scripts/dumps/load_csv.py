@@ -30,35 +30,54 @@ from server.models.database import (  # noqa
 engine = create_engine(f"{CONFIG.db_uri}/{CONFIG.db_database}")
 
 
+def load_user_csv_to_db(csv_file: str) -> None:
+    try:
+        with open(csv_file, encoding="utf-8") as file:
+            reader = csv.DictReader(file)
+
+    except Exception as e:
+        print(f"Erro ao carregar os dados do CSV (Usuários): {e}")
+
+
 def load_building_csv_to_db(csv_file: str) -> None:
     try:
+        sucess = 0
+        total = 0
         with open(csv_file, encoding="utf-8") as file:
             reader = csv.DictReader(file)
 
             with Session(engine) as session:
                 for row in reader:
+                    total += 1
                     building = building_db_model.Building(
                         name=row["name"],
-                        created_by_id=1,
+                        created_by_id=row["created_by_id"],  # type: ignore
                         updated_at=row["updated_at"],  # type: ignore
                     )
-                    session.add(building)
+                    try:
+                        session.add(building)
+                        session.commit()
+                        sucess += 1
+                    except Exception as e:
+                        print(f"Erro ao carregar o prédio {building.name}: {e}")
+                        session.rollback()
 
-                session.commit()
-
-        print("Prédios carregados com sucesso no banco de dados!")
+        print(f"Prédios carregados com sucesso ({sucess}/{total}) no banco de dados!")
 
     except Exception as e:
-        print(f"Erro ao carregar os dados do CSV: {e}")
+        print(f"Erro ao carregar os dados do CSV (Prédios): {e}")
 
 
 def load_classroom_csv_to_db(csv_file: str) -> None:
     try:
+        success = 0
+        total = 0
         with open(csv_file, encoding="utf-8") as file:
             reader = csv.DictReader(file)
 
             with Session(engine) as session:
                 for row in reader:
+                    total += 1
                     classroom = classroom_db_model.Classroom(
                         name=row["name"],  # type: ignore
                         capacity=row["capacity"],  # type: ignore
@@ -72,19 +91,23 @@ def load_classroom_csv_to_db(csv_file: str) -> None:
                         if row["air_conditioning"] == "t"
                         else False,  # type: ignore
                         updated_at=row["updated_at"],  # type: ignore
-                        created_by_id=1,  # type: ignore
+                        created_by_id=row["created_by_id"],  # type: ignore
                         building_id=row["building_id"],  # type: ignore
                     )
-                    session.add(classroom)
+                    try:
+                        session.add(classroom)
+                        session.commit()
+                        success += 1
+                    except Exception as e:
+                        print(f"Erro ao carregar a sala {classroom.name}: {e}")
+                        session.rollback()
 
-                session.commit()
-
-        print("Dados carregados com sucesso no banco de dados!")
+        print(f"Salas carregadas com sucesso ({success}/{total}) no banco de dados!")
 
     except Exception as e:
-        print(f"Erro ao carregar os dados do CSV: {e}")
+        print(f"Erro ao carregar os dados do CSV (Salas): {e}")
 
 
 # Chama a função para carregar os dados
 # load_building_csv_to_db("buildings.csv")
-load_classroom_csv_to_db("classroom.csv")
+# load_classroom_csv_to_db("classroom.csv")
