@@ -76,10 +76,10 @@ class BaseExtendedData(BaseModel):
         return cls(
             building=schedule.classroom.building.name
             if schedule.classroom
-            else AllocationEnum.UNALLOCATED.value[0],
+            else AllocationEnum.UNALLOCATED.value,
             classroom=schedule.classroom.name
             if schedule.classroom
-            else AllocationEnum.UNALLOCATED.value[0],
+            else AllocationEnum.UNALLOCATED.value,
             classroom_capacity=schedule.classroom.capacity
             if schedule.classroom
             else None,
@@ -180,8 +180,8 @@ class EventResponse(BaseModel):
 
     @classmethod
     def from_occurrence(cls, occurrence: Occurrence) -> "EventResponse":
-        resource = f"{AllocationEnum.UNALLOCATED_BUILDING_ID.value[0]}-{
-            AllocationEnum.UNALLOCATED_CLASSROOM_ID.value[0]}"
+        resource = f"{AllocationEnum.UNALLOCATED_BUILDING_ID.value}-{
+            AllocationEnum.UNALLOCATED_CLASSROOM_ID.value}"
         if occurrence.schedule.classroom:
             resource = f"{
                 occurrence.schedule.classroom.building.name}-{occurrence.schedule.classroom.name}"
@@ -208,8 +208,8 @@ class EventResponse(BaseModel):
 
     @classmethod
     def from_schedule(cls, schedule: Schedule) -> list["EventResponse"]:
-        resource = f"{AllocationEnum.UNALLOCATED_BUILDING_ID.value[0]}-{
-            AllocationEnum.UNALLOCATED_CLASSROOM_ID.value[0]}"
+        resource = f"{AllocationEnum.UNALLOCATED_BUILDING_ID.value}-{
+            AllocationEnum.UNALLOCATED_CLASSROOM_ID.value}"
         if schedule.classroom:
             resource = f"{
                 schedule.classroom.building.name}-{schedule.classroom.name}"
@@ -292,14 +292,14 @@ class ResourceResponse(BaseModel):
     @classmethod
     def unnallocated_building(cls) -> "ResourceResponse":
         return cls(
-            id=AllocationEnum.UNALLOCATED_BUILDING_ID.value[0],
-            title=AllocationEnum.UNALLOCATED.value[0],
+            id=AllocationEnum.UNALLOCATED_BUILDING_ID.value,
+            title=AllocationEnum.UNALLOCATED.value,
         )
 
     @classmethod
     def unnallocated_classroom(cls) -> "ResourceResponse":
         return cls(
-            id=f"{AllocationEnum.UNALLOCATED_BUILDING_ID.value[0]}-{AllocationEnum.UNALLOCATED_CLASSROOM_ID.value[0]}",
-            parentId=AllocationEnum.UNALLOCATED_BUILDING_ID.value[0],
-            title=AllocationEnum.UNALLOCATED.value[0],
+            id=f"{AllocationEnum.UNALLOCATED_BUILDING_ID.value}-{AllocationEnum.UNALLOCATED_CLASSROOM_ID.value}",
+            parentId=AllocationEnum.UNALLOCATED_BUILDING_ID.value,
+            title=AllocationEnum.UNALLOCATED.value,
         )
