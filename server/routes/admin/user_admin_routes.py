@@ -52,7 +52,7 @@ async def update_user(
         if current_user.is_admin != user_input.is_admin:
             raise HTTPException(400, "Cannot edit own admin status")
 
-    buildings = None
+    buildings = []
     if user_input.building_ids is not None:
         buildings = BuildingRepository.get_by_ids(
             ids=user_input.building_ids, session=session
