@@ -103,6 +103,11 @@ class ReservationRepository:
             reservation.solicitation = solicitation
             solicitation.reservation_id = reservation.id
             solicitation.reservation = reservation
+            solicitation.classroom_id = classroom.id
+            solicitation.classroom = classroom
+            ClassroomSolicitationRepository.approve_solicitation_obj(
+                solicitation, user=creator, session=session
+            )
             session.add(solicitation)
         session.add(reservation)
         return reservation
@@ -171,13 +176,19 @@ class ReservationRepository:
             classroom=classroom,
             session=session,
         )
-        if (input.has_solicitation and input.solicitation_id):
-            if (reservation.solicitation and reservation.solicitation.id != input.solicitation_id):
+        if input.has_solicitation and input.solicitation_id:
+            if (
+                reservation.solicitation
+                and reservation.solicitation.id != input.solicitation_id
+            ):
                 raise ReservationWithInvalidSolicitation()
             solicitation = ClassroomSolicitationRepository.get_by_id(
                 id=input.solicitation_id, session=session
             )
-            if solicitation.reservation_id and solicitation.reservation_id != reservation.id:
+            if (
+                solicitation.reservation_id
+                and solicitation.reservation_id != reservation.id
+            ):
                 raise ReservationWithInvalidSolicitation()
             if not reservation.solicitation:
                 reservation.solicitation = solicitation
@@ -195,10 +206,15 @@ class ReservationRepository:
             id=id, building_ids=building_ids, session=session
         )
         if reservation.solicitation:
-            reservation.solicitation.reservation = None
-            reservation.solicitation.deleted = True
-            reservation.solicitation.deleted_by = user.name
-            session.add(reservation.solicitation)
+            solicitation = ClassroomSolicitationRepository.get_by_id(
+                id=must_be_int(reservation.solicitation.id), session=session
+            )
+            solicitation.deleted = True
+            solicitation.deleted_by = user.name
+            solicitation.reservation = None
+            solicitation.reservation_id = None
+            reservation.solicitation = None
+            session.add(solicitation)
         session.delete(reservation)
 
 
