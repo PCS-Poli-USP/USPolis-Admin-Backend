@@ -21,10 +21,16 @@ from server.deps.repository_adapters.classroom_repository_adapter import (
 from server.models.database.user_db_model import User
 from server.models.http.responses.class_response_models import ClassResponse
 from server.models.http.responses.classroom_response_models import ClassroomResponse
+from server.models.http.responses.classroom_solicitation_response_models import (
+    ClassroomSolicitationResponse,
+)
 from server.models.http.responses.reservation_response_models import ReservationResponse
 from server.models.http.responses.subject_response_models import SubjectResponse
 from server.models.http.responses.user_response_models import UserResponse
 from server.models.http.responses.building_response_models import BuildingResponse
+from server.repositories.classroom_solicitation_repository import (
+    ClassroomSolicitationRepository,
+)
 from server.repositories.user_repository import UserRepository
 
 
@@ -32,7 +38,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @router.get("")
-async def get_current_user(
+def get_current_user(
     user: UserDep,
 ) -> UserResponse:
     """Get current user"""
@@ -40,7 +46,7 @@ async def get_current_user(
 
 
 @router.get("/my-buildings")
-async def get_my_buildings(
+def get_my_buildings(
     repository: BuildingRespositoryAdapterDep,
 ) -> list[BuildingResponse]:
     """Get all buildings for authenticated user"""
@@ -49,7 +55,7 @@ async def get_my_buildings(
 
 
 @router.get("/my-subjects")
-async def get_my_subjects(
+def get_my_subjects(
     repository: SubjectRepositoryDep,
 ) -> list[SubjectResponse]:
     """Get all subjects for authenticated user"""
@@ -58,7 +64,7 @@ async def get_my_subjects(
 
 
 @router.get("/my-classes")
-async def get_my_classes(
+def get_my_classes(
     repository: ClassRepositoryAdapterDep,
 ) -> list[ClassResponse]:
     """Get all classes for authenticated user"""
@@ -67,7 +73,7 @@ async def get_my_classes(
 
 
 @router.get("/my-classrooms")
-async def get_my_classrooms(
+def get_my_classrooms(
     repository: ClassroomRepositoryDep,
 ) -> list[ClassroomResponse]:
     """Get all classrooms for authenticated user"""
@@ -76,7 +82,7 @@ async def get_my_classrooms(
 
 
 @router.get("/my-reservations")
-async def get_my_reservations(
+def get_my_reservations(
     repository: ReservationRepositoryDep,
 ) -> list[ReservationResponse]:
     """Get all reservations for authenticated user"""
@@ -84,8 +90,18 @@ async def get_my_reservations(
     return ReservationResponse.from_reservation_list(reservations)
 
 
+@router.get("/my-solicitations")
+def get_my_solicitaions(
+    user: UserDep,
+    session: SessionDep,
+) -> list[ClassroomSolicitationResponse]:
+    """Get all solicitations for authenticated user"""
+    solicitations = ClassroomSolicitationRepository.get_by_user(user, session)
+    return ClassroomSolicitationResponse.from_solicitation_list(solicitations)
+
+
 @router.get("/{building_id}")
-async def get_users_on_building(building_id: int, session: SessionDep) -> list[User]:
+def get_users_on_building(building_id: int, session: SessionDep) -> list[User]:
     """Get users on building"""
     users = UserRepository.get_all_on_building(building_id=building_id, session=session)
     return users
