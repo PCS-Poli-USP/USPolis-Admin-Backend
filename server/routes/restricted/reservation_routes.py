@@ -5,6 +5,7 @@ from server.deps.repository_adapters.reservation_repository_adapter import (
 )
 from server.models.http.requests.classroom_solicitation_request_models import (
     ClassroomSolicitationApprove,
+    ClassroomSolicitationUpdated,
 )
 from server.models.http.requests.reservation_request_models import (
     ReservationRegister,
@@ -39,7 +40,11 @@ async def create_reservation(
 ) -> ReservationResponse:
     """Create a reservation"""
     reservation = repository.create(reservation=input)
-    if reservation.solicitation and input.solicitation_id:
+    if (
+        reservation.solicitation
+        and input.solicitation_id
+        and input.solicitation_id == reservation.solicitation.id
+    ):
         ClassroomSolicitationRepository.approve_solicitation_obj(
             reservation.solicitation, user=repository.user, session=repository.session
         )
@@ -56,11 +61,34 @@ async def create_reservation(
 
 
 @router.put("/{reservation_id}")
-def update_reservation(
+async def update_reservation(
     reservation_id: int, input: ReservationUpdate, repository: ReservationRepositoryDep
 ) -> ReservationResponse:
     """Update a reservation by ID"""
+    old_reservation = repository.get_by_id(id=reservation_id)
     reservation = repository.update(id=reservation_id, input=input)
+    if input.has_solicitation and input.solicitation_id:
+        if old_reservation.solicitation and reservation.solicitation:
+            solicitation_input = ClassroomSolicitationUpdated(
+                classroom_id=reservation.classroom_id,
+                classroom_name=reservation.classroom.name,
+                start_time=reservation.schedule.start_time,
+                end_time=reservation.schedule.end_time,
+            )
+            await EmailService.send_solicitation_updated_email(
+                input=solicitation_input, solicitation=reservation.solicitation
+            )
+        else:
+            if reservation.solicitation and not old_reservation.solicitation:
+                solicitation_approve = ClassroomSolicitationApprove(
+                    classroom_id=reservation.classroom_id,
+                    classroom_name=reservation.classroom.name,
+                    start_time=reservation.schedule.start_time,
+                    end_time=reservation.schedule.end_time,
+                )
+                await EmailService.send_solicitation_approved_email(
+                    input=solicitation_approve, solicitation=reservation.solicitation
+                )
     return ReservationResponse.from_reservation(reservation)
 
 

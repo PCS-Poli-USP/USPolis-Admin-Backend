@@ -177,11 +177,12 @@ class ReservationRepository:
             solicitation = ClassroomSolicitationRepository.get_by_id(
                 id=input.solicitation_id, session=session
             )
-            if solicitation.reservation_id:
+            if solicitation.reservation_id and solicitation.reservation_id != reservation.id:
                 raise ReservationWithInvalidSolicitation()
-            reservation.solicitation = solicitation
-            solicitation.reservation = reservation
-            session.add(solicitation)
+            if not reservation.solicitation:
+                reservation.solicitation = solicitation
+                solicitation.reservation = reservation
+                session.add(solicitation)
 
         session.add(reservation)
         return reservation
