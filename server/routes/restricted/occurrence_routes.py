@@ -1,6 +1,7 @@
 from typing import Any
 from fastapi import APIRouter, Response
 
+from server.deps.authenticate import UserDep
 from server.deps.conflict_checker import ConflictCheckerDep
 from server.deps.repository_adapters.occurrence_repository_adapter import (
     OccurrenceRepositoryDep,
@@ -27,8 +28,9 @@ def allocate_schedule(
 def allocate_schedule_many(
     occurrence_repository: OccurrenceRepositoryDep,
     schedule_classroom_pairs: list[AllocateSchedule],
+    user: UserDep,
 ) -> Response:
-    occurrence_repository.allocate_schedule_many(schedule_classroom_pairs)
+    occurrence_repository.allocate_schedule_many(schedule_classroom_pairs, user)
     return NoContent
 
 

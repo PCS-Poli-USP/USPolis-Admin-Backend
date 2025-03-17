@@ -13,7 +13,10 @@ from server.deps.repository_adapters.schedule_repository_adapter import (
 from server.deps.session_dep import SessionDep
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.schedule_db_model import Schedule
+from server.models.database.user_db_model import User
 from server.models.http.requests.allocate_request_models import AllocateSchedule
+from server.models.http.requests.allocation_log_request_models import AllocationLogInput
+from server.repositories.allocation_log_repository import AllocationLogRepository
 from server.repositories.occurrence_repository import OccurrenceRepository
 from server.services.security.classrooms_permission_checker import (
     classroom_permission_checker,
@@ -56,12 +59,18 @@ class OccurrenceRepositoryAdapter:
         return schedule
 
     def allocate_schedule_many(
-        self, schedule_classroom_pairs: list[AllocateSchedule]
+        self,
+        schedule_classroom_pairs: list[AllocateSchedule],
+        user: User,
     ) -> None:
         for pair in schedule_classroom_pairs:
             schedule = self.schedule_repo.get_by_id(pair.schedule_id)
             schedule_permission_checker(self.user, schedule, self.session)
             if pair.classroom_id == -1:
+                input = AllocationLogInput.for_deallocation(
+                    user=user, schedule=schedule
+                )
+                AllocationLogRepository.create(input=input, session=self.session)
                 OccurrenceRepository.remove_schedule_allocation(
                     schedule=schedule, session=self.session
                 )
@@ -69,7 +78,10 @@ class OccurrenceRepositoryAdapter:
 
             classroom = self.classroom_repo.get_by_id(pair.classroom_id)
             classroom_permission_checker(self.user, classroom, self.session)
-
+            input = AllocationLogInput.for_allocation(
+                user=user, schedule=schedule, classroom=classroom
+            )
+            AllocationLogRepository.create(input=input, session=self.session)
             OccurrenceRepository.allocate_schedule(
                 schedule=schedule, classroom=classroom, session=self.session
             )
