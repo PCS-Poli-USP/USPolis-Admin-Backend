@@ -44,6 +44,8 @@ class ClassroomSolicitation(SQLModel, table=True):
     capacity: int
     approved: bool = Field(default=False)
     denied: bool = Field(default=False)
+    deleted: bool = Field(default=False)
+    deleted_by: str | None = Field(nullable=True, default=None)
     closed: bool = Field(default=False)
     closed_by: str | None = Field(nullable=True, default=None)
     created_at: datetime = Field(default=datetime.now())

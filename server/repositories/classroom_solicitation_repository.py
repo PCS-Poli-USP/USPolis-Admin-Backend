@@ -20,6 +20,14 @@ class ClassroomSolicitationRepository:
         return solicitation
 
     @staticmethod
+    def get_by_user(user: User, session: Session) -> list[ClassroomSolicitation]:
+        statement = select(ClassroomSolicitation).where(
+            col(ClassroomSolicitation.user_id) == user.id
+        )
+        solicitations = session.exec(statement).all()
+        return list(solicitations)
+
+    @staticmethod
     def get_by_id_on_buildings(
         building_ids: list[int], session: Session
     ) -> list[ClassroomSolicitation]:

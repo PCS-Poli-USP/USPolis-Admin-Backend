@@ -163,11 +163,16 @@ class ReservationRepository:
 
     @staticmethod
     def delete_on_buildings(
-        *, id: int, building_ids: list[int], session: Session
+        *, id: int, building_ids: list[int], user: User, session: Session
     ) -> None:
         reservation = ReservationRepository.get_by_id_on_buildings(
             id=id, building_ids=building_ids, session=session
         )
+        if (reservation.solicitation):
+            reservation.solicitation.reservation = None
+            reservation.solicitation.deleted = True
+            reservation.solicitation.deleted_by = user.name
+            session.add(reservation.solicitation)
         session.delete(reservation)
 
 
