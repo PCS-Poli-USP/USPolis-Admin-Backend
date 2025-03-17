@@ -82,7 +82,10 @@ class ReservationRespositoryAdapter:
 
     def delete(self, id: int) -> None:
         ReservationRepository.delete_on_buildings(
-            id=id, building_ids=self.owned_building_ids, session=self.session
+            id=id,
+            building_ids=self.owned_building_ids,
+            user=self.user,
+            session=self.session,
         )
         self.session.commit()
 
