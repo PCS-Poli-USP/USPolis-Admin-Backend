@@ -23,7 +23,7 @@ router = APIRouter(
 
 
 @router.get("/{id}")
-async def get_classroom(
+def get_classroom(
     id: int, repository: ClassroomRepositoryDep
 ) -> ClassroomResponse:
     classroom = repository.get_by_id(id)
@@ -31,7 +31,7 @@ async def get_classroom(
 
 
 @router.get("/building/{building_id}")
-async def get_classrooms_by_building(
+def get_classrooms_by_building(
     building_id: int, repository: ClassroomRepositoryDep
 ) -> list[ClassroomResponse]:
     """Get all classrooms on building"""
@@ -40,7 +40,7 @@ async def get_classrooms_by_building(
 
 
 @router.get("/full/{id}")
-async def get_classroom_full(
+def get_classroom_full(
     id: int, respository: ClassroomRepositoryDep
 ) -> ClassroomFullResponse:
     """Get by ID a classrooms with schedules and occurrences"""
@@ -49,7 +49,7 @@ async def get_classroom_full(
 
 
 @router.get("/with-conflict-count/{building_id}/{schedule_id}")
-async def get_classrooms_with_conflicts_count(
+def get_classrooms_with_conflicts_count(
     building_id: int, schedule_id: int, conflict_checker: ConflictCheckerDep
 ) -> list[ClassroomWithConflictsIndicator]:
     classrooms = conflict_checker.classrooms_with_conflicts_indicator_for_schedule(
@@ -59,7 +59,7 @@ async def get_classrooms_with_conflicts_count(
 
 
 @router.get("/with-conflict-count/{building_id}")
-async def get_classroom_with_conflicts_count_for_time(
+def get_classroom_with_conflicts_count_for_time(
     building_id: int,
     start_time: time,
     end_time: time,
@@ -75,7 +75,7 @@ async def get_classroom_with_conflicts_count_for_time(
 
 
 @router.post("")
-async def create_classroom(
+def create_classroom(
     classroom_in: ClassroomRegister, repository: ClassroomRepositoryDep
 ) -> ClassroomResponse:
     """Create a classroom"""
@@ -84,7 +84,7 @@ async def create_classroom(
 
 
 @router.put("/{id}")
-async def update_classroom(
+def update_classroom(
     id: int,
     classroom_input: ClassroomRegister,
     repository: ClassroomRepositoryDep,
@@ -94,6 +94,6 @@ async def update_classroom(
 
 
 @router.delete("/{id}")
-async def delete_classroom(id: int, repository: ClassroomRepositoryDep) -> Response:
+def delete_classroom(id: int, repository: ClassroomRepositoryDep) -> Response:
     repository.delete(id)
     return NoContent

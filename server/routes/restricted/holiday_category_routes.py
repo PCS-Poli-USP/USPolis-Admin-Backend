@@ -18,7 +18,7 @@ embed = Body(..., embed=True)
 
 
 @router.get("", response_model_by_alias=False)
-async def get_all_holidays_categories(
+def get_all_holidays_categories(
     session: SessionDep,
 ) -> list[HolidayCategoryResponse]:
     """Get all holidays categories"""
@@ -27,7 +27,7 @@ async def get_all_holidays_categories(
 
 
 @router.get("/{holiday_category_id}", response_model_by_alias=False)
-async def get_holiday_category(
+def get_holiday_category(
     holiday_category_id: int, session: SessionDep
 ) -> HolidayCategoryResponse:
     """Get a holiday category by id"""
@@ -38,7 +38,7 @@ async def get_holiday_category(
 
 
 @router.post("")
-async def create_holiday_category(
+def create_holiday_category(
     holiday_category_input: HolidayCategoryRegister, user: UserDep, session: SessionDep
 ) -> HolidayCategoryResponse:
     """Create a holiday category"""
@@ -49,7 +49,7 @@ async def create_holiday_category(
 
 
 @router.put("/{holiday_category_id}")
-async def update_holiday_category(
+def update_holiday_category(
     holiday_category_id: int,
     holiday_category_input: HolidayCategoryUpdate,
     user: UserDep,
@@ -63,7 +63,7 @@ async def update_holiday_category(
 
 
 @router.delete("/{holiday_category_id}")
-async def delete_holiday_category(
+def delete_holiday_category(
     holiday_category_id: int, user: UserDep, session: SessionDep
 ) -> Response:
     """Delete a holiday category by id"""

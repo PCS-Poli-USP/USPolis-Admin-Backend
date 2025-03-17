@@ -18,7 +18,7 @@ router = APIRouter(prefix="/reservations", tags=["Reservations"])
 
 
 @router.get("/{reservation_id}")
-async def get_reservation(
+def get_reservation(
     reservation_id: int, repository: ReservationRepositoryDep
 ) -> ReservationResponse:
     """Get an reservation by id"""
@@ -27,7 +27,7 @@ async def get_reservation(
 
 
 @router.post("")
-async def create_reservation(
+def create_reservation(
     input: ReservationRegister, repository: ReservationRepositoryDep
 ) -> ReservationResponse:
     """Create a reservation"""
@@ -36,7 +36,7 @@ async def create_reservation(
 
 
 @router.put("/{reservation_id}")
-async def update_reservation(
+def update_reservation(
     reservation_id: int, input: ReservationUpdate, repository: ReservationRepositoryDep
 ) -> ReservationResponse:
     """Update a reservation by ID"""
@@ -45,7 +45,7 @@ async def update_reservation(
 
 
 @router.delete("/{reservation_id}")
-async def delete_reservation(
+def delete_reservation(
     reservation_id: int, repository: ReservationRepositoryDep
 ) -> Response:
     """Delete a Reservation by ID"""

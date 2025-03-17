@@ -17,7 +17,7 @@ router = APIRouter(prefix="/classes", tags=["Classes"])
 
 
 @router.get("/{class_id}")
-async def get_class(
+def get_class(
     class_id: int, repository: ClassRepositoryAdapterDep
 ) -> ClassResponse:
     """Get a class by id"""
@@ -26,7 +26,7 @@ async def get_class(
 
 
 @router.get("/{class_id}/full")
-async def get_class_full(
+def get_class_full(
     class_id: int, repository: ClassRepositoryAdapterDep
 ) -> ClassFullResponse:
     """Get a class by id with schedules and occurrences"""
@@ -44,7 +44,7 @@ async def create_class(
 
 
 @router.put("/{class_id}")
-async def update_class(
+def update_class(
     class_id: int, class_input: ClassUpdate, repository: ClassRepositoryAdapterDep
 ) -> ClassResponse:
     """Update a class by id"""
@@ -53,7 +53,7 @@ async def update_class(
 
 
 @router.delete("/{class_id}")
-async def delete_class(
+def delete_class(
     class_id: int, repository: ClassRepositoryAdapterDep
 ) -> Response:
     """Delete a class by id"""
@@ -62,7 +62,7 @@ async def delete_class(
 
 
 @router.delete("/many/")
-async def delete_many_class(
+def delete_many_class(
     repository: ClassRepositoryAdapterDep, ids: Annotated[list[int], Query()] = []
 ) -> Response:
     """Delete many classes by ids"""

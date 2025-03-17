@@ -16,21 +16,21 @@ router = APIRouter(prefix="/calendars", tags=["Calendars"])
 
 
 @router.get("")
-async def get_all_calendars(session: SessionDep) -> list[CalendarResponse]:
+def get_all_calendars(session: SessionDep) -> list[CalendarResponse]:
     """Get all calendars"""
     calendars = CalendarRepository.get_all(session=session)
     return CalendarResponse.from_calendar_list(calendars)
 
 
 @router.get("/{calendar_id}")
-async def get_calendar(calendar_id: int, session: SessionDep) -> CalendarResponse:
+def get_calendar(calendar_id: int, session: SessionDep) -> CalendarResponse:
     """Get a calendar by id"""
     calendar = CalendarRepository.get_by_id(id=calendar_id, session=session)
     return CalendarResponse.from_calendar(calendar)
 
 
 @router.post("")
-async def create_calendar(
+def create_calendar(
     input: CalendarRegister, user: UserDep, session: SessionDep
 ) -> CalendarResponse:
     """Create a calendar"""
@@ -39,7 +39,7 @@ async def create_calendar(
 
 
 @router.put("/{calendar_id}")
-async def update_calendar(
+def update_calendar(
     calendar_id: int, calendar_input: CalendarUpdate, user: UserDep, session: SessionDep
 ) -> CalendarResponse:
     """Update a calendar by id"""
@@ -50,7 +50,7 @@ async def update_calendar(
 
 
 @router.delete("/{calendar_id}")
-async def delete_calendar(
+def delete_calendar(
     calendar_id: int, user: UserDep, session: SessionDep
 ) -> Response:
     """Delete a calendar by id"""

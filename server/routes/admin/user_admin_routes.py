@@ -16,14 +16,14 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @router.get("", response_model_by_alias=False)
-async def get_users(session: SessionDep) -> list[UserResponse]:
+def get_users(session: SessionDep) -> list[UserResponse]:
     """Get all users"""
     users = UserRepository.get_all(session=session)
     return UserResponse.from_user_list(users)
 
 
 @router.post("")
-async def create_user(
+def create_user(
     user_input: UserRegister,
     user: UserDep,
     session: SessionDep,
@@ -39,7 +39,7 @@ async def create_user(
 
 
 @router.put("/{user_id}")
-async def update_user(
+def update_user(
     user_id: int,
     user_input: UserUpdate,
     current_user: UserDep,
@@ -50,7 +50,7 @@ async def update_user(
 
     if user_id == current_user.id:
         if current_user.is_admin != user_input.is_admin:
-            raise HTTPException(400, "Cannot edit own admin status")
+            raise HTTPException(400, "Não pode editar seu próprio status de admin")
 
     buildings = []
     if user_input.building_ids is not None:
@@ -66,14 +66,14 @@ async def update_user(
 
 
 @router.delete("/{user_id}")
-async def delete_user(
+def delete_user(
     user_id: int,
     current_user: UserDep,
     session: SessionDep,
 ) -> Response:
     """Delete a user by id"""
     if current_user.id == user_id:
-        raise HTTPException(400, "Cannot delete self")
+        raise HTTPException(400, "Não pode remover seu próprio usuário")
 
     UserRepository.delete(user_id=user_id, session=session)
     return NoContent

@@ -17,21 +17,21 @@ embed = Body(..., embed=True)
 
 
 @router.get("", response_model_by_alias=False)
-async def get_all_holidays(session: SessionDep) -> list[HolidayResponse]:
+def get_all_holidays(session: SessionDep) -> list[HolidayResponse]:
     """Get all holidays"""
     holidays = HolidayRepository.get_all(session=session)
     return HolidayResponse.from_holiday_list(holidays)
 
 
 @router.get("/{holiday_id}", response_model_by_alias=False)
-async def get_holiday(holiday_id: int, session: SessionDep) -> HolidayResponse:
+def get_holiday(holiday_id: int, session: SessionDep) -> HolidayResponse:
     """Get holiday by id"""
     holiday = HolidayRepository.get_by_id(id=holiday_id, session=session)
     return HolidayResponse.from_holiday(holiday)
 
 
 @router.post("")
-async def create_holiday(
+def create_holiday(
     holiday_input: HolidayRegister, user: UserDep, session: SessionDep
 ) -> HolidayResponse:
     holiday = HolidayRepository.create(
@@ -41,7 +41,7 @@ async def create_holiday(
 
 
 @router.post("/many")
-async def create_many_holidays(
+def create_many_holidays(
     input: HolidayManyRegister, user: UserDep, session: SessionDep
 ) -> list[HolidayResponse]:
     """Create many holidays"""
@@ -50,7 +50,7 @@ async def create_many_holidays(
 
 
 @router.put("/{holiday_id}")
-async def update_holiday(
+def update_holiday(
     holiday_id: int,
     holiday_input: HolidayUpdate,
     user: UserDep,
@@ -64,7 +64,7 @@ async def update_holiday(
 
 
 @router.delete("/{holiday_id}")
-async def delete_holiday(
+def delete_holiday(
     holiday_id: int, user: UserDep, session: SessionDep
 ) -> Response:
     HolidayRepository.delete(id=holiday_id, user=user, session=session)

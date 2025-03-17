@@ -19,7 +19,7 @@ router = APIRouter(prefix="/institutional_events", tags=["Institutional Events"]
 
 
 @router.get("")
-async def get_all_institutional_events(
+def get_all_institutional_events(
     session: SessionDep,
 ) -> list[InstitutionalEventResponse]:
     """Get all institutional events"""
@@ -28,7 +28,7 @@ async def get_all_institutional_events(
 
 
 @router.get("/{institutional_event_id}")
-async def get_institutional_event(
+def get_institutional_event(
     institutional_event_id: int, session: SessionDep
 ) -> InstitutionalEventResponse:
     """Get an institutional event by id"""
@@ -39,7 +39,7 @@ async def get_institutional_event(
 
 
 @router.post("")
-async def create_institutional_event(
+def create_institutional_event(
     institutional_event_input: InstitutionalEventRegister, session: SessionDep
 ) -> InstitutionalEventResponse:
     """Create an institutional event"""
@@ -50,7 +50,7 @@ async def create_institutional_event(
 
 
 @router.put("/{institutional_event_id}")
-async def update_institutional_event(
+def update_institutional_event(
     institutional_event_id: int,
     institutional_event_input: InstitutionalEventUpdate,
     session: SessionDep,
@@ -63,7 +63,7 @@ async def update_institutional_event(
 
 
 @router.delete("/{institutional_event_id}")
-async def delete_institutional_event(
+def delete_institutional_event(
     institutional_event_id: int, session: SessionDep
 ) -> Response:
     """Delete an institutional event by id"""

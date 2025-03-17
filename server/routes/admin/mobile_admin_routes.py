@@ -24,7 +24,7 @@ load_dotenv()
 
 
 @router.post("/new-mock-user")
-async def create_new_user(session: SessionDep) -> AuthenticationResponse:
+def create_new_user(session: SessionDep) -> AuthenticationResponse:
     newUser = MobileUser(
         sub="mock",
         given_name="mock",
@@ -38,7 +38,7 @@ async def create_new_user(session: SessionDep) -> AuthenticationResponse:
 
 
 @router.post("/mock-posts")
-async def create_forum_post(
+def create_forum_post(
     input: ForumPostRegister,
     session: SessionDep,
 ) -> ForumPostResponse:
