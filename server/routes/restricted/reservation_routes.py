@@ -15,9 +15,6 @@ from server.models.http.responses.generic_responses import NoContent
 from server.models.http.responses.reservation_response_models import (
     ReservationResponse,
 )
-from server.repositories.classroom_solicitation_repository import (
-    ClassroomSolicitationRepository,
-)
 from server.services.email.email_service import EmailService
 
 embed = Body(..., embed=True)
@@ -45,9 +42,6 @@ async def create_reservation(
         and input.solicitation_id
         and input.solicitation_id == reservation.solicitation.id
     ):
-        ClassroomSolicitationRepository.approve_solicitation_obj(
-            reservation.solicitation, user=repository.user, session=repository.session
-        )
         solicitation_approve = ClassroomSolicitationApprove(
             classroom_id=reservation.classroom_id,
             classroom_name=reservation.classroom.name,

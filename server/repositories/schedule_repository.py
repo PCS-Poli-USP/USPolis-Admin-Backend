@@ -148,6 +148,8 @@ class ScheduleRepository:
                 schedule=new_schedule, input=occurences_input, session=session
             )
             new_schedule.occurrences = occurences
+            if input.classroom_id:
+                new_schedule.allocated = True
             session.add(new_schedule)
         else:
             # schedule is add to sesion here
