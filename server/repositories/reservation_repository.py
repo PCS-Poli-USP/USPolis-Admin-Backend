@@ -35,8 +35,8 @@ class ReservationRepository:
     ) -> list[Reservation]:
         statement = (
             select(Reservation)
-            .join(Classroom)
-            .join(Building)
+            .join(Classroom, col(Reservation.classroom_id) == col(Classroom.id))
+            .join(Building, col(Classroom.building_id) == col(Building.id))
             .where(col(Building.id).in_(building_ids))
             .distinct()
         )
@@ -163,7 +163,7 @@ class ReservationRepository:
 
     @staticmethod
     def delete_on_buildings(
-        *, id: int, building_ids: list[int], session: Session
+        *, id: int, building_ids: list[int], user: User, session: Session
     ) -> None:
         reservation = ReservationRepository.get_by_id_on_buildings(
             id=id, building_ids=building_ids, session=session
