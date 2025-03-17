@@ -2,6 +2,7 @@ from typing import Self
 from pydantic import BaseModel
 
 from server.models.database.classroom_solicitation_db_model import ClassroomSolicitation
+from server.models.database.reservation_db_model import Reservation
 from server.models.database.user_db_model import User
 from server.models.http.requests.classroom_solicitation_request_models import (
     ClassroomSolicitationApprove,
@@ -107,4 +108,35 @@ class SolicitationRequestedMail(SolicitationMailBase):
             dates=", ".join(str_dates),
             capacity=solicitation.capacity,
             reason=solicitation.reason if solicitation.reason else "Não informado",
+        )
+
+
+class SolicitationDeletedMail(SolicitationMailBase):
+    requester: str
+    requester_email: str
+    reason: str
+
+    @classmethod
+    def from_reservation_and_solicitation(cls, solicitation: ClassroomSolicitation, reservation: Reservation) -> Self:
+        str_dates = [
+            occur.date.strftime("%d/%m/%Y")
+            for occur in reservation.schedule.occurrences
+        ]
+        return cls(
+            username=solicitation.user.name,
+            requester=reservation.solicitation.user.name
+            if reservation.solicitation
+            else "Não informado",
+            requester_email=reservation.solicitation.user.email
+            if reservation.solicitation
+            else "Não informado",
+            title=reservation.title,
+            type=ReservationType.to_str(reservation.type),
+            building=reservation.classroom.building.name,
+            classroom=reservation.classroom.name,
+            time=f"{reservation.schedule.start_time.strftime('%H:%M')} ~ {reservation.schedule.end_time.strftime(
+                '%H:%M')}",
+            dates=", ".join(str_dates),
+            capacity=0,
+            reason="Não informado",
         )

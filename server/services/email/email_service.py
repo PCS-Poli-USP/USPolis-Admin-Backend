@@ -1,4 +1,5 @@
 import asyncio
+
 # from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -6,14 +7,17 @@ from smtplib import SMTP_SSL
 from jinja2 import Environment, FileSystemLoader
 from server.config import CONFIG
 from server.models.database.classroom_solicitation_db_model import ClassroomSolicitation
+from server.models.database.reservation_db_model import Reservation
 from server.models.database.user_db_model import User
 from server.models.http.requests.classroom_solicitation_request_models import (
     ClassroomSolicitationApprove,
     ClassroomSolicitationDeny,
+    ClassroomSolicitationUpdated,
 )
 from server.models.http.requests.email_request_models import (
     MailSend,
     SolicitationApprovedMail,
+    SolicitationDeletedMail,
     SolicitationDeniedMail,
     SolicitationRequestedMail,
 )
@@ -67,6 +71,34 @@ class EmailService:
         template = env.get_template("/solicitations/solicitation-approved.html")
         body = template.render(
             data=SolicitationApprovedMail.from_solicitation(input, solicitation)
+        )
+        subject = RESERVATION_SUBJECT
+        context = MailSend(to=[solicitation.user.email], subject=subject, body=body)
+        await EmailService.send_email(context)
+
+    @staticmethod
+    async def send_solicitation_updated_email(
+        input: ClassroomSolicitationUpdated,
+        solicitation: ClassroomSolicitation,
+    ) -> None:
+        template = env.get_template("/solicitations/solicitation-updated.html")
+        body = template.render(
+            data=SolicitationApprovedMail.from_solicitation(input, solicitation)
+        )
+        subject = RESERVATION_SUBJECT
+        context = MailSend(to=[solicitation.user.email], subject=subject, body=body)
+        await EmailService.send_email(context)
+
+    @staticmethod
+    async def send_solicitation_deleted_email(
+        reservation: Reservation,
+        solicitation: ClassroomSolicitation,
+    ) -> None:
+        template = env.get_template("/solicitations/solicitation-deleted.html")
+        body = template.render(
+            data=SolicitationDeletedMail.from_reservation_and_solicitation(
+                solicitation, reservation
+            )
         )
         subject = RESERVATION_SUBJECT
         context = MailSend(to=[solicitation.user.email], subject=subject, body=body)

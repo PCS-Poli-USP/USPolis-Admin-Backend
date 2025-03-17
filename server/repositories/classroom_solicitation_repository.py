@@ -69,6 +69,15 @@ class ClassroomSolicitationRepository:
     @staticmethod
     def approve(id: int, user: User, session: Session) -> ClassroomSolicitation:
         solicitation = ClassroomSolicitationRepository.get_by_id(id=id, session=session)
+        ClassroomSolicitationRepository.approve_solicitation_obj(
+            solicitation=solicitation, user=user, session=session
+        )
+        return solicitation
+
+    @staticmethod
+    def approve_solicitation_obj(
+        solicitation: ClassroomSolicitation, user: User, session: Session
+    ) -> ClassroomSolicitation:
         solicitation.approved = True
         solicitation.denied = False
         solicitation.closed = True
