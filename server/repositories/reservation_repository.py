@@ -38,8 +38,8 @@ class ReservationRepository:
     ) -> list[Reservation]:
         statement = (
             select(Reservation)
-            .join(Classroom)
-            .join(Building)
+            .join(Classroom, col(Reservation.classroom_id) == col(Classroom.id))
+            .join(Building, col(Classroom.building_id) == col(Building.id))
             .where(col(Building.id).in_(building_ids))
             .distinct()
         )
