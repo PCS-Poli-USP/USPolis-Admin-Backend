@@ -13,7 +13,6 @@ def test_user_create(client: TestClient, user: User, db: Session) -> None:
         email="test@mail.com",
         is_admin=True,
         name="Test",
-        username="test_user",
     )
     UserRepository.create(
         session=db,
