@@ -63,8 +63,8 @@ async def create_classroom_solicitation(
     users = UserRepository.get_all_on_building(
         building_id=input.building_id, session=session
     )
-    await EmailService.send_solicitation_request_email(users, solicitation)
     session.commit()
+    await EmailService.send_solicitation_request_email(users, solicitation)
     return ClassroomSolicitationResponse.from_solicitation(solicitation)
 
 
@@ -92,6 +92,7 @@ async def approve_classroom_solicitation(
         session=session,
     )
     solicitation.reservation = reservation
+    solicitation.classroom = classroom
     session.refresh(solicitation)
     session.commit()
     await EmailService.send_solicitation_approved_email(input, solicitation)
