@@ -24,9 +24,7 @@ router = APIRouter(prefix="/subjects", tags=["Subjects"])
 
 
 @router.get("/{subject_id}")
-def get_subject(
-    subject_id: int, repository: SubjectRepositoryDep
-) -> SubjectResponse:
+def get_subject(subject_id: int, repository: SubjectRepositoryDep) -> SubjectResponse:
     """Get a subject"""
     subject = repository.get_by_id(id=subject_id)
     return SubjectResponse.from_subject(subject)

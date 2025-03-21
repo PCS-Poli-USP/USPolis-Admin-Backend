@@ -50,9 +50,7 @@ def update_calendar(
 
 
 @router.delete("/{calendar_id}")
-def delete_calendar(
-    calendar_id: int, user: UserDep, session: SessionDep
-) -> Response:
+def delete_calendar(calendar_id: int, user: UserDep, session: SessionDep) -> Response:
     """Delete a calendar by id"""
     CalendarRepository.delete(id=calendar_id, user=user, session=session)
     return NoContent

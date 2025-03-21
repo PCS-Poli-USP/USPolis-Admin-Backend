@@ -17,9 +17,7 @@ router = APIRouter(prefix="/classes", tags=["Classes"])
 
 
 @router.get("/{class_id}")
-def get_class(
-    class_id: int, repository: ClassRepositoryAdapterDep
-) -> ClassResponse:
+def get_class(class_id: int, repository: ClassRepositoryAdapterDep) -> ClassResponse:
     """Get a class by id"""
     class_ = repository.get_by_id(id=class_id)
     return ClassResponse.from_class(class_)
@@ -53,9 +51,7 @@ def update_class(
 
 
 @router.delete("/{class_id}")
-def delete_class(
-    class_id: int, repository: ClassRepositoryAdapterDep
-) -> Response:
+def delete_class(class_id: int, repository: ClassRepositoryAdapterDep) -> Response:
     """Delete a class by id"""
     repository.delete(id=class_id)
     return NoContent

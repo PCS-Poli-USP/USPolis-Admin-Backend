@@ -23,9 +23,7 @@ router = APIRouter(
 
 
 @router.get("/{id}")
-def get_classroom(
-    id: int, repository: ClassroomRepositoryDep
-) -> ClassroomResponse:
+def get_classroom(id: int, repository: ClassroomRepositoryDep) -> ClassroomResponse:
     classroom = repository.get_by_id(id)
     return ClassroomResponse.from_classroom(classroom)
 

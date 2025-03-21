@@ -117,7 +117,9 @@ class SolicitationDeletedMail(SolicitationMailBase):
     reason: str
 
     @classmethod
-    def from_reservation_and_solicitation(cls, solicitation: ClassroomSolicitation, reservation: Reservation) -> Self:
+    def from_reservation_and_solicitation(
+        cls, solicitation: ClassroomSolicitation, reservation: Reservation
+    ) -> Self:
         str_dates = [
             occur.date.strftime("%d/%m/%Y")
             for occur in reservation.schedule.occurrences

@@ -64,8 +64,6 @@ def update_holiday(
 
 
 @router.delete("/{holiday_id}")
-def delete_holiday(
-    holiday_id: int, user: UserDep, session: SessionDep
-) -> Response:
+def delete_holiday(holiday_id: int, user: UserDep, session: SessionDep) -> Response:
     HolidayRepository.delete(id=holiday_id, user=user, session=session)
     return NoContent
