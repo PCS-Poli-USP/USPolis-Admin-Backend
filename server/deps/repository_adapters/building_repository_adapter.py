@@ -35,6 +35,11 @@ class BuildingRepositoryAdapter:
         building = BuildingRepository.get_by_id(id=id, session=self.session)
         return building
 
+    def get_by_name(self, name: str) -> Building:
+        building = BuildingRepository.get_by_name(name=name, session=self.session)
+        building_permission_checker(self.user, building)
+        return building
+
     def create(
         self,
         input: BuildingRegister,
