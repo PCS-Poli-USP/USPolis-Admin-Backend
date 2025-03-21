@@ -11,6 +11,7 @@ from server.utils.enums.month_week import MonthWeek
 from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.reservation_type import ReservationType
 from server.utils.enums.week_day import WeekDay
+from server.utils.must_be_int import must_be_int
 
 
 class RRule(BaseModel):
@@ -45,6 +46,8 @@ class RRule(BaseModel):
 
 
 class BaseExtendedData(BaseModel):
+    schedule_id: int
+    occurrence_id: int | None = None
     building: str
     classroom: str
     classroom_capacity: int | None = None
@@ -59,6 +62,7 @@ class BaseExtendedData(BaseModel):
     @classmethod
     def from_reservation(cls, reservation: Reservation) -> "BaseExtendedData":
         return cls(
+            schedule_id=must_be_int(reservation.schedule.id),
             building=reservation.classroom.building.name,
             classroom=reservation.classroom.name,
             classroom_capacity=reservation.classroom.capacity,
@@ -74,6 +78,7 @@ class BaseExtendedData(BaseModel):
     @classmethod
     def from_class_schedule(cls, schedule: Schedule) -> "BaseExtendedData":
         return cls(
+            schedule_id=must_be_int(schedule.id),
             building=schedule.classroom.building.name
             if schedule.classroom
             else AllocationEnum.UNALLOCATED.value,
@@ -94,6 +99,7 @@ class BaseExtendedData(BaseModel):
 
 
 class ClassExtendedData(BaseExtendedData):
+    class_id: int
     code: str
     subject_code: str
     subject_name: str
@@ -109,6 +115,7 @@ class ClassExtendedData(BaseExtendedData):
         base = BaseExtendedData.from_class_schedule(schedule)
         return cls(
             **base.model_dump(),
+            class_id=must_be_int(schedule.class_.id),
             code=schedule.class_.code,
             subject_code=schedule.class_.subject.code,
             subject_name=schedule.class_.subject.name,
@@ -119,6 +126,7 @@ class ClassExtendedData(BaseExtendedData):
 
 
 class ReservationExtendedData(BaseExtendedData):
+    reservation_id: int
     title: str
     type: ReservationType
     reason: str | None = None
@@ -129,6 +137,7 @@ class ReservationExtendedData(BaseExtendedData):
         base = BaseExtendedData.from_reservation(reservation)
         return cls(
             **base.model_dump(),
+            reservation_id=must_be_int(reservation.id),
             title=reservation.title,
             type=reservation.type,
             reason=reservation.reason,
@@ -145,10 +154,12 @@ class EventExtendedProps(BaseModel):
         data = cls()
         if occurrence.schedule.class_:
             data.class_data = ClassExtendedData.from_schedule(occurrence.schedule)
+            data.class_data.occurrence_id = must_be_int(occurrence.id)
         if occurrence.schedule.reservation:
             data.reservation_data = ReservationExtendedData.from_reservation(
                 occurrence.schedule.reservation
             )
+            data.reservation_data.occurrence_id = must_be_int(occurrence.id)
         return data
 
     @classmethod
@@ -182,9 +193,9 @@ class EventResponse(BaseModel):
     def from_occurrence(cls, occurrence: Occurrence) -> "EventResponse":
         resource = f"{AllocationEnum.UNALLOCATED_BUILDING_ID.value}-{
             AllocationEnum.UNALLOCATED_CLASSROOM_ID.value}"
-        if occurrence.schedule.classroom:
+        if occurrence.classroom:
             resource = f"{
-                occurrence.schedule.classroom.building.name}-{occurrence.schedule.classroom.name}"
+                occurrence.classroom.building.name}-{occurrence.classroom.name}"
         title = ""
         if occurrence.schedule.class_:
             title = occurrence.schedule.class_.subject.code
