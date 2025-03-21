@@ -5,6 +5,7 @@ from fastapi import Depends
 from server.deps.authenticate import UserDep
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
 from server.deps.session_dep import SessionDep
+from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
 from server.models.http.requests.classroom_request_models import ClassroomRegister
 from server.repositories.classroom_repository import ClassroomRepository
@@ -40,6 +41,12 @@ class ClassroomRepositoryAdapter:
             building_ids=self.owned_building_ids, id=id, session=self.session
         )
 
+    def get_by_name_and_building(self, name: str, building: Building) -> Classroom:
+        building_permission_checker(self.user, building)
+        return ClassroomRepository.get_by_name_and_building(
+            name, building, self.session
+        )
+
     def create(
         self,
         classroom: ClassroomRegister,
@@ -72,7 +79,10 @@ class ClassroomRepositoryAdapter:
 
     def delete(self, id: int) -> None:
         ClassroomRepository.delete_on_buildings(
-            id=id, building_ids=self.owned_building_ids, session=self.session
+            id=id,
+            building_ids=self.owned_building_ids,
+            user=self.user,
+            session=self.session,
         )
         self.session.commit()
 
