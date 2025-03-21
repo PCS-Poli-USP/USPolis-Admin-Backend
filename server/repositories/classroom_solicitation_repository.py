@@ -50,6 +50,7 @@ class ClassroomSolicitationRepository:
         solicitation = ClassroomSolicitation(
             classroom_id=must_be_int(classroom.id) if classroom else None,
             classroom=classroom,
+            required_classroom=input.required_classroom,
             building_id=must_be_int(building.id),
             building=building,
             user_id=must_be_int(requester.id),
