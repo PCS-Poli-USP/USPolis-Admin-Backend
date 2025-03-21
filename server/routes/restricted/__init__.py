@@ -21,8 +21,11 @@ from server.routes.restricted.user_routes import router as UserRouter
 from server.routes.restricted.classroom_soliciation_routes import (
     router as ClassroomSolicitationRouter,
 )
+from server.routes.restricted.allocation_routes import (
+    router as AllocationRouter,
+)
 
-router = APIRouter(dependencies=[Depends(authenticate)])
+router = APIRouter(dependencies=[Depends(authenticate)], tags=["Restricted"])
 
 router.include_router(BuildingRouter)
 router.include_router(ClassroomRouter)
@@ -38,3 +41,4 @@ router.include_router(ScheduleRouter)
 router.include_router(OccurrenceRouter)
 router.include_router(ConflictRouter)
 router.include_router(ClassroomSolicitationRouter)
+router.include_router(AllocationRouter)
