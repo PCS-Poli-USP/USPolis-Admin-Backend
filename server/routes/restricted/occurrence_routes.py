@@ -28,9 +28,8 @@ def allocate_schedule(
 def allocate_schedule_many(
     occurrence_repository: OccurrenceRepositoryDep,
     schedule_classroom_pairs: list[AllocateSchedule],
-    user: UserDep,
 ) -> Response:
-    occurrence_repository.allocate_schedule_many(schedule_classroom_pairs, user)
+    occurrence_repository.allocate_schedule_many(schedule_classroom_pairs)
     return NoContent
 
 

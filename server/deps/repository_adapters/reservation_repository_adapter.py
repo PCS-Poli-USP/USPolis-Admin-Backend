@@ -72,6 +72,7 @@ class ReservationRespositoryAdapter:
             building_ids=self.owned_building_ids,
             input=input,
             classroom=classroom,
+            user=self.user,
             session=self.session,
         )
         self.session.commit()

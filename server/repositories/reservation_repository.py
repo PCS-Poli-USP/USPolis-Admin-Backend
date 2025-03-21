@@ -88,6 +88,7 @@ class ReservationRepository:
             created_by=creator,
         )
         schedule = ScheduleRepository.create_with_reservation(
+            user=creator,
             reservation=reservation,
             input=input.schedule_data,
             classroom=classroom,
@@ -144,6 +145,7 @@ class ReservationRepository:
             classroom_id=classroom.id,
         )
         schedule = ScheduleRepository.create_with_reservation(
+            user=creator,
             reservation=reservation,
             input=schedule_input,
             classroom=classroom,
@@ -160,6 +162,7 @@ class ReservationRepository:
         building_ids: list[int],
         input: ReservationUpdate,
         classroom: Classroom,
+        user: User,
         session: Session,
     ) -> Reservation:
         reservation = ReservationRepository.get_by_id_on_buildings(
@@ -171,6 +174,7 @@ class ReservationRepository:
         reservation.classroom = classroom
 
         ScheduleRepository.update_reservation_schedule(
+            user=user,
             reservation=reservation,
             input=input.schedule_data,
             classroom=classroom,

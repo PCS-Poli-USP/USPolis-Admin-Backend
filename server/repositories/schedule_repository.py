@@ -7,6 +7,7 @@ from server.models.database.classroom_db_model import Classroom
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.schedule_db_model import Schedule
+from server.models.database.user_db_model import User
 from server.models.http.requests.occurrence_request_models import OccurenceManyRegister
 from server.models.http.requests.schedule_request_models import (
     ScheduleRegister,
@@ -115,6 +116,7 @@ class ScheduleRepository:
     @staticmethod
     def create_with_reservation(
         *,
+        user: User,
         reservation: Reservation,
         input: ScheduleRegister,
         classroom: Classroom,
@@ -154,7 +156,7 @@ class ScheduleRepository:
         else:
             # schedule is add to sesion here
             OccurrenceRepository.allocate_schedule(
-                schedule=new_schedule, classroom=classroom, session=session
+                user=user, schedule=new_schedule, classroom=classroom, session=session
             )
         return new_schedule
 
@@ -171,7 +173,7 @@ class ScheduleRepository:
 
     @staticmethod
     def update_class_schedules(
-        *, class_: Class, input: list[ScheduleUpdate], session: Session
+        *, class_: Class, user: User, input: list[ScheduleUpdate], session: Session
     ) -> list[Schedule]:
         """ """
         for schedule in class_.schedules:
@@ -187,7 +189,10 @@ class ScheduleRepository:
                     id=schedule_input.classroom_id, session=session
                 )
                 OccurrenceRepository.allocate_schedule(
-                    schedule=new_schedule, classroom=classroom, session=session
+                    user=user,
+                    schedule=new_schedule,
+                    classroom=classroom,
+                    session=session,
                 )
             new_schedules.append(new_schedule)
 
@@ -196,6 +201,7 @@ class ScheduleRepository:
     @staticmethod
     def update_reservation_schedule(
         *,
+        user: User,
         reservation: Reservation,
         input: ScheduleUpdate,
         classroom: Classroom,
@@ -206,6 +212,7 @@ class ScheduleRepository:
         if ScheduleUtils.has_schedule_diff(old_schedule, input):
             session.delete(old_schedule)
             new_schedule = ScheduleRepository.create_with_reservation(
+                user=user,
                 reservation=reservation,
                 input=input,
                 classroom=classroom,
