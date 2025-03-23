@@ -18,7 +18,7 @@ router = APIRouter(
 
 
 @router.patch("/{schedule_id}/edit-occurrences")
-async def update_occurentes(
+def update_occurentes(
     schedule_id: int,
     input: ScheduleUpdateOccurrences,
     user: UserDep,

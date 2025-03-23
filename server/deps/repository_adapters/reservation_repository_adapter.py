@@ -56,7 +56,6 @@ class ReservationRespositoryAdapter:
         )
         self.session.commit()
         self.session.refresh(new_reservation)
-        self.session.refresh(classroom)
         return new_reservation
 
     def update(
@@ -73,11 +72,11 @@ class ReservationRespositoryAdapter:
             building_ids=self.owned_building_ids,
             input=input,
             classroom=classroom,
+            user=self.user,
             session=self.session,
         )
         self.session.commit()
         self.session.refresh(reservation)
-        self.session.refresh(classroom)
         return reservation
 
     def delete(self, id: int) -> None:

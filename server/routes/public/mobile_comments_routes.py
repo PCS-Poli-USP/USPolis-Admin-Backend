@@ -24,7 +24,7 @@ async def post_comment(
 ) -> MobileCommentResponse:
     """Post a new comment, sent by a mobile user"""
     comment = to_comment_model(comment_input)
-    if comment.created_by_id != None:
+    if comment.created_by_id is not None:
         user = MobileUserRepository.get_user_by_id(
             id=must_be_int(comment.created_by_id), session=session
         )
@@ -39,7 +39,7 @@ async def post_comment(
 
 
 @router.get("")
-async def get_all_comments(session: SessionDep) -> list[MobileCommentResponse]:
+def get_all_comments(session: SessionDep) -> list[MobileCommentResponse]:
     """Get all comments, sent by mobile users"""
     comments = CommentRepository.get_all(session=session)
     return MobileCommentResponse.from_model_list(comments)

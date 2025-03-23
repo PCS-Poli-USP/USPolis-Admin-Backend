@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from server.models.database.schedule_db_model import Schedule
 from server.models.http.exceptions.responses_exceptions import UnfetchDataError
+from server.models.http.responses.allocation_log_response import AllocationLogResponse
 from server.models.http.responses.occurrence_response_models import OccurrenceResponse
 from server.utils.enums.month_week import MonthWeek
 from server.utils.enums.recurrence import Recurrence
@@ -67,6 +68,7 @@ class ScheduleResponse(ScheduleResponseBase):
     occurrence_ids: list[int] | None = None
     # When recurrence is custom is necessary
     occurrences: list[OccurrenceResponse] | None = None
+    last_log: AllocationLogResponse | None = None
 
     @classmethod
     def from_schedule(cls, schedule: Schedule) -> "ScheduleResponse":
@@ -78,6 +80,9 @@ class ScheduleResponse(ScheduleResponseBase):
             else None,
             occurrences=OccurrenceResponse.from_occurrence_list(schedule.occurrences)
             if schedule.occurrences and schedule.recurrence == Recurrence.CUSTOM
+            else None,
+            last_log=AllocationLogResponse.from_allocation_log(schedule.logs[0])
+            if schedule.logs
             else None,
         )
 
@@ -101,6 +106,7 @@ class ScheduleFullResponse(ScheduleResponseBase):
     """Schedules with occurrences not optional"""
 
     occurrences: list[OccurrenceResponse]
+    logs: list[AllocationLogResponse]
 
     @classmethod
     def from_schedule(cls, schedule: Schedule) -> "ScheduleFullResponse":
@@ -110,6 +116,7 @@ class ScheduleFullResponse(ScheduleResponseBase):
             occurrences=OccurrenceResponse.from_occurrence_list(schedule.occurrences)
             if schedule.occurrences
             else [],
+            logs=AllocationLogResponse.from_allocation_logs(schedule.logs),
         )
 
     @classmethod

@@ -25,6 +25,8 @@ class ClassroomSolicitationResponse(BaseModel):
     capacity: int
     approved: bool
     denied: bool
+    deleted: bool
+    deleted_by: str | None
     closed: bool
     closed_by: str | None
     created_at: datetime
@@ -53,6 +55,8 @@ class ClassroomSolicitationResponse(BaseModel):
             capacity=solicitation.capacity,
             approved=solicitation.approved,
             denied=solicitation.denied,
+            deleted=solicitation.deleted,
+            deleted_by=solicitation.deleted_by,
             closed=solicitation.closed,
             closed_by=solicitation.closed_by,
             created_at=solicitation.created_at,

@@ -15,6 +15,7 @@ dependencies = [
     "fastapi-mail~=1.4",
     "python-decouple~=3.8",
     "uvicorn~=0.24",
+    "gunicorn",
     "pydantic==2.7",
     "boto3",
     "requests",
@@ -30,7 +31,6 @@ dependencies = [
     "google-auth-oauthlib",
     "httpx",
     "Jinja2",
-    "smtplib",
 ]
 
 [project.optional-dependencies]

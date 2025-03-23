@@ -47,7 +47,9 @@ class ClassRepositoryAdapter:
 
     def update(self, id: int, input: ClassUpdate) -> Class:
         class_permission_checker(user=self.user, class_=id, session=self.session)
-        updated_class = ClassRepository.update(id=id, input=input, session=self.session)
+        updated_class = ClassRepository.update(
+            id=id, input=input, user=self.user, session=self.session
+        )
         self.session.commit()
         self.session.refresh(updated_class)
         return updated_class

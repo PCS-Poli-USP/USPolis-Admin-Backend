@@ -12,7 +12,7 @@ router = APIRouter(prefix="/buildings", tags=["Buildings"])
 
 
 @router.get("/{building_id}")
-async def get_building(
+def get_building(
     building_id: int, repository: BuildingRespositoryAdapterDep
 ) -> BuildingResponse:
     """Get an building by id"""

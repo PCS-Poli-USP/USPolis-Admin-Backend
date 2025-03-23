@@ -20,6 +20,14 @@ class ClassroomSolicitationRepository:
         return solicitation
 
     @staticmethod
+    def get_by_user(user: User, session: Session) -> list[ClassroomSolicitation]:
+        statement = select(ClassroomSolicitation).where(
+            col(ClassroomSolicitation.user_id) == user.id
+        )
+        solicitations = session.exec(statement).all()
+        return list(solicitations)
+
+    @staticmethod
     def get_by_id_on_buildings(
         building_ids: list[int], session: Session
     ) -> list[ClassroomSolicitation]:
@@ -42,6 +50,7 @@ class ClassroomSolicitationRepository:
         solicitation = ClassroomSolicitation(
             classroom_id=must_be_int(classroom.id) if classroom else None,
             classroom=classroom,
+            required_classroom=input.required_classroom,
             building_id=must_be_int(building.id),
             building=building,
             user_id=must_be_int(requester.id),
@@ -61,6 +70,15 @@ class ClassroomSolicitationRepository:
     @staticmethod
     def approve(id: int, user: User, session: Session) -> ClassroomSolicitation:
         solicitation = ClassroomSolicitationRepository.get_by_id(id=id, session=session)
+        ClassroomSolicitationRepository.approve_solicitation_obj(
+            solicitation=solicitation, user=user, session=session
+        )
+        return solicitation
+
+    @staticmethod
+    def approve_solicitation_obj(
+        solicitation: ClassroomSolicitation, user: User, session: Session
+    ) -> ClassroomSolicitation:
         solicitation.approved = True
         solicitation.denied = False
         solicitation.closed = True
