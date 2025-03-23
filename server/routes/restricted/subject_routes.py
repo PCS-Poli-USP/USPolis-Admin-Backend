@@ -24,9 +24,7 @@ router = APIRouter(prefix="/subjects", tags=["Subjects"])
 
 
 @router.get("/{subject_id}")
-async def get_subject(
-    subject_id: int, repository: SubjectRepositoryDep
-) -> SubjectResponse:
+def get_subject(subject_id: int, repository: SubjectRepositoryDep) -> SubjectResponse:
     """Get a subject"""
     subject = repository.get_by_id(id=subject_id)
     return SubjectResponse.from_subject(subject)
@@ -55,7 +53,7 @@ async def update_crawl_subjects(
 
 
 @router.post("")
-async def create_subject(
+def create_subject(
     subject_input: SubjectRegister, session: SessionDep
 ) -> SubjectResponse:
     """Create a subject"""
@@ -64,7 +62,7 @@ async def create_subject(
 
 
 @router.put("/{subject_id}")
-async def update_subject(
+def update_subject(
     subject_id: int, subject_input: SubjectUpdate, session: SessionDep
 ) -> SubjectResponse:
     """Update a subject"""
@@ -75,7 +73,7 @@ async def update_subject(
 
 
 @router.delete("/{subject_id}")
-async def delete_subject(subject_id: int, session: SessionDep) -> Response:
+def delete_subject(subject_id: int, session: SessionDep) -> Response:
     """Delete a subject"""
     SubjectRepository.delete(id=subject_id, session=session)
     return NoContent

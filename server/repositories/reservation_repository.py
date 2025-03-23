@@ -17,6 +17,9 @@ from server.models.http.requests.reservation_request_models import (
     ReservationUpdate,
 )
 from server.models.http.requests.schedule_request_models import ScheduleRegister
+from server.repositories.classroom_solicitation_repository import (
+    ClassroomSolicitationRepository,
+)
 from server.repositories.schedule_repository import ScheduleRepository
 from server.utils.enums.recurrence import Recurrence
 from server.utils.must_be_int import must_be_int
@@ -85,12 +88,28 @@ class ReservationRepository:
             created_by=creator,
         )
         schedule = ScheduleRepository.create_with_reservation(
+            user=creator,
             reservation=reservation,
             input=input.schedule_data,
             classroom=classroom,
             session=session,
         )
         reservation.schedule = schedule
+        if input.has_solicitation and input.solicitation_id:
+            solicitation = ClassroomSolicitationRepository.get_by_id(
+                id=input.solicitation_id, session=session
+            )
+            if solicitation.reservation_id:
+                raise ReservationWithInvalidSolicitation()
+            reservation.solicitation = solicitation
+            solicitation.reservation_id = reservation.id
+            solicitation.reservation = reservation
+            solicitation.classroom_id = classroom.id
+            solicitation.classroom = classroom
+            ClassroomSolicitationRepository.approve_solicitation_obj(
+                solicitation, user=creator, session=session
+            )
+            session.add(solicitation)
         session.add(reservation)
         return reservation
 
@@ -126,6 +145,7 @@ class ReservationRepository:
             classroom_id=classroom.id,
         )
         schedule = ScheduleRepository.create_with_reservation(
+            user=creator,
             reservation=reservation,
             input=schedule_input,
             classroom=classroom,
@@ -142,6 +162,7 @@ class ReservationRepository:
         building_ids: list[int],
         input: ReservationUpdate,
         classroom: Classroom,
+        user: User,
         session: Session,
     ) -> Reservation:
         reservation = ReservationRepository.get_by_id_on_buildings(
@@ -153,11 +174,31 @@ class ReservationRepository:
         reservation.classroom = classroom
 
         ScheduleRepository.update_reservation_schedule(
+            user=user,
             reservation=reservation,
             input=input.schedule_data,
             classroom=classroom,
             session=session,
         )
+        if input.has_solicitation and input.solicitation_id:
+            if (
+                reservation.solicitation
+                and reservation.solicitation.id != input.solicitation_id
+            ):
+                raise ReservationWithInvalidSolicitation()
+            solicitation = ClassroomSolicitationRepository.get_by_id(
+                id=input.solicitation_id, session=session
+            )
+            if (
+                solicitation.reservation_id
+                and solicitation.reservation_id != reservation.id
+            ):
+                raise ReservationWithInvalidSolicitation()
+            if not reservation.solicitation:
+                reservation.solicitation = solicitation
+                solicitation.reservation = reservation
+                session.add(solicitation)
+
         session.add(reservation)
         return reservation
 
@@ -168,6 +209,16 @@ class ReservationRepository:
         reservation = ReservationRepository.get_by_id_on_buildings(
             id=id, building_ids=building_ids, session=session
         )
+        if reservation.solicitation:
+            solicitation = ClassroomSolicitationRepository.get_by_id(
+                id=must_be_int(reservation.solicitation.id), session=session
+            )
+            solicitation.deleted = True
+            solicitation.deleted_by = user.name
+            solicitation.reservation = None
+            solicitation.reservation_id = None
+            reservation.solicitation = None
+            session.add(solicitation)
         session.delete(reservation)
 
 
@@ -176,4 +227,12 @@ class ReservationNotFound(HTTPException):
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Reservation with id {id} not found",
+        )
+
+
+class ReservationWithInvalidSolicitation(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A solicitação vinculada já possui uma reserva diferente da atual",
         )

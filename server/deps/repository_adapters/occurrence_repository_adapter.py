@@ -18,6 +18,9 @@ from server.repositories.occurrence_repository import OccurrenceRepository
 from server.services.security.classrooms_permission_checker import (
     classroom_permission_checker,
 )
+from server.services.security.occurrence_permission_checker import (
+    occurrence_permission_checker,
+)
 from server.services.security.schedule_permission_checker import (
     schedule_permission_checker,
 )
@@ -45,25 +48,31 @@ class OccurrenceRepositoryAdapter:
         )
         return occurrences
 
+    def get_by_id(self, id: int) -> Occurrence:
+        occurrence = OccurrenceRepository.get_by_id(id=id, session=self.session)
+        occurrence_permission_checker(self.user, occurrence, self.session)
+        return occurrence
+
     def allocate_schedule(self, schedule_id: int, classroom_id: int) -> Schedule:
         schedule = self.schedule_repo.get_by_id(schedule_id)
         classroom = self.classroom_repo.get_by_id(classroom_id)
         OccurrenceRepository.allocate_schedule(
-            schedule=schedule, classroom=classroom, session=self.session
+            user=self.user, schedule=schedule, classroom=classroom, session=self.session
         )
         self.session.commit()
         self.session.refresh(schedule)
         return schedule
 
     def allocate_schedule_many(
-        self, schedule_classroom_pairs: list[AllocateSchedule]
+        self,
+        schedule_classroom_pairs: list[AllocateSchedule],
     ) -> None:
         for pair in schedule_classroom_pairs:
             schedule = self.schedule_repo.get_by_id(pair.schedule_id)
             schedule_permission_checker(self.user, schedule, self.session)
             if pair.classroom_id == -1:
                 OccurrenceRepository.remove_schedule_allocation(
-                    schedule=schedule, session=self.session
+                    user=self.user, schedule=schedule, session=self.session
                 )
                 continue
 
@@ -71,14 +80,17 @@ class OccurrenceRepositoryAdapter:
             classroom_permission_checker(self.user, classroom, self.session)
 
             OccurrenceRepository.allocate_schedule(
-                schedule=schedule, classroom=classroom, session=self.session
+                user=self.user,
+                schedule=schedule,
+                classroom=classroom,
+                session=self.session,
             )
         self.session.commit()
 
     def remove_schedule_allocation(self, schedule_id: int) -> Schedule:
         schedule = self.schedule_repo.get_by_id(schedule_id)
         OccurrenceRepository.remove_schedule_allocation(
-            schedule=schedule, session=self.session
+            user=self.user, schedule=schedule, session=self.session
         )
         self.session.commit()
         self.session.refresh(schedule)

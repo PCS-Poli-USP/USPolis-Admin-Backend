@@ -8,6 +8,7 @@ from server.models.database.classroom_db_model import Classroom
 from server.models.database.schedule_db_model import Schedule
 from server.models.database.subject_building_link import SubjectBuildingLink
 from server.models.database.subject_db_model import Subject
+from server.models.database.user_db_model import User
 from server.models.http.requests.class_request_models import ClassRegister, ClassUpdate
 
 from server.repositories.calendar_repository import CalendarRepository
@@ -136,7 +137,7 @@ class ClassRepository:
         return new_class
 
     @staticmethod
-    def update(*, id: int, input: ClassUpdate, session: Session) -> Class:
+    def update(*, id: int, input: ClassUpdate, user: User, session: Session) -> Class:
         updated_class = ClassRepository.get_by_id(id=id, session=session)
         input_data = input.model_dump()
         for key, value in input_data.items():
@@ -169,14 +170,20 @@ class ClassRepository:
         # Only change schedules if is necessary (change calendars or change schedules)
         if reallocate:
             updated_class.schedules = ScheduleRepository.update_class_schedules(
-                class_=updated_class, input=input.schedules_data, session=session
+                class_=updated_class,
+                input=input.schedules_data,
+                user=user,
+                session=session,
             )
         else:
             if ScheduleUtils.has_schedule_diff_from_list(
                 updated_class.schedules, input.schedules_data
             ):
                 updated_class.schedules = ScheduleRepository.update_class_schedules(
-                    class_=updated_class, input=input.schedules_data, session=session
+                    class_=updated_class,
+                    input=input.schedules_data,
+                    user=user,
+                    session=session,
                 )
 
         return updated_class

@@ -16,7 +16,7 @@ router = APIRouter(prefix="/buildings", tags=["Buildings"])
 
 
 @router.post("")
-async def create_building(
+def create_building(
     input: BuildingRegister, repository: BuildingRespositoryAdapterDep
 ) -> BuildingResponse:
     """Create new building"""
@@ -25,7 +25,7 @@ async def create_building(
 
 
 @router.put("/{building_id}")
-async def update_building(
+def update_building(
     building_id: int, input: BuildingUpdate, repository: BuildingRespositoryAdapterDep
 ) -> BuildingResponse:
     """Update a building by id"""
@@ -34,7 +34,7 @@ async def update_building(
 
 
 @router.delete("/{building_id}")
-async def delete_building(
+def delete_building(
     building_id: int, repository: BuildingRespositoryAdapterDep
 ) -> Response:
     """Delete a building by id"""
@@ -46,5 +46,5 @@ class BuildingNameAlreadyExists(HTTPException):
     def __init__(self, building_name: str) -> None:
         super().__init__(
             status.HTTP_409_CONFLICT,
-            f"Building {building_name} already exists",
+            f"Prédio {building_name} já existe",
         )

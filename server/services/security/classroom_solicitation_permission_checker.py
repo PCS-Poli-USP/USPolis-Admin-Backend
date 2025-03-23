@@ -27,9 +27,9 @@ def classroom_solicitation_permission_checker(
     if isinstance(solicitation, int):
         __solicitation_id_permission_checker(user, solicitation, session)
     elif isinstance(solicitation, ClassroomSolicitation):
-        __building_obj_permission_checker(user, solicitation)
+        __solicitation_obj_permission_checker(user, solicitation)
     elif isinstance(solicitation, list):
-        __building_list_permission_checker(user, solicitation, session)
+        __solicitation_list_permission_checker(user, solicitation, session)
 
 
 def __solicitation_id_permission_checker(
@@ -46,7 +46,7 @@ def __solicitation_id_permission_checker(
         )
 
 
-def __building_obj_permission_checker(
+def __solicitation_obj_permission_checker(
     user: User, solicitation: ClassroomSolicitation
 ) -> None:
     if user.buildings is None or solicitation.building not in user.buildings:
@@ -55,7 +55,7 @@ def __building_obj_permission_checker(
         )
 
 
-def __building_list_permission_checker(
+def __solicitation_list_permission_checker(
     user: User, solicitations: list[int] | list[ClassroomSolicitation], session: Session
 ) -> None:
     building_ids = [

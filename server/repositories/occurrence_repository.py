@@ -5,15 +5,24 @@ from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.schedule_db_model import Schedule
+from server.models.database.user_db_model import User
+from server.models.http.requests.allocation_log_request_models import AllocationLogInput
 from server.models.http.requests.occurrence_request_models import (
     OccurenceManyRegister,
     OccurrenceRegister,
 )
+from server.repositories.allocation_log_repository import AllocationLogRepository
 from server.utils.enums.recurrence import Recurrence
 from server.utils.occurrence_utils import OccurrenceUtils
 
 
 class OccurrenceRepository:
+    @staticmethod
+    def get_by_id(id: int, session: Session) -> Occurrence:
+        statement = select(Occurrence).where(col(Occurrence.id) == id)
+        occurrence = session.exec(statement).one()
+        return occurrence
+
     @staticmethod
     def get_all_on_buildings(
         building_ids: list[int], session: Session
@@ -38,33 +47,60 @@ class OccurrenceRepository:
         return list(occurrences)
 
     @staticmethod
-    def allocate_schedule(
-        schedule: Schedule, classroom: Classroom, session: Session
+    def allocate_occurrence(
+        occurrence: Occurrence, classroom: Classroom, session: Session
     ) -> None:
-        occurrences = OccurrenceUtils.generate_occurrences(schedule)
+        occurrence.classroom_id = classroom.id
+        occurrence.classroom = classroom
+        classroom.occurrences.append(occurrence)
+        session.add(occurrence)
+        session.add(classroom)
 
-        previous_occurrences = schedule.occurrences
-        for occurrence in previous_occurrences:
-            session.delete(occurrence)
+    @staticmethod
+    def allocate_schedule(
+        user: User, schedule: Schedule, classroom: Classroom, session: Session
+    ) -> None:
+        input = AllocationLogInput.for_allocation(
+            user=user, schedule=schedule, classroom=classroom
+        )
+        AllocationLogRepository.create(input=input, session=session)
+        if schedule.recurrence != Recurrence.CUSTOM:
+            occurrences = OccurrenceUtils.generate_occurrences(schedule)
+            previous_occurrences = schedule.occurrences
+            for occurrence in previous_occurrences:
+                session.delete(occurrence)
+            schedule.occurrences = occurrences
+        else:
+            occurrences = schedule.occurrences
 
-        schedule.occurrences = occurrences
-        classroom.occurrences.extend(occurrences)
-
+        for occurrence in occurrences:
+            occurrence.classroom = classroom
+        # classroom.occurrences.extend(occurrences)
         schedule.classroom = classroom
-
         schedule.allocated = True
-
         session.add(schedule)
         session.add(classroom)
 
     @staticmethod
-    def remove_schedule_allocation(schedule: Schedule, session: Session) -> None:
+    def remove_occurrence_allocation(occurrence: Occurrence, session: Session) -> None:
+        occurrence.classroom = None
+        occurrence.classroom_id = None
+        session.add(occurrence)
+
+    @staticmethod
+    def remove_schedule_allocation(
+        user: User, schedule: Schedule, session: Session
+    ) -> None:
+        input = AllocationLogInput.for_deallocation(user=user, schedule=schedule)
+        AllocationLogRepository.create(input=input, session=session)
         if schedule.recurrence != Recurrence.CUSTOM:
             for occurrence in schedule.occurrences:
                 session.delete(occurrence)
         else:
             for occurrence in schedule.occurrences:
                 occurrence.classroom = None
+                occurrence.classroom_id = None
+                session.add(occurrence)
         schedule.allocated = False
         schedule.classroom_id = None
         session.add(schedule)

@@ -2,9 +2,10 @@ from datetime import date, time
 from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import Column, ForeignKey, Integer
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship, SQLModel, desc
 
 from server.models.database.reservation_db_model import Reservation
+from server.models.database.allocation_log_db_model import AllocationLog
 
 if TYPE_CHECKING:
     from server.models.database.class_db_model import Class
@@ -47,4 +48,10 @@ class Schedule(SQLModel, table=True):
 
     occurrences: list["Occurrence"] = Relationship(
         back_populates="schedule", sa_relationship_kwargs={"cascade": "all, delete"}
+    )
+    logs: list[AllocationLog] = Relationship(
+        sa_relationship_kwargs={
+            "cascade": "all, delete",
+            "order_by": lambda: desc(AllocationLog.modified_at),
+        },
     )

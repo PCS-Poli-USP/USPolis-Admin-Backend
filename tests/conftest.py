@@ -12,7 +12,6 @@ from server.config import CONFIG
 
 CONFIG.testing = True
 CONFIG.override_auth = True
-CONFIG.override_cognito_client = True
 CONFIG.db_uri = config("TEST_DATABASE_URI")  # type: ignore
 CONFIG.db_database = config("TEST_DATABASE_NAME", default="uspolis-test")  # type: ignore
 

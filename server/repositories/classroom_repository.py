@@ -4,6 +4,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 
+from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.user_db_model import User
 from server.models.http.requests.classroom_request_models import ClassroomRegister
@@ -38,6 +39,16 @@ class ClassroomRepository:
         statement = select(Classroom).where(col(Classroom.id).in_(ids))
         classrooms = list(session.exec(statement).all())
         return classrooms
+
+    @staticmethod
+    def get_by_name_and_building(
+        name: str, building: Building, session: Session
+    ) -> Classroom:
+        statement = select(Classroom).where(
+            Classroom.name == name, Classroom.building_id == building.id
+        )
+        classroom = session.exec(statement).one()
+        return classroom
 
     @staticmethod
     def create(
@@ -111,13 +122,15 @@ class ClassroomRepository:
 
     @staticmethod
     def delete_on_buildings(
-        id: int, *, building_ids: list[int], session: Session
+        id: int, *, building_ids: list[int], user: User, session: Session
     ) -> None:
         classroom = ClassroomRepository.get_by_id_on_buildings(
             id=id, building_ids=building_ids, session=session
         )
         for schedule in classroom.schedules:
-            OccurrenceRepository.remove_schedule_allocation(schedule, session=session)
+            OccurrenceRepository.remove_schedule_allocation(
+                user, schedule, session=session
+            )
         session.delete(classroom)
 
 

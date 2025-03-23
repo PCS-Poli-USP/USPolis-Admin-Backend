@@ -23,5 +23,13 @@ class ClassroomSolicitationApprove(BaseModel):
     end_time: time
 
 
+class ClassroomSolicitationUpdated(ClassroomSolicitationApprove):
+    pass
+
+
+class ClassroomSolicitationDeleted(ClassroomSolicitationRegister):
+    pass
+
+
 class ClassroomSolicitationDeny(BaseModel):
     justification: str
