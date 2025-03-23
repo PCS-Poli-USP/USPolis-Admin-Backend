@@ -24,6 +24,9 @@ from server.routes.restricted.classroom_soliciation_routes import (
 from server.routes.restricted.allocation_routes import (
     router as AllocationRouter,
 )
+from server.routes.restricted.allocation_log_routes import (
+    router as AllocationLogRouter,
+)
 
 router = APIRouter(dependencies=[Depends(authenticate)], tags=["Restricted"])
 
@@ -42,3 +45,4 @@ router.include_router(OccurrenceRouter)
 router.include_router(ConflictRouter)
 router.include_router(ClassroomSolicitationRouter)
 router.include_router(AllocationRouter)
+router.include_router(AllocationLogRouter)

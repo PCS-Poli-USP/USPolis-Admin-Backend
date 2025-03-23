@@ -1,4 +1,4 @@
-from sqlmodel import Session
+from sqlmodel import Session, desc, select
 from server.models.database.allocation_log_db_model import AllocationLog
 from server.models.http.requests.allocation_log_request_models import AllocationLogInput
 
@@ -18,3 +18,13 @@ class AllocationLogRepository:
         )
         session.add(allocation_log)
         return allocation_log
+
+    @staticmethod
+    def get_by_schedule_id(schedule_id: int, session: Session) -> list[AllocationLog]:
+        statement = (
+            select(AllocationLog)
+            .where(AllocationLog.schedule_id == schedule_id)
+            .order_by(desc(AllocationLog.modified_at))
+        )
+        logs = session.exec(statement).all()
+        return list(logs)

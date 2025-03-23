@@ -1,7 +1,9 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 from sqlmodel import Field, Relationship, SQLModel
 
-from server.models.database.schedule_db_model import Schedule
+if TYPE_CHECKING:
+    from server.models.database.schedule_db_model import Schedule
 from server.utils.enums.action_type_enum import ActionType
 
 
@@ -17,4 +19,4 @@ class AllocationLog(SQLModel, table=True):
     new_building: str = Field()
 
     schedule_id: int = Field(foreign_key="schedule.id")
-    schedule: Schedule = Relationship(back_populates="logs")
+    schedule: "Schedule" = Relationship(back_populates="logs")
