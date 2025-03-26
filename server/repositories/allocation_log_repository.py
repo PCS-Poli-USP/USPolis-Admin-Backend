@@ -1,13 +1,17 @@
 from sqlmodel import Session, desc, select
 from server.models.database.allocation_log_db_model import AllocationLog
+from server.models.database.schedule_db_model import Schedule
 from server.models.http.requests.allocation_log_request_models import AllocationLogInput
 
 
 class AllocationLogRepository:
     @staticmethod
-    def create(input: AllocationLogInput, session: Session) -> AllocationLog:
+    def create(
+        input: AllocationLogInput, schedule: Schedule, session: Session
+    ) -> AllocationLog:
         allocation_log = AllocationLog(
-            schedule_id=input.schedule_id,
+            schedule=schedule,
+            schedule_id=schedule.id,
             modified_by=input.modified_by,
             modified_at=input.modified_at,
             action=input.action,

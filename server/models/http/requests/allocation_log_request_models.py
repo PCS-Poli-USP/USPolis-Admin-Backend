@@ -9,8 +9,7 @@ from server.utils.enums.allocation_enum import AllocationEnum
 from server.utils.must_be_int import must_be_int
 
 
-class AllocationLogInput(BaseModel):
-    schedule_id: int
+class AllocationLogBase(BaseModel):
     modified_by: str
     modified_at: datetime
     action: ActionType
@@ -21,10 +20,16 @@ class AllocationLogInput(BaseModel):
     new_classroom: str
     new_building: str
 
+
+class AllocationLogInput(AllocationLogBase):
+    schedule_id: int | None
+    schedule: Schedule
+
     @classmethod
     def for_deallocation(cls, user: User, schedule: Schedule) -> "AllocationLogInput":
         return cls(
             schedule_id=must_be_int(schedule.id),
+            schedule=schedule,
             modified_by=user.name,
             modified_at=datetime.now(),
             action=ActionType.ALLOCATE,
@@ -43,7 +48,8 @@ class AllocationLogInput(BaseModel):
         cls, user: User, schedule: Schedule, classroom: Classroom
     ) -> "AllocationLogInput":
         return cls(
-            schedule_id=must_be_int(schedule.id),
+            schedule_id=schedule.id,
+            schedule=schedule,
             modified_by=user.name,
             modified_at=datetime.now(),
             action=ActionType.ALLOCATE,
