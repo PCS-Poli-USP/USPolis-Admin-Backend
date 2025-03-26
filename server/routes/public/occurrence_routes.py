@@ -5,7 +5,10 @@ from server.deps.repository_adapters.occurrence_repository_adapter import (
 )
 from server.deps.session_dep import SessionDep
 from server.models.http.responses.occurrence_response_models import OccurrenceResponse
-from server.models.http.responses.schedule_response_models import ScheduleFullResponse, ScheduleResponse
+from server.models.http.responses.schedule_response_models import (
+    ScheduleFullResponse,
+    ScheduleResponse,
+)
 from server.repositories.schedule_repository import ScheduleRepository
 
 
@@ -27,6 +30,7 @@ def get_occurrences_by_schedule_full(
 ) -> ScheduleFullResponse:
     schedule = ScheduleRepository.get_by_id(id=schedule_id, session=session)
     return ScheduleFullResponse.from_schedule(schedule)
+
 
 @router.get("/schedule/{schedule_id}")
 def get_schedule_response(
