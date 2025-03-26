@@ -17,10 +17,10 @@ class ReservationBase(BaseModel):
 class ReservationRegister(ReservationBase):
     schedule_data: ScheduleRegister
     has_solicitation: bool
-    solicitation_id: int | None
+    solicitation_id: int | None = None
 
 
 class ReservationUpdate(ReservationBase):
     schedule_data: ScheduleUpdate
     has_solicitation: bool
-    solicitation_id: int | None
+    solicitation_id: int | None = None
