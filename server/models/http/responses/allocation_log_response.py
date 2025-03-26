@@ -30,7 +30,7 @@ class AllocationLogResponse(BaseModel):
             old_building=log.old_building,
             new_classroom=log.new_classroom,
             new_building=log.new_building,
-            schedule_id=log.schedule_id,
+            schedule_id=must_be_int(log.schedule_id),
         )
 
     @classmethod

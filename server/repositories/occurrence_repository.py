@@ -63,7 +63,7 @@ class OccurrenceRepository:
         input = AllocationLogInput.for_allocation(
             user=user, schedule=schedule, classroom=classroom
         )
-        AllocationLogRepository.create(input=input, session=session)
+        AllocationLogRepository.create(input=input, schedule=schedule, session=session)
         if schedule.recurrence != Recurrence.CUSTOM:
             occurrences = OccurrenceUtils.generate_occurrences(schedule)
             previous_occurrences = schedule.occurrences
@@ -92,7 +92,7 @@ class OccurrenceRepository:
         user: User, schedule: Schedule, session: Session
     ) -> None:
         input = AllocationLogInput.for_deallocation(user=user, schedule=schedule)
-        AllocationLogRepository.create(input=input, session=session)
+        AllocationLogRepository.create(input=input, schedule=schedule, session=session)
         if schedule.recurrence != Recurrence.CUSTOM:
             for occurrence in schedule.occurrences:
                 session.delete(occurrence)
