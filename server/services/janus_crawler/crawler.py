@@ -1,4 +1,4 @@
-from datetime import time
+from datetime import datetime
 from bs4 import BeautifulSoup
 from httpx import AsyncClient
 import pandas as pd
@@ -78,16 +78,20 @@ class JanusCrawler:
             end_time = ""
             day = ""
 
+        start_date_str = df[0].iloc[13].split(":")[1].strip()
+        end_date_str = df[0].iloc[13].split(":")[2].strip()
         info = SubjectInfo(
             class_code=df[0].iloc[0].split("-")[1].strip(),
             subject_name=df[0].iloc[1],
             subject_code=df[0].iloc[1],
             total_students=int(df[2].iloc[9]),
-            start_date=df[0].iloc[13].split(":")[1].strip(),
-            end_date=df[0].iloc[13].split(":")[2].strip(),
+            start_date=datetime.strptime(start_date_str, "%d/%m/%Y").date(),
+            end_date=datetime.strptime(end_date_str, "%d/%m/%Y").date(),
             credits=int(df[0].iloc[15].split(":")[1].strip()),
-            start_time=time(start_time) if start_time else None,
-            end_time=time(end_time) if end_time else None,
+            start_time=datetime.strptime(start_time, "%H:%M").time()
+            if start_time
+            else None,
+            end_time=datetime.strptime(end_time, "%H:%M").time() if end_time else None,
             week_day=WeekDay.from_long_str(day) if day else None,
             professors=[],
         )
