@@ -19,8 +19,6 @@ class ClassResponseBase(BaseModel):
     professors: list[str]
     type: ClassType
     vacancies: int
-    subscribers: int
-    pendings: int
 
     air_conditionating: bool
     accessibility: bool
@@ -47,8 +45,6 @@ class ClassResponseBase(BaseModel):
             professors=_class.professors,
             type=_class.type,
             vacancies=_class.vacancies,
-            subscribers=_class.subscribers,
-            pendings=_class.pendings,
             air_conditionating=_class.air_conditionating,
             accessibility=_class.accessibility,
             projector=_class.projector,

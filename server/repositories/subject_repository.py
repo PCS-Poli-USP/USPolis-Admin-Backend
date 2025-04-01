@@ -1,4 +1,3 @@
-from datetime import date
 from fastapi import HTTPException, status
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
@@ -90,8 +89,6 @@ class SubjectRepository:
             type=input.type,
             class_credit=input.class_credit,
             work_credit=input.work_credit,
-            activation=input.activation,
-            deactivation=input.desactivation,
         )
         session.add(new_subject)
         session.commit()
@@ -107,8 +104,6 @@ class SubjectRepository:
         old.type = new.type
         old.class_credit = new.class_credit
         old.work_credit = new.work_credit
-        old.activation = new.activation
-        old.deactivation = new.deactivation
 
     @staticmethod
     def __update_crawled_subject_class_data(
@@ -224,8 +219,6 @@ class SubjectRepository:
         class_.professors = crawled.professors
         class_.type = crawled.type
         class_.vacancies = crawled.vacancies
-        class_.subscribers = crawled.subscribers
-        class_.pendings = crawled.pendings
         class_.updated_at = crawled.updated_at
         session.add(class_)
 
@@ -297,8 +290,6 @@ class SubjectRepository:
         subject.type = input.type
         subject.class_credit = input.class_credit
         subject.work_credit = input.work_credit
-        subject.activation = input.activation
-        subject.deactivation = input.desactivation
 
     @staticmethod
     def update(*, id: int, input: SubjectUpdate, session: Session) -> Subject:
@@ -327,7 +318,6 @@ class SubjectRepository:
             type=SubjectType.OTHER,
             work_credit=0,
             class_credit=0,
-            activation=date.today(),
         )
         session.add(new_subject)
         session.commit()

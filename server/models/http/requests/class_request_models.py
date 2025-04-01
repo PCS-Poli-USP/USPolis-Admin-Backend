@@ -20,8 +20,6 @@ class ClassRequestBase(BaseModel):
     type: ClassType
     professors: list[str]
     vacancies: int
-    subscribers: int
-    pendings: int
 
     air_conditionating: bool
     accessibility: bool

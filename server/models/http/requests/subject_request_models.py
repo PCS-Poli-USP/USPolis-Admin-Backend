@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from fastapi import HTTPException, status
 from pydantic import BaseModel, field_validator
 
@@ -24,8 +22,6 @@ class SubjectRegister(BaseModel):
     type: SubjectType
     class_credit: int
     work_credit: int
-    activation: datetime
-    desactivation: datetime | None = None
 
     @field_validator("code")
     def validate_code(cls, code: str) -> str:

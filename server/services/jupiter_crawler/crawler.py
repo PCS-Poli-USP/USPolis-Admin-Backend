@@ -66,8 +66,6 @@ class JupiterCrawler:
             professors=sorted(list(self.__subject_professors)),
             class_credit=0,
             work_credit=0,
-            activation=crawled_classes[0].start_date,
-            deactivation=crawled_classes[0].end_date,
         )
         return subject
 
@@ -110,8 +108,6 @@ class JupiterCrawler:
                     code=general_info.class_code,
                     type=general_info.class_type,
                     vacancies=student_numbers_info.vacancies,
-                    subscribers=student_numbers_info.subscribers,
-                    pendings=student_numbers_info.pendings,
                     professors=[],
                     schedules=[],
                 )

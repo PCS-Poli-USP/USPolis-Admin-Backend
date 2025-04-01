@@ -105,7 +105,7 @@ class ClassExtendedData(BaseExtendedData):
     subject_name: str
     allocated: bool
     professors: list[str]
-    subscribers: int
+    vacancies: int
 
     @classmethod
     def from_schedule(cls, schedule: Schedule) -> "ClassExtendedData":
@@ -121,7 +121,7 @@ class ClassExtendedData(BaseExtendedData):
             subject_name=schedule.class_.subject.name,
             allocated=schedule.allocated,
             professors=schedule.class_.professors,
-            subscribers=schedule.class_.subscribers,
+            vacancies=schedule.class_.vacancies,
         )
 
 
