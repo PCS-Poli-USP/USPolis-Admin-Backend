@@ -13,7 +13,9 @@ from server.models.http.requests.subject_request_models import (
 from server.models.http.responses.subject_response_models import SubjectCrawlResponse
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.calendar_repository import CalendarRepository
+from server.services.janus_crawler.crawler import JanusCrawler
 from server.services.jupiter_crawler.crawler import JupiterCrawler
+from server.utils.enums.crawler_type_enum import CrawlerType
 from server.utils.enums.subject_type import SubjectType
 
 
@@ -127,6 +129,7 @@ class SubjectRepository:
         calendar_ids: list[int],
         session: Session,
         building: BuildingDep,
+        type: CrawlerType,
     ) -> SubjectCrawlResponse:
         calendars = CalendarRepository.get_by_ids(ids=calendar_ids, session=session)
         errors: list[str] = []
@@ -139,9 +142,15 @@ class SubjectRepository:
                 old = None
 
             try:
-                subject = await JupiterCrawler.crawl_subject_static(
-                    subject_code, calendars
-                )
+                if (type == CrawlerType.JUPITER):
+                    subject = await JupiterCrawler.crawl_subject_static(
+                        subject_code, calendars
+                    )
+                else:
+                    subject = await JanusCrawler.crawl_subject_static(
+                        subject_code, calendars
+                    )
+             
             except Exception as e:  # noqa: E722
                 print(e)
                 errors.append(

@@ -39,6 +39,7 @@ async def crawl_subjects(
         session=session,
         calendar_ids=input.calendar_ids,
         subjects_codes=input.subject_codes,
+        type=input.type,
     )
     return response
 

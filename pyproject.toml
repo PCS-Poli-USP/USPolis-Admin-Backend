@@ -33,6 +33,7 @@ dependencies = [
     "Jinja2",
     "pandas",
     "numpy",
+    "html5lib",
 ]
 
 [project.optional-dependencies]
