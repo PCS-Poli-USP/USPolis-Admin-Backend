@@ -1,4 +1,3 @@
-from datetime import date
 from fastapi import HTTPException, status
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
@@ -14,7 +13,9 @@ from server.models.http.requests.subject_request_models import (
 from server.models.http.responses.subject_response_models import SubjectCrawlResponse
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.calendar_repository import CalendarRepository
+from server.services.janus_crawler.crawler import JanusCrawler
 from server.services.jupiter_crawler.crawler import JupiterCrawler
+from server.utils.enums.crawler_type_enum import CrawlerType
 from server.utils.enums.subject_type import SubjectType
 
 
@@ -90,8 +91,6 @@ class SubjectRepository:
             type=input.type,
             class_credit=input.class_credit,
             work_credit=input.work_credit,
-            activation=input.activation,
-            deactivation=input.desactivation,
         )
         session.add(new_subject)
         session.commit()
@@ -107,8 +106,6 @@ class SubjectRepository:
         old.type = new.type
         old.class_credit = new.class_credit
         old.work_credit = new.work_credit
-        old.activation = new.activation
-        old.deactivation = new.deactivation
 
     @staticmethod
     def __update_crawled_subject_class_data(
@@ -132,6 +129,7 @@ class SubjectRepository:
         calendar_ids: list[int],
         session: Session,
         building: BuildingDep,
+        type: CrawlerType,
     ) -> SubjectCrawlResponse:
         calendars = CalendarRepository.get_by_ids(ids=calendar_ids, session=session)
         errors: list[str] = []
@@ -144,9 +142,15 @@ class SubjectRepository:
                 old = None
 
             try:
-                subject = await JupiterCrawler.crawl_subject_static(
-                    subject_code, calendars
-                )
+                if (type == CrawlerType.JUPITER):
+                    subject = await JupiterCrawler.crawl_subject_static(
+                        subject_code, calendars
+                    )
+                else:
+                    subject = await JanusCrawler.crawl_subject_static(
+                        subject_code, calendars
+                    )
+             
             except Exception as e:  # noqa: E722
                 print(e)
                 errors.append(
@@ -224,8 +228,6 @@ class SubjectRepository:
         class_.professors = crawled.professors
         class_.type = crawled.type
         class_.vacancies = crawled.vacancies
-        class_.subscribers = crawled.subscribers
-        class_.pendings = crawled.pendings
         class_.updated_at = crawled.updated_at
         session.add(class_)
 
@@ -297,8 +299,6 @@ class SubjectRepository:
         subject.type = input.type
         subject.class_credit = input.class_credit
         subject.work_credit = input.work_credit
-        subject.activation = input.activation
-        subject.deactivation = input.desactivation
 
     @staticmethod
     def update(*, id: int, input: SubjectUpdate, session: Session) -> Subject:
@@ -327,7 +327,6 @@ class SubjectRepository:
             type=SubjectType.OTHER,
             work_credit=0,
             class_credit=0,
-            activation=date.today(),
         )
         session.add(new_subject)
         session.commit()

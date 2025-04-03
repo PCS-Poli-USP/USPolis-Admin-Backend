@@ -121,8 +121,6 @@ class ClassRepository:
             professors=input.professors,
             type=input.type,
             vacancies=input.vacancies,
-            subscribers=input.subscribers,
-            pendings=input.pendings,
             air_conditionating=input.air_conditionating,
             accessibility=input.accessibility,
             projector=input.projector,

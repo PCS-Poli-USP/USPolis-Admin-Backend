@@ -1,5 +1,3 @@
-from datetime import date
-
 from pydantic import BaseModel
 
 from server.models.database.class_db_model import Class
@@ -20,8 +18,6 @@ class SubjectResponse(BaseModel):
     type: SubjectType
     class_credit: int
     work_credit: int
-    activation: date
-    desactivation: date | None = None
 
     @classmethod
     def from_subject(cls, subject: Subject) -> "SubjectResponse":
@@ -41,8 +37,6 @@ class SubjectResponse(BaseModel):
             type=subject.type,
             class_credit=subject.class_credit,
             work_credit=subject.work_credit,
-            activation=subject.activation,
-            desactivation=subject.deactivation if subject.deactivation else None,
         )
 
     @classmethod

@@ -26,8 +26,6 @@ class Class(SQLModel, table=True):
     professors: list[str] = Field(sa_column=Column(postgresql.ARRAY(String())))
     type: ClassType = Field()
     vacancies: int = Field()
-    subscribers: int = Field()
-    pendings: int = Field()
 
     air_conditionating: bool = Field(default=False)
     accessibility: bool = Field(default=False)

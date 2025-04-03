@@ -1,4 +1,3 @@
-from datetime import date
 from typing import TYPE_CHECKING
 
 from sqlalchemy import String
@@ -24,8 +23,6 @@ class Subject(SQLModel, table=True):
     type: SubjectType = Field(sa_column=Column(Enum(SubjectType)))
     class_credit: int = Field(nullable=False)
     work_credit: int = Field(nullable=False)
-    activation: date = Field(nullable=False)
-    deactivation: date | None = Field(default=None)
 
     buildings: list["Building"] = Relationship(
         back_populates="subjects", link_model=SubjectBuildingLink
