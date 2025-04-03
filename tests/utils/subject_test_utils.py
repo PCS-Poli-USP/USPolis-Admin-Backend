@@ -17,7 +17,6 @@ def make_subject(code: str, buildings: list[Building]) -> Subject:
         type=SubjectDefaultValues.TYPE,
         class_credit=SubjectDefaultValues.CLASS_CREDIT,
         work_credit=SubjectDefaultValues.WORK_CREDIT,
-        activation=SubjectDefaultValues.ACTIVATION,
     )
     return subject
 
@@ -31,7 +30,6 @@ def make_subject_register_input(building_ids: list[int]) -> SubjectRegister:
         type=SubjectDefaultValues.TYPE,
         class_credit=SubjectDefaultValues.CLASS_CREDIT,
         work_credit=SubjectDefaultValues.WORK_CREDIT,
-        activation=SubjectDefaultValues.ACTIVATION,
     )
     return register
 
@@ -45,7 +43,6 @@ def make_subject_update_input(building_ids: list[int]) -> SubjectUpdate:
         type=SubjectDefaultValues.TYPE,
         class_credit=SubjectDefaultValues.CLASS_CREDIT,
         work_credit=SubjectDefaultValues.WORK_CREDIT,
-        activation=SubjectDefaultValues.ACTIVATION,
     )
     return register
 

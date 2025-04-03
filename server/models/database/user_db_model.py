@@ -22,6 +22,7 @@ class User(SQLModel, table=True):
     is_admin: bool
     name: str
     updated_at: datetime = Field(default=datetime.now())
+    last_visited: datetime = Field(default=datetime.now())
 
     created_by_id: int | None = Field(
         foreign_key="user.id",

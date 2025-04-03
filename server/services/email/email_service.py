@@ -37,7 +37,7 @@ class EmailService:
         # create email
         msg = MIMEMultipart()
         msg["Subject"] = context.subject
-        msg["From"] = f"{CONFIG.mail_address}>"
+        msg["From"] = f"{CONFIG.mail_address}"
         msg["Reply-To"] = f"no-reply-{CONFIG.mail_address}"
         msg["To"] = ",".join(context.to)
         msg.attach(MIMEText(context.body, "html"))

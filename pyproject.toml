@@ -31,6 +31,9 @@ dependencies = [
     "google-auth-oauthlib",
     "httpx",
     "Jinja2",
+    "pandas",
+    "numpy",
+    "html5lib",
 ]
 
 [project.optional-dependencies]
@@ -40,6 +43,8 @@ dev = [
     "types-requests",
     "types-beautifulsoup4",
     "types-pytz"
+    "pandas-stubs",
+    
 ]
 test = [
     "asgi-lifespan~=2.1",
