@@ -156,7 +156,7 @@ class JanusCrawler:
             code=self.__subject_code,
             name=data.subject_name,
             professors=data.professors,
-            type=SubjectType.FOUR_MONTHLY,
+            type=SubjectType.POSTGRADUATE,
             class_credit=data.credits,
             work_credit=0,
             classes=classes,
