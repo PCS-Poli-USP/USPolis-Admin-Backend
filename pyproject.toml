@@ -42,9 +42,8 @@ dev = [
     "ruff",
     "types-requests",
     "types-beautifulsoup4",
-    "types-pytz"
+    "types-pytz",
     "pandas-stubs",
-    
 ]
 test = [
     "asgi-lifespan~=2.1",
