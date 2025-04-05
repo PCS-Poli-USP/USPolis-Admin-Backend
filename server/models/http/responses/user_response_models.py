@@ -19,6 +19,7 @@ class UserResponse(BaseModel):
     buildings: list[BuildingResponse] | None = None
     solicitations: list[ClassroomSolicitationResponse]
     updated_at: datetime
+    last_visited: datetime
 
     @classmethod
     def from_user(cls, user: User) -> "UserResponse":
@@ -37,6 +38,7 @@ class UserResponse(BaseModel):
                 user.solicitations
             ),
             updated_at=user.updated_at,
+            last_visited=user.last_visited,
         )
 
     @classmethod
