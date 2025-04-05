@@ -23,12 +23,6 @@ class Settings(BaseModel):
     mail_password: str = config("MAIL_PASSWORD")  # type: ignore
     mail_port: int = config("MAIL_PORT", default=465, cast=int)  # type: ignore
 
-    # AWS
-    aws_region_name: str = config("AWS_REGION")  # type: ignore
-    aws_access_key_id: str = config("AWS_ACCESS_KEY_ID")  # type: ignore
-    aws_secret_access_key: str = config("AWS_SECRET_ACCESS_KEY")  # type: ignore
-    aws_user_pool_id: str = config("AWS_USER_POOL_ID")  # type: ignore
-
     # GOOGLE AUTH
     google_auth_client_id: str = config("GOOGLE_AUTH_CLIENT_ID")  # type: ignore
     google_auth_client_secret: str = config("GOOGLE_AUTH_CLIENT_SECRET")  # type: ignore
