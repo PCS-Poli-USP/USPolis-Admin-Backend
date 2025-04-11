@@ -1,5 +1,5 @@
 import asyncio
-
+import ssl
 # from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -34,17 +34,20 @@ RESERVATION_SUBJECT = "Reserva de Sala - USPolis"
 class EmailService:
     @staticmethod
     def send_email_sync(context: MailSend) -> None:
-        # create email
-        msg = MIMEMultipart()
-        msg["Subject"] = context.subject
-        msg["From"] = f"{CONFIG.mail_address}"
-        msg["Reply-To"] = f"no-reply-{CONFIG.mail_address}"
-        msg["To"] = ",".join(context.to)
-        msg.attach(MIMEText(context.body, "html"))
+        try:
+            # create email
+            msg = MIMEMultipart()
+            msg["Subject"] = context.subject
+            msg["From"] = f"{CONFIG.mail_address}"
+            msg["Reply-To"] = f"no-reply-{CONFIG.mail_address}"
+            msg["To"] = ",".join(context.to)
+            msg.attach(MIMEText(context.body, "html"))
+            with SMTP_SSL(CONFIG.mail_host, CONFIG.mail_port) as smtp:
+                smtp.login(CONFIG.mail_address, CONFIG.mail_password)
+                smtp.send_message(msg)
 
-        with SMTP_SSL(CONFIG.mail_host, CONFIG.mail_port) as smtp:
-            smtp.login(CONFIG.mail_address, CONFIG.mail_password)
-            smtp.send_message(msg)
+        except Exception as e:
+            print(f"Error sending email: {e}")
 
     @staticmethod
     async def send_email(context: MailSend) -> None:
