@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
+from server.models.database.group_db_model import Group
+from server.models.database.group_user_link import GroupUserLink
 from server.models.database.user_building_link import UserBuildingLink
 
 if TYPE_CHECKING:
@@ -42,3 +44,4 @@ class User(SQLModel, table=True):
     calendars: list["Calendar"] = Relationship(back_populates="created_by")
     reservations: list["Reservation"] = Relationship(back_populates="created_by")
     solicitations: list["ClassroomSolicitation"] = Relationship(back_populates="user")
+    groups: list[Group] = Relationship(link_model=GroupUserLink)

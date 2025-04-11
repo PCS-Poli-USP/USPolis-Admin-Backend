@@ -20,7 +20,7 @@ class Subject(SQLModel, table=True):
     professors: list[str] = Field(
         sa_column=Column(postgresql.ARRAY(String()), nullable=False)
     )
-    type: SubjectType = Field(sa_column=Column(Enum(SubjectType)))
+    type: SubjectType = Field(sa_column=Column(Enum(SubjectType), nullable=False))
     class_credit: int = Field(nullable=False)
     work_credit: int = Field(nullable=False)
 
