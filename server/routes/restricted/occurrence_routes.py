@@ -1,7 +1,6 @@
 from typing import Any
 from fastapi import APIRouter, Response
 
-from server.deps.authenticate import UserDep
 from server.deps.conflict_checker import ConflictCheckerDep
 from server.deps.repository_adapters.occurrence_repository_adapter import (
     OccurrenceRepositoryDep,

@@ -4,7 +4,6 @@ from collections import defaultdict
 
 from pydantic import BaseModel
 
-from server.deps.owned_building_ids import OwnedBuildingIdsDep
 from server.deps.repository_adapters.building_repository_adapter import (
     BuildingRepositoryDep,
 )
@@ -14,12 +13,14 @@ from server.deps.repository_adapters.classroom_repository_adapter import (
 from server.deps.repository_adapters.schedule_repository_adapter import (
     ScheduleRepositoryDep,
 )
+from server.deps.session_dep import SessionDep
 from server.models.database.classroom_db_model import (
     Classroom,
     ClassroomWithConflictsIndicator,
 )
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.schedule_db_model import Schedule
+from server.repositories.classroom_repository import ClassroomRepository
 from server.utils.must_be_int import must_be_int
 from server.utils.occurrence_utils import OccurrenceUtils
 
@@ -53,12 +54,12 @@ class BuildingConflictSpecification(BaseModel):
 class ConflictChecker:
     def __init__(
         self,
-        owned_building_ids: OwnedBuildingIdsDep,
+        session: SessionDep,
         classroom_repository: ClassroomRepositoryDep,
         schedule_repository: ScheduleRepositoryDep,
         building_repository: BuildingRepositoryDep,
     ):
-        self.owned_building_ids = owned_building_ids
+        self.session = session
         self.classroom_repository = classroom_repository
         self.schedule_repository = schedule_repository
         self.building_repository = building_repository
@@ -96,7 +97,9 @@ class ConflictChecker:
     def classrooms_with_conflicts_indicator_for_time_and_dates(
         self, building_id: int, start_time: time, end_time: time, dates: list[date]
     ) -> list[ClassroomWithConflictsIndicator]:
-        classrooms = self.classroom_repository.get_all_on_building(building_id)
+        classrooms = ClassroomRepository.get_all_on_buildings(
+            building_ids=[building_id], session=self.session
+        )
 
         classrooms_with_conflicts: list[ClassroomWithConflictsIndicator] = []
         for classroom in classrooms:
