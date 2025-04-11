@@ -142,7 +142,7 @@ class SubjectRepository:
                 old = None
 
             try:
-                if (type == CrawlerType.JUPITER):
+                if type == CrawlerType.JUPITER:
                     subject = await JupiterCrawler.crawl_subject_static(
                         subject_code, calendars
                     )
@@ -150,7 +150,7 @@ class SubjectRepository:
                     subject = await JanusCrawler.crawl_subject_static(
                         subject_code, calendars
                     )
-             
+
             except Exception as e:  # noqa: E722
                 print(e)
                 errors.append(
@@ -345,13 +345,13 @@ class SubjectRepository:
 
 class SubjectNotFound(HTTPException):
     def __init__(self) -> None:
-        super().__init__(status.HTTP_404_NOT_FOUND, "Subject not found")
+        super().__init__(status.HTTP_404_NOT_FOUND, "Disciplina não encontrada")
 
 
 class SubjectNotExists(HTTPException):
     def __init__(self, subject_info: str) -> None:
         super().__init__(
-            status.HTTP_404_NOT_FOUND, f"Subject {subject_info} not exists"
+            status.HTTP_404_NOT_FOUND, f"Disciplina {subject_info} não existe"
         )
 
 
