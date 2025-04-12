@@ -93,10 +93,14 @@ class ClassRepository:
     ) -> Class:
         statement = (
             select(Class)
-            .join(Subject)
-            .join(SubjectBuildingLink)
+            .join(Subject, col(Class.subject_id) == col(Subject.id))
+            .join(
+                SubjectBuildingLink,
+                col(Subject.id) == col(SubjectBuildingLink.subject_id),
+            )
             .where(col(SubjectBuildingLink.building_id).in_(building_ids))
             .where(col(Class.id) == id)
+            .distinct()
         )
         try:
             class_ = session.exec(statement).one()
