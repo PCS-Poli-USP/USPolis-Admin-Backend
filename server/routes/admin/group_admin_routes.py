@@ -41,6 +41,7 @@ def create_group(
     Create a group
     """
     GroupRepository.create(input=input, session=session)
+    session.commit()
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,
         content={
@@ -59,6 +60,7 @@ def update_group(
     Update a group by id
     """
     GroupRepository.update(id=group_id, input=input, session=session)
+    session.commit()
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content={
@@ -76,6 +78,7 @@ def delete_group(
     Delete a group by id
     """
     GroupRepository.delete(id=group_id, session=session)
+    session.commit()
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content={

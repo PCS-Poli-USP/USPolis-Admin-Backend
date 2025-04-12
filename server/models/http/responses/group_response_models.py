@@ -12,6 +12,11 @@ class GroupResponse(BaseModel):
     updated_at: datetime
     created_at: datetime
 
+    user_ids: list[int]
+    user_strs: list[str]
+    classroom_ids: list[int]
+    classroom_strs: list[str]
+
     @classmethod
     def from_group(cls, group: Group) -> "GroupResponse":
         return cls(
@@ -20,6 +25,13 @@ class GroupResponse(BaseModel):
             abbreviation=group.abbreviation,
             updated_at=group.updated_at,
             created_at=group.created_at,
+            user_ids=[must_be_int(user.id) for user in group.users],  # noqa: F811
+            user_strs=[f"{user.name} ({user.email})" for user in group.users],  # noqa: F811
+            classroom_ids=[must_be_int(classroom.id) for classroom in group.classrooms],
+            classroom_strs=[
+                f"{classroom.name} ({classroom.building.name})"
+                for classroom in group.classrooms
+            ],
         )
 
     @classmethod

@@ -14,6 +14,12 @@ class UserRepository:
         return user
 
     @staticmethod
+    def get_by_ids(*, ids: list[int], session: Session) -> list[User]:
+        statement = select(User).where(col(User.id).in_(ids))
+        users = session.exec(statement).all()
+        return list(users)
+
+    @staticmethod
     def get_by_email(*, email: str, session: Session) -> User:
         statement = select(User).where(col(User.email) == email)
         user = session.exec(statement).one()

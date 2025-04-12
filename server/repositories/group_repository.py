@@ -1,3 +1,4 @@
+from datetime import datetime
 from sqlmodel import Session, col, select
 from sqlalchemy.exc import NoResultFound
 from fastapi import HTTPException, status
@@ -5,6 +6,7 @@ from fastapi import HTTPException, status
 from server.models.database.group_db_model import Group
 from server.models.http.requests.group_request_models import GroupRegister, GroupUpdate
 from server.repositories.classroom_repository import ClassroomRepository
+from server.repositories.user_repository import UserRepository
 
 
 class GroupRepository:
@@ -33,6 +35,8 @@ class GroupRepository:
             group.classrooms = ClassroomRepository.get_by_ids(
                 ids=input.classroom_ids, session=session
             )
+        if input.user_ids:
+            group.users = UserRepository.get_by_ids(ids=input.user_ids, session=session)
         session.add(group)
         return group
 
@@ -41,12 +45,15 @@ class GroupRepository:
         group = GroupRepository.get_by_id(id=id, session=session)
         group.name = input.name
         group.abbreviation = input.abbreviation
+        group.updated_at = datetime.now()
         if set(input.classroom_ids) != set(
             [classroom.id for classroom in group.classrooms]
         ):
             group.classrooms = ClassroomRepository.get_by_ids(
                 ids=input.classroom_ids, session=session
             )
+        if set(input.user_ids) != set([user.id for user in group.users]):
+            group.users = UserRepository.get_by_ids(ids=input.user_ids, session=session)
         session.add(group)
         return group
 
