@@ -36,6 +36,11 @@ class BaseModelFactory(Generic[M], metaclass=ABCMeta):
         """Refresh the model instance from the database."""
         self.session.refresh(model)
 
+    def refresh_many(self, models: list[M]) -> None:
+        """Refresh the model instances from the database."""
+        for model in models:
+            self.session.refresh(model)
+
     def commit(self) -> None:
         """Commit the session"""
         self.session.commit()
@@ -70,7 +75,7 @@ class BaseModelFactory(Generic[M], metaclass=ABCMeta):
         return model
 
     def create_many_default(self, count: int = CREATE_MANY_DEFAULT_COUNT) -> list[M]:
-        """Create a list of model instances with default values."""
+        """Create a list of model instances with default values. Count is 5 for default."""
         models = []
         for _ in range(count):
             model = self._instanciate_model()

@@ -11,18 +11,20 @@ from tests.factories.request.base_request_factory import BaseRequestFactory
 
 
 class BuildingRequestFactory(BaseRequestFactory):
+    def get_default_create(self) -> BuildingRegisterDict:
+        """Get default values for creating a BuildingRegister."""
+        return {
+            "name": self.faker.company(),
+        }
+
     def create_input(
         self, **overrides: Unpack[BuildingRegisterDict]
     ) -> BuildingRegister:
-        default: BuildingRegisterDict = {
-            "name": self.faker.name(),
-        }
+        default = self.get_default_create()
         self.update_default_dict(default, overrides)  # type: ignore
         return BuildingRegister(**default)
 
     def update_input(self, **overrides: Unpack[BuildingUpdateDict]) -> BuildingUpdate:
-        default: BuildingUpdateDict = {
-            "name": self.faker.name(),
-        }
+        default = self.get_default_create()
         self.update_default_dict(default, overrides)  # type: ignore
         return BuildingUpdate(**default)

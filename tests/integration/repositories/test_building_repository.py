@@ -39,22 +39,22 @@ def test_building_repository_get_by_id(user: User, session: Session) -> None:
 
 
 def test_building_repository_get_all(user: User, session: Session) -> None:
-    """Test the get all method of the BuildingRepository.\n
+    """Test **get_all** method of the BuildingRepository.\n
     Tests:\n
     - number of buildings get is correct\n
     - buildings read are the same as the ones created\n
     """
     factory = BuildingModelFactory(user, session)
-    mock_buildings = factory.create_many_default()
+    old_buildings = factory.create_many_default()
     buildings = BuildingRepository.get_all(session=session)
 
-    assert len(buildings) == len(mock_buildings)
+    assert len(buildings) == len(old_buildings)
     for building in buildings:
-        assert building in mock_buildings
+        assert building in old_buildings
 
 
 def test_building_repository_get_by_name(user: User, session: Session) -> None:
-    """Test the get by id method of the BuildingRepository.\n
+    """Test **get_by_name** method of the BuildingRepository.\n
     Tests:\n
     - buildings read are the same as the ones created\n
     """
@@ -64,10 +64,45 @@ def test_building_repository_get_by_name(user: User, session: Session) -> None:
     assert query.name == building.name
 
 
-def test_building_repository_delete(user: User, session: Session) -> None:
-    """Test the get by id method of the BuildingRepository.\n
+def test_building_repository_get_by_ids(user: User, session: Session) -> None:
+    """Test **get_by_ids** method of the BuildingRepository.\n
     Tests:\n
-    - buildings read are the same as the ones created\n
+    - number of buildings read is correct\n
+    - all buildings read are in the list of ids\n
+    """
+    factory = BuildingModelFactory(user, session)
+    old_buildings = factory.create_many_default()
+    factory.commit()
+    factory.refresh_many(old_buildings)
+    ids = [must_be_int(building.id) for building in old_buildings]
+    buildings = BuildingRepository.get_by_ids(ids=ids, session=session)
+
+    assert len(buildings) == len(old_buildings)
+    for building in buildings:
+        assert building.id in ids
+
+
+def test_building_repository_update(user: User, session: Session) -> None:
+    """Test **update** method of the BuildingRepository.\n
+    Tests:\n
+    - building new name is equal input\n
+    - building name is different from the old name\n
+    """
+    factory = BuildingModelFactory(user, session)
+    building = factory.create_and_refresh()
+    old_name = building.name
+    input = BuildingRequestFactory().update_input()
+    building = BuildingRepository.update(
+        id=must_be_int(building.id), input=input, session=session
+    )
+    assert building.name == input.name
+    assert building.name != old_name
+
+
+def test_building_repository_delete(user: User, session: Session) -> None:
+    """Test **delete** method of the BuildingRepository.\n
+    Tests:\n
+    - building get by id from old id raises BuildingNotFound\n
     """
     factory = BuildingModelFactory(user, session)
     building = factory.create_and_refresh()
