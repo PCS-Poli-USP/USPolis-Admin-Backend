@@ -35,7 +35,7 @@ class ClassroomRepository:
         return classroom
 
     @staticmethod
-    def get_by_ids(ids: list[int], *, session: Session) -> list[Classroom]:
+    def get_by_ids(*, ids: list[int], session: Session) -> list[Classroom]:
         statement = select(Classroom).where(col(Classroom.id).in_(ids))
         classrooms = list(session.exec(statement).all())
         return classrooms
@@ -52,20 +52,13 @@ class ClassroomRepository:
 
     @staticmethod
     def create(
-        classroom: ClassroomRegister,
         *,
+        input: ClassroomRegister,
         creator: User,
         session: Session,
     ) -> Classroom:
         new_classroom = Classroom(
-            building_id=classroom.building_id,
-            name=classroom.name,
-            capacity=classroom.capacity,
-            floor=classroom.floor,
-            accessibility=classroom.accessibility,
-            projector=classroom.projector,
-            air_conditioning=classroom.air_conditioning,
-            ignore_to_allocate=classroom.ignore_to_allocate,
+            **input.model_dump(),
             created_by=creator,
             created_by_id=must_be_int(creator.id),
         )
