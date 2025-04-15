@@ -18,8 +18,9 @@ if TYPE_CHECKING:
 class Building(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field(index=True, unique=True)
-
+    updated_at: datetime = Field(default=datetime.now())
     created_by_id: int | None = Field(default=None, foreign_key="user.id")
+    
     created_by: "User" = Relationship()
     users: list["User"] | None = Relationship(
         back_populates="buildings", link_model=UserBuildingLink
@@ -30,7 +31,6 @@ class Building(SQLModel, table=True):
     subjects: list["Subject"] | None = Relationship(
         back_populates="buildings", link_model=SubjectBuildingLink
     )
-    updated_at: datetime = Field(default=datetime.now())
 
     solicitations: list["ClassroomSolicitation"] = Relationship(
         back_populates="building"

@@ -48,6 +48,7 @@ class UserRepository:
         user_in: UserRegister,
         session: Session,
     ) -> User:
+        """This commits, chage it later"""
         buildings = None
         if user_in.building_ids is not None:
             buildings = BuildingRepository.get_by_ids(
