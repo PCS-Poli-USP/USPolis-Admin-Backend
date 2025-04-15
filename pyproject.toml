@@ -49,6 +49,7 @@ test = [
     "asgi-lifespan~=2.1",
     "httpx~=0.25",
     "pytest-asyncio~=0.21",
+    "Faker~=37.1.0",
 ]
 
 [project.urls]
@@ -59,6 +60,7 @@ exclude = ['build']
 check_untyped_defs = true
 disallow_any_unimported = true
 disallow_untyped_defs = true
+disallow_incomplete_defs = true
 explicit_package_bases = true
 ignore_missing_imports = false
 no_implicit_optional = true
@@ -93,3 +95,7 @@ indent-width = 4
 
 [tool.setuptools]
 packages = ["server", "tests"]
+
+[tool.pytest.ini_options]
+addopts = "-s --tb=short"
+testpaths = ["tests"]
