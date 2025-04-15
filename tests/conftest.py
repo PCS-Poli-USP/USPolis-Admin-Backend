@@ -13,9 +13,11 @@ from server.db import (
     engine as db_engine,  # noqa: F401
 )
 from server.app import app
+from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister
 from server.repositories.user_repository import UserRepository
+from tests.factories.model.building_model_factory import BuildingModelFactory
 
 engine = create_engine(f"{CONFIG.test_db_uri}/{CONFIG.test_db_database}")
 
@@ -27,20 +29,10 @@ with Session(engine) as session:
             statements CURSOR FOR
                 SELECT tablename FROM pg_tables
                 WHERE tableowner = username AND schemaname = 'public';
-            reset_statements CURSOR FOR
-                SELECT table_name 
-                FROM information_schema.columns
-                WHERE column_name = 'id' AND table_schema = 'public' AND table_name IN 
-                    (SELECT tablename FROM pg_tables WHERE tableowner = username AND schemaname = 'public');
         BEGIN
             -- Truncar as tabelas
             FOR stmt IN statements LOOP
-                EXECUTE 'TRUNCATE TABLE ' || quote_ident(stmt.tablename) || ' CASCADE;';
-            END LOOP;
-
-            -- Resetar a sequência de IDs
-            FOR reset_stmt IN reset_statements LOOP
-                EXECUTE 'SELECT setval(pg_get_serial_sequence(''' || quote_ident(reset_stmt.table_name) || ''', ''id''), 1, false);';
+                EXECUTE 'TRUNCATE TABLE ' || quote_ident(stmt.tablename) || ' RESTART IDENTITY' || ' CASCADE;';
             END LOOP;
         END;
         $$ LANGUAGE plpgsql;
@@ -93,3 +85,8 @@ def user_fixture(session: Session) -> Generator[User, None, None]:
         )
     user = UserRepository.get_by_email(session=session, email=CONFIG.mock_email)
     yield user
+
+
+@pytest.fixture(name="building")
+def building_fixture(user: User, session: Session) -> Building:
+    return BuildingModelFactory(user, session).create_and_refresh()
