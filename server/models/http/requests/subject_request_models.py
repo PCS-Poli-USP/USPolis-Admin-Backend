@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from pydantic import BaseModel, field_validator
 
-from server.models.validators.subject.subject_validator import SubjectValidator
+from server.models.http.validators.subject.subject_validator import SubjectValidator
 from server.utils.enums.crawler_type_enum import CrawlerType
 from server.utils.enums.subject_type import SubjectType
 

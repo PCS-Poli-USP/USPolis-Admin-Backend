@@ -1,6 +1,6 @@
 from pydantic import BaseModel, field_validator
 
-from server.models.validators.calendar.calendar_validator import CalendarValidator
+from server.models.http.validators.calendar.calendar_validator import CalendarValidator
 
 
 class CalendarRegister(BaseModel):
