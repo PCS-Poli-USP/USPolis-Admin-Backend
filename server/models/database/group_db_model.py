@@ -12,8 +12,7 @@ if TYPE_CHECKING:
 
 class Group(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    name: str
-    abbreviation: str = Field(max_length=10, min_length=3)
+    name: str = Field(index=True, nullable=False, unique=True)
     updated_at: datetime = Field(default=datetime.now())
     created_at: datetime = Field(default=datetime.now())
 

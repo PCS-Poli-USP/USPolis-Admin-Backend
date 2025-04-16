@@ -8,7 +8,6 @@ from server.utils.must_be_int import must_be_int
 class GroupResponse(BaseModel):
     id: int
     name: str
-    abbreviation: str
     updated_at: datetime
     created_at: datetime
 
@@ -22,7 +21,6 @@ class GroupResponse(BaseModel):
         return cls(
             id=must_be_int(group.id),
             name=group.name,
-            abbreviation=group.abbreviation,
             updated_at=group.updated_at,
             created_at=group.created_at,
             user_ids=[must_be_int(user.id) for user in group.users],  # noqa: F811

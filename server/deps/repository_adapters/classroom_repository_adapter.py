@@ -53,7 +53,7 @@ class ClassroomRepositoryAdapter:
     ) -> Classroom:
         building_permission_checker(self.user, classroom.building_id)
         new_classroom = ClassroomRepository.create(
-            classroom=classroom,
+            input=classroom,
             creator=self.user,
             session=self.session,
         )
