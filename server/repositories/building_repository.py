@@ -109,6 +109,5 @@ class BuildingNotFound(HTTPException):
     def __init__(self, building_info: str) -> None:
         super().__init__(
             status.HTTP_404_NOT_FOUND,
-            f"Building with {
-                building_info} not found",
+            f"Building with {building_info} not found",
         )

@@ -77,6 +77,7 @@ def test_classroom_repository_get_by_ids(
     for classroom in query:
         assert classroom.id in ids
 
+
 def test_classroom_repository_get_by_name_and_building(
     building: Building, user: User, session: Session
 ) -> None:

@@ -20,7 +20,7 @@ class Building(SQLModel, table=True):
     name: str = Field(index=True, unique=True)
     updated_at: datetime = Field(default=datetime.now())
     created_by_id: int | None = Field(default=None, foreign_key="user.id")
-    
+
     created_by: "User" = Relationship()
     users: list["User"] | None = Relationship(
         back_populates="buildings", link_model=UserBuildingLink

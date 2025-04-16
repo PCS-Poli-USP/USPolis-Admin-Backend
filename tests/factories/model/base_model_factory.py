@@ -76,7 +76,7 @@ class BaseModelFactory(Generic[M], metaclass=ABCMeta):
 
     def create_many_default(self, count: int = CREATE_MANY_DEFAULT_COUNT) -> list[M]:
         """Create a list of model instances with default values. Count is 5 for default."""
-        models = []
+        models: list[M] = []
         for _ in range(count):
             model = self._instanciate_model()
             models.append(model)

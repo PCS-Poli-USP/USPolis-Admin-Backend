@@ -40,9 +40,9 @@ class Page(BaseModel, Generic[T]):
         """Paginate the given query based on the pagination input."""
 
         total_items = session.scalar(select(func.count()).select_from(query.subquery()))
-        assert isinstance(
-            total_items, int
-        ), "A database error occurred when getting `total_items`"
+        assert isinstance(total_items, int), (
+            "A database error occurred when getting `total_items`"
+        )
 
         total_pages = (total_items + input.page_size - 1) // input.page_size
         total_pages = max(total_pages, 1)

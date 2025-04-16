@@ -1,7 +1,7 @@
-from typing import TypedDict
+from server.models.dicts.requests.base_requests_dicts import BaseRequestDict
 
 
-class BuildingRegisterDict(TypedDict, total=False):
+class BuildingRegisterDict(BaseRequestDict, total=False):
     name: str
 
 

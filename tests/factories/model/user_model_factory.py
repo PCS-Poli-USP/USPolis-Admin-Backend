@@ -1,7 +1,10 @@
 from datetime import datetime
 from server.models.database.user_db_model import User
 from server.models.dicts.database.user_database_dicts import UserModelDict
-from server.models.dicts.requests.user_requests_dicts import UserRegisterDict, UserUpdateDict
+from server.models.dicts.requests.user_requests_dicts import (
+    UserRegisterDict,
+    UserUpdateDict,
+)
 from tests.factories.model.base_model_factory import BaseModelFactory
 
 

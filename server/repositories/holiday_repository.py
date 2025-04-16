@@ -107,8 +107,7 @@ class HolidayInCategoryAlreadyExists(HTTPException):
     def __init__(self, holiday_info: str, category_info: str) -> None:
         super().__init__(
             status.HTTP_409_CONFLICT,
-            f"Holiday {holiday_info} in Category {
-                category_info} already exists",
+            f"Holiday {holiday_info} in Category {category_info} already exists",
         )
 
 
@@ -116,6 +115,5 @@ class HolidayOperationNotAllowed(HTTPException):
     def __init__(self, operation: str, holiday_info: str) -> None:
         super().__init__(
             status.HTTP_403_FORBIDDEN,
-            f"Only the creator is Allowed to {
-                operation} Holiday {holiday_info}",
+            f"Only the creator is Allowed to {operation} Holiday {holiday_info}",
         )

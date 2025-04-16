@@ -32,8 +32,7 @@ def test_subject_get_all(db: Session, client: TestClient, user: User) -> None:
     for i in range(MAX_SUBJECT_COUNT):
         subject_id = create_subject(
             session=db,
-            code=f"DEF000{
-                                    i}",
+            code=f"DEF000{i}",
             buildings=[building],
         )
         subject_ids.append(subject_id)

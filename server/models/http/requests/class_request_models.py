@@ -76,6 +76,5 @@ class ClassConflictedData(HTTPException):
     def __init__(self, first_data: str, second_data: str) -> None:
         super().__init__(
             status.HTTP_400_BAD_REQUEST,
-            f"Schedule must have {first_data} value or {
-                second_data} value, not both",
+            f"Schedule must have {first_data} value or {second_data} value, not both",
         )
