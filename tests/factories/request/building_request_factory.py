@@ -17,6 +17,10 @@ class BuildingRequestFactory(BaseRequestFactory):
             "name": self.faker.company(),
         }
 
+    def get_default_update(self) -> BuildingUpdateDict:
+        """Get default values for creating a BuildingUpdate."""
+        return self.get_default_create()
+
     def create_input(
         self, **overrides: Unpack[BuildingRegisterDict]
     ) -> BuildingRegister:

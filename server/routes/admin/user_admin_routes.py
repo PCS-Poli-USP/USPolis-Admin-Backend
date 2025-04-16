@@ -42,7 +42,7 @@ def create_user(
 def update_user(
     user_id: int,
     user_input: UserUpdate,
-    current_user: UserDep,
+    current_user: UserDep,  
     session: SessionDep,
 ) -> UserResponse:
     """Update a user by id"""

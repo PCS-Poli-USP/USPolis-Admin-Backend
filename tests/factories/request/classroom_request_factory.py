@@ -38,6 +38,6 @@ class ClassroomRequestFactory(BaseRequestFactory):
         return ClassroomRegister(**default)
 
     def update_input(self, **overrides: ClassroomUpdateDict) -> ClassroomUpdate:
-        default = self.get_default_register_input()
+        default = self.get_default_update_input()
         self.update_default_dict(default, overrides)  # type: ignore
         return ClassroomUpdate(**default)
