@@ -1,59 +1,65 @@
 [project]
-name="USPolis-Refactor"
-version="0.1.0"
-description = "Refactoring of USPolis backend repository"
-readme = "README.md"
-requires-python = ">=3.11"
+name = "USPolis-Backend"
+version = "1.0.0"
+description = "Backend of USPolis systems, this include the Admin and Mobile systems."
 authors = [
     {name = "Henrique Duran", email="henriquefduran@usp.br"},
     {name = "Gabriel Di Vanna Camargo", email="gabriel_camargo@usp.br"}
 ]
+license = "MIT"
+readme = "README.md"
+requires-python = ">=3.12, <4.0"
 dependencies = [
-    "bcrypt~=4.0",
-    "fastapi~=0.104",
-    "fastapi-jwt>=0.2",
-    "fastapi-mail~=1.4",
-    "python-decouple~=3.8",
-    "uvicorn~=0.24",
-    "gunicorn",
-    "pydantic==2.7",
-    "boto3",
-    "requests",
-    "sqlmodel",
-    "beautifulsoup4",
-    "psycopg2-binary",
-    "tenacity",
-    "pytz",
-    "alembic",
-    "asyncpg",
-    "google-api-python-client",
-    "google-auth-httplib2",
-    "google-auth-oauthlib",
-    "httpx",
-    "Jinja2",
-    "pandas",
-    "numpy",
-    "html5lib",
+    "bcrypt (>=4.3.0,<5.0.0)",
+    "fastapi (>=0.115.12,<0.116.0)",
+    "fastapi-jwt (>=0.3.0,<0.4.0)",
+    "fastapi-mail (>=1.4.2,<2.0.0)",
+    "python-decouple (>=3.8,<4.0)",
+    "uvicorn (>=0.34.1,<0.35.0)",
+    "gunicorn (>=23.0.0,<24.0.0)",
+    "pydantic (>=2.11.3,<3.0.0)",
+    "requests (>=2.32.3,<3.0.0)",
+    "sqlmodel (>=0.0.24,<0.0.25)",
+    "beautifulsoup4 (>=4.13.4,<5.0.0)",
+    "psycopg2-binary (>=2.9.10,<3.0.0)",
+    "tenacity (>=9.1.2,<10.0.0)",
+    "pytz (>=2025.2,<2026.0)",
+    "alembic (>=1.15.2,<2.0.0)",
+    "asyncpg (>=0.30.0,<0.31.0)",
+    "google-api-python-client (>=2.167.0,<3.0.0)",
+    "google-auth-httplib2 (>=0.2.0,<0.3.0)",
+    "google-auth-oauthlib (>=1.2.1,<2.0.0)",
+    "httpx (>=0.28.1,<0.29.0)",
+    "jinja2 (>=3.1.6,<4.0.0)",
+    "pandas (>=2.2.3,<3.0.0)",
+    "numpy (>=2.2.4,<3.0.0)",
+    "html5lib (>=1.1,<2.0)",
 ]
 
-[project.optional-dependencies]
-dev = [
-    "mypy",
-    "ruff",
-    "types-requests",
-    "types-beautifulsoup4",
-    "types-pytz",
-    "pandas-stubs",
-]
-test = [
-    "asgi-lifespan~=2.1",
-    "httpx~=0.25",
-    "pytest-asyncio~=0.21",
-    "Faker~=37.1.0",
-]
 
-[project.urls]
-"Source" = "https://github.com/flyinactor91/fastapi-beanie-jwt"
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.15.0"
+ruff = "^0.11.5"
+types-requests = "^2.32.0.20250328"
+types-beautifulsoup4 = "^4.12.0.20250204"
+types-pytz = "^2025.2.0.20250326"
+pandas-stubs = "^2.2.3.250308"
+
+
+[tool.poetry.group.test.dependencies]
+asgi-lifespan = "^2.1.0"
+httpx = "^0.28.1"
+pytest-asyncio = "^0.26.0"
+faker = "^37.1.0"
+
+# TypeChecking - Mypy configuration 
 
 [tool.mypy]
 exclude = ['build']
@@ -77,13 +83,14 @@ exclude = ["**/node_modules",
     "**/build"
 ]
 ignore = ["server/oldstuff"]
-
 reportMissingImports = true
 reportMissingTypeStubs = false
-
+reportUnusedImports = false
 pythonVersion = "3.11"
 pythonPlatform = "Linux"
 
+# Linter - Ruff configuration
+# https://docs.astral.sh/ruff/configuration/
 [tool.ruff]
 lint.extend-select = [
     "UP"
@@ -92,9 +99,6 @@ lint.ignore = [
 ]
 line-length = 88
 indent-width = 4
-
-[tool.setuptools]
-packages = ["server", "tests"]
 
 [tool.pytest.ini_options]
 addopts = "-s --tb=short"
