@@ -52,7 +52,6 @@ def session_fixture(request: pytest.FixtureRequest) -> Generator[Session, None, 
     with Session(engine) as session:
 
         def cleanup() -> None:
-            print("Cleaning up the database...")
             # Clean-up após o teste (executa sempre, mesmo que o teste falhe)
             statement = text("SELECT truncate_tables('postgres');")
             session.execute(statement)
