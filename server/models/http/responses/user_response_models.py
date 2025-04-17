@@ -7,7 +7,17 @@ from server.models.http.responses.building_response_models import BuildingRespon
 from server.models.http.responses.classroom_solicitation_response_models import (
     ClassroomSolicitationResponse,
 )
+from server.models.http.responses.group_response_models import GroupResponse
 from server.utils.must_be_int import must_be_int
+
+
+class UserInfo(BaseModel):
+    name: str
+    given_name: str
+    family_name: str
+    picture: str
+    email: str
+    email_verified: bool
 
 
 class UserResponse(BaseModel):
@@ -15,11 +25,13 @@ class UserResponse(BaseModel):
     email: str
     is_admin: bool
     name: str
+    updated_at: datetime
+    last_visited: datetime
+    user_info: UserInfo | None = None
     created_by: str | None = None
     buildings: list[BuildingResponse] | None = None
     solicitations: list[ClassroomSolicitationResponse]
-    updated_at: datetime
-    last_visited: datetime
+    groups: list[GroupResponse]
 
     @classmethod
     def from_user(cls, user: User) -> "UserResponse":
@@ -39,6 +51,7 @@ class UserResponse(BaseModel):
             ),
             updated_at=user.updated_at,
             last_visited=user.last_visited,
+            groups=GroupResponse.from_group_list(user.groups),
         )
 
     @classmethod

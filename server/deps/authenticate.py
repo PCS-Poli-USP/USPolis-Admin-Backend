@@ -44,6 +44,7 @@ def authenticate(
             session=session,
         )
     request.state.current_user = user
+    request.state.user_info = user_info
     return user
 
 

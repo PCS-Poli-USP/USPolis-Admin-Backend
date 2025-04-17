@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
 from server.deps.authenticate import UserDep
 from server.deps.repository_adapters.class_repository_adapter import (
@@ -39,10 +39,16 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.get("")
 def get_current_user(
+    request: Request,
+    session: SessionDep,
     user: UserDep,
 ) -> UserResponse:
     """Get current user"""
-    return UserResponse.from_user(user)
+    UserRepository.visit_user(user=user, session=session)
+    session.commit()
+    response = UserResponse.from_user(user)
+    response.user_info = request.state.user_info
+    return response
 
 
 @router.get("/my-buildings")

@@ -1,3 +1,4 @@
+from datetime import datetime
 from sqlmodel import Session, col, select
 
 from server.models.database.user_building_link import UserBuildingLink
@@ -71,6 +72,16 @@ class UserRepository:
     def update(*, user: User, session: Session) -> None:
         session.add(user)
         session.commit()
+
+    @staticmethod
+    def visit_user(
+        *,
+        user: User,
+        session: Session,
+    ) -> User:
+        user.last_visited = datetime.now()
+        session.add(user)
+        return user
 
     @staticmethod
     def delete(
