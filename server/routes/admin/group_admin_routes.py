@@ -50,7 +50,7 @@ def create_group(
     )
 
 
-@router.patch("/{group_id}")
+@router.put("/{group_id}")
 def update_group(
     group_id: int,
     input: GroupUpdate,
