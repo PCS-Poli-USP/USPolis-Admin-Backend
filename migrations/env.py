@@ -37,7 +37,7 @@ target_metadata = SQLModel.metadata  # UPDATED
 
 
 def get_url() -> str:
-    return f'{os.getenv("ALEMBIC_URL")}'
+    return f"{os.getenv('ALEMBIC_URL')}"
 
 
 config.set_main_option("sqlalchemy.url", get_url())

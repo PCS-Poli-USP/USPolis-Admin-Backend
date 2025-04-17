@@ -27,6 +27,7 @@ async def get_tokens(auth_code: str) -> AuthResponse:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="null token received"
         )
+
     return AuthResponse(access_token=access_token, refresh_token=refresh_token)
 
 

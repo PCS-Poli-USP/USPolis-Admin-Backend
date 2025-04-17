@@ -29,7 +29,7 @@ def upgrade() -> None:
     op.execute('ALTER TYPE public."subjecttype" RENAME TO subjecttype_old')
 
     new_type = sa.Enum(
-            "BIANNUAL", "FOUR_MONTHLY", "OTHER", "POSTGRADUATE", name="subjecttype"
+        "BIANNUAL", "FOUR_MONTHLY", "OTHER", "POSTGRADUATE", name="subjecttype"
     )
     new_type.create(op.get_bind(), checkfirst=False)
     op.alter_column(
@@ -41,7 +41,7 @@ def upgrade() -> None:
         postgresql_using="type::text::subjecttype",
     )
     op.execute("DROP TYPE public.subjecttype_old")
-    #op.execute("COMMIT")
+    # op.execute("COMMIT")
 
     op.add_column("user", sa.Column("last_visited", sa.DateTime(), nullable=True))
     now = datetime.now()
@@ -56,9 +56,7 @@ def downgrade() -> None:
         WHERE type = 'POSTGRADUATE'
     """)
     op.execute('ALTER TYPE public."subjecttype" RENAME TO subjecttype_old')
-    old_type = sa.Enum(
-            "BIANNUAL", "FOUR_MONTHLY", "OTHER", name="subjecttype"
-    )
+    old_type = sa.Enum("BIANNUAL", "FOUR_MONTHLY", "OTHER", name="subjecttype")
     old_type.create(op.get_bind(), checkfirst=False)
     op.alter_column(
         "subject",

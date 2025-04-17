@@ -82,7 +82,7 @@ def mock_authenticate(request: Request, session: SessionDep) -> User:
     return user
 
 
-#This user call user fixture that creates the mocked user
+# This user call user fixture that creates the mocked user
 @pytest.fixture(name="client")
 def client_fixture(user: User, session: Session) -> Generator[TestClient, None, None]:
     app.dependency_overrides[get_db] = lambda: session
