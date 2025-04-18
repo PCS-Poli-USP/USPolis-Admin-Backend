@@ -106,7 +106,7 @@ class ClassroomRepository:
         classroom.floor = classroom_in.floor
         classroom.ignore_to_allocate = classroom_in.ignore_to_allocate
         classroom.accessibility = classroom_in.accessibility
-        classroom.projector = classroom_in.projector
+        classroom.audiovisual = classroom_in.audiovisual
         classroom.air_conditioning = classroom_in.air_conditioning
         classroom.building_id = classroom_in.building_id
         classroom.updated_at = datetime.now()
@@ -131,5 +131,5 @@ class ClassroomNotFound(HTTPException):
     def __init__(self, id: int):
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Classroom with id {id} not found",
+            detail=f"Sala com id {id} não encontrada",
         )

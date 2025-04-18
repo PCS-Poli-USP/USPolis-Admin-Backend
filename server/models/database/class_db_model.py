@@ -3,9 +3,10 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import Column, String, UniqueConstraint
 from sqlalchemy.dialects import postgresql
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship, SQLModel, Enum
 
 from server.models.database.class_calendar_link import ClassCalendarLink
+from server.utils.enums.audiovisual_type_enum import AudiovisualType
 from server.utils.enums.class_type import ClassType
 
 if TYPE_CHECKING:
@@ -29,7 +30,10 @@ class Class(SQLModel, table=True):
 
     air_conditionating: bool = Field(default=False)
     accessibility: bool = Field(default=False)
-    projector: bool = Field(default=False)
+    audiovisual: AudiovisualType = Field(
+        sa_column=Column(Enum(AudiovisualType), nullable=False),
+        default=AudiovisualType.NONE,
+    )
 
     ignore_to_allocate: bool = Field(default=False)
     full_allocated: bool = Field(default=False)

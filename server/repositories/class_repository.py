@@ -127,7 +127,7 @@ class ClassRepository:
             vacancies=input.vacancies,
             air_conditionating=input.air_conditionating,
             accessibility=input.accessibility,
-            projector=input.projector,
+            audiovisual=input.audiovisual,
             ignore_to_allocate=input.ignore_to_allocate,
             full_allocated=False,
         )

@@ -44,4 +44,8 @@ class User(SQLModel, table=True):
     calendars: list["Calendar"] = Relationship(back_populates="created_by")
     reservations: list["Reservation"] = Relationship(back_populates="created_by")
     solicitations: list["ClassroomSolicitation"] = Relationship(back_populates="user")
-    groups: list[Group] = Relationship(link_model=GroupUserLink, back_populates="users")
+    groups: list[Group] = Relationship(
+        link_model=GroupUserLink,
+        back_populates="users",
+        sa_relationship_kwargs={"order_by": "Group.name"},
+    )

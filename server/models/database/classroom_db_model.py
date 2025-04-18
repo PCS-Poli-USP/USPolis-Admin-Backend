@@ -2,8 +2,9 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import UniqueConstraint
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship, SQLModel, Column, Enum
 
+from server.utils.enums.audiovisual_type_enum import AudiovisualType
 from server.utils.must_be_int import must_be_int
 
 if TYPE_CHECKING:
@@ -23,7 +24,9 @@ class ClassroomBase(SQLModel):
     floor: int
     ignore_to_allocate: bool = False
     accessibility: bool = False
-    projector: bool = False
+    audiovisual: AudiovisualType = Field(
+        sa_column=Column(Enum(AudiovisualType), nullable=False)
+    )
     air_conditioning: bool = False
     updated_at: datetime = datetime.now()
 
@@ -64,7 +67,7 @@ class ClassroomWithConflictsIndicator(ClassroomBase):
             floor=classroom.floor,
             ignore_to_allocate=classroom.ignore_to_allocate,
             accessibility=classroom.accessibility,
-            projector=classroom.projector,
+            audiovisual=classroom.audiovisual,
             air_conditioning=classroom.air_conditioning,
             updated_at=classroom.updated_at,
             created_by_id=classroom.created_by_id,
