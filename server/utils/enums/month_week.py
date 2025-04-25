@@ -6,3 +6,12 @@ class MonthWeek(Enum):
     SECOND = 2
     THIRD = 3
     LAST = -1
+
+    @staticmethod
+    def values() -> list["MonthWeek"]:
+        return [
+            MonthWeek.FIRST,
+            MonthWeek.SECOND,
+            MonthWeek.THIRD,
+            MonthWeek.LAST,
+        ]

@@ -23,6 +23,15 @@ class ClassType(Enum):
             return cls.VINCULATED_PRACTIC
         raise NoSuchClassType(f"Class type {value} is not valid.")
 
+    @staticmethod
+    def values() -> list["ClassType"]:
+        return [
+            ClassType.PRACTIC,
+            ClassType.THEORIC,
+            ClassType.VINCULATED_THEORIC,
+            ClassType.VINCULATED_PRACTIC,
+        ]
+
 
 class NoSuchClassType(Exception):
     pass

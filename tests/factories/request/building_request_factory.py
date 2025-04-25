@@ -25,10 +25,10 @@ class BuildingRequestFactory(BaseRequestFactory):
         self, **overrides: Unpack[BuildingRegisterDict]
     ) -> BuildingRegister:
         default = self.get_default_create()
-        self.update_default_dict(default, overrides)  # type: ignore
+        self.override_default_dict(default, overrides)  # type: ignore
         return BuildingRegister(**default)
 
     def update_input(self, **overrides: Unpack[BuildingUpdateDict]) -> BuildingUpdate:
         default = self.get_default_create()
-        self.update_default_dict(default, overrides)  # type: ignore
+        self.override_default_dict(default, overrides)  # type: ignore
         return BuildingUpdate(**default)

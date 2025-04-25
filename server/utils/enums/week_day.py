@@ -56,6 +56,18 @@ class WeekDay(Enum):
         dayOfWeek = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"]
         return dayOfWeek[value]
 
+    @staticmethod
+    def values() -> list["WeekDay"]:
+        return [
+            WeekDay.MONDAY,
+            WeekDay.TUESDAY,
+            WeekDay.WEDNESDAY,
+            WeekDay.THURSDAY,
+            WeekDay.FRIDAY,
+            WeekDay.SATURDAY,
+            WeekDay.SUNDAY,
+        ]
+
 
 class NoSuchWeekDay(Exception):
     pass

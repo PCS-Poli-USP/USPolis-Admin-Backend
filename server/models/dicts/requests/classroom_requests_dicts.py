@@ -1,4 +1,5 @@
 from server.models.dicts.requests.base_requests_dicts import BaseRequestDict
+from server.utils.enums.audiovisual_type_enum import AudiovisualType
 
 
 class ClassroomRegisterDict(BaseRequestDict, total=False):
@@ -12,7 +13,7 @@ class ClassroomRegisterDict(BaseRequestDict, total=False):
     floor: int
     ignore_to_allocate: bool
     accessibility: bool
-    projector: bool
+    audiovisual: AudiovisualType
     air_conditioning: bool
 
 

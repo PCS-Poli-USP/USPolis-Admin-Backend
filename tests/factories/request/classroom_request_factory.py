@@ -7,6 +7,7 @@ from server.models.http.requests.classroom_request_models import (
     ClassroomRegister,
     ClassroomUpdate,
 )
+from server.utils.enums.audiovisual_type_enum import AudiovisualType
 from server.utils.must_be_int import must_be_int
 from tests.factories.request.base_request_factory import BaseRequestFactory
 
@@ -25,7 +26,7 @@ class ClassroomRequestFactory(BaseRequestFactory):
             "floor": self.faker.random_int(min=0, max=10),
             "ignore_to_allocate": self.faker.boolean(),
             "accessibility": self.faker.boolean(),
-            "projector": self.faker.boolean(),
+            "audiovisual": self.faker.random_element(AudiovisualType.values()),
             "air_conditioning": self.faker.boolean(),
         }
 
@@ -34,10 +35,10 @@ class ClassroomRequestFactory(BaseRequestFactory):
 
     def create_input(self, **overrides: ClassroomRegisterDict) -> ClassroomRegister:
         default = self.get_default_register_input()
-        self.update_default_dict(default, overrides)  # type: ignore
+        self.override_default_dict(default, overrides)  # type: ignore
         return ClassroomRegister(**default)
 
     def update_input(self, **overrides: ClassroomUpdateDict) -> ClassroomUpdate:
         default = self.get_default_update_input()
-        self.update_default_dict(default, overrides)  # type: ignore
+        self.override_default_dict(default, overrides)  # type: ignore
         return ClassroomUpdate(**default)

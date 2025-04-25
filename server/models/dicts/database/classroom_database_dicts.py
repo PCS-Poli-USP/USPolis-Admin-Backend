@@ -6,6 +6,7 @@ from server.models.database.reservation_db_model import Reservation
 from server.models.database.schedule_db_model import Schedule
 from server.models.database.user_db_model import User
 from server.models.dicts.database.base_database_dicts import BaseModelDict
+from server.utils.enums.audiovisual_type_enum import AudiovisualType
 
 
 class ClassroomModelDict(BaseModelDict, total=False):
@@ -18,7 +19,7 @@ class ClassroomModelDict(BaseModelDict, total=False):
     floor: int
     ignore_to_allocate: bool
     accessibility: bool
-    projector: bool
+    audiovisual: AudiovisualType
     air_conditioning: bool
     updated_at: datetime
 

@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class AudiovisualType(Enum):
+class AudiovisualType(str, Enum):
     TV = "tv"
     PROJECTOR = "projector"
     NONE = "none"
@@ -19,6 +19,10 @@ class AudiovisualType(Enum):
         if value in none_values:
             return cls.NONE
         raise NoSuchAudiovisualType(f"Audiovisual {value} is not valid.")
+
+    @staticmethod
+    def values() -> list["AudiovisualType"]:
+        return [AudiovisualType.TV, AudiovisualType.PROJECTOR, AudiovisualType.NONE]
 
 
 class NoSuchAudiovisualType(Exception):

@@ -10,7 +10,7 @@ class BaseRequestFactory(metaclass=ABCMeta):
     def random_email(self) -> str:
         return self.faker.email(domain="usp.br")
 
-    def update_default_dict(
+    def override_default_dict(
         self, default: dict[str, Any], overrides: dict[str, Any] | None
     ) -> None:
         """Update a TypedDict with overrides."""

@@ -16,7 +16,7 @@ class UserRequestFactory(BaseRequestFactory):
             "name": self.faker.name(),
             "email": self.random_email(),
         }
-        self.update_default_dict(default, overrides)  # type: ignore
+        self.override_default_dict(default, overrides)  # type: ignore
         return UserRegister(**default)
 
     def update_input(self, **overrides: Unpack[UserUpdateDict]) -> UserUpdate:
@@ -24,5 +24,5 @@ class UserRequestFactory(BaseRequestFactory):
             "is_admin": False,
             "building_ids": [],
         }
-        self.update_default_dict(default, overrides)  # type: ignore
+        self.override_default_dict(default, overrides)  # type: ignore
         return UserUpdate(**default)
