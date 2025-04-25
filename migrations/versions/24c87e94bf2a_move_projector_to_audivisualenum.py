@@ -21,7 +21,7 @@ depends_on: str | Sequence[str] | None = None
 
 def upgrade() -> None:
     audiovisual_type = sa.Enum("TV", "PROJECTOR", "NONE", name="audiovisualtype")
-    audiovisual_type.create(op.get_bind(), checkfirst=False)
+    audiovisual_type.create(op.get_bind(), checkfirst=True)
 
     op.add_column(
         "classroom",

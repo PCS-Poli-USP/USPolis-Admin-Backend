@@ -32,7 +32,7 @@ def downgrade() -> None:
     op.add_column(
         "group",
         sa.Column(
-            "abbreviation", sa.VARCHAR(length=10), autoincrement=False, nullable=False
+            "abbreviation", sa.VARCHAR(length=10), autoincrement=False, nullable=True
         ),
     )
     op.drop_index(op.f("ix_group_name"), table_name="group")
