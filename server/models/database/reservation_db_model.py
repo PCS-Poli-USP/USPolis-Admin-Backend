@@ -19,7 +19,7 @@ class Reservation(SQLModel, table=True):
     title: str = Field()
     type: ReservationType = Field()
     reason: str | None = Field(nullable=True, default=None)
-    updated_at: datetime = Field(default=datetime.now())
+    updated_at: datetime = Field(default_factory=datetime.now)
 
     classroom_id: int = Field(foreign_key="classroom.id", nullable=False)
     classroom: "Classroom" = Relationship(back_populates="reservations")

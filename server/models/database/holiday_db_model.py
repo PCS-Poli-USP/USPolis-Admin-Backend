@@ -20,7 +20,7 @@ class Holiday(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field()
     date: datetime_date = Field()
-    updated_at: datetime = Field(default=datetime.now())
+    updated_at: datetime = Field(default_factory=datetime.now)
 
     category_id: int = Field(foreign_key="holidaycategory.id")
     category: "HolidayCategory" = Relationship(back_populates="holidays")

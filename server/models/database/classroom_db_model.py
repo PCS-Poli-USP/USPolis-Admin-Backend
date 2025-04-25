@@ -28,7 +28,7 @@ class ClassroomBase(SQLModel):
         sa_column=Column(Enum(AudiovisualType), nullable=False)
     )
     air_conditioning: bool = False
-    updated_at: datetime = datetime.now()
+    updated_at: datetime = Field(default_factory=datetime.now)
 
     created_by_id: int = Field(foreign_key="user.id")
     building_id: int = Field(foreign_key="building.id")

@@ -13,8 +13,8 @@ if TYPE_CHECKING:
 class Group(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field(index=True, nullable=False, unique=True)
-    updated_at: datetime = Field(default=datetime.now())
-    created_at: datetime = Field(default=datetime.now())
+    updated_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=datetime.now)
 
     classrooms: list[Classroom] = Relationship(link_model=GroupClassroomLink)
     users: list["User"] = Relationship(
