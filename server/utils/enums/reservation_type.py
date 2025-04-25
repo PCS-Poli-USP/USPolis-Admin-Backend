@@ -35,7 +35,7 @@ class ReservationType(Enum):
                 return "Evento"
             case ReservationType.OTHER:
                 return "Outro"
-            
+
     @staticmethod
     def values() -> list["ReservationType"]:
         return [

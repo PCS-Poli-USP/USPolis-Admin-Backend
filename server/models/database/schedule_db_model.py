@@ -2,7 +2,7 @@ from datetime import date, time
 from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import Column, ForeignKey, Integer
-from sqlmodel import Field, Relationship, SQLModel, desc
+from sqlmodel import Field, Relationship, SQLModel, asc, desc
 
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.allocation_log_db_model import AllocationLog
@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from server.models.database.class_db_model import Class
     from server.models.database.classroom_db_model import Classroom
     from server.models.database.occurrence_db_model import Occurrence
+    from server.models.database.conflict_db_model import Conflict
 
 from server.utils.enums.month_week import MonthWeek
 from server.utils.enums.recurrence import Recurrence
@@ -48,6 +49,12 @@ class Schedule(SQLModel, table=True):
 
     occurrences: list["Occurrence"] = Relationship(
         back_populates="schedule", sa_relationship_kwargs={"cascade": "all, delete"}
+    )
+    conflicts: list["Conflict"] = Relationship(
+        sa_relationship_kwargs={
+            "cascade": "all, delete",
+            "order_by": lambda: asc(Conflict.date),
+        },
     )
     logs: list[AllocationLog] = Relationship(
         sa_relationship_kwargs={

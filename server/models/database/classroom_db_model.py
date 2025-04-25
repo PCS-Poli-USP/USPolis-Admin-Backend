@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import UniqueConstraint
-from sqlmodel import Field, Relationship, SQLModel, Column, Enum
+from sqlmodel import Field, Relationship, SQLModel, Column, Enum, asc
 
 from server.utils.enums.audiovisual_type_enum import AudiovisualType
 from server.utils.must_be_int import must_be_int
@@ -15,6 +15,9 @@ if TYPE_CHECKING:
     from server.models.database.user_db_model import User
     from server.models.database.classroom_solicitation_db_model import (
         ClassroomSolicitation,
+    )
+    from server.models.database.conflict_db_model import (
+        Conflict,
     )
 
 
@@ -51,6 +54,13 @@ class Classroom(ClassroomBase, table=True):
     schedules: list["Schedule"] = Relationship(back_populates="classroom")
     solicitations: list["ClassroomSolicitation"] = Relationship(
         back_populates="classroom"
+    )
+    conflicts: list["Conflict"] = Relationship(
+        back_populates="classroom",
+        sa_relationship_kwargs={
+            "cascade": "all, delete",
+            "order_by": lambda: asc(Conflict.date),
+        },
     )
 
 

@@ -2,11 +2,12 @@ from datetime import date as datetime_date
 from datetime import time
 from typing import TYPE_CHECKING, Optional
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship, SQLModel, asc
 
 if TYPE_CHECKING:
     from server.models.database.classroom_db_model import Classroom
     from server.models.database.schedule_db_model import Schedule
+    from server.models.database.conflict_db_model import Conflict
 
 
 class Occurrence(SQLModel, table=True):
@@ -22,6 +23,12 @@ class Occurrence(SQLModel, table=True):
 
     schedule_id: int | None = Field(default=None, index=True, foreign_key="schedule.id")
     schedule: "Schedule" = Relationship(back_populates="occurrences")
+    conflicts: list["Conflict"] = Relationship(
+        sa_relationship_kwargs={
+            "cascade": "all, delete",
+            "order_by": lambda: asc(Conflict.date),
+        },
+    )
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Occurrence):
