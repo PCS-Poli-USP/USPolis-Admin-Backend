@@ -1,5 +1,10 @@
 from collections.abc import Generator
+import os
 from unittest.mock import MagicMock
+
+from alembic import command
+from alembic.config import Config
+from pathlib import Path
 
 from fastapi import Request
 import pytest
@@ -24,7 +29,8 @@ from server.repositories.user_repository import UserRepository
 from server.services.auth.auth_user_info import AuthUserInfo
 from tests.factories.model.building_model_factory import BuildingModelFactory
 
-engine = create_engine(f"{CONFIG.test_db_uri}/{CONFIG.test_db_database}")
+test_db_url = f"{CONFIG.test_db_uri}/{CONFIG.test_db_database}"
+engine = create_engine(test_db_url)
 
 # create function to delete all data from tables and reset ids
 with Session(engine) as session:
@@ -37,7 +43,9 @@ with Session(engine) as session:
         BEGIN
             -- Truncar as tabelas
             FOR stmt IN statements LOOP
-                EXECUTE 'TRUNCATE TABLE ' || quote_ident(stmt.tablename) || ' RESTART IDENTITY' || ' CASCADE;';
+                IF stmt.tablename != 'alembic_version' THEN
+                    EXECUTE 'TRUNCATE TABLE ' || quote_ident(stmt.tablename) || ' RESTART IDENTITY' || ' CASCADE;';
+                END IF;
             END LOOP;
         END;
         $$ LANGUAGE plpgsql;
@@ -46,9 +54,22 @@ with Session(engine) as session:
     session.commit()
 
 
+def run_alembic_migrations() -> None:
+    alembic_cfg = Config(str(Path(__file__).parent.parent / "alembic.ini"))
+    alembic_cfg.set_main_option("script_location", "migrations")
+    os.environ["ALEMBIC_URL"] = CONFIG.test_alembic_url
+    command.upgrade(alembic_cfg, "head")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def apply_migrations() -> Generator[None, None, None]:
+    SQLModel.metadata.create_all(engine)
+    run_alembic_migrations()
+    yield
+
+
 @pytest.fixture(name="session")
 def session_fixture(request: pytest.FixtureRequest) -> Generator[Session, None, None]:
-    SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
 
         def cleanup() -> None:
@@ -68,7 +89,12 @@ def mock_session_fixture() -> MagicMock:
 
 def mock_google_authenticate() -> AuthUserInfo:
     return AuthUserInfo(
-        email=CONFIG.mock_email, name="Test User", email_verified=True, picture=""
+        email=CONFIG.mock_email,
+        name="Mock User",
+        email_verified=True,
+        picture="",
+        given_name="Mock",
+        family_name="User",
     )
 
 

@@ -31,6 +31,7 @@ class Settings(BaseModel):
     # Testing / Development:
     test_db_uri: str = config("TEST_DATABASE_URI")  # type: ignore
     test_db_database: str = config("TEST_DATABASE_NAME")  # type: ignore
+    test_alembic_url: str = config("TEST_ALEMBIC_URL")  # type: ignore
     testing: bool = config("TESTING", default=False, cast=bool)
     override_auth: bool = config("OVERRIDE_AUTH", default=False, cast=bool)
     mock_email: str = config("MOCK_EMAIL", default="uspolis@usp.br")  # type: ignore
