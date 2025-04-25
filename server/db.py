@@ -30,6 +30,7 @@ from server.models.database import (  # noqa
     user_db_model,
     classroom_solicitation_db_model,
     allocation_log_db_model,
+    conflict_db_model,
 )
 
 engine = create_engine(f"{CONFIG.db_uri}/{CONFIG.db_database}")
