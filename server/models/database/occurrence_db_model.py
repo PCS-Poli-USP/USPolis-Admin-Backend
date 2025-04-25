@@ -41,11 +41,11 @@ class Occurrence(SQLModel, table=True):
     def conflicts_with_time(self, start_time: time, end_time: time) -> bool:
         if self.start_time < start_time and self.end_time > end_time:
             return True
+        if self.start_time < start_time and self.end_time > start_time:
+            return True
         if self.start_time > start_time and self.start_time < end_time:
             return True
-        if self.end_time > start_time and self.end_time < end_time:
-            return True
-        if start_time < self.start_time and end_time > self.end_time:
+        if self.start_time > start_time and self.end_time < end_time:
             return True
         if self.start_time == start_time and self.end_time == end_time:
             return True
