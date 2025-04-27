@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Unpack
 from sqlmodel import Session
 from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
@@ -27,14 +28,14 @@ class BuildingModelFactory(BaseModelFactory[Building]):
             "solicitations": [],
         }
 
-    def create(self, **overrides: BuildingModelDict) -> Building:
+    def create(self, **overrides: Unpack[BuildingModelDict]) -> Building:  # type: ignore
         """Create a building instance with default values."""
         return super().create(**overrides)
 
-    def create_and_refresh(self, **overrides: BuildingModelDict) -> Building:
+    def create_and_refresh(self, **overrides: Unpack[BuildingModelDict]) -> Building:  # type: ignore
         """Create a building instance with default values, commit and refresh it."""
         return super().create_and_refresh(**overrides)
 
-    def update(self, id: int, **overrides: BuildingModelDict) -> Building:
+    def update(self, building_id: int, **overrides: Unpack[BuildingModelDict]) -> Building:  # type: ignore
         """Create a building instance with default values."""
-        return super().update(id, **overrides)
+        return super().update(model_id=building_id, **overrides)

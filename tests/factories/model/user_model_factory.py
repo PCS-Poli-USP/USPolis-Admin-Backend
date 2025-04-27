@@ -1,10 +1,7 @@
 from datetime import datetime
+from typing import Unpack
 from server.models.database.user_db_model import User
 from server.models.dicts.database.user_database_dicts import UserModelDict
-from server.models.dicts.requests.user_requests_dicts import (
-    UserRegisterDict,
-    UserUpdateDict,
-)
 from tests.factories.model.base_model_factory import BaseModelFactory
 
 
@@ -30,10 +27,14 @@ class UserModelFactory(BaseModelFactory[User]):
             "groups": [],
         }
 
-    def create(self, **overrides: UserRegisterDict) -> User:
+    def create(self, **overrides: Unpack[UserModelDict]) -> User:  # type: ignore
         """Create a user instance with default values."""
         return super().create(**overrides)
 
-    def update(self, id: int, **overrides: UserUpdateDict) -> User:
+    def create_and_refresh(self, **overrides: Unpack[UserModelDict]) -> User:  # type: ignore
+        """Create a user instance with default values, commit and refresh it."""
+        return super().create_and_refresh(**overrides)
+
+    def update(self, user_id: int, **overrides: Unpack[UserModelDict]) -> User:  # type: ignore
         """Create a user instance with default values."""
-        return super().update(id, **overrides)
+        return super().update(model_id=user_id, **overrides)

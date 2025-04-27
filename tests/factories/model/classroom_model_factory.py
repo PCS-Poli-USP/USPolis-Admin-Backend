@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Unpack
 from sqlmodel import Session
 from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
@@ -33,13 +34,15 @@ class ClassroomModelFactory(BaseModelFactory[Classroom]):
             "solicitations": [],
         }
 
-    def create(self, **overrides: ClassroomModelDict) -> Classroom:
+    def create(self, **overrides: Unpack[ClassroomModelDict]) -> Classroom:  # type: ignore
         """Create a classroom instance with default values."""
         return super().create(**overrides)
 
-    def create_and_refresh(self, **overrides: ClassroomModelDict) -> Classroom:
+    def create_and_refresh(self, **overrides: Unpack[ClassroomModelDict]) -> Classroom:  # type: ignore
         return super().create_and_refresh(**overrides)
 
-    def update(self, id: int, **overrides: ClassroomModelDict) -> Classroom:
+    def update(  # type: ignore
+        self, classroom_id: int, **overrides: Unpack[ClassroomModelDict]
+    ) -> Classroom:
         """Create a classroom instance with default values."""
-        return super().update(id, **overrides)
+        return super().update(model_id=classroom_id, **overrides)
