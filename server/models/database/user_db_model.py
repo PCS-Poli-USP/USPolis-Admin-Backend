@@ -6,6 +6,7 @@ from sqlmodel import Field, Relationship, SQLModel
 from server.models.database.group_db_model import Group
 from server.models.database.group_user_link import GroupUserLink
 from server.models.database.user_building_link import UserBuildingLink
+from server.utils.must_be_int import must_be_int
 
 if TYPE_CHECKING:
     from server.models.database.building_db_model import Building
@@ -49,3 +50,16 @@ class User(SQLModel, table=True):
         back_populates="users",
         sa_relationship_kwargs={"order_by": "Group.name"},
     )
+
+    def classrooms_ids_set(self) -> set[int]:
+        """
+        Get the set of classroom IDs that the user has access to.
+
+        Returns:
+            set[int]: A set of classroom IDs.
+        """
+        return {
+            must_be_int(classroom.id)
+            for group in self.groups
+            for classroom in group.classrooms
+        }

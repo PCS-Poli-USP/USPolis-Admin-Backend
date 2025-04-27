@@ -8,6 +8,7 @@ from sqlmodel import Field, Relationship, SQLModel, Enum
 from server.models.database.class_calendar_link import ClassCalendarLink
 from server.utils.enums.audiovisual_type_enum import AudiovisualType
 from server.utils.enums.class_type import ClassType
+from server.utils.must_be_int import must_be_int
 
 if TYPE_CHECKING:
     from server.models.database.calendar_db_model import Calendar
@@ -54,3 +55,16 @@ class Class(SQLModel, table=True):
     subject: "Subject" = Relationship(back_populates="classes")
 
     posts: list["ForumPost"] = Relationship(cascade_delete=True)
+
+    def classroom_ids(self) -> set[int]:
+        """
+        Get the list of classroom IDs associated with the class schedules.
+
+        Returns:
+            list[int]: A list of classroom IDs.
+        """
+        return {
+            must_be_int(schedule.classroom.id)
+            for schedule in self.schedules
+            if schedule.classroom
+        }
