@@ -23,13 +23,13 @@ router = APIRouter(
 
 
 @router.get("/{id}")
-def get_classroom(id: int, repository: ClassroomRepositoryDep) -> ClassroomResponse:
+def get_classroom_by_id(id: int, repository: ClassroomRepositoryDep) -> ClassroomResponse:
     classroom = repository.get_by_id(id)
     return ClassroomResponse.from_classroom(classroom)
 
 
 @router.get("/building/{building_id}")
-def get_classrooms_by_building(
+def get_classrooms_by_building_id(
     building_id: int, repository: ClassroomRepositoryDep
 ) -> list[ClassroomResponse]:
     """Get all classrooms on building"""

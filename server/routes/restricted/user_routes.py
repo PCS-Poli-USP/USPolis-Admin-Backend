@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request
 
 from server.deps.authenticate import UserDep
 from server.deps.repository_adapters.class_repository_adapter import (
-    ClassRepositoryAdapterDep,
+    ClassRepositoryDep,
 )
 from server.deps.repository_adapters.reservation_repository_adapter import (
     ReservationRepositoryDep,
@@ -12,7 +12,7 @@ from server.deps.repository_adapters.subject_repository_adapter import (
 )
 from server.deps.session_dep import SessionDep
 from server.deps.repository_adapters.building_repository_adapter import (
-    BuildingRespositoryAdapterDep,
+    BuildingRepositoryDep,
 )
 from server.deps.repository_adapters.classroom_repository_adapter import (
     ClassroomRepositoryDep,
@@ -53,7 +53,7 @@ def get_current_user(
 
 @router.get("/my-buildings")
 def get_my_buildings(
-    repository: BuildingRespositoryAdapterDep,
+    repository: BuildingRepositoryDep,
 ) -> list[BuildingResponse]:
     """Get all buildings for authenticated user"""
     buildings = repository.get_all()
@@ -71,7 +71,7 @@ def get_my_subjects(
 
 @router.get("/my-classes")
 def get_my_classes(
-    repository: ClassRepositoryAdapterDep,
+    repository: ClassRepositoryDep,
 ) -> list[ClassResponse]:
     """Get all classes for authenticated user"""
     classes = repository.get_all()

@@ -5,11 +5,10 @@ from sqlmodel import SQLModel, Session
 from sqlalchemy.exc import NoResultFound
 
 from server.models.dicts.database.base_database_dicts import BaseModelDict
-from server.models.dicts.requests.base_requests_dicts import BaseRequestDict
 
 
 M = TypeVar("M", bound=SQLModel)
-InputType = TypeVar("InputType", bound=BaseRequestDict)
+InputType = TypeVar("InputType", bound=BaseModelDict)
 
 
 class BaseModelFactory(Generic[M], metaclass=ABCMeta):
@@ -92,14 +91,14 @@ class BaseModelFactory(Generic[M], metaclass=ABCMeta):
             raise NoResultFound(f"Model with id {id} not found")
         return instance
 
-    def update(self, id: int, **overrides: Unpack[InputType]) -> M:  # type: ignore
+    def update(self, model_id: int, **overrides: Unpack[InputType]) -> M:  # type: ignore
         """Update a model instance by its ID.\n
         The values will be the defaults, unless overridden.\n
         """
         defaults = self.get_defaults()
         if overrides:
             self.__update_default_dict(defaults, overrides)  # type: ignore
-        model = self.get_by_id(id)
+        model = self.get_by_id(model_id)
         for key, value in defaults.items():
             if value is not None:
                 setattr(model, key, value)

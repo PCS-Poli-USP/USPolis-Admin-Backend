@@ -14,7 +14,7 @@ from tests.factories.request.user_request_factory import UserRequestFactory
 URL_PREFIX = "/admin/users"
 
 
-def test_create_user(client: TestClient) -> None:
+def test_create_user_with_admin_user(client: TestClient) -> None:
     input = UserRequestFactory().create_input()
     body = input.model_dump()
     response = client.post(URL_PREFIX, json=body)
@@ -27,7 +27,7 @@ def test_create_user(client: TestClient) -> None:
     assert created["buildings"] is None
 
 
-def test_get_all_users(client: TestClient, session: Session) -> None:
+def test_get_all_users_with_admin_user(client: TestClient, session: Session) -> None:
     factory = UserModelFactory(session)
     users = factory.create_many_default()
     factory.commit()
@@ -43,7 +43,9 @@ def test_get_all_users(client: TestClient, session: Session) -> None:
         assert user.id in ids
 
 
-def test_update_user_to_admin(client: TestClient, session: Session) -> None:
+def test_update_user_to_admin_with_admin_user(
+    client: TestClient, session: Session
+) -> None:
     factory = UserModelFactory(session)
     user = factory.create_and_refresh()
     input = UserRequestFactory().update_input(is_admin=True)
@@ -55,7 +57,7 @@ def test_update_user_to_admin(client: TestClient, session: Session) -> None:
     assert updated["is_admin"] is True
 
 
-def test_update_self_admin_status(
+def test_update_self_admin_status_with_admin_user(
     user: User,
     client: TestClient,
 ) -> None:
@@ -64,7 +66,7 @@ def test_update_self_admin_status(
     assert response.status_code == 400
 
 
-def test_update_user_buildings(
+def test_update_user_buildings_with_admin_user(
     client: TestClient, session: Session, building: Building
 ) -> None:
     factory = UserModelFactory(session)
@@ -82,7 +84,7 @@ def test_update_user_buildings(
     assert updated["buildings"] is not None
 
 
-def test_update_user_to_admin_and_buildings(
+def test_update_user_to_admin_and_buildings_with_admin_user(
     client: TestClient, session: Session, building: Building
 ) -> None:
     factory = UserModelFactory(session)
@@ -103,7 +105,7 @@ def test_update_user_to_admin_and_buildings(
     assert updated["buildings"] is not None
 
 
-def test_delete_user(client: TestClient, session: Session) -> None:
+def test_delete_user_with_admin_user(client: TestClient, session: Session) -> None:
     factory = UserModelFactory(session)
     user = factory.create_and_refresh()
 
@@ -116,6 +118,6 @@ def test_delete_user(client: TestClient, session: Session) -> None:
         UserRepository.get_by_id(user_id=must_be_int(user.id), session=session)
 
 
-def test_delete_self(user: User, client: TestClient) -> None:
+def test_delete_self_with_admin_user(user: User, client: TestClient) -> None:
     response = client.delete(f"{URL_PREFIX}/{user.id}")
     assert response.status_code == 400

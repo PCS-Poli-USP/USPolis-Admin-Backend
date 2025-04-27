@@ -12,7 +12,7 @@ from tests.factories.request.building_request_factory import BuildingRequestFact
 URL_PREFIX = "/admin/buildings"
 
 
-def test_create_building(user: User, client: TestClient) -> None:
+def test_create_building_with_admin_user(user: User, client: TestClient) -> None:
     input = BuildingRequestFactory().create_input()
     body = input.model_dump()
     response = client.post(URL_PREFIX, json=body)
@@ -23,7 +23,9 @@ def test_create_building(user: User, client: TestClient) -> None:
     assert created["created_by"] == user.name
 
 
-def test_update_building(building: Building, client: TestClient) -> None:
+def test_update_building_admin_user_with_admin_user(
+    building: Building, client: TestClient
+) -> None:
     input = BuildingRequestFactory().update_input()
     body = input.model_dump()
     response = client.put(f"{URL_PREFIX}/{building.id}", json=body)
@@ -33,7 +35,7 @@ def test_update_building(building: Building, client: TestClient) -> None:
     assert updated["name"] == input.name
 
 
-def test_delete_building(
+def test_delete_building_admin_user_with_admin_user(
     building: Building, client: TestClient, session: Session
 ) -> None:
     response = client.delete(f"{URL_PREFIX}/{building.id}")

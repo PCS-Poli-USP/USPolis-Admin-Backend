@@ -2,7 +2,7 @@ from typing import Annotated
 from fastapi import APIRouter, Body, Query, Response
 
 from server.deps.repository_adapters.class_repository_adapter import (
-    ClassRepositoryAdapterDep,
+    ClassRepositoryDep,
 )
 from server.models.http.requests.class_request_models import ClassRegister, ClassUpdate
 from server.models.http.responses.class_response_models import (
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/classes", tags=["Classes"])
 
 
 @router.get("/{class_id}")
-def get_class(class_id: int, repository: ClassRepositoryAdapterDep) -> ClassResponse:
+def get_class(class_id: int, repository: ClassRepositoryDep) -> ClassResponse:
     """Get a class by id"""
     class_ = repository.get_by_id(id=class_id)
     return ClassResponse.from_class(class_)
@@ -25,7 +25,7 @@ def get_class(class_id: int, repository: ClassRepositoryAdapterDep) -> ClassResp
 
 @router.get("/{class_id}/full")
 def get_class_full(
-    class_id: int, repository: ClassRepositoryAdapterDep
+    class_id: int, repository: ClassRepositoryDep
 ) -> ClassFullResponse:
     """Get a class by id with schedules and occurrences"""
     class_ = repository.get_by_id(id=class_id)
@@ -34,7 +34,7 @@ def get_class_full(
 
 @router.post("")
 async def create_class(
-    class_input: ClassRegister, repository: ClassRepositoryAdapterDep
+    class_input: ClassRegister, repository: ClassRepositoryDep
 ) -> ClassResponse:
     """Create a class"""
     class_ = repository.create(input=class_input)
@@ -43,7 +43,7 @@ async def create_class(
 
 @router.put("/{class_id}")
 def update_class(
-    class_id: int, class_input: ClassUpdate, repository: ClassRepositoryAdapterDep
+    class_id: int, class_input: ClassUpdate, repository: ClassRepositoryDep
 ) -> ClassResponse:
     """Update a class by id"""
     updated_class = repository.update(id=class_id, input=class_input)
@@ -51,7 +51,7 @@ def update_class(
 
 
 @router.delete("/{class_id}")
-def delete_class(class_id: int, repository: ClassRepositoryAdapterDep) -> Response:
+def delete_class(class_id: int, repository: ClassRepositoryDep) -> Response:
     """Delete a class by id"""
     repository.delete(id=class_id)
     return NoContent
@@ -59,7 +59,7 @@ def delete_class(class_id: int, repository: ClassRepositoryAdapterDep) -> Respon
 
 @router.delete("/many/")
 def delete_many_class(
-    repository: ClassRepositoryAdapterDep, ids: Annotated[list[int], Query()] = []
+    repository: ClassRepositoryDep, ids: Annotated[list[int], Query()] = []
 ) -> Response:
     """Delete many classes by ids"""
     repository.delete_many(ids=ids)
