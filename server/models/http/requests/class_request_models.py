@@ -25,7 +25,6 @@ class ClassRequestBase(BaseModel):
     air_conditionating: bool
     accessibility: bool
     audiovisual: AudiovisualType
-
     ignore_to_allocate: bool
 
 

@@ -40,6 +40,10 @@ class Class(SQLModel, table=True):
     full_allocated: bool = Field(default=False)
     updated_at: datetime = Field(default_factory=datetime.now)
 
+    subject_id: int | None = Field(
+        foreign_key="subject.id", index=True, default=None, nullable=False
+    )
+
     calendars: list["Calendar"] = Relationship(
         back_populates="classes",
         link_model=ClassCalendarLink,
@@ -48,12 +52,7 @@ class Class(SQLModel, table=True):
         back_populates="class_",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
-
-    subject_id: int | None = Field(
-        foreign_key="subject.id", index=True, default=None, nullable=False
-    )
     subject: "Subject" = Relationship(back_populates="classes")
-
     posts: list["ForumPost"] = Relationship(cascade_delete=True)
 
     def classroom_ids(self) -> set[int]:
