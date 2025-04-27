@@ -1,7 +1,17 @@
-# USPolis Back Refactor
+# USPolis Backend
 
-- [FastAPI]() - Python async micro framework built on [Starlette]() and [PyDantic]()
-- [Beanie ODM]() - Async [MongoDB]() object-document mapper built on [PyDantic]()
+## Table of Contents
+- [Stack](#stack)
+- [Setup](#setup)
+- [Run](#run)
+- [Develop](#develop)
+- [Test](#test)
+
+## Stack
+
+- [FastAPI](https://fastapi.tiangolo.com/) - Python async micro framework built on [Starlette](https://www.starlette.io/) and [PyDantic](https://docs.pydantic.dev/latest/).
+- [SQL Model](https://sqlmodel.tiangolo.com/) - Python library for interacting with SQL databases, powered by [PyDantic](https://docs.pydantic.dev/latest/) and [SQLAlchemy](https://sqlalchemy.org/).
+- [PostgreSQL](https://www.postgresql.org/) - Open source object-relational database. 
 
 ## Setup
 
