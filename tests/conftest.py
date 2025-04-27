@@ -28,6 +28,7 @@ from server.models.http.requests.user_request_models import UserRegister
 from server.repositories.user_repository import UserRepository
 from server.services.auth.auth_user_info import AuthUserInfo
 from tests.factories.model.building_model_factory import BuildingModelFactory
+from tests.factories.model.user_model_factory import UserModelFactory
 
 test_db_url = f"{CONFIG.test_db_uri}/{CONFIG.test_db_database}"
 engine = create_engine(test_db_url)
@@ -108,12 +109,72 @@ def mock_authenticate(request: Request, session: SessionDep) -> User:
     return user
 
 
+def mock_restricted_authenticate(
+    restricted_user: User, request: Request, session: SessionDep
+) -> User:
+    request.state.current_user = restricted_user
+    return restricted_user
+
+
+def mock_common_authenticate(
+    common: User, request: Request, session: SessionDep
+) -> User:
+    request.state.current_user = common
+    return common
+
+
 # This user call user fixture that creates the mocked user
 @pytest.fixture(name="client")
 def client_fixture(user: User, session: Session) -> Generator[TestClient, None, None]:
+    """
+    Admin client fixture, wich is a TestClient with the mocked authentication (admin user)
+    and the mocked google authentication.
+    """
     app.dependency_overrides[get_db] = lambda: session
     app.dependency_overrides[google_authenticate] = mock_google_authenticate
     app.dependency_overrides[authenticate] = mock_authenticate
+    with TestClient(app) as c:
+        yield c
+
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture(name="restricted_client")
+def restricted_client_fixture(
+    restricted_user: User, session: Session
+) -> Generator[TestClient, None, None]:
+    """
+    Admin client fixture, wich is a TestClient with the mocked authentication (admin user)
+    and the mocked google authentication.
+    """
+    app.dependency_overrides[get_db] = lambda: session
+    app.dependency_overrides[google_authenticate] = mock_google_authenticate
+
+    def _mock_authenticate(request: Request, session: SessionDep) -> User:
+        return mock_restricted_authenticate(restricted_user, request, session)
+
+    app.dependency_overrides[authenticate] = _mock_authenticate
+    with TestClient(app) as c:
+        yield c
+
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture(name="common_client")
+def common_client_fixture(
+    common_user: User, session: Session
+) -> Generator[TestClient, None, None]:
+    """
+    Admin client fixture, wich is a TestClient with the mocked authentication (admin user)
+    and the mocked google authentication.
+    """
+    app.dependency_overrides[get_db] = lambda: session
+    app.dependency_overrides[google_authenticate] = mock_google_authenticate
+
+    def _mock_authenticate(request: Request, session: SessionDep) -> User:
+        return mock_common_authenticate(common_user, request, session)
+
+    app.dependency_overrides[authenticate] = _mock_authenticate
     with TestClient(app) as c:
         yield c
 
@@ -136,6 +197,25 @@ def user_fixture(session: Session) -> Generator[User, None, None]:
             session=session,
             user_in=user_in,
         )
+    yield user
+
+
+@pytest.fixture(name="restricted_user")
+def restricted_user_fixture(
+    building: Building, session: Session
+) -> Generator[User, None, None]:
+    user = UserModelFactory(session=session).create_and_refresh(
+        is_admin=False,
+        buildings=[building],
+    )
+    yield user
+
+
+@pytest.fixture(name="common_user")
+def common_user_fixture(session: Session) -> Generator[User, None, None]:
+    user = UserModelFactory(session=session).create_and_refresh(
+        is_admin=False,
+    )
     yield user
 
 
