@@ -8,7 +8,7 @@ from server.deps.session_dep import SessionDep
 from server.models.database.class_db_model import Class
 from server.models.http.requests.class_request_models import ClassRegister, ClassUpdate
 from server.repositories.class_repository import ClassRepository
-from server.services.security.class_permission_checker import class_permission_checker
+from server.services.security.class_permission_checker import ClassPermissionChecker
 from server.services.security.subjects_permission_checker import (
     subject_permission_checker,
 )
@@ -24,6 +24,7 @@ class ClassRepositoryAdapter:
         self.session = session
         self.user = user
         self.owned_building_ids = owned_building_ids
+        self.checker = ClassPermissionChecker(user=user, session=session)
 
     def get_all(self) -> list[Class]:
         return ClassRepository.get_all_on_buildings(
@@ -32,9 +33,8 @@ class ClassRepositoryAdapter:
 
     def get_by_id(self, id: int) -> Class:
         # building_permission_checker(self.user, id)
-        class_ = ClassRepository.get_by_id_on_buildings(
-            id=id, building_ids=self.owned_building_ids, session=self.session
-        )
+        class_ = ClassRepository.get_by_id(id=id, session=self.session)
+        self.checker.check_permission(object=class_)
         return class_
 
     def create(self, input: ClassRegister) -> Class:
@@ -46,7 +46,7 @@ class ClassRepositoryAdapter:
         return new_class
 
     def update(self, id: int, input: ClassUpdate) -> Class:
-        class_permission_checker(user=self.user, class_=id, session=self.session)
+        self.checker.check_permission(object=id)
         updated_class = ClassRepository.update(
             id=id, input=input, user=self.user, session=self.session
         )
@@ -55,14 +55,14 @@ class ClassRepositoryAdapter:
         return updated_class
 
     def delete(self, id: int) -> None:
-        class_permission_checker(user=self.user, class_=id, session=self.session)
+        self.checker.check_permission(object=id)
         ClassRepository.delete(id=id, session=self.session)
         self.session.commit()
 
     def delete_many(self, ids: list[int]) -> None:
-        class_permission_checker(user=self.user, class_=ids, session=self.session)
+        self.checker.check_permission(object=ids)
         ClassRepository.delete_many(ids=ids, session=self.session)
         self.session.commit()
 
 
-ClassRepositoryAdapterDep = Annotated[ClassRepositoryAdapter, Depends()]
+ClassRepositoryDep = Annotated[ClassRepositoryAdapter, Depends()]

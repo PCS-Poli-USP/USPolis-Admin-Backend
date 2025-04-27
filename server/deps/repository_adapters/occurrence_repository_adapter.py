@@ -16,7 +16,7 @@ from server.models.database.schedule_db_model import Schedule
 from server.models.http.requests.allocate_request_models import AllocateSchedule
 from server.repositories.occurrence_repository import OccurrenceRepository
 from server.services.security.classrooms_permission_checker import (
-    classroom_permission_checker,
+    ClassroomPermissionChecker,
 )
 from server.services.security.occurrence_permission_checker import (
     occurrence_permission_checker,
@@ -41,6 +41,7 @@ class OccurrenceRepositoryAdapter:
         self.owned_building_ids = owned_building_ids
         self.classroom_repo = classroom_repo
         self.schedule_repo = schedule_repo
+        self.checker = ClassroomPermissionChecker(user=user, session=session)
 
     def get_all(self) -> list[Occurrence]:
         occurrences = OccurrenceRepository.get_all_on_buildings(
@@ -77,7 +78,7 @@ class OccurrenceRepositoryAdapter:
                 continue
 
             classroom = self.classroom_repo.get_by_id(pair.classroom_id)
-            classroom_permission_checker(self.user, classroom, self.session)
+            self.checker.check_permission(classroom)
 
             OccurrenceRepository.allocate_schedule(
                 user=self.user,

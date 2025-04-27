@@ -13,7 +13,7 @@ from server.models.http.requests.reservation_request_models import (
 from server.repositories.classroom_repository import ClassroomRepository
 from server.repositories.reservation_repository import ReservationRepository
 from server.services.security.buildings_permission_checker import (
-    building_permission_checker,
+    BuildingPermissionChecker,
 )
 from server.utils.must_be_int import must_be_int
 
@@ -28,6 +28,7 @@ class ReservationRespositoryAdapter:
         self.session = session
         self.user = user
         self.owned_building_ids = owned_building_ids
+        self.checker = BuildingPermissionChecker(user=user, session=session)
 
     def get_all(self) -> list[Reservation]:
         return ReservationRepository.get_all_on_buildings(
@@ -47,7 +48,7 @@ class ReservationRespositoryAdapter:
         classroom = ClassroomRepository.get_by_id(
             id=reservation.classroom_id, session=self.session
         )
-        building_permission_checker(self.user, must_be_int(classroom.building_id))
+        self.checker.check_permission(must_be_int(classroom.building_id))
         new_reservation = ReservationRepository.create(
             creator=self.user,
             input=reservation,
@@ -66,7 +67,7 @@ class ReservationRespositoryAdapter:
         classroom = ClassroomRepository.get_by_id(
             id=input.classroom_id, session=self.session
         )
-        building_permission_checker(self.user, must_be_int(classroom.building_id))
+        self.checker.check_permission(must_be_int(classroom.building_id))
         reservation = ReservationRepository.update_on_buildings(
             id=id,
             building_ids=self.owned_building_ids,
