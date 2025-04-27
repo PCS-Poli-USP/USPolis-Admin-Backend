@@ -19,10 +19,10 @@ from server.services.security.classrooms_permission_checker import (
     ClassroomPermissionChecker,
 )
 from server.services.security.occurrence_permission_checker import (
-    occurrence_permission_checker,
+    OccurrencePermissionChecker,
 )
 from server.services.security.schedule_permission_checker import (
-    schedule_permission_checker,
+    SchedulePermissionChecker,
 )
 
 
@@ -42,6 +42,10 @@ class OccurrenceRepositoryAdapter:
         self.classroom_repo = classroom_repo
         self.schedule_repo = schedule_repo
         self.checker = ClassroomPermissionChecker(user=user, session=session)
+        self.occurrence_checker = OccurrencePermissionChecker(
+            user=user, session=session
+        )
+        self.schedule_checker = SchedulePermissionChecker(user=user, session=session)
 
     def get_all(self) -> list[Occurrence]:
         occurrences = OccurrenceRepository.get_all_on_buildings(
@@ -51,7 +55,7 @@ class OccurrenceRepositoryAdapter:
 
     def get_by_id(self, id: int) -> Occurrence:
         occurrence = OccurrenceRepository.get_by_id(id=id, session=self.session)
-        occurrence_permission_checker(self.user, occurrence, self.session)
+        self.occurrence_checker.check_permission(occurrence)
         return occurrence
 
     def allocate_schedule(self, schedule_id: int, classroom_id: int) -> Schedule:
@@ -70,7 +74,7 @@ class OccurrenceRepositoryAdapter:
     ) -> None:
         for pair in schedule_classroom_pairs:
             schedule = self.schedule_repo.get_by_id(pair.schedule_id)
-            schedule_permission_checker(self.user, schedule, self.session)
+            self.schedule_checker.check_permission(schedule)
             if pair.classroom_id == -1:
                 OccurrenceRepository.remove_schedule_allocation(
                     user=self.user, schedule=schedule, session=self.session

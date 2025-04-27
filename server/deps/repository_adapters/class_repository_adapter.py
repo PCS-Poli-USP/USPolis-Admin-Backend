@@ -10,7 +10,7 @@ from server.models.http.requests.class_request_models import ClassRegister, Clas
 from server.repositories.class_repository import ClassRepository
 from server.services.security.class_permission_checker import ClassPermissionChecker
 from server.services.security.subjects_permission_checker import (
-    subject_permission_checker,
+    SubjectPermissionChecker,
 )
 
 
@@ -25,6 +25,7 @@ class ClassRepositoryAdapter:
         self.user = user
         self.owned_building_ids = owned_building_ids
         self.checker = ClassPermissionChecker(user=user, session=session)
+        self.subject_checker = SubjectPermissionChecker(user=user, session=session)
 
     def get_all(self) -> list[Class]:
         return ClassRepository.get_all_on_buildings(
@@ -38,7 +39,7 @@ class ClassRepositoryAdapter:
         return class_
 
     def create(self, input: ClassRegister) -> Class:
-        subject_permission_checker(user=self.user, subject=input.subject_id)
+        self.subject_checker.check_permission(object=input.subject_id)
         new_class = ClassRepository.create(input=input, session=self.session)
         self.session.commit()
         for schedule in new_class.schedules:

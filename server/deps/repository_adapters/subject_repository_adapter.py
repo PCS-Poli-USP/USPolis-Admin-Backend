@@ -8,7 +8,7 @@ from server.deps.session_dep import SessionDep
 from server.models.database.subject_db_model import Subject
 from server.repositories.subject_repository import SubjectRepository
 from server.services.security.subjects_permission_checker import (
-    subject_permission_checker,
+    SubjectPermissionChecker,
 )
 
 
@@ -22,6 +22,7 @@ class SubjectRepositoryAdapter:
         self.owned_building_ids = owned_building_ids
         self.session = session
         self.user = user
+        self.checker = SubjectPermissionChecker(user=user, session=session)
 
     def get_by_id(self, id: int) -> Subject:
         return SubjectRepository.get_by_id_on_buildings(
@@ -37,7 +38,7 @@ class SubjectRepositoryAdapter:
 
     def get_by_code(self, code: str) -> Subject:
         subject = SubjectRepository.get_by_code(code=code, session=self.session)
-        subject_permission_checker(user=self.user, subject=subject)
+        self.checker.check_permission(object=subject)
         return subject
 
 
