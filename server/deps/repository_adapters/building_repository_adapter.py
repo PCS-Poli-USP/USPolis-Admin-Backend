@@ -10,7 +10,7 @@ from server.models.http.requests.building_request_models import (
 )
 from server.repositories.building_repository import BuildingRepository
 from server.services.security.buildings_permission_checker import (
-    building_permission_checker,
+    BuildingPermissionChecker,
 )
 
 
@@ -24,6 +24,7 @@ class BuildingRepositoryAdapter:
         self.session = session
         self.user = user
         self.owned_building_ids = owned_building_ids
+        self.checker = BuildingPermissionChecker(user=user, session=session)
 
     def get_all(self) -> list[Building]:
         return BuildingRepository.get_by_ids(
@@ -31,13 +32,13 @@ class BuildingRepositoryAdapter:
         )
 
     def get_by_id(self, id: int) -> Building:
-        building_permission_checker(self.user, id)
+        self.checker.check_permission(id)
         building = BuildingRepository.get_by_id(id=id, session=self.session)
         return building
 
     def get_by_name(self, name: str) -> Building:
         building = BuildingRepository.get_by_name(name=name, session=self.session)
-        building_permission_checker(self.user, building)
+        self.checker.check_permission(building)
         return building
 
     def create(
@@ -69,5 +70,3 @@ class BuildingRepositoryAdapter:
 
 
 BuildingRepositoryDep = Annotated[BuildingRepositoryAdapter, Depends()]
-
-BuildingRespositoryAdapterDep = Annotated[BuildingRepositoryAdapter, Depends()]

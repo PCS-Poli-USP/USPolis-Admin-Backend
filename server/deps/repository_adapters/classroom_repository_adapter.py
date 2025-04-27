@@ -10,8 +10,12 @@ from server.models.database.classroom_db_model import Classroom
 from server.models.http.requests.classroom_request_models import ClassroomRegister
 from server.repositories.classroom_repository import ClassroomRepository
 from server.services.security.buildings_permission_checker import (
-    building_permission_checker,
+    BuildingPermissionChecker,
 )
+from server.services.security.classrooms_permission_checker import (
+    ClassroomPermissionChecker,
+)
+from server.utils.must_be_int import must_be_int
 
 
 class ClassroomRepositoryAdapter:
@@ -24,39 +28,48 @@ class ClassroomRepositoryAdapter:
         self.session = session
         self.user = user
         self.owned_building_ids = owned_building_ids
+        self.building_checker = BuildingPermissionChecker(user=user, session=session)
+        self.classroom_checker = ClassroomPermissionChecker(user=user, session=session)
 
     def get_all(self) -> list[Classroom]:
-        return ClassroomRepository.get_all_on_buildings(
-            building_ids=self.owned_building_ids, session=self.session
-        )
+        """Get all classrooms on buildings that the user has access to."""
+        ids = self.user.classrooms_ids_set()
+        return ClassroomRepository.get_by_ids(ids=list(ids), session=self.session)
 
     def get_all_on_building(self, building_id: int) -> list[Classroom]:
-        building_permission_checker(self.user, building_id)
+        """Get all classrooms on a building that the user has access to."""
+        self.building_checker.check_permission(building_id)
         return ClassroomRepository.get_all_on_buildings(
             building_ids=[building_id], session=self.session
         )
 
     def get_by_id(self, id: int) -> Classroom:
-        return ClassroomRepository.get_by_id_on_buildings(
-            building_ids=self.owned_building_ids, id=id, session=self.session
-        )
+        self.classroom_checker.check_permission(object=id)
+        classroom = ClassroomRepository.get_by_id(id=id, session=self.session)
+        return classroom
 
     def get_by_name_and_building(self, name: str, building: Building) -> Classroom:
-        building_permission_checker(self.user, building)
-        return ClassroomRepository.get_by_name_and_building(
+        classroom = ClassroomRepository.get_by_name_and_building(
             name, building, self.session
         )
+        self.classroom_checker.check_permission(classroom)
+        return classroom
 
     def create(
         self,
         classroom: ClassroomRegister,
     ) -> Classroom:
-        building_permission_checker(self.user, classroom.building_id)
+        self.building_checker.check_permission(classroom.building_id)
         new_classroom = ClassroomRepository.create(
             input=classroom,
             creator=self.user,
             session=self.session,
         )
+        if not self.user.is_admin:
+            for group in self.user.groups:
+                group.classrooms.append(new_classroom)
+                self.session.add(group)
+
         self.session.commit()
         self.session.refresh(new_classroom)
         return new_classroom
@@ -66,7 +79,7 @@ class ClassroomRepositoryAdapter:
         classroom_id: int,
         classroom_in: ClassroomRegister,
     ) -> Classroom:
-        building_permission_checker(self.user, classroom_in.building_id)
+        self.classroom_checker.check_permission(classroom_id)
         classroom = ClassroomRepository.update_on_buildings(
             id=classroom_id,
             building_ids=self.owned_building_ids,
@@ -78,6 +91,8 @@ class ClassroomRepositoryAdapter:
         return classroom
 
     def delete(self, id: int) -> None:
+        classroom = ClassroomRepository.get_by_id(id=id, session=self.session)
+        self.classroom_checker.check_permission(must_be_int(classroom.id))
         ClassroomRepository.delete_on_buildings(
             id=id,
             building_ids=self.owned_building_ids,
