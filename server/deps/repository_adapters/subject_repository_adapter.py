@@ -25,11 +25,9 @@ class SubjectRepositoryAdapter:
         self.checker = SubjectPermissionChecker(user=user, session=session)
 
     def get_by_id(self, id: int) -> Subject:
-        return SubjectRepository.get_by_id_on_buildings(
-            id=id,
-            building_ids=self.owned_building_ids,
-            session=self.session,
-        )
+        subject = SubjectRepository.get_by_id(id=id, session=self.session)
+        self.checker.check_permission(object=subject)
+        return subject
 
     def get_all(self) -> list[Subject]:
         return SubjectRepository.get_all_on_buildings(

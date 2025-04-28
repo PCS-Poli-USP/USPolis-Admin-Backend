@@ -8,7 +8,7 @@ from server.utils.enums.audiovisual_type_enum import AudiovisualType
 from server.utils.enums.class_type import ClassType
 
 
-class ClassModelDict(BaseModelDict):
+class ClassModelDict(BaseModelDict, total=False):
     """
     Class to hold the model dictionary for the database.
     """

@@ -5,7 +5,7 @@ from server.models.database.forum_db_model import ForumPost
 from server.utils.enums.subject_type import SubjectType
 
 
-class SubjectModelDict(BaseModelDict):
+class SubjectModelDict(BaseModelDict, total=False):
     """
     Class to hold the model dictionary for the database.
     """
@@ -20,4 +20,4 @@ class SubjectModelDict(BaseModelDict):
     # Relationships
     buildings: list[Building]
     classes: list[Class]
-    forum: ForumPost
+    forum: ForumPost | None

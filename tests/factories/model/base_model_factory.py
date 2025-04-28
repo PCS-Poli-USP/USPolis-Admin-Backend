@@ -22,6 +22,8 @@ class BaseModelFactory(Generic[M], metaclass=ABCMeta):
     def __init__(self, session: Session) -> None:
         self.faker = Faker("pt_BR")
         self.session = session
+        self.LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        self.NUMBERS = "0123456789"
 
     @abstractmethod
     def _get_model_type(self) -> type[M]:
