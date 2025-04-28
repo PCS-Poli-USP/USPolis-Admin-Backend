@@ -6,6 +6,7 @@ from server.deps.conflict_checker import ConflictCheckerDep
 from server.deps.repository_adapters.classroom_repository_adapter import (
     ClassroomRepositoryDep,
 )
+from server.deps.session_dep import SessionDep
 from server.models.database.classroom_db_model import ClassroomWithConflictsIndicator
 from server.models.http.requests.classroom_request_models import ClassroomRegister
 from server.models.http.responses.classroom_response_models import (
@@ -13,6 +14,7 @@ from server.models.http.responses.classroom_response_models import (
     ClassroomFullResponse,
 )
 from server.models.http.responses.generic_responses import NoContent
+from server.repositories.classroom_repository import ClassroomRepository
 
 embed = Body(..., embed=True)
 
@@ -38,11 +40,9 @@ def get_classrooms_by_building_id(
 
 
 @router.get("/full/{id}")
-def get_classroom_full(
-    id: int, respository: ClassroomRepositoryDep
-) -> ClassroomFullResponse:
+def get_classroom_full(id: int, session: SessionDep) -> ClassroomFullResponse:
     """Get by ID a classrooms with schedules and occurrences"""
-    classroom = respository.get_by_id(id)
+    classroom = ClassroomRepository.get_by_id(id=id, session=session)
     return ClassroomFullResponse.from_classroom(classroom)
 
 
