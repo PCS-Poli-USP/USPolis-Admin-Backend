@@ -10,7 +10,7 @@ class SubjectBaseFactory(BaseFactory):
     def get_base_defaults(self) -> SubjectBaseDict:
         return {
             "name": self.faker.name(),
-            "code": self.faker.bothify(text="??###", letters=self.UPPER_LETTERS),
+            "code": self.faker.bothify(text="???####", letters=self.UPPER_LETTERS),
             "professors": [self.faker.name() for _ in range(3)],
             "type": self.faker.random_element(SubjectType.values()),
             "class_credit": self.faker.random_int(min=1, max=10),

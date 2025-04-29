@@ -14,7 +14,7 @@ class UpdateCrawlSubjectDict(BaseRequestDict):
     type: CrawlerType
 
 
-class SubjectRegisterDict(SubjectBaseDict, BaseRequestDict):
+class SubjectRegisterDict(SubjectBaseDict, BaseRequestDict, total=False):
     building_ids: list[int]
 
 

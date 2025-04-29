@@ -3,6 +3,10 @@ from server.models.dicts.requests.subject_requests_dicts import (
     SubjectRegisterDict,
     SubjectUpdateDict,
 )
+from server.models.http.requests.subject_request_models import (
+    SubjectRegister,
+    SubjectUpdate,
+)
 from tests.factories.base.subject_base_factory import SubjectBaseFactory
 from tests.factories.request.base_request_factory import BaseRequestFactory
 
@@ -24,14 +28,12 @@ class SubjectRequestFactory(BaseRequestFactory):
             },
         )
 
-    def create_input(
-        self, **overrides: Unpack[SubjectRegisterDict]
-    ) -> SubjectRegisterDict:
+    def create_input(self, **overrides: Unpack[SubjectRegisterDict]) -> SubjectRegister:
         default = self.get_default_create()
         self.override_default_dict(default, overrides)  # type: ignore
-        return default
+        return SubjectRegister(**default)
 
-    def update_input(self, **overrides: Unpack[SubjectUpdateDict]) -> SubjectUpdateDict:
+    def update_input(self, **overrides: Unpack[SubjectUpdateDict]) -> SubjectUpdate:
         default = self.get_default_create()
         self.override_default_dict(default, overrides)  # type: ignore
-        return default
+        return SubjectUpdate(**default)
