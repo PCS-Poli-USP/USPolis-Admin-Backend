@@ -28,6 +28,24 @@ class ClassRepositoryAdapter:
         self.subject_checker = SubjectPermissionChecker(user=user, session=session)
 
     def get_all(self) -> list[Class]:
+        classes = self.get_all_on_my_classrooms()
+        classes.extend(self.get_all_unallocated())
+        return classes
+
+    def get_all_on_my_classrooms(self) -> list[Class]:
+        """Get all classes on classrooms that the user has access to."""
+        return ClassRepository.get_all_on_classrooms(
+            classroom_ids=self.user.classrooms_ids(), session=self.session
+        )
+
+    def get_all_unallocated(self) -> list[Class]:
+        """Get all classes that are not allocated in all schedules and are in one of the buildings."""
+        return ClassRepository.get_all_unallocated_on_buildings(
+            building_ids=self.owned_building_ids, session=self.session
+        )
+
+    def get_all_on_my_buildings(self) -> list[Class]:
+        """Get all classes on buildings that the user has access to."""
         return ClassRepository.get_all_on_buildings(
             building_ids=self.owned_building_ids, session=self.session
         )
