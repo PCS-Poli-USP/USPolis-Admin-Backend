@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+from sqlalchemy import exists, and_
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 
@@ -37,6 +38,43 @@ class ClassRepository:
             .where(col(Classroom.building_id) == (building_id))
             .distinct()  # avoid duplicates
         )
+        classes = session.exec(statement).all()
+        return list(classes)
+
+    @staticmethod
+    def get_all_unallocated_on_buildings(
+        *, building_ids: list[int], session: Session
+    ) -> list[Class]:
+        """Get all classes that are not allocated in all schedules and are in one of the buildings."""
+        # Query to get all schedules allocated for the class
+        subquery = select(Schedule.id).where(
+            and_(col(Schedule.class_id) == Class.id, col(Schedule.allocated))
+        )
+        statement = (
+            select(Class)
+            .join(Subject)
+            .join(SubjectBuildingLink)
+            .where(
+                col(SubjectBuildingLink.building_id).in_(building_ids),
+                ~exists(subquery),
+            )
+            .distinct()  # avoid duplicates
+        )
+        classes = session.exec(statement).all()
+        return list(classes)
+
+    @staticmethod
+    def get_all_on_classrooms(
+        *, classroom_ids: list[int], session: Session
+    ) -> list[Class]:
+        """Get all classes that are in one of his schedules are in classrooms_ids."""
+        subquery = select(Schedule.id).where(
+            and_(
+                col(Schedule.class_id) == Class.id,
+                col(Schedule.classroom_id).in_(classroom_ids),
+            )
+        )
+        statement = select(Class).where(exists(subquery))
         classes = session.exec(statement).all()
         return list(classes)
 
