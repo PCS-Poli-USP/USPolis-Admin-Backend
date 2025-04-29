@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class Recurrence(Enum):
+class Recurrence(str, Enum):
     DAILY = "Daily"
     WEEKLY = "Weekly"
     BIWEEKLY = "Biweekly"
@@ -10,7 +10,7 @@ class Recurrence(Enum):
 
     def to_string(self) -> str:
         return self.value
-    
+
     @staticmethod
     def values() -> list["Recurrence"]:
         return [

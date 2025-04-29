@@ -1,6 +1,6 @@
 from enum import Enum
 
 
-class CrawlerType(Enum):
+class CrawlerType(str, Enum):
     JUPITER = "jupiter"
     JANUS = "janus"

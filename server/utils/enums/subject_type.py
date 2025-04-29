@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class SubjectType(Enum):
+class SubjectType(str, Enum):
     BIANNUAL = "biannual"
     FOUR_MONTHLY = "four_monthly"
     POSTGRADUATE = "postgraduate"

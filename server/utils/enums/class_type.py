@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class ClassType(Enum):
+class ClassType(str, Enum):
     PRACTIC = "practic"
     THEORIC = "theoric"
     VINCULATED_THEORIC = "vinculated_theoric"
