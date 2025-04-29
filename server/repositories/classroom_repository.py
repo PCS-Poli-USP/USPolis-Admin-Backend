@@ -31,7 +31,10 @@ class ClassroomRepository:
     @staticmethod
     def get_by_id(*, id: int, session: Session) -> Classroom:
         statement = select(Classroom).where(Classroom.id == id)
-        classroom = session.exec(statement).one()
+        try:
+            classroom = session.exec(statement).one()
+        except NoResultFound:
+            raise ClassroomNotFound(id)
         return classroom
 
     @staticmethod
@@ -114,12 +117,41 @@ class ClassroomRepository:
         return classroom
 
     @staticmethod
+    def update(
+        *,
+        id: int,
+        input: ClassroomRegister,
+        session: Session,
+    ) -> Classroom:
+        classroom = ClassroomRepository.get_by_id(id=id, session=session)
+        classroom.name = input.name
+        classroom.capacity = input.capacity
+        classroom.floor = input.floor
+        classroom.ignore_to_allocate = input.ignore_to_allocate
+        classroom.accessibility = input.accessibility
+        classroom.audiovisual = input.audiovisual
+        classroom.air_conditioning = input.air_conditioning
+        classroom.building_id = input.building_id
+        classroom.updated_at = datetime.now()
+        session.add(classroom)
+        return classroom
+
+    @staticmethod
     def delete_on_buildings(
         id: int, *, building_ids: list[int], user: User, session: Session
     ) -> None:
         classroom = ClassroomRepository.get_by_id_on_buildings(
             id=id, building_ids=building_ids, session=session
         )
+        for schedule in classroom.schedules:
+            OccurrenceRepository.remove_schedule_allocation(
+                user, schedule, session=session
+            )
+        session.delete(classroom)
+
+    @staticmethod
+    def delete(*, id: int, user: User, session: Session) -> None:
+        classroom = ClassroomRepository.get_by_id(id=id, session=session)
         for schedule in classroom.schedules:
             OccurrenceRepository.remove_schedule_allocation(
                 user, schedule, session=session
