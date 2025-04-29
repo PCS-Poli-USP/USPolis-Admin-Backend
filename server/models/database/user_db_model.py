@@ -63,6 +63,15 @@ class User(SQLModel, table=True):
             for group in self.groups
             for classroom in group.classrooms
         }
+    
+    def classrooms_ids(self) -> list[int]:
+        """
+        Get the list of classroom IDs that the user has access to.
+
+        Returns:
+            list[int]: A list of classroom IDs.
+        """
+        return list(self.classrooms_ids_set())
 
     def buildings_ids_set(self) -> set[int]:
         """

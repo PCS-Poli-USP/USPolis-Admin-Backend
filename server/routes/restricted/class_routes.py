@@ -24,9 +24,7 @@ def get_class(class_id: int, repository: ClassRepositoryDep) -> ClassResponse:
 
 
 @router.get("/{class_id}/full")
-def get_class_full(
-    class_id: int, repository: ClassRepositoryDep
-) -> ClassFullResponse:
+def get_class_full(class_id: int, repository: ClassRepositoryDep) -> ClassFullResponse:
     """Get a class by id with schedules and occurrences"""
     class_ = repository.get_by_id(id=class_id)
     return ClassFullResponse.from_class(class_)

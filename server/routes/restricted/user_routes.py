@@ -47,7 +47,10 @@ def get_current_user(
     UserRepository.visit_user(user=user, session=session)
     session.commit()
     response = UserResponse.from_user(user)
-    response.user_info = request.state.user_info
+    if hasattr(request.state, "user_info"):
+        response.user_info = request.state.user_info
+    else:
+        response.user_info = None
     return response
 
 

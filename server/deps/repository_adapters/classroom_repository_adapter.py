@@ -43,6 +43,12 @@ class ClassroomRepositoryAdapter:
             building_ids=[building_id], session=self.session
         )
 
+    def get_all_on_my_buildings(self) -> list[Classroom]:
+        """Get all classrooms on buildings that the user has access to."""
+        return ClassroomRepository.get_all_on_buildings(
+            building_ids=self.owned_building_ids, session=self.session
+        )
+
     def get_by_id(self, id: int) -> Classroom:
         self.classroom_checker.check_permission(object=id)
         classroom = ClassroomRepository.get_by_id(id=id, session=self.session)
@@ -80,10 +86,9 @@ class ClassroomRepositoryAdapter:
         classroom_in: ClassroomRegister,
     ) -> Classroom:
         self.classroom_checker.check_permission(classroom_id)
-        classroom = ClassroomRepository.update_on_buildings(
+        classroom = ClassroomRepository.update(
             id=classroom_id,
-            building_ids=self.owned_building_ids,
-            classroom_in=classroom_in,
+            input=classroom_in,
             session=self.session,
         )
         self.session.commit()

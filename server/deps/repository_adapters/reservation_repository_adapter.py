@@ -31,6 +31,7 @@ class ReservationRespositoryAdapter:
         self.checker = BuildingPermissionChecker(user=user, session=session)
 
     def get_all(self) -> list[Reservation]:
+        """Get all reservations for authenticated user on owned buildings"""
         return ReservationRepository.get_all_on_buildings(
             building_ids=self.owned_building_ids, session=self.session
         )
