@@ -1,4 +1,6 @@
 from datetime import datetime
+from fastapi import HTTPException, status
+from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 from server.models.database.classroom_solicitation_db_model import ClassroomSolicitation
 from server.models.database.user_db_model import User
@@ -16,7 +18,10 @@ class ClassroomSolicitationRepository:
         statement = select(ClassroomSolicitation).where(
             col(ClassroomSolicitation.id) == id
         )
-        solicitation = session.exec(statement).one()
+        try:
+            solicitation = session.exec(statement).one()
+        except NoResultFound:
+            raise ClassroomSolicitationNotFound(f"id {id}")
         return solicitation
 
     @staticmethod
@@ -97,3 +102,11 @@ class ClassroomSolicitationRepository:
         solicitation.updated_at = datetime.now()
         session.add(solicitation)
         return solicitation
+
+
+class ClassroomSolicitationNotFound(HTTPException):
+    def __init__(self, info: str):
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Solicitação {info} não encontrada",
+        )

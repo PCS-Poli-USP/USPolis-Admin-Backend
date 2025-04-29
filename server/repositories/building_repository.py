@@ -64,7 +64,7 @@ class BuildingRepository:
         try:
             buildings = session.exec(statement).all()
         except NoResultFound:
-            raise BuildingNotFound(f"Class ${class_id}")
+            raise BuildingNotFound(f"Classe ${class_id}")
         return list(buildings)
 
     @staticmethod
@@ -78,7 +78,7 @@ class BuildingRepository:
         try:
             buildings = session.exec(statement).all()
         except NoResultFound:
-            raise BuildingNotFound(f"Subject ${subject_id}")
+            raise BuildingNotFound(f"Disciplina ${subject_id}")
         return list(buildings)
 
     @staticmethod
@@ -109,5 +109,5 @@ class BuildingNotFound(HTTPException):
     def __init__(self, building_info: str) -> None:
         super().__init__(
             status.HTTP_404_NOT_FOUND,
-            f"Building with {building_info} not found",
+            f"Prédio com {building_info} não encontrado",
         )
