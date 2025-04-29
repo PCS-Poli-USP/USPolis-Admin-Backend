@@ -1,10 +1,10 @@
+from server.models.dicts.base.group_base_dict import GroupBaseDict
 from server.models.dicts.requests.base_requests_dicts import BaseRequestDict
 
 
-class GroupRegisterDict(BaseRequestDict, total=False):
+class GroupRegisterDict(GroupBaseDict, BaseRequestDict, total=False):
     """Group register dictionary."""
 
-    name: str
     classroom_ids: list[int]
     user_ids: list[int]
 

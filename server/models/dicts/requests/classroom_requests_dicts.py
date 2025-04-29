@@ -1,20 +1,13 @@
+from server.models.dicts.base.classroom_base_dict import ClassroomBaseDict
 from server.models.dicts.requests.base_requests_dicts import BaseRequestDict
-from server.utils.enums.audiovisual_type_enum import AudiovisualType
 
 
-class ClassroomRegisterDict(BaseRequestDict, total=False):
+class ClassroomRegisterDict(ClassroomBaseDict, BaseRequestDict, total=False):
     """TypedDict for Classroom request model.\n
     This TypedDict is used to define the structure of the Classroom data.\n
     """
 
     building_id: int
-    name: str
-    capacity: int
-    floor: int
-    ignore_to_allocate: bool
-    accessibility: bool
-    audiovisual: AudiovisualType
-    air_conditioning: bool
 
 
 class ClassroomUpdateDict(ClassroomRegisterDict, total=False):

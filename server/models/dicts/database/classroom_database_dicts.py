@@ -5,26 +5,18 @@ from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.schedule_db_model import Schedule
 from server.models.database.user_db_model import User
+from server.models.dicts.base.classroom_base_dict import ClassroomBaseDict
 from server.models.dicts.database.base_database_dicts import BaseModelDict
-from server.utils.enums.audiovisual_type_enum import AudiovisualType
 
 
-class ClassroomModelDict(BaseModelDict, total=False):
+class ClassroomModelDict(ClassroomBaseDict, BaseModelDict, total=False):
     """TypedDict for Classroom model.\n
     This TypedDict is used to define the structure of the Classroom data.\n
     """
 
-    name: str
-    capacity: int
-    floor: int
-    ignore_to_allocate: bool
-    accessibility: bool
-    audiovisual: AudiovisualType
-    air_conditioning: bool
-    updated_at: datetime
-
-    created_by_id: int
     building_id: int
+    created_by_id: int
+    updated_at: datetime
 
     # Relationships
     created_by: User

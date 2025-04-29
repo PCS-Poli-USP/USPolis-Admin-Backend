@@ -1,12 +1,11 @@
-from server.models.dicts.requests.base_requests_dicts import BaseRequestDict
+from server.models.dicts.base.user_base_dict import UserBaseDict
 
 
-class UserUpdateDict(BaseRequestDict, total=False):
+class UserUpdateDict(UserBaseDict, total=False):
     """TypedDict for UserUpdate request model.\n
     This TypedDict is used to define the structure of the UserRegister data.\n
     """
 
-    is_admin: bool
     building_ids: list[int] | None
 
 

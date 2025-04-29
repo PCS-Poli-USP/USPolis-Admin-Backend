@@ -1,5 +1,5 @@
-from typing import TypedDict
+from server.models.dicts.base.base_dict import BaseDict
 
 
-class BaseRequestDict(TypedDict, total=False):
+class BaseRequestDict(BaseDict, total=False):
     pass

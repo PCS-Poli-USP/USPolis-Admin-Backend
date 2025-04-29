@@ -7,16 +7,16 @@ from server.models.database.holiday_category_db_model import HolidayCategory
 from server.models.database.holiday_db_model import Holiday
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.user_db_model import User
+from server.models.dicts.base.user_base_dict import UserBaseDict
 from server.models.dicts.database.base_database_dicts import BaseModelDict
 
 
-class UserModelDict(BaseModelDict, total=False):
+class UserModelDict(BaseModelDict, UserBaseDict, total=False):
     """TypedDict for User model.\n
     This TypedDict is used to define the structure of the User data.\n
     """
 
     email: str
-    is_admin: bool
     name: str
     updated_at: datetime
     last_visited: datetime

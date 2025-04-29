@@ -1,6 +1,6 @@
+from server.models.dicts.base.subject_base_dict import SubjectBaseDict
 from server.models.dicts.requests.base_requests_dicts import BaseRequestDict
 from server.utils.enums.crawler_type_enum import CrawlerType
-from server.utils.enums.subject_type import SubjectType
 
 
 class CrawlSubjectDict(BaseRequestDict):
@@ -14,14 +14,8 @@ class UpdateCrawlSubjectDict(BaseRequestDict):
     type: CrawlerType
 
 
-class SubjectRegisterDict(BaseRequestDict):
+class SubjectRegisterDict(SubjectBaseDict, BaseRequestDict):
     building_ids: list[int]
-    code: str
-    name: str
-    professors: list[str]
-    type: SubjectType
-    class_credit: int
-    work_credit: int
 
 
 class SubjectUpdateDict(SubjectRegisterDict, total=False):
