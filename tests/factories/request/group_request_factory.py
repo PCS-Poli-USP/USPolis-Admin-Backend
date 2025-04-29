@@ -3,14 +3,20 @@ from server.models.dicts.requests.group_requests_dicts import (
     GroupUpdateDict,
 )
 from server.models.http.requests.group_request_models import GroupRegister, GroupUpdate
+from tests.factories.base.group_base_factory import GroupBaseFactory
 from tests.factories.request.base_request_factory import BaseRequestFactory
 
 
 class GroupRequestFactory(BaseRequestFactory):
+    def __init__(self) -> None:
+        super().__init__()
+        self.core_factory = GroupBaseFactory()
+
     def get_default_create(self) -> GroupRegisterDict:
         """Get default values for creating a BuildingRegister."""
+        core = self.core_factory.get_base_defaults()
         return {
-            "name": self.faker.company(),
+            **core,
             "classroom_ids": [],
             "user_ids": [],
         }

@@ -1,17 +1,25 @@
 from datetime import datetime
 from typing import Unpack
+
+from sqlmodel import Session
 from server.models.database.group_db_model import Group
 from server.models.dicts.database.group_database_dicts import GroupModelDict
+from tests.factories.base.group_base_factory import GroupBaseFactory
 from tests.factories.model.base_model_factory import BaseModelFactory
 
 
 class GroupModelFactory(BaseModelFactory[Group]):
+    def __init__(self, session: Session) -> None:
+        super().__init__(session)
+        self.core_factory = GroupBaseFactory()
+
     def _get_model_type(self) -> type[Group]:
         return Group
 
     def get_defaults(self) -> GroupModelDict:
+        core = self.core_factory.get_base_defaults()
         return {
-            "name": self.faker.name(),
+            **core,
             "updated_at": datetime.now(),
             "created_at": datetime.now(),
             "classrooms": [],

@@ -7,8 +7,8 @@ from server.models.http.requests.classroom_request_models import (
     ClassroomRegister,
     ClassroomUpdate,
 )
-from server.utils.enums.audiovisual_type_enum import AudiovisualType
 from server.utils.must_be_int import must_be_int
+from tests.factories.base.classroom_base_factory import ClassroomBaseFactory
 from tests.factories.request.base_request_factory import BaseRequestFactory
 
 
@@ -16,18 +16,14 @@ class ClassroomRequestFactory(BaseRequestFactory):
     def __init__(self, building: Building) -> None:
         super().__init__()
         self.building = building
+        self.core_factory = ClassroomBaseFactory()
 
     def get_default_register_input(self) -> ClassroomRegisterDict:
         """Get default values for creating a ClassroomRegister."""
+        core = self.core_factory.get_base_defaults()
         return {
             "building_id": must_be_int(self.building.id),
-            "name": self.faker.cryptocurrency_name(),
-            "capacity": self.faker.random_int(min=0, max=100),
-            "floor": self.faker.random_int(min=0, max=10),
-            "ignore_to_allocate": self.faker.boolean(),
-            "accessibility": self.faker.boolean(),
-            "audiovisual": self.faker.random_element(AudiovisualType.values()),
-            "air_conditioning": self.faker.boolean(),
+            **core,
         }
 
     def get_default_update_input(self) -> ClassroomUpdateDict:

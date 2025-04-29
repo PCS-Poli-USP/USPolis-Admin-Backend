@@ -1,11 +1,10 @@
-from datetime import date, datetime, timedelta
+from datetime import datetime
 from typing import Unpack
 from sqlmodel import Session
 from server.models.database.class_db_model import Class
 from server.models.database.subject_db_model import Subject
 from server.models.dicts.database.class_database_dicts import ClassModelDict
-from server.utils.enums.audiovisual_type_enum import AudiovisualType
-from server.utils.enums.class_type import ClassType
+from tests.factories.base.class_base_factory import ClassBaseFactory
 from tests.factories.model.base_model_factory import BaseModelFactory
 
 
@@ -13,22 +12,15 @@ class ClassModelFactory(BaseModelFactory[Class]):
     def __init__(self, subject: Subject, session: Session) -> None:
         super().__init__(session)
         self.subject = subject
+        self.core_factory = ClassBaseFactory()
 
     def _get_model_type(self) -> type[Class]:
         return Class
 
     def get_defaults(self) -> ClassModelDict:
+        core = self.core_factory.get_base_defaults()
         return {
-            "start_date": date.today(),
-            "end_date": date.today() + timedelta(days=30),
-            "code": self.faker.numerify(text="%%%%%%%"),
-            "professors": [self.faker.name()],
-            "type": self.faker.random_element(ClassType.values()),
-            "vacancies": self.faker.random_int(min=1, max=100),
-            "air_conditionating": self.faker.boolean(),
-            "accessibility": self.faker.boolean(),
-            "audiovisual": self.faker.random_element(AudiovisualType.values()),
-            "ignore_to_allocate": self.faker.boolean(),
+            **core,
             "full_allocated": False,
             "updated_at": datetime.now(),
             "calendars": [],

@@ -17,9 +17,9 @@ class BuildingModelFactory(BaseModelFactory[Building]):
         return Building
 
     def get_defaults(self) -> BuildingModelDict:
-        core = BuildingRequestFactory().get_default_create()
+        base = BuildingRequestFactory().get_default_create()
         return {
-            **core,
+            **base,
             "updated_at": datetime.now(),
             "created_by_id": self.creator.id,
             "created_by": self.creator,
@@ -36,6 +36,8 @@ class BuildingModelFactory(BaseModelFactory[Building]):
         """Create a building instance with default values, commit and refresh it."""
         return super().create_and_refresh(**overrides)
 
-    def update(self, building_id: int, **overrides: Unpack[BuildingModelDict]) -> Building:  # type: ignore
+    def update(  # type: ignore
+        self, building_id: int, **overrides: Unpack[BuildingModelDict]
+    ) -> Building:
         """Create a building instance with default values."""
         return super().update(model_id=building_id, **overrides)

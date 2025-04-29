@@ -1,9 +1,9 @@
-from typing import Unpack
+from typing import Unpack, cast
 from server.models.dicts.requests.subject_requests_dicts import (
     SubjectRegisterDict,
     SubjectUpdateDict,
 )
-from server.utils.enums.subject_type import SubjectType
+from tests.factories.base.subject_base_factory import SubjectBaseFactory
 from tests.factories.request.base_request_factory import BaseRequestFactory
 
 
@@ -11,18 +11,18 @@ class SubjectRequestFactory(BaseRequestFactory):
     def __init__(self, building_ids: list[int]) -> None:
         super().__init__()
         self.building_ids = building_ids
+        self.core_factory = SubjectBaseFactory()
 
     def get_default_create(self) -> SubjectRegisterDict:
         """Get default values for creating a SubjectRegister."""
-        return {
-            "building_ids": self.building_ids,
-            "name": self.faker.name(),
-            "code": self.faker.bothify(text="???%%%%", letters=self.LETTERS),
-            "professors": [self.faker.name()],
-            "type": self.faker.random_element(SubjectType.values()),
-            "class_credit": self.faker.random_int(min=1, max=10),
-            "work_credit": self.faker.random_int(min=1, max=10),
-        }
+        core = self.core_factory.get_base_defaults()
+        return cast(
+            SubjectRegisterDict,
+            {
+                "building_ids": self.building_ids,
+                **core,
+            },
+        )
 
     def create_input(
         self, **overrides: Unpack[SubjectRegisterDict]

@@ -4,7 +4,7 @@ from server.models.database.building_db_model import Building
 
 from server.models.database.subject_db_model import Subject
 from server.models.dicts.database.subject_database_dicts import SubjectModelDict
-from server.utils.enums.subject_type import SubjectType
+from tests.factories.base.subject_base_factory import SubjectBaseFactory
 from tests.factories.model.base_model_factory import BaseModelFactory
 
 
@@ -12,18 +12,15 @@ class SubjectModelFactory(BaseModelFactory[Subject]):
     def __init__(self, building: Building, session: Session) -> None:
         super().__init__(session)
         self.building = building
+        self.core_factory = SubjectBaseFactory()
 
     def _get_model_type(self) -> type[Subject]:
         return Subject
 
     def get_defaults(self) -> SubjectModelDict:
+        core = self.core_factory.get_base_defaults()
         return {
-            "name": self.faker.name(),
-            "code": self.faker.bothify(text="???%%%%", letters=self.LETTERS),
-            "professors": [self.faker.name()],
-            "type": self.faker.random_element(SubjectType.values()),
-            "class_credit": self.faker.random_int(min=1, max=10),
-            "work_credit": self.faker.random_int(min=1, max=10),
+            **core,
             "buildings": [self.building],
             "classes": [],
             "forum": None,

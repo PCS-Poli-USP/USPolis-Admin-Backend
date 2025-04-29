@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod
 from typing import Any, Generic, TypeVar, Unpack
-from faker import Faker
 from sqlmodel import SQLModel, Session
 from sqlalchemy.exc import NoResultFound
 
@@ -20,10 +19,7 @@ class BaseModelFactory(Generic[M], metaclass=ABCMeta):
     CREATE_MANY_DEFAULT_COUNT = 5
 
     def __init__(self, session: Session) -> None:
-        self.faker = Faker("pt_BR")
         self.session = session
-        self.LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        self.NUMBERS = "0123456789"
 
     @abstractmethod
     def _get_model_type(self) -> type[M]:
