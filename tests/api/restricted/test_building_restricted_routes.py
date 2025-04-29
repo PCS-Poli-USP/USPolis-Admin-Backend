@@ -32,8 +32,5 @@ def test_get_building_by_id_with_common_user(
     building: Building, common_client: TestClient
 ) -> None:
     response = common_client.get(f"{URL_PREFIX}/{building.id}")
-    read = response.json()
 
-    assert response.status_code == status.HTTP_200_OK
-    assert read["id"] == building.id
-    assert read["name"] == building.name
+    assert response.status_code == status.HTTP_403_FORBIDDEN

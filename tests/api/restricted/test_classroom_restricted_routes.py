@@ -3,12 +3,14 @@ from fastapi.testclient import TestClient
 
 import pytest
 from sqlmodel import Session
-from sqlalchemy.exc import NoResultFound
 
 from server.models.database.user_db_model import User
 from server.models.database.building_db_model import Building
 
-from server.repositories.classroom_repository import ClassroomRepository
+from server.repositories.classroom_repository import (
+    ClassroomNotFound,
+    ClassroomRepository,
+)
 from server.repositories.group_repository import GroupRepository
 from server.utils.must_be_int import must_be_int
 from tests.factories.model.classroom_model_factory import ClassroomModelFactory
@@ -189,7 +191,7 @@ def test_delete_classroom_with_admin_user(
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
     with pytest.raises(
-        NoResultFound,
+        ClassroomNotFound,
     ):
         ClassroomRepository.get_by_id(id=must_be_int(created.id), session=session)
 
@@ -214,7 +216,7 @@ def test_delete_classroom_with_restricted_user(
     assert len(new_group.classrooms) == 0
 
     with pytest.raises(
-        NoResultFound,
+        ClassroomNotFound,
     ):
         ClassroomRepository.get_by_id(id=must_be_int(created.id), session=session)
 
