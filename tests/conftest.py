@@ -181,6 +181,18 @@ def common_client_fixture(
     app.dependency_overrides.clear()
 
 
+@pytest.fixture(name="public_client")
+def public_client_fixture(session: Session) -> Generator[TestClient, None, None]:
+    """
+    Public client or client without authetication overrides.
+    """
+    app.dependency_overrides[get_db] = lambda: session
+    with TestClient(app) as c:
+        yield c
+
+    app.dependency_overrides.clear()
+
+
 @pytest.fixture(name="user")
 def user_fixture(session: Session) -> Generator[User, None, None]:
     user = session.exec(
