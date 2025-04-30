@@ -309,6 +309,7 @@ class SubjectRepository:
         SubjectRepository.__update_subject_core_data(subject=subject, input=input)
         session.add(subject)
         session.commit()
+        session.refresh(subject)
         return subject
 
     @staticmethod

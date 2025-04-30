@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from datetime import datetime
 from typing import TypeVar
 
 from faker import Faker
@@ -11,6 +12,7 @@ Dict = TypeVar("Dict", bound=BaseDict)
 class BaseFactory(metaclass=ABCMeta):
     def __init__(self) -> None:
         self.faker = Faker("pt_BR")
+        self.faker.seed_instance(datetime.now().timestamp())
         self.UPPER_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         self.LOWER_LETTERS = "abcdefghijklmnopqrstuvwxyz"
         self.DIGITS = "0123456789"
