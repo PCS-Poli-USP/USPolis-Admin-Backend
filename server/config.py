@@ -1,7 +1,18 @@
 """FastAPI server configuration."""
 
-from decouple import config  # type: ignore [import-untyped]
+from decouple import config, RepositoryEnv, Config as DConfig  # type: ignore [import-untyped]
 from pydantic import BaseModel
+
+# Mapeamento dos arquivos por ambiente
+env_files = {
+    "DEVELOPMENT": ".env.dev",
+    "PRODUCTION": ".env.prod",
+}
+
+base_config = DConfig(RepositoryEnv(".env"))
+env = base_config("ENVIRONMENT", default="DEVELOPMENT", cast=str).upper()  # type: ignore
+env_path = env_files.get(env, ".env.dev")
+config = DConfig(RepositoryEnv(env_path))  # noqa: F811
 
 
 class Settings(BaseModel):
@@ -9,6 +20,7 @@ class Settings(BaseModel):
 
     root_url: str = config("ROOT_URL", default="http://localhost:8000")  # type: ignore
     port: str = config("PORT", default="8000")  # type: ignore
+    debug: bool = config("DEBUG", default=False, cast=bool)  # type: ignore
 
     # SQLAlchemy settings
     db_uri: str = config("DATABASE_URI")  # type: ignore
