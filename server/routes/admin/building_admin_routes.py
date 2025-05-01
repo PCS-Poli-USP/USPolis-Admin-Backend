@@ -34,9 +34,7 @@ def update_building(
 
 
 @router.delete("/{building_id}")
-def delete_building(
-    building_id: int, repository: BuildingRepositoryDep
-) -> Response:
+def delete_building(building_id: int, repository: BuildingRepositoryDep) -> Response:
     """Delete a building by id"""
     repository.delete(id=building_id)
     return NoContent

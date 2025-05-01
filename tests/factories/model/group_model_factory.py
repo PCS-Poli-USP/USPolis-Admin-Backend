@@ -28,7 +28,7 @@ class GroupModelFactory(BaseModelFactory[Group]):
         classrooms = self.building.classrooms
         if not classrooms:
             classrooms = [self.classroom_factory.create_and_refresh()]
-       
+
         return {
             **core,
             "updated_at": datetime.now(),

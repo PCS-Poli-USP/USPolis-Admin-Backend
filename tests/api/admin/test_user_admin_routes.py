@@ -70,9 +70,7 @@ def test_update_self_admin_status_with_admin_user(
 def test_update_user_buildings_with_admin_user(
     client: TestClient, session: Session, building: Building
 ) -> None:
-    group_factory = GroupModelFactory(
-        building=building, session=session
-    )
+    group_factory = GroupModelFactory(building=building, session=session)
     group = group_factory.create_and_refresh()
     factory = UserModelFactory(session)
     user = factory.create_and_refresh()
