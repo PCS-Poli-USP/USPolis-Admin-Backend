@@ -10,10 +10,9 @@ from tests.factories.request.base_request_factory import BaseRequestFactory
 
 
 class UserRequestFactory(BaseRequestFactory):
-    def __init__(self, building_ids: list[int] | None = None) -> None:
+    def __init__(self) -> None:
         super().__init__()
         self.core_factory = UserBaseFactory()
-        self.building_ids = building_ids
 
     def get_default_create(self) -> UserRegisterDict:
         """Get default values for creating a UserRegister."""

@@ -24,6 +24,7 @@ from server.models.http.responses.classroom_response_models import ClassroomResp
 from server.models.http.responses.classroom_solicitation_response_models import (
     ClassroomSolicitationResponse,
 )
+from server.models.http.responses.group_response_models import GroupResponse
 from server.models.http.responses.reservation_response_models import ReservationResponse
 from server.models.http.responses.subject_response_models import SubjectResponse
 from server.models.http.responses.user_response_models import UserResponse
@@ -31,7 +32,9 @@ from server.models.http.responses.building_response_models import BuildingRespon
 from server.repositories.classroom_solicitation_repository import (
     ClassroomSolicitationRepository,
 )
+from server.repositories.group_repository import GroupRepository
 from server.repositories.user_repository import UserRepository
+from server.utils.must_be_int import must_be_int
 
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -61,6 +64,21 @@ def get_my_buildings(
     """Get all buildings for authenticated user"""
     buildings = repository.get_all()
     return BuildingResponse.from_building_list(buildings)
+
+
+@router.get("/my-groups")
+def get_my_groups(
+    user: UserDep,
+    session: SessionDep,
+) -> list[GroupResponse]:
+    """Get all groups for authenticated user"""
+    if user.is_admin:
+        groups = GroupRepository.get_all(session=session)
+    else:
+        groups = GroupRepository.get_by_user_id(
+            user_id=must_be_int(user.id), session=session
+        )
+    return GroupResponse.from_group_list(groups)
 
 
 @router.get("/my-subjects")

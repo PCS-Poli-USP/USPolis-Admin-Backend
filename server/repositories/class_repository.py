@@ -23,6 +23,7 @@ from server.utils.schedule_utils import ScheduleUtils
 class ClassRepository:
     @staticmethod
     def get_all(*, session: Session) -> list[Class]:
+        """Get all classes of database."""
         statement = select(Class)
         classes = session.exec(statement).all()
         return list(classes)

@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from fastapi import HTTPException, status
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
@@ -7,7 +5,10 @@ from sqlmodel import Session, col, select
 from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.user_db_model import User
-from server.models.http.requests.classroom_request_models import ClassroomRegister
+from server.models.http.requests.classroom_request_models import (
+    ClassroomRegister,
+    ClassroomUpdate,
+)
 from server.models.page_models import Page, PaginationInput
 from server.utils.must_be_int import must_be_int
 
@@ -15,6 +16,18 @@ from server.repositories.occurrence_repository import OccurrenceRepository
 
 
 class ClassroomRepository:
+    @staticmethod
+    def __set_classroom_core_data(
+        *, classroom: Classroom, input: ClassroomRegister | ClassroomUpdate
+    ) -> None:
+        classroom.name = input.name
+        classroom.capacity = input.capacity
+        classroom.floor = input.floor
+        classroom.accessibility = input.accessibility
+        classroom.audiovisual = input.audiovisual
+        classroom.air_conditioning = input.air_conditioning
+        classroom.building_id = input.building_id
+
     @staticmethod
     def get_all(*, session: Session) -> list[Classroom]:
         classrooms = list(session.exec(select(Classroom)).all())
@@ -95,24 +108,16 @@ class ClassroomRepository:
 
     @staticmethod
     def update_on_buildings(
-        id: int,
-        classroom_in: ClassroomRegister,
         *,
+        id: int,
+        input: ClassroomRegister,
         building_ids: list[int],
         session: Session,
     ) -> Classroom:
         classroom = ClassroomRepository.get_by_id_on_buildings(
             id=id, building_ids=building_ids, session=session
         )
-        classroom.name = classroom_in.name
-        classroom.capacity = classroom_in.capacity
-        classroom.floor = classroom_in.floor
-        classroom.ignore_to_allocate = classroom_in.ignore_to_allocate
-        classroom.accessibility = classroom_in.accessibility
-        classroom.audiovisual = classroom_in.audiovisual
-        classroom.air_conditioning = classroom_in.air_conditioning
-        classroom.building_id = classroom_in.building_id
-        classroom.updated_at = datetime.now()
+        ClassroomRepository.__set_classroom_core_data(classroom=classroom, input=input)
         session.add(classroom)
         return classroom
 
@@ -124,15 +129,7 @@ class ClassroomRepository:
         session: Session,
     ) -> Classroom:
         classroom = ClassroomRepository.get_by_id(id=id, session=session)
-        classroom.name = input.name
-        classroom.capacity = input.capacity
-        classroom.floor = input.floor
-        classroom.ignore_to_allocate = input.ignore_to_allocate
-        classroom.accessibility = input.accessibility
-        classroom.audiovisual = input.audiovisual
-        classroom.air_conditioning = input.air_conditioning
-        classroom.building_id = input.building_id
-        classroom.updated_at = datetime.now()
+        ClassroomRepository.__set_classroom_core_data(classroom=classroom, input=input)
         session.add(classroom)
         return classroom
 

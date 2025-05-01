@@ -1,5 +1,5 @@
-from typing import TypedDict
+from server.models.dicts.base.base_dict import BaseDict
 
 
-class BuildingBaseDict(TypedDict, total=False):
+class BuildingBaseDict(BaseDict, total=False):
     name: str

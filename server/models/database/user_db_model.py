@@ -63,7 +63,7 @@ class User(SQLModel, table=True):
             for group in self.groups
             for classroom in group.classrooms
         }
-    
+
     def classrooms_ids(self) -> list[int]:
         """
         Get the list of classroom IDs that the user has access to.
@@ -83,3 +83,20 @@ class User(SQLModel, table=True):
         if self.buildings is None:
             return set()
         return {must_be_int(building.id) for building in self.buildings}
+
+    def group_ids_set(self) -> set[int]:
+        """
+        Get the set of group IDs that the user belongs to.
+
+        Returns:
+            set[int]: A set of group IDs.
+        """
+        return {must_be_int(group.id) for group in self.groups}
+
+    def group_ids(self) -> list[int]:
+        """
+        Get the list of group IDs that the user belongs to.
+        Returns:
+            list[int]: A list of group IDs.
+        """
+        return list(self.group_ids_set())

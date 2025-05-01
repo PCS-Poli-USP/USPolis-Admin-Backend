@@ -1,11 +1,11 @@
 from datetime import date
-from typing import TypedDict
 
+from server.models.dicts.base.base_dict import BaseDict
 from server.utils.enums.audiovisual_type_enum import AudiovisualType
 from server.utils.enums.class_type import ClassType
 
 
-class ClassBaseDict(TypedDict, total=False):
+class ClassBaseDict(BaseDict, total=False):
     """Base dict for class dictionaries (requests and database)"""
 
     start_date: date

@@ -1,16 +1,19 @@
+from server.models.database.building_db_model import Building
 from server.models.dicts.requests.group_requests_dicts import (
     GroupRegisterDict,
     GroupUpdateDict,
 )
 from server.models.http.requests.group_request_models import GroupRegister, GroupUpdate
+from server.utils.must_be_int import must_be_int
 from tests.factories.base.group_base_factory import GroupBaseFactory
 from tests.factories.request.base_request_factory import BaseRequestFactory
 
 
 class GroupRequestFactory(BaseRequestFactory):
-    def __init__(self) -> None:
+    def __init__(self, building: Building) -> None:
         super().__init__()
-        self.core_factory = GroupBaseFactory()
+        self.building = building
+        self.core_factory = GroupBaseFactory(building_id=must_be_int(building.id))
 
     def get_default_create(self) -> GroupRegisterDict:
         """Get default values for creating a BuildingRegister."""

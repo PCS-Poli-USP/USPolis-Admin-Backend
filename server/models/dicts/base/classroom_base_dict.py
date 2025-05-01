@@ -1,10 +1,8 @@
-from typing import TypedDict
-
+from server.models.dicts.base.base_dict import BaseDict
 from server.utils.enums.audiovisual_type_enum import AudiovisualType
 
 
-class ClassroomBaseDict(TypedDict, total=False):
-
+class ClassroomBaseDict(BaseDict, total=False):
     name: str
     capacity: int
     floor: int

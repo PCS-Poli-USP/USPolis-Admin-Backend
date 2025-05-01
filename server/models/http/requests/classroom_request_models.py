@@ -9,10 +9,10 @@ class ClassroomRegister(BaseModel):
     name: str
     capacity: int
     floor: int
-    ignore_to_allocate: bool
     accessibility: bool
     audiovisual: AudiovisualType
     air_conditioning: bool
+    group_ids: list[int] | None = None
 
 
 class ClassroomUpdate(ClassroomRegister):

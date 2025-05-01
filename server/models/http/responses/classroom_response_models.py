@@ -15,7 +15,6 @@ class ClassroomResponseBase(BaseModel):
     name: str
     capacity: int
     floor: int
-    ignore_to_allocate: bool
     accessibility: bool
     audiovisual: AudiovisualType
     air_conditioning: bool
@@ -33,7 +32,6 @@ class ClassroomResponseBase(BaseModel):
             name=classroom.name,
             capacity=classroom.capacity,
             floor=classroom.floor,
-            ignore_to_allocate=classroom.ignore_to_allocate,
             accessibility=classroom.accessibility,
             audiovisual=classroom.audiovisual,
             air_conditioning=classroom.air_conditioning,

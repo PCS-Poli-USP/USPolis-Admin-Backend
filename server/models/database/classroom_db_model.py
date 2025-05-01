@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, Relationship, SQLModel, Column, Enum
 
+from server.models.database.group_classroom_link import GroupClassroomLink
 from server.utils.enums.audiovisual_type_enum import AudiovisualType
 from server.utils.must_be_int import must_be_int
 
@@ -16,13 +17,13 @@ if TYPE_CHECKING:
     from server.models.database.classroom_solicitation_db_model import (
         ClassroomSolicitation,
     )
+    from server.models.database.group_db_model import Group
 
 
 class ClassroomBase(SQLModel):
     name: str
     capacity: int
     floor: int
-    ignore_to_allocate: bool = False
     accessibility: bool = False
     audiovisual: AudiovisualType = Field(
         sa_column=Column(Enum(AudiovisualType), nullable=False)
@@ -52,6 +53,9 @@ class Classroom(ClassroomBase, table=True):
     solicitations: list["ClassroomSolicitation"] = Relationship(
         back_populates="classroom"
     )
+    groups: list["Group"] = Relationship(
+        back_populates="classrooms", link_model=GroupClassroomLink
+    )
 
 
 class ClassroomWithConflictsIndicator(ClassroomBase):
@@ -65,7 +69,6 @@ class ClassroomWithConflictsIndicator(ClassroomBase):
             name=classroom.name,
             capacity=classroom.capacity,
             floor=classroom.floor,
-            ignore_to_allocate=classroom.ignore_to_allocate,
             accessibility=classroom.accessibility,
             audiovisual=classroom.audiovisual,
             air_conditioning=classroom.air_conditioning,

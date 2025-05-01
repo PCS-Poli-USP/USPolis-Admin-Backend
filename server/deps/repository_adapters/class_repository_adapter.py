@@ -28,6 +28,9 @@ class ClassRepositoryAdapter:
         self.subject_checker = SubjectPermissionChecker(user=user, session=session)
 
     def get_all(self) -> list[Class]:
+        """Get all class on buildings that the user has access to."""
+        if self.user.is_admin:
+            return ClassRepository.get_all(session=self.session)
         classes = self.get_all_on_my_classrooms()
         classes.extend(self.get_all_unallocated())
         return classes

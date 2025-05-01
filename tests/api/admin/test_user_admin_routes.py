@@ -7,6 +7,7 @@ from server.models.database.user_db_model import User
 from server.models.database.building_db_model import Building
 from server.repositories.user_repository import UserRepository
 from server.utils.must_be_int import must_be_int
+from tests.factories.model.group_model_factory import GroupModelFactory
 from tests.factories.model.user_model_factory import UserModelFactory
 from tests.factories.request.user_request_factory import UserRequestFactory
 
@@ -61,7 +62,7 @@ def test_update_self_admin_status_with_admin_user(
     user: User,
     client: TestClient,
 ) -> None:
-    input = UserRequestFactory().update_input(building_ids=[], is_admin=False)
+    input = UserRequestFactory().update_input(group_ids=[], is_admin=False)
     response = client.put(f"{URL_PREFIX}/{user.id}", json=input.model_dump())
     assert response.status_code == 400
 
@@ -69,10 +70,14 @@ def test_update_self_admin_status_with_admin_user(
 def test_update_user_buildings_with_admin_user(
     client: TestClient, session: Session, building: Building
 ) -> None:
+    group_factory = GroupModelFactory(
+        building=building, session=session
+    )
+    group = group_factory.create_and_refresh()
     factory = UserModelFactory(session)
     user = factory.create_and_refresh()
 
-    input = UserRequestFactory().update_input(building_ids=[must_be_int(building.id)])
+    input = UserRequestFactory().update_input(group_ids=[must_be_int(group.id)])
 
     response = client.put(
         f"{URL_PREFIX}/{user.id}",
