@@ -25,6 +25,8 @@ class Settings(BaseModel):
     # SQLAlchemy settings
     db_uri: str = config("DATABASE_URI")  # type: ignore
     db_database: str = config("DATABASE_NAME")  # type: ignore
+    alembic_url: str = config("ALEMBIC_URL")  # type: ignore
+
     first_superuser_email: str = config("FIRST_SUPERUSER_EMAIL", "amdmin@uspolis.com")  # type: ignore
     first_superuser_password: str = config("FIRST_SUPERUSER_PASSWORD", "admin")  # type: ignore
     first_superuser_name: str = config("FIRST_SUPERUSER_NAME", "admin")  # type: ignore
