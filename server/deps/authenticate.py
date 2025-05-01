@@ -36,15 +36,17 @@ def authenticate(
         user: User = UserRepository.get_by_email(email=user_info.email, session=session)
     except NoResultFound:
         user = UserRepository.create(
-            user_in=UserRegister(
+            input=UserRegister(
                 email=user_info.email,
                 name=user_info.name,
-                building_ids=None,
+                group_ids=None,
                 is_admin=False,
             ),
             creator=None,
             session=session,
         )
+        session.commit()
+        session.refresh(user)
     request.state.current_user = user
     request.state.user_info = user_info
     return user

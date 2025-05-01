@@ -1,10 +1,15 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
+from fastapi import HTTPException, status
 from sqlmodel import Session, col, select
 
+from server.models.database.building_db_model import Building
 from server.models.database.user_building_link import UserBuildingLink
 from server.models.database.user_db_model import User
-from server.models.http.requests.user_request_models import UserRegister
-from server.repositories.building_repository import BuildingRepository
+from server.models.http.requests.user_request_models import UserRegister, UserUpdate
+
+if TYPE_CHECKING:
+    from server.repositories.group_repository import GroupRepository
 
 
 class UserRepository:
@@ -46,32 +51,49 @@ class UserRepository:
     def create(
         *,
         creator: User | None,
-        user_in: UserRegister,
+        input: UserRegister,
         session: Session,
     ) -> User:
-        """This commits, chage it later"""
-        buildings = None
-        if user_in.building_ids is not None:
-            buildings = BuildingRepository.get_by_ids(
-                ids=user_in.building_ids, session=session
-            )
+        buildings_set: set[Building] = set()
+        if input.group_ids is not None:
+            groups = GroupRepository.get_by_ids(ids=input.group_ids, session=session)
+            for group in groups:
+                buildings_set.add(group.building)
 
         new_user = User(
-            name=user_in.name,
-            email=user_in.email,
-            is_admin=user_in.is_admin,
+            name=input.name,
+            email=input.email,
+            is_admin=input.is_admin,
             created_by=creator,
-            buildings=buildings or [],
+            buildings=list(buildings_set),
         )
         session.add(new_user)
-        session.commit()
-        session.refresh(new_user)
         return new_user
 
     @staticmethod
-    def update(*, user: User, session: Session) -> None:
-        session.add(user)
-        session.commit()
+    def update(
+        *, requester: User, id: int, input: UserUpdate, session: Session
+    ) -> User:
+        user_to_update = UserRepository.get_by_id(user_id=id, session=session)
+
+        if id == requester.id:
+            if requester.is_admin != input.is_admin:
+                raise HTTPException(
+                    status.HTTP_400_BAD_REQUEST,
+                    "Não pode editar seu próprio status de admin",
+                )
+
+        buildings_set: set[Building] = set()
+        if input.group_ids is not None:
+            groups = GroupRepository.get_by_ids(ids=input.group_ids, session=session)
+            for group in groups:
+                buildings_set.add(group.building)
+
+        user_to_update.buildings = list(buildings_set)
+        user_to_update.is_admin = input.is_admin
+        user_to_update.updated_at = datetime.now()
+        session.add(user_to_update)
+        return user_to_update
 
     @staticmethod
     def visit_user(

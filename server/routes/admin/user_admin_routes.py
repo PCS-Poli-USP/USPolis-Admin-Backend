@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from fastapi import APIRouter, Body, HTTPException, Response
 
 from server.deps.authenticate import UserDep
@@ -7,7 +5,6 @@ from server.deps.session_dep import SessionDep
 from server.models.http.requests.user_request_models import UserRegister, UserUpdate
 from server.models.http.responses.generic_responses import NoContent
 from server.models.http.responses.user_response_models import UserResponse
-from server.repositories.building_repository import BuildingRepository
 from server.repositories.user_repository import UserRepository
 
 embed = Body(..., embed=True)
@@ -31,9 +28,10 @@ def create_user(
     """Create new user."""
     new_user = UserRepository.create(
         creator=user,
-        user_in=user_input,
+        input=user_input,
         session=session,
     )
+    session.commit()
     session.refresh(new_user)
     return UserResponse.from_user(new_user)
 
@@ -46,23 +44,12 @@ def update_user(
     session: SessionDep,
 ) -> UserResponse:
     """Update a user by id"""
-    user_to_update = UserRepository.get_by_id(user_id=user_id, session=session)
-
-    if user_id == current_user.id:
-        if current_user.is_admin != user_input.is_admin:
-            raise HTTPException(400, "Não pode editar seu próprio status de admin")
-
-    buildings = []
-    if user_input.building_ids is not None:
-        buildings = BuildingRepository.get_by_ids(
-            ids=user_input.building_ids, session=session
-        )
-
-    user_to_update.buildings = buildings
-    user_to_update.is_admin = user_input.is_admin
-    user_to_update.updated_at = datetime.now()
-    UserRepository.update(user=user_to_update, session=session)
-    return UserResponse.from_user(user_to_update)
+    updated = UserRepository.update(
+        requester=current_user, id=user_id, input=user_input, session=session
+    )
+    session.commit()
+    session.refresh(updated)
+    return UserResponse.from_user(updated)
 
 
 @router.delete("/{user_id}")

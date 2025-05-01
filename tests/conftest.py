@@ -207,8 +207,10 @@ def user_fixture(session: Session) -> Generator[User, None, None]:
         user = UserRepository.create(
             creator=None,
             session=session,
-            user_in=user_in,
+            input=user_in,
         )
+        session.commit()
+        session.refresh(user)
     yield user
 
 

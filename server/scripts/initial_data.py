@@ -25,8 +25,10 @@ def init_db(session: Session) -> None:
         user = UserRepository.create(
             creator=None,
             session=session,
-            user_in=user_in,
+            input=user_in,
         )
+        session.commit()
+        session.refresh(user)
 
 
 def init() -> None:
