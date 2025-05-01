@@ -1,4 +1,3 @@
-import os
 import asyncio
 from logging.config import fileConfig
 
@@ -8,12 +7,9 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 from sqlmodel import SQLModel  # NEW
 
+from server.config import CONFIG
 from server.db import engine  # noqa
 
-from dotenv import load_dotenv
-
-# Carregar variáveis do arquivo .env
-load_dotenv()
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -37,7 +33,7 @@ target_metadata = SQLModel.metadata  # UPDATED
 
 
 def get_url() -> str:
-    return f"{os.getenv('ALEMBIC_URL')}"
+    return CONFIG.alembic_url
 
 
 config.set_main_option("sqlalchemy.url", get_url())
