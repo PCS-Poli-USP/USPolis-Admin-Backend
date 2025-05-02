@@ -1,4 +1,5 @@
 import pytest
+from fastapi import status
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
@@ -18,7 +19,7 @@ def test_create_building_with_admin_user(user: User, client: TestClient) -> None
     response = client.post(URL_PREFIX, json=body)
     created = response.json()
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert created["name"] == input.name
     assert created["created_by"] == user.name
 
@@ -31,7 +32,7 @@ def test_update_building_admin_user_with_admin_user(
     response = client.put(f"{URL_PREFIX}/{building.id}", json=body)
     updated = response.json()
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert updated["name"] == input.name
 
 
@@ -39,7 +40,7 @@ def test_delete_building_admin_user_with_admin_user(
     building: Building, client: TestClient, session: Session
 ) -> None:
     response = client.delete(f"{URL_PREFIX}/{building.id}")
-    assert response.status_code == 204
+    assert response.status_code == status.HTTP_204_NO_CONTENT
 
     with pytest.raises(BuildingNotFound):
         building = BuildingRepository.get_by_id(

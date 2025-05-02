@@ -49,7 +49,7 @@ def test_get_classroom_by_id_with_restricted_user(
     created = ClassroomModelFactory(
         creator=user, building=building, session=session
     ).create_and_refresh()
-    GroupModelFactory(session=session).create_and_refresh(
+    GroupModelFactory(building=building, session=session).create_and_refresh(
         classrooms=[created], users=[restricted_user]
     )
     response = restricted_client.get(f"{URL_PREFIX}/{created.id}")
@@ -95,14 +95,16 @@ def test_create_classroom_with_restricted_user(
 ) -> None:
     input = ClassroomRequestFactory(building=building).create_input()
     body = input.model_dump()
-    group = GroupModelFactory(session).create_and_refresh(users=[restricted_user])
+    group = GroupModelFactory(building=building, session=session).create_and_refresh(
+        users=[restricted_user]
+    )
 
     response = restricted_client.post(URL_PREFIX, json=body)
     created = response.json()
 
-    new_group = GroupRepository.get_by_id(id=must_be_int(group.id), session=session)
-    assert len(new_group.classrooms) == 1
-    assert new_group.classrooms[0].id == created["id"]
+    main_group = GroupRepository.get_by_id(id=must_be_int(group.id), session=session)
+    assert len(main_group.classrooms) == 0
+    assert main_group.main
 
     assert response.status_code == status.HTTP_200_OK
     assert created["name"] == input.name
@@ -147,7 +149,7 @@ def test_update_classroom_with_restricted_user(
     created = ClassroomModelFactory(
         creator=restricted_user, building=building, session=session
     ).create_and_refresh()
-    GroupModelFactory(session=session).create_and_refresh(
+    GroupModelFactory(building=building, session=session).create_and_refresh(
         classrooms=[created], users=[restricted_user]
     )
     updated_input = ClassroomRequestFactory(building=building).update_input()
@@ -202,23 +204,26 @@ def test_delete_classroom_with_restricted_user(
     session: Session,
     restricted_client: TestClient,
 ) -> None:
-    created = ClassroomModelFactory(
+    createds = ClassroomModelFactory(
         creator=restricted_user, building=building, session=session
-    ).create_and_refresh()
-    group = GroupModelFactory(session=session).create_and_refresh(
-        classrooms=[created], users=[restricted_user]
+    ).create_many_default()
+    group = GroupModelFactory(building=building, session=session).create_and_refresh(
+        classrooms=createds, users=[restricted_user]
     )
+    first = createds[0]
 
-    response = restricted_client.delete(f"{URL_PREFIX}/{created.id}")
+    response = restricted_client.delete(f"{URL_PREFIX}/{first.id}")
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
     new_group = GroupRepository.get_by_id(id=must_be_int(group.id), session=session)
-    assert len(new_group.classrooms) == 0
+    assert (
+        len(new_group.classrooms) == ClassroomModelFactory.CREATE_MANY_DEFAULT_COUNT - 1
+    )
 
     with pytest.raises(
         ClassroomNotFound,
     ):
-        ClassroomRepository.get_by_id(id=must_be_int(created.id), session=session)
+        ClassroomRepository.get_by_id(id=must_be_int(first.id), session=session)
 
 
 def test_delete_classroom_with_common_user(

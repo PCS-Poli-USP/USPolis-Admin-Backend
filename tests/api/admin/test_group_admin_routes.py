@@ -7,34 +7,40 @@ from server.repositories.group_repository import GroupNotFound, GroupRepository
 from server.utils.must_be_int import must_be_int
 from tests.factories.model.group_model_factory import GroupModelFactory
 from tests.factories.request.group_request_factory import GroupRequestFactory
+from server.models.database.building_db_model import Building
 
 URL_PREFIX = "/admin/groups"
 
 
-def test_create_group_with_admin_user(client: TestClient) -> None:
-    input = GroupRequestFactory().create_input()
+def test_create_group_with_admin_user(building: Building, client: TestClient) -> None:
+    input = GroupRequestFactory(building).create_input()
     response = client.post(URL_PREFIX, json=input.model_dump())
-
     assert response.status_code == status.HTTP_201_CREATED
 
 
-def test_create_group_with_restricted_user(restricted_client: TestClient) -> None:
-    input = GroupRequestFactory().create_input()
+def test_create_group_with_restricted_user(
+    building: Building, restricted_client: TestClient
+) -> None:
+    input = GroupRequestFactory(building).create_input()
     response = restricted_client.post(URL_PREFIX, json=input.model_dump())
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
-def test_create_group_with_common_user(common_client: TestClient) -> None:
-    input = GroupRequestFactory().create_input()
+def test_create_group_with_common_user(
+    building: Building, common_client: TestClient
+) -> None:
+    input = GroupRequestFactory(building).create_input()
     response = common_client.post(URL_PREFIX, json=input.model_dump())
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
-def test_update_group_with_admin_user(session: Session, client: TestClient) -> None:
-    group = GroupModelFactory(session=session).create_and_refresh()
-    input = GroupRequestFactory().update_input()
+def test_update_group_with_admin_user(
+    building: Building, session: Session, client: TestClient
+) -> None:
+    group = GroupModelFactory(building=building, session=session).create_and_refresh()
+    input = GroupRequestFactory(building).update_input()
     response = client.put(f"{URL_PREFIX}/{group.id}", json=input.model_dump())
 
     updated = GroupRepository.get_by_id(
@@ -47,10 +53,10 @@ def test_update_group_with_admin_user(session: Session, client: TestClient) -> N
 
 
 def test_update_group_with_restricted_user(
-    session: Session, restricted_client: TestClient
+    building: Building, session: Session, restricted_client: TestClient
 ) -> None:
-    group = GroupModelFactory(session=session).create_and_refresh()
-    input = GroupRequestFactory().update_input()
+    group = GroupModelFactory(building=building, session=session).create_and_refresh()
+    input = GroupRequestFactory(building).update_input()
     response = restricted_client.put(
         f"{URL_PREFIX}/{group.id}", json=input.model_dump()
     )
@@ -59,17 +65,19 @@ def test_update_group_with_restricted_user(
 
 
 def test_update_group_with_common_user(
-    session: Session, common_client: TestClient
+    building: Building, session: Session, common_client: TestClient
 ) -> None:
-    group = GroupModelFactory(session=session).create_and_refresh()
-    input = GroupRequestFactory().update_input()
+    group = GroupModelFactory(building, session=session).create_and_refresh()
+    input = GroupRequestFactory(building).update_input()
     response = common_client.put(f"{URL_PREFIX}/{group.id}", json=input.model_dump())
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
-def test_delete_group_with_admin_user(session: Session, client: TestClient) -> None:
-    group = GroupModelFactory(session=session).create_and_refresh()
+def test_delete_group_with_admin_user(
+    building: Building, session: Session, client: TestClient
+) -> None:
+    group = GroupModelFactory(building, session=session).create_and_refresh()
     response = client.delete(f"{URL_PREFIX}/{group.id}")
 
     assert response.status_code == status.HTTP_200_OK
@@ -82,18 +90,18 @@ def test_delete_group_with_admin_user(session: Session, client: TestClient) -> N
 
 
 def test_delete_group_with_restricted_user(
-    session: Session, restricted_client: TestClient
+    building: Building, session: Session, restricted_client: TestClient
 ) -> None:
-    group = GroupModelFactory(session=session).create_and_refresh()
+    group = GroupModelFactory(building, session=session).create_and_refresh()
     response = restricted_client.delete(f"{URL_PREFIX}/{group.id}")
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 def test_delete_group_with_common_user(
-    session: Session, common_client: TestClient
+    building: Building, session: Session, common_client: TestClient
 ) -> None:
-    group = GroupModelFactory(session=session).create_and_refresh()
+    group = GroupModelFactory(building, session=session).create_and_refresh()
     response = common_client.delete(f"{URL_PREFIX}/{group.id}")
 
     assert response.status_code == status.HTTP_403_FORBIDDEN

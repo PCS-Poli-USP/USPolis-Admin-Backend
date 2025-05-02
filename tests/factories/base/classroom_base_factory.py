@@ -12,7 +12,6 @@ class ClassroomBaseFactory(BaseFactory):
             "name": self.faker.cryptocurrency_name(),
             "capacity": self.faker.random_int(min=0, max=100),
             "floor": self.faker.random_int(min=0, max=10),
-            "ignore_to_allocate": self.faker.boolean(),
             "accessibility": self.faker.boolean(),
             "audiovisual": self.faker.random_element(AudiovisualType.values()),
             "air_conditioning": self.faker.boolean(),

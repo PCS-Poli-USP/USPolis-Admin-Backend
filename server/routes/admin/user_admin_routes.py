@@ -21,14 +21,14 @@ def get_users(session: SessionDep) -> list[UserResponse]:
 
 @router.post("")
 def create_user(
-    user_input: UserRegister,
+    input: UserRegister,
     user: UserDep,
     session: SessionDep,
 ) -> UserResponse:
     """Create new user."""
     new_user = UserRepository.create(
         creator=user,
-        input=user_input,
+        input=input,
         session=session,
     )
     session.commit()
@@ -39,13 +39,13 @@ def create_user(
 @router.put("/{user_id}")
 def update_user(
     user_id: int,
-    user_input: UserUpdate,
+    input: UserUpdate,
     current_user: UserDep,
     session: SessionDep,
 ) -> UserResponse:
     """Update a user by id"""
     updated = UserRepository.update(
-        requester=current_user, id=user_id, input=user_input, session=session
+        requester=current_user, id=user_id, input=input, session=session
     )
     session.commit()
     session.refresh(updated)

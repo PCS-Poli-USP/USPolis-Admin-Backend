@@ -87,14 +87,17 @@ def test_update_user_buildings_with_admin_user(
     assert updated["buildings"] is not None
 
 
-def test_update_user_to_admin_and_buildings_with_admin_user(
+def test_update_user_to_admin_and_groups_with_admin_user(
     client: TestClient, session: Session, building: Building
 ) -> None:
     factory = UserModelFactory(session)
     user = factory.create_and_refresh()
 
+    group_factory = GroupModelFactory(building=building, session=session)
+    group = group_factory.create_and_refresh()
+
     input = UserRequestFactory().update_input(
-        is_admin=True, building_ids=[must_be_int(building.id)]
+        is_admin=True, group_ids=[must_be_int(group.id)]
     )
 
     response = client.put(
@@ -105,7 +108,16 @@ def test_update_user_to_admin_and_buildings_with_admin_user(
     updated = response.json()
     assert updated["id"] == user.id
     assert updated["is_admin"] is True
-    assert updated["buildings"] is not None
+
+    assert len(updated["buildings"]) == 1
+    new_building = updated["buildings"][0]
+    assert new_building["id"] == building.id
+    assert new_building["name"] == building.name
+
+    assert len(updated["groups"]) == 1
+    new_group = updated["groups"][0]
+    assert new_group["id"] == group.id
+    assert new_group["name"] == group.name
 
 
 def test_delete_user_with_admin_user(client: TestClient, session: Session) -> None:

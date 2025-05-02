@@ -8,8 +8,11 @@ class GroupBaseFactory(BaseFactory):
         self.building_id = building_id
 
     def get_base_defaults(self) -> GroupBaseDict:
-        """Return base default values common to models and requests"""
+        """Return base default values common to models and requests\n
+        A default Group is a main group with a random name\n
+        """
         return {
             "name": self.faker.name(),
             "building_id": self.building_id,
+            "main": True,
         }

@@ -10,7 +10,7 @@ from fastapi import Request
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, text
-from sqlmodel import SQLModel, Session, select
+from sqlmodel import Session, select
 from server.config import CONFIG
 
 
@@ -64,7 +64,6 @@ def run_alembic_migrations() -> None:
 
 @pytest.fixture(scope="session", autouse=True)
 def apply_migrations() -> Generator[None, None, None]:
-    SQLModel.metadata.create_all(engine)
     run_alembic_migrations()
     yield
 

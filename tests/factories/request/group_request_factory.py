@@ -16,11 +16,14 @@ class GroupRequestFactory(BaseRequestFactory):
         self.core_factory = GroupBaseFactory(building_id=must_be_int(building.id))
 
     def get_default_create(self) -> GroupRegisterDict:
-        """Get default values for creating a BuildingRegister."""
+        """Get default values for creating a GroupRegister.\n
+        A default Group is a main group with a random name\n
+        The group is created with the building_id of the given building\n
+        """
         core = self.core_factory.get_base_defaults()
         return {
             **core,
-            "classroom_ids": [],
+            "classroom_ids": None,
             "user_ids": [],
         }
 

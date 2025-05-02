@@ -88,7 +88,8 @@ class UserRepository:
             groups = GroupRepository.get_by_ids(ids=input.group_ids, session=session)
             for group in groups:
                 buildings_set.add(group.building)
-
+                user_to_update.groups.append(group)
+                
         user_to_update.buildings = list(buildings_set)
         user_to_update.is_admin = input.is_admin
         user_to_update.updated_at = datetime.now()

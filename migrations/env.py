@@ -1,5 +1,6 @@
 import asyncio
 from logging.config import fileConfig
+import os
 
 from alembic import context
 from sqlalchemy import pool
@@ -31,9 +32,9 @@ target_metadata = SQLModel.metadata  # UPDATED
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-
+# The os.getenv is for testing automatic migration
 def get_url() -> str:
-    return CONFIG.alembic_url
+    return os.getenv("ALEMBIC_URL") or CONFIG.alembic_url
 
 
 config.set_main_option("sqlalchemy.url", get_url())
