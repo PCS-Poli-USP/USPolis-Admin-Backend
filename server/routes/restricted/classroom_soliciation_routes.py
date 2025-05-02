@@ -16,6 +16,7 @@ from server.repositories.classroom_repository import ClassroomRepository
 from server.repositories.classroom_solicitation_repository import (
     ClassroomSolicitationRepository,
 )
+from server.repositories.group_repository import GroupRepository
 from server.repositories.reservation_repository import ReservationRepository
 from server.repositories.user_repository import UserRepository
 from server.services.email.email_service import EmailService
@@ -60,9 +61,17 @@ async def create_classroom_solicitation(
     solicitation = ClassroomSolicitationRepository.create(
         requester=user, input=input, session=session
     )
-    users = UserRepository.get_all_on_building(
-        building_id=input.building_id, session=session
-    )
+    if solicitation.classroom_id:
+        groups = GroupRepository.get_by_classroom_id(
+            classroom_id=solicitation.classroom_id, session=session
+        )
+        users = [user for group in groups for user in group.users]
+        users_set = set(users)
+        users = list(users_set)
+    else:
+        users = UserRepository.get_all_on_building(
+            building_id=input.building_id, session=session
+        )
     session.commit()
     await EmailService.send_solicitation_request_email(users, solicitation)
     return ClassroomSolicitationResponse.from_solicitation(solicitation)

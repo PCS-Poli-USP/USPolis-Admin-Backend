@@ -4,6 +4,7 @@ from sqlalchemy.exc import NoResultFound
 from fastapi import HTTPException, status
 
 from server.models.database.building_db_model import Building
+from server.models.database.group_classroom_link import GroupClassroomLink
 from server.models.database.group_db_model import Group
 from server.models.database.group_user_link import GroupUserLink
 from server.models.http.requests.group_request_models import GroupRegister, GroupUpdate
@@ -44,6 +45,19 @@ class GroupRepository:
             .where(
                 col(GroupUserLink.group_id) == col(Group.id),
                 col(GroupUserLink.user_id) == user_id,
+            )
+        )
+        groups = session.exec(statement).all()
+        return list(groups)
+
+    @staticmethod
+    def get_by_classroom_id(*, classroom_id: int, session: Session) -> list[Group]:
+        statement = (
+            select(Group)
+            .join(GroupClassroomLink)
+            .where(
+                col(GroupClassroomLink.classroom_id) == classroom_id,
+                col(GroupClassroomLink.group_id) == col(Group.id),
             )
         )
         groups = session.exec(statement).all()

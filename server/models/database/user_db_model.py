@@ -51,6 +51,9 @@ class User(SQLModel, table=True):
         sa_relationship_kwargs={"order_by": "Group.name"},
     )
 
+    def __hash__(self) -> int:
+        return hash(self.id)
+
     def classrooms_ids_set(self) -> set[int]:
         """
         Get the set of classroom IDs that the user has access to.
