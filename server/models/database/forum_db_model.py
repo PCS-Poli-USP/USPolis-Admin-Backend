@@ -1,15 +1,14 @@
 from datetime import datetime
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship
 
+from server.models.database.base_db_model import BaseModel
 from server.models.database.forum_post_report_link import ForumPostReportLink
 from server.models.database.mobile_user_db_model import MobileUser
 from server.models.database.forum_post_reacts_link import ForumPostReactsLink
 
 
-class ForumPost(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True)
-
+class ForumPost(BaseModel, table=True):
     class_id: int | None = Field(foreign_key="class.id", nullable=True)
 
     subject_id: int = Field(foreign_key="subject.id")

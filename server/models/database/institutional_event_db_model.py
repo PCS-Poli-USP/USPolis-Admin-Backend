@@ -1,10 +1,11 @@
 from datetime import datetime
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field
+
+from server.models.database.base_db_model import BaseModel
 
 
-class InstitutionalEvent(SQLModel, table=True):
-    id: int | None = Field(primary_key=True, default=None)
+class InstitutionalEvent(BaseModel, table=True):
     title: str = Field()
     description: str = Field()
     category: str = Field()

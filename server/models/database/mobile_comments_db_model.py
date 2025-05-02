@@ -1,13 +1,14 @@
 from datetime import datetime
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field
 from typing import TYPE_CHECKING
+
+from server.models.database.base_db_model import BaseModel
 
 if TYPE_CHECKING:
     pass
 
 
-class Comment(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
+class Comment(BaseModel, table=True):
     comment: str = Field()
     email: str | None = Field(
         default=None,

@@ -1,8 +1,9 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship
 
+from server.models.database.base_db_model import BaseModel
 from server.models.database.group_db_model import Group
 from server.models.database.group_user_link import GroupUserLink
 from server.models.database.user_building_link import UserBuildingLink
@@ -19,8 +20,7 @@ if TYPE_CHECKING:
     )
 
 
-class User(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
+class User(BaseModel, table=True):
     email: str = Field(index=True, unique=True)
     is_admin: bool
     name: str
@@ -50,9 +50,6 @@ class User(SQLModel, table=True):
         back_populates="users",
         sa_relationship_kwargs={"order_by": "Group.name"},
     )
-
-    def __hash__(self) -> int:
-        return hash(self.id)
 
     def classrooms_ids_set(self) -> set[int]:
         """

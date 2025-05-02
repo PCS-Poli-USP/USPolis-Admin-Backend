@@ -127,9 +127,14 @@ class GroupRepository:
             building_id=building_id, session=session
         )
         group_has_all_classrooms = False
-        building_set = building.get_classrooms_ids_set()
-        classrooms_set = set([classroom.id for classroom in classrooms])
-        group_has_all_classrooms = True if building_set == classrooms_set else False
+        if not group.main:
+            building_set = building.get_classrooms_ids_set()
+            classrooms_set = set([classroom.id for classroom in classrooms])
+            group_has_all_classrooms = (
+                True
+                if building_set == classrooms_set and len(building_set) != 0
+                else False
+            )
 
         if group_has_all_classrooms:
             raise GroupWithAllClassrooms(building.name)

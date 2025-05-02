@@ -6,7 +6,6 @@ class ClassroomBaseDict(BaseDict, total=False):
     name: str
     capacity: int
     floor: int
-    ignore_to_allocate: bool
     accessibility: bool
     audiovisual: AudiovisualType
     air_conditioning: bool

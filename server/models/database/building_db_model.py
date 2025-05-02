@@ -1,8 +1,9 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship
 
+from server.models.database.base_db_model import BaseModel
 from server.models.database.subject_building_link import SubjectBuildingLink
 from server.models.database.user_building_link import UserBuildingLink
 from server.utils.must_be_int import must_be_int
@@ -17,8 +18,7 @@ if TYPE_CHECKING:
     from server.models.database.group_db_model import Group
 
 
-class Building(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
+class Building(BaseModel, table=True):
     name: str = Field(index=True, unique=True)
     updated_at: datetime = Field(default_factory=datetime.now)
     created_by_id: int | None = Field(default=None, foreign_key="user.id")

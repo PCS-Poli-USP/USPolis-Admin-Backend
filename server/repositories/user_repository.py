@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import TYPE_CHECKING
 from fastapi import HTTPException, status
 from sqlmodel import Session, col, select
 
@@ -7,9 +6,6 @@ from server.models.database.building_db_model import Building
 from server.models.database.user_building_link import UserBuildingLink
 from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister, UserUpdate
-
-if TYPE_CHECKING:
-    from server.repositories.group_repository import GroupRepository
 
 
 class UserRepository:
@@ -54,6 +50,8 @@ class UserRepository:
         input: UserRegister,
         session: Session,
     ) -> User:
+        from server.repositories.group_repository import GroupRepository
+
         buildings_set: set[Building] = set()
         if input.group_ids is not None:
             groups = GroupRepository.get_by_ids(ids=input.group_ids, session=session)
@@ -74,6 +72,8 @@ class UserRepository:
     def update(
         *, requester: User, id: int, input: UserUpdate, session: Session
     ) -> User:
+        from server.repositories.group_repository import GroupRepository
+        
         user_to_update = UserRepository.get_by_id(user_id=id, session=session)
 
         if id == requester.id:

@@ -2,7 +2,8 @@ from collections.abc import Generator
 from datetime import date
 from typing import TYPE_CHECKING, Any
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship
+from server.models.database.base_db_model import BaseModel
 
 from server.models.database.calendar_holiday_category_link import (
     CalendarHolidayCategoryLink,
@@ -15,8 +16,7 @@ if TYPE_CHECKING:
     from server.models.database.user_db_model import User
 
 
-class Calendar(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
+class Calendar(BaseModel, table=True):
     name: str = Field(index=True, unique=True)
 
     categories: list["HolidayCategory"] = Relationship(

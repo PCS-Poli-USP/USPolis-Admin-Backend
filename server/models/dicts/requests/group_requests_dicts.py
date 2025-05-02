@@ -5,7 +5,7 @@ from server.models.dicts.requests.base_requests_dicts import BaseRequestDict
 class GroupRegisterDict(GroupBaseDict, BaseRequestDict, total=False):
     """Group register dictionary."""
 
-    classroom_ids: list[int]
+    classroom_ids: list[int] | None
     user_ids: list[int]
 
 

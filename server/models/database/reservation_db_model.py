@@ -1,8 +1,9 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlmodel import Relationship, SQLModel, Field
+from sqlmodel import Relationship, Field
 
+from server.models.database.base_db_model import BaseModel
 from server.utils.enums.reservation_type import ReservationType
 
 if TYPE_CHECKING:
@@ -14,8 +15,7 @@ if TYPE_CHECKING:
     )
 
 
-class Reservation(SQLModel, table=True):
-    id: int | None = Field(primary_key=True, default=None)
+class Reservation(BaseModel, table=True):
     title: str = Field()
     type: ReservationType = Field()
     reason: str | None = Field(nullable=True, default=None)

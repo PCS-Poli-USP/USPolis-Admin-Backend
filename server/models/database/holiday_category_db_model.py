@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import Field, Relationship
 
+from server.models.database.base_db_model import BaseModel
 from server.models.database.calendar_holiday_category_link import (
     CalendarHolidayCategoryLink,
 )
@@ -12,8 +13,7 @@ if TYPE_CHECKING:
     from server.models.database.calendar_db_model import Calendar
 
 
-class HolidayCategory(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
+class HolidayCategory(BaseModel, table=True):
     name: str = Field(index=True, unique=True)
 
     created_by_id: int | None = Field(

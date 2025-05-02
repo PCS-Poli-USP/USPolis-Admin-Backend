@@ -3,7 +3,8 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import Column, String, UniqueConstraint
 from sqlalchemy.dialects import postgresql
-from sqlmodel import Field, Relationship, SQLModel, Enum
+from sqlmodel import Field, Relationship, Enum
+from server.models.database.base_db_model import BaseModel
 
 from server.models.database.class_calendar_link import ClassCalendarLink
 from server.utils.enums.audiovisual_type_enum import AudiovisualType
@@ -17,11 +18,10 @@ if TYPE_CHECKING:
     from server.models.database.forum_db_model import ForumPost
 
 
-class Class(SQLModel, table=True):
+class Class(BaseModel, table=True):
     __table_args__ = (
         UniqueConstraint("code", "subject_id", name="unique_class_code_for_subject"),
     )
-    id: int | None = Field(default=None, primary_key=True)
     start_date: date = Field()
     end_date: date = Field()
     code: str = Field()

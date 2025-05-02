@@ -2,7 +2,8 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import UniqueConstraint
-from sqlmodel import Field, Relationship, SQLModel, Column, Enum
+from sqlmodel import Field, Relationship, Column, Enum
+from server.models.database.base_db_model import BaseModel
 
 from server.models.database.group_classroom_link import GroupClassroomLink
 from server.utils.enums.audiovisual_type_enum import AudiovisualType
@@ -20,7 +21,7 @@ if TYPE_CHECKING:
     from server.models.database.group_db_model import Group
 
 
-class ClassroomBase(SQLModel):
+class ClassroomBase(BaseModel):
     name: str
     capacity: int
     floor: int
@@ -41,7 +42,6 @@ class Classroom(ClassroomBase, table=True):
             "name", "building_id", name="unique_classroom_name_for_building"
         ),
     )
-    id: int | None = Field(primary_key=True, default=None)
 
     created_by: "User" = Relationship()
     building: "Building" = Relationship(back_populates="classrooms")
@@ -59,7 +59,7 @@ class Classroom(ClassroomBase, table=True):
 
 
 class ClassroomWithConflictsIndicator(ClassroomBase):
-    id: int
+    id: int  # type: ignore
     conflicts: int = 0
 
     @classmethod
