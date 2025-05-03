@@ -1,3 +1,4 @@
+from typing import Unpack
 from server.models.database.building_db_model import Building
 from server.models.dicts.requests.group_requests_dicts import (
     GroupRegisterDict,
@@ -31,12 +32,12 @@ class GroupRequestFactory(BaseRequestFactory):
         """Get default values for creating a BuildingUpdate."""
         return self.get_default_create()
 
-    def create_input(self, **overrides: GroupRegisterDict) -> GroupRegister:
+    def create_input(self, **overrides: Unpack[GroupRegisterDict]) -> GroupRegister:
         default = self.get_default_create()
         self.override_default_dict(default, overrides)  # type: ignore
         return GroupRegister(**default)
 
-    def update_input(self, **overrides: GroupUpdateDict) -> GroupUpdate:
+    def update_input(self, **overrides: Unpack[GroupUpdateDict]) -> GroupUpdate:
         default = self.get_default_update()
         self.override_default_dict(default, overrides)  # type: ignore
         return GroupUpdate(**default)

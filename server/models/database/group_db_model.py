@@ -7,6 +7,7 @@ from server.models.database.base_db_model import BaseModel
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.group_classroom_link import GroupClassroomLink
 from server.models.database.group_user_link import GroupUserLink
+from server.utils.must_be_int import must_be_int
 
 if TYPE_CHECKING:
     from server.models.database.user_db_model import User
@@ -29,3 +30,7 @@ class Group(BaseModel, table=True):
     users: list["User"] = Relationship(
         link_model=GroupUserLink, back_populates="groups"
     )
+
+    def user_ids_set(self) -> set[int]:
+        """Get the set of user ids in the group."""
+        return {must_be_int(user.id) for user in self.users}

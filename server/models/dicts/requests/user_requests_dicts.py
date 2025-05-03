@@ -6,7 +6,7 @@ class UserUpdateDict(UserBaseDict, total=False):
     This TypedDict is used to define the structure of the UserRegister data.\n
     """
 
-    group_ids: list[int] | None
+    group_ids: list[int]
 
 
 class UserRegisterDict(UserUpdateDict, total=False):

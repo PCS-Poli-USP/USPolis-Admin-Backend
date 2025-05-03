@@ -7,6 +7,7 @@ from server.models.database.building_db_model import Building
 from server.models.database.group_classroom_link import GroupClassroomLink
 from server.models.database.group_db_model import Group
 from server.models.database.group_user_link import GroupUserLink
+from server.models.database.user_db_model import User
 from server.models.http.requests.group_request_models import GroupRegister, GroupUpdate
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.classroom_repository import ClassroomRepository
@@ -14,6 +15,26 @@ from server.repositories.user_repository import UserRepository
 
 
 class GroupRepository:
+    @staticmethod
+    def __remove_users_from_group(
+        *,
+        group: Group,
+        users: list[User],
+        session: Session,
+    ) -> None:
+        """Remove users from a group, keeping correctly the users buildings defined by his groups.\n
+        The function will assume that the users are already in the group.\n
+        """
+        for user in users:
+            group.users.remove(user)
+            remaining_groups_on_building = [
+                g for g in user.groups if g.building_id == group.building_id
+            ]
+            if len(remaining_groups_on_building) == 0:
+                if user.buildings is not None:
+                    user.buildings.remove(group.building)
+            session.add(user)
+
     @staticmethod
     def __update_group_users(
         *,
@@ -178,10 +199,23 @@ class GroupRepository:
             session=session,
         )
 
-        if set(input.user_ids) != set([user.id for user in group.users]):
+        old_users = group.user_ids_set()
+        new_users = set(input.user_ids)
+        users_ids_to_remove = old_users - new_users
+        if len(new_users) > 0:
             GroupRepository.__update_group_users(
                 group=group,
                 user_ids=input.user_ids,
+                session=session,
+            )
+
+        if len(users_ids_to_remove) > 0:
+            users_to_remove = UserRepository.get_by_ids(
+                ids=list(users_ids_to_remove), session=session
+            )
+            GroupRepository.__remove_users_from_group(
+                group=group,
+                users=users_to_remove,
                 session=session,
             )
         session.add(group)
@@ -190,6 +224,11 @@ class GroupRepository:
     @staticmethod
     def delete(*, id: int, session: Session) -> None:
         group = GroupRepository.get_by_id(id=id, session=session)
+        GroupRepository.__remove_users_from_group(
+            group=group,
+            users=group.users,
+            session=session,
+        )
         session.delete(group)
 
 
