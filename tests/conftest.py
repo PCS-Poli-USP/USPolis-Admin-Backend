@@ -23,11 +23,15 @@ from server.app import app
 from server.deps.authenticate import authenticate, google_authenticate
 from server.deps.session_dep import SessionDep
 from server.models.database.building_db_model import Building
+from server.models.database.classroom_db_model import Classroom
+from server.models.database.group_db_model import Group
 from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister
 from server.repositories.user_repository import UserRepository
 from server.services.auth.auth_user_info import AuthUserInfo
 from tests.factories.model.building_model_factory import BuildingModelFactory
+from tests.factories.model.classroom_model_factory import ClassroomModelFactory
+from tests.factories.model.group_model_factory import GroupModelFactory
 from tests.factories.model.user_model_factory import UserModelFactory
 
 test_db_url = f"{CONFIG.test_db_uri}/{CONFIG.test_db_database}"
@@ -234,4 +238,21 @@ def common_user_fixture(session: Session) -> Generator[User, None, None]:
 
 @pytest.fixture(name="building")
 def building_fixture(user: User, session: Session) -> Building:
+    """Fixture to create a standard building."""
     return BuildingModelFactory(user, session).create_and_refresh()
+
+
+@pytest.fixture(name="group")
+def group_fixture(restricted_user: User, building: Building, session: Session) -> Group:
+    """Fixture to create a standard main group for the standard building with a standard restricted user."""
+    return GroupModelFactory(building, session).create_and_refresh(
+        users=[restricted_user]
+    )
+
+
+@pytest.fixture(name="classroom")
+def classroom_fixture(user: User, group: Group, session: Session) -> Classroom:
+    """Fixture to create a standard classroom in the standard main group that includes the starndard restricted user."""
+    return ClassroomModelFactory(
+        creator=user, group=group, session=session
+    ).create_and_refresh()

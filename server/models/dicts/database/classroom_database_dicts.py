@@ -1,6 +1,8 @@
 from datetime import datetime
+
 from server.models.database.building_db_model import Building
 from server.models.database.classroom_solicitation_db_model import ClassroomSolicitation
+from server.models.database.group_db_model import Group
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.schedule_db_model import Schedule
@@ -25,3 +27,4 @@ class ClassroomModelDict(ClassroomBaseDict, BaseModelDict, total=False):
     occurrences: list[Occurrence]
     reservations: list[Reservation]
     solicitations: list[ClassroomSolicitation]
+    groups: list[Group]

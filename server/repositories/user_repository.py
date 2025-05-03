@@ -44,26 +44,40 @@ class UserRepository:
         return list(users)
 
     @staticmethod
+    def __update_user_groups(
+        *, user: User, group_ids: list[int], session: Session
+    ) -> None:
+        """Update user groups, keeping correctly the users buildings defined by his groups.\n"""
+        from server.repositories.group_repository import GroupRepository
+
+        buildings_set: set[Building] = set()
+        if group_ids:
+            groups = GroupRepository.get_by_ids(ids=group_ids, session=session)
+            for group in groups:
+                buildings_set.add(group.building)
+                user.groups.append(group)
+            user.buildings = list(buildings_set)
+        else:
+            user.groups = []
+            user.buildings = []
+
+    @staticmethod
     def create(
         *,
         creator: User | None,
         input: UserRegister,
         session: Session,
     ) -> User:
-        from server.repositories.group_repository import GroupRepository
-
-        buildings_set: set[Building] = set()
-        if input.group_ids is not None:
-            groups = GroupRepository.get_by_ids(ids=input.group_ids, session=session)
-            for group in groups:
-                buildings_set.add(group.building)
-
         new_user = User(
             name=input.name,
             email=input.email,
             is_admin=input.is_admin,
             created_by=creator,
-            buildings=list(buildings_set),
+        )
+        UserRepository.__update_user_groups(
+            user=new_user,
+            group_ids=input.group_ids,
+            session=session,
         )
         session.add(new_user)
         return new_user
@@ -72,8 +86,6 @@ class UserRepository:
     def update(
         *, requester: User, id: int, input: UserUpdate, session: Session
     ) -> User:
-        from server.repositories.group_repository import GroupRepository
-        
         user_to_update = UserRepository.get_by_id(user_id=id, session=session)
 
         if id == requester.id:
@@ -83,14 +95,11 @@ class UserRepository:
                     "Não pode editar seu próprio status de admin",
                 )
 
-        buildings_set: set[Building] = set()
-        if input.group_ids is not None:
-            groups = GroupRepository.get_by_ids(ids=input.group_ids, session=session)
-            for group in groups:
-                buildings_set.add(group.building)
-                user_to_update.groups.append(group)
-                
-        user_to_update.buildings = list(buildings_set)
+        UserRepository.__update_user_groups(
+            user=user_to_update,
+            group_ids=input.group_ids,
+            session=session,
+        )
         user_to_update.is_admin = input.is_admin
         user_to_update.updated_at = datetime.now()
         session.add(user_to_update)

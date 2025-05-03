@@ -39,7 +39,7 @@ def authenticate(
             input=UserRegister(
                 email=user_info.email,
                 name=user_info.name,
-                group_ids=None,
+                group_ids=[],
                 is_admin=False,
             ),
             creator=None,

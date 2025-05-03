@@ -77,6 +77,7 @@ class ClassroomRepository:
             **input.model_dump(),
             created_by=creator,
             created_by_id=must_be_int(creator.id),
+            groups=[],
         )
         session.add(new_classroom)
         return new_classroom

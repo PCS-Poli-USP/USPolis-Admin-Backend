@@ -17,6 +17,7 @@ class BuildingModelDict(BuildingBaseDict, BaseModelDict, total=False):
 
     # Relationships
     created_by: User
+    users: list[User]
     classrooms: list[Classroom]
     subjects: list[Subject]
     solicitations: list[ClassroomSolicitation]

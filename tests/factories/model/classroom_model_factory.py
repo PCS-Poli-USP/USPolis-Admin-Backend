@@ -1,26 +1,28 @@
 from datetime import datetime
 from typing import Unpack
 from sqlmodel import Session
-from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
+from server.models.database.group_db_model import Group
 from server.models.database.user_db_model import User
 from server.models.dicts.database.classroom_database_dicts import ClassroomModelDict
 from server.utils.must_be_int import must_be_int
+from tests.factories.base.classroom_base_factory import ClassroomBaseFactory
 from tests.factories.model.base_model_factory import BaseModelFactory
-from tests.factories.request.classroom_request_factory import ClassroomRequestFactory
 
 
 class ClassroomModelFactory(BaseModelFactory[Classroom]):
-    def __init__(self, creator: User, building: Building, session: Session) -> None:
+    def __init__(self, creator: User, group: Group, session: Session) -> None:
         super().__init__(session)
-        self.building = building
         self.creator = creator
+        self.building = group.building
+        self.group = group
+        self.core_factory = ClassroomBaseFactory()
 
     def _get_model_type(self) -> type[Classroom]:
         return Classroom
 
     def get_defaults(self) -> ClassroomModelDict:
-        core = ClassroomRequestFactory(self.building).get_default_register_input()
+        core = self.core_factory.get_base_defaults()
         return {
             **core,
             "updated_at": datetime.now(),
@@ -32,6 +34,7 @@ class ClassroomModelFactory(BaseModelFactory[Classroom]):
             "occurrences": [],
             "reservations": [],
             "solicitations": [],
+            "groups": [self.group],
         }
 
     def create(self, **overrides: Unpack[ClassroomModelDict]) -> Classroom:  # type: ignore

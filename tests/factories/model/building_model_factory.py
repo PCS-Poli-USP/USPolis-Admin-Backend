@@ -23,6 +23,7 @@ class BuildingModelFactory(BaseModelFactory[Building]):
             "updated_at": datetime.now(),
             "created_by_id": self.creator.id,
             "created_by": self.creator,
+            "users": [],
             "classrooms": [],
             "subjects": [],
             "solicitations": [],

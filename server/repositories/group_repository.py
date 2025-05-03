@@ -15,6 +15,74 @@ from server.repositories.user_repository import UserRepository
 
 class GroupRepository:
     @staticmethod
+    def __update_group_users(
+        *,
+        group: Group,
+        user_ids: list[int],
+        session: Session,
+    ) -> None:
+        """Update group users, keeping correctly the users buildings defined by his groups.\n"""
+        users = UserRepository.get_by_ids(ids=user_ids, session=session)
+        for user in users:
+            user_building_ids = user.buildings_ids_set()
+            if group.building_id not in user_building_ids:
+                if user.buildings is None:
+                    user.buildings = [group.building]
+                else:
+                    user.buildings.append(group.building)
+                session.add(user)
+
+        group.users = users
+
+    @staticmethod
+    def __check_group_validation(
+        *,
+        group: Group,
+        building_id: int,
+        classroom_ids: list[int] | None,
+        session: Session,
+    ) -> None:
+        """Check group classrooms validation.\n
+        A group is valid when:
+        - The group has at least one classroom
+        - The group classrooms are all in the same building
+        - If the group has all classrooms of the building and there isnt a main group already
+
+        This method will update the group classrooms and main group status.\n
+
+        """
+        if not classroom_ids and not group.main:
+            raise GroupWithoutClassroom(group.name)
+
+        building = BuildingRepository.get_by_id(id=building_id, session=session)
+        classrooms = ClassroomRepository.get_by_ids(
+            ids=classroom_ids if classroom_ids else [], session=session
+        )
+        for classroom in classrooms:
+            if classroom.building_id != building_id:
+                raise GroupWithMultipleBuildings(group.name)
+        group.classrooms = classrooms
+
+        main = GroupRepository.get_building_main_group(
+            building_id=building_id, session=session
+        )
+        group_has_all_classrooms = False
+        if not group.main:
+            building_set = building.get_classrooms_ids_set()
+            classrooms_set = set([classroom.id for classroom in classrooms])
+            group_has_all_classrooms = (
+                True
+                if building_set == classrooms_set and len(building_set) != 0
+                else False
+            )
+
+        if group_has_all_classrooms:
+            raise GroupWithAllClassrooms(building.name)
+
+        if main and group.main and main.id != group.id:
+            raise MainGroupIsUnique()
+
+    @staticmethod
     def get_by_id(*, id: int, session: Session) -> Group:
         statement = select(Group).where(col(Group.id) == id)
         try:
@@ -89,58 +157,13 @@ class GroupRepository:
             session=session,
         )
 
-        if input.user_ids:
-            group.users = UserRepository.get_by_ids(ids=input.user_ids, session=session)
+        GroupRepository.__update_group_users(
+            group=group,
+            user_ids=input.user_ids,
+            session=session,
+        )
         session.add(group)
         return group
-
-    @staticmethod
-    def __check_group_validation(
-        *,
-        group: Group,
-        building_id: int,
-        classroom_ids: list[int] | None,
-        session: Session,
-    ) -> None:
-        """Check group classrooms validation.\n
-        A group is valid when:
-        - The group has at least one classroom
-        - The group classrooms are all in the same building
-        - If the group has all classrooms of the building and there isnt a main group already
-
-        This method will update the group classrooms and main group status.\n
-
-        """
-        if not classroom_ids and not group.main:
-            raise GroupWithoutClassroom(group.name)
-
-        building = BuildingRepository.get_by_id(id=building_id, session=session)
-        classrooms = ClassroomRepository.get_by_ids(
-            ids=classroom_ids if classroom_ids else [], session=session
-        )
-        for classroom in classrooms:
-            if classroom.building_id != building_id:
-                raise GroupWithMultipleBuildings(group.name)
-        group.classrooms = classrooms
-
-        main = GroupRepository.get_building_main_group(
-            building_id=building_id, session=session
-        )
-        group_has_all_classrooms = False
-        if not group.main:
-            building_set = building.get_classrooms_ids_set()
-            classrooms_set = set([classroom.id for classroom in classrooms])
-            group_has_all_classrooms = (
-                True
-                if building_set == classrooms_set and len(building_set) != 0
-                else False
-            )
-
-        if group_has_all_classrooms:
-            raise GroupWithAllClassrooms(building.name)
-
-        if main and group.main and main.id != group.id:
-            raise MainGroupIsUnique()
 
     @staticmethod
     def update(*, id: int, input: GroupUpdate, session: Session) -> Group:
@@ -156,7 +179,11 @@ class GroupRepository:
         )
 
         if set(input.user_ids) != set([user.id for user in group.users]):
-            group.users = UserRepository.get_by_ids(ids=input.user_ids, session=session)
+            GroupRepository.__update_group_users(
+                group=group,
+                user_ids=input.user_ids,
+                session=session,
+            )
         session.add(group)
         return group
 

@@ -1,4 +1,5 @@
-from server.models.database.building_db_model import Building
+from typing import Unpack
+from server.models.database.group_db_model import Group
 from server.models.dicts.requests.classroom_requests_dicts import (
     ClassroomRegisterDict,
     ClassroomUpdateDict,
@@ -13,9 +14,10 @@ from tests.factories.request.base_request_factory import BaseRequestFactory
 
 
 class ClassroomRequestFactory(BaseRequestFactory):
-    def __init__(self, building: Building) -> None:
+    def __init__(self, group: Group) -> None:
         super().__init__()
-        self.building = building
+        self.building = group.building
+        self.group = group
         self.core_factory = ClassroomBaseFactory()
 
     def get_default_register_input(self) -> ClassroomRegisterDict:
@@ -23,18 +25,21 @@ class ClassroomRequestFactory(BaseRequestFactory):
         core = self.core_factory.get_base_defaults()
         return {
             "building_id": must_be_int(self.building.id),
+            "group_ids": [must_be_int(self.group.id)],
             **core,
         }
 
     def get_default_update_input(self) -> ClassroomUpdateDict:
         return self.get_default_register_input()
 
-    def create_input(self, **overrides: ClassroomRegisterDict) -> ClassroomRegister:
+    def create_input(
+        self, **overrides: Unpack[ClassroomRegisterDict]
+    ) -> ClassroomRegister:
         default = self.get_default_register_input()
         self.override_default_dict(default, overrides)  # type: ignore
         return ClassroomRegister(**default)
 
-    def update_input(self, **overrides: ClassroomUpdateDict) -> ClassroomUpdate:
+    def update_input(self, **overrides: Unpack[ClassroomUpdateDict]) -> ClassroomUpdate:
         default = self.get_default_update_input()
         self.override_default_dict(default, overrides)  # type: ignore
         return ClassroomUpdate(**default)

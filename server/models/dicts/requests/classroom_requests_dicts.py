@@ -8,6 +8,7 @@ class ClassroomRegisterDict(ClassroomBaseDict, BaseRequestDict, total=False):
     """
 
     building_id: int
+    group_ids: list[int]
 
 
 class ClassroomUpdateDict(ClassroomRegisterDict, total=False):

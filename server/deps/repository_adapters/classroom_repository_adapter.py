@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 
 from server.deps.authenticate import UserDep
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
@@ -73,35 +74,39 @@ class ClassroomRepositoryAdapter:
     def __update_groups_classrooms(
         self, classroom: Classroom, input: ClassroomUpdate | ClassroomRegister
     ) -> None:
-        if input.group_ids:
-            groups = GroupRepository.get_by_ids(
-                ids=input.group_ids, session=self.session
-            )
-            self.group_checker.check_permission(groups)
-            groups = [group for group in groups if not group.main]
-            for group in groups:
-                if group.building_id != input.building_id:
-                    raise ClassroomInsertionOnInvalidGroup(
-                        group=group.name, classroom=input.name
-                    )
-                group.classrooms.append(classroom)
-                self.session.add(group)
+        self.group_checker.check_permission(input.group_ids)
+        groups = GroupRepository.get_by_ids(ids=input.group_ids, session=self.session)
+        groups = [group for group in groups if not group.main]
+        classroom_groups = classroom.groups
+        groups = [
+            group for group in groups if group not in classroom_groups or not group.main
+        ]
+        for group in groups:
+            if group.building_id != input.building_id:
+                raise ClassroomInsertionOnInvalidGroup(
+                    group=group.name, classroom=input.name
+                )
+            group.classrooms.append(classroom)
+            self.session.add(group)
 
     def create(
         self,
         input: ClassroomRegister,
     ) -> Classroom:
         self.building_checker.check_permission(input.building_id)
-        new_classroom = ClassroomRepository.create(
-            input=input,
-            creator=self.user,
-            session=self.session,
-        )
-        self.__update_groups_classrooms(
-            classroom=new_classroom,
-            input=input,
-        )
-        self.session.commit()
+        try:
+            new_classroom = ClassroomRepository.create(
+                input=input,
+                creator=self.user,
+                session=self.session,
+            )
+            self.__update_groups_classrooms(
+                classroom=new_classroom,
+                input=input,
+            )
+            self.session.commit()
+        except IntegrityError:
+            raise ClassroomNameAlreadyExists(name=input.name)
         self.session.refresh(new_classroom)
         return new_classroom
 
@@ -148,6 +153,14 @@ class DeleteLastClassroomOnGroups(HTTPException):
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"A sala {classroom} não pode ser excluída, pois um ou mais grupos irão ficar sem sala",
+        )
+
+
+class ClassroomNameAlreadyExists(HTTPException):
+    def __init__(self, name: str) -> None:
+        super().__init__(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Sala com o nome {name} já existe",
         )
 
 

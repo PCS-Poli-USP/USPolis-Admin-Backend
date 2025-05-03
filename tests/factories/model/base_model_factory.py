@@ -79,6 +79,15 @@ class BaseModelFactory(Generic[M], metaclass=ABCMeta):
             models.append(model)
             self.session.add(model)
         return models
+    
+    def create_many_and_refresh(
+        self, count: int = CREATE_MANY_DEFAULT_COUNT
+    ) -> list[M]:
+        """Create a list of model instances with default values, commit the session and return the instances refreshed."""
+        models = self.create_many_default(count)
+        self.commit()
+        self.refresh_many(models)
+        return models
 
     def get_by_id(self, id: int) -> M:
         """Get a model instance by its ID.\n
