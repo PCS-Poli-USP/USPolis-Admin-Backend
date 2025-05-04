@@ -10,4 +10,4 @@ class BuildingBaseFactory(BaseFactory):
 
     def get_base_defaults(self) -> BuildingBaseDict:
         """Return base default values common to models and requests"""
-        return {"name": self.faker.company()}
+        return {"name": self.faker.unique.company()}

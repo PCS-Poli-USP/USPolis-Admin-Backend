@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Body, status
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError
 
 from server.deps.session_dep import SessionDep
 from server.models.http.requests.group_request_models import GroupRegister, GroupUpdate
 from server.models.http.responses.group_response_models import GroupResponse
-from server.repositories.group_repository import GroupRepository
+from server.repositories.group_repository import GroupAlreadyExists, GroupRepository
 
 embed = Body(..., embed=True)
 
@@ -40,8 +41,12 @@ def create_group(
     """
     Create a group
     """
-    GroupRepository.create(input=input, session=session)
-    session.commit()
+    try:
+        GroupRepository.create(input=input, session=session)
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise GroupAlreadyExists(name=input.name)
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,
         content={
@@ -59,8 +64,12 @@ def update_group(
     """
     Update a group by id
     """
-    GroupRepository.update(id=group_id, input=input, session=session)
-    session.commit()
+    try:
+        GroupRepository.update(id=group_id, input=input, session=session)
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise GroupAlreadyExists(name=input.name)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content={

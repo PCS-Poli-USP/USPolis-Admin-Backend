@@ -28,7 +28,7 @@ def test_create_building_with_used_name(building: Building, client: TestClient) 
     input = BuildingRequestFactory().create_input(name=building.name)
     body = input.model_dump()
     response = client.post(URL_PREFIX, json=body)
-
+    print(response.json())
     assert response.status_code == status.HTTP_409_CONFLICT
 
 
@@ -78,6 +78,13 @@ def test_delete_building_admin_user_with_admin_user(
         building = BuildingRepository.get_by_id(
             id=must_be_int(building.id), session=session
         )
+
+
+def test_delete_building_not_found(client: TestClient, session: Session) -> None:
+    response = client.delete(f"{URL_PREFIX}/10")
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+  
 
 
 def test_delete_building_admin_user_with_restricted_user(

@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 from sqlmodel import Session
 from server.models.database.user_db_model import User
-from server.models.database.building_db_model import Building
+from server.models.database.group_db_model import Group
 from server.repositories.classroom_repository import ClassroomRepository
 from server.utils.must_be_int import must_be_int
 from tests.factories.model.classroom_model_factory import ClassroomModelFactory
@@ -10,7 +10,7 @@ from tests.factories.request.classroom_request_factory import ClassroomRequestFa
 
 
 def test_classroom_repository_create(
-    building: Building, user: User, mock_session: MagicMock
+    group: Group, user: User, mock_session: MagicMock
 ) -> None:
     """Test the **create** method of the ClassroomRepository.\n
     Tests:\n
@@ -18,7 +18,7 @@ def test_classroom_repository_create(
     - session.commit() is not called\n
     - classroom id is None
     """
-    factory = ClassroomRequestFactory(building=building)
+    factory = ClassroomRequestFactory(group=group)
     input = factory.create_input()
     classroom = ClassroomRepository.create(
         input=input, creator=user, session=mock_session
@@ -30,14 +30,14 @@ def test_classroom_repository_create(
 
 
 def test_classroom_repository_get_all(
-    building: Building, user: User, session: Session
+    group: Group, user: User, session: Session
 ) -> None:
     """Test **get_all** method of the ClassroomRepository.\n
     Tests:\n
     - number of classrooms get is correct\n
     - classrooms read are the same as the ones created\n
     """
-    factory = ClassroomModelFactory(creator=user, building=building, session=session)
+    factory = ClassroomModelFactory(creator=user, group=group, session=session)
     old_classrooms = factory.create_many_default()
     classrooms = ClassroomRepository.get_all(session=session)
 
@@ -47,26 +47,26 @@ def test_classroom_repository_get_all(
 
 
 def test_classroom_repository_get_by_id(
-    building: Building, user: User, session: Session
+    group: Group, user: User, session: Session
 ) -> None:
     """Test the **get_by_id** method of the ClassroomRepository.\n
     Tests:\n
     - classrooms read are the same as the ones created\n
     """
-    factory = ClassroomModelFactory(creator=user, building=building, session=session)
+    factory = ClassroomModelFactory(creator=user, group=group, session=session)
     classroom = factory.create_and_refresh()
     query = ClassroomRepository.get_by_id(id=must_be_int(classroom.id), session=session)
     assert query.name == classroom.name
 
 
 def test_classroom_repository_get_by_ids(
-    building: Building, user: User, session: Session
+    group: Group, user: User, session: Session
 ) -> None:
     """Test the **get_by_ids** method of the ClassroomRepository.\n
     Tests:\n
     - classrooms read are the same as the ones created\n
     """
-    factory = ClassroomModelFactory(creator=user, building=building, session=session)
+    factory = ClassroomModelFactory(creator=user, group=group, session=session)
     classrooms = factory.create_many_default()
     factory.commit()
     factory.refresh_many(classrooms)
@@ -79,7 +79,7 @@ def test_classroom_repository_get_by_ids(
 
 
 def test_classroom_repository_get_by_name_and_building(
-    building: Building, user: User, session: Session
+    group: Group, user: User, session: Session
 ) -> None:
     """Test the **get_by_name_and_building** method of the ClassroomRepository.\n
     Setup:\n
@@ -89,10 +89,10 @@ def test_classroom_repository_get_by_name_and_building(
     - Check if classroom name are same\n
     - Check if classroom id are same\n
     """
-    factory = ClassroomModelFactory(creator=user, building=building, session=session)
+    factory = ClassroomModelFactory(creator=user, group=group, session=session)
     classroom = factory.create_and_refresh()
     query = ClassroomRepository.get_by_name_and_building(
-        name=classroom.name, building=building, session=session
+        name=classroom.name, building=group.building, session=session
     )
     assert query.name == classroom.name
     assert query.id == classroom.id

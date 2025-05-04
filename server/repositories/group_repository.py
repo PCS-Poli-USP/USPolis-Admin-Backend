@@ -26,7 +26,7 @@ class GroupRepository:
         The function will assume that the users are already in the group.\n
         """
         for user in users:
-            group.users.remove(user)
+            user.groups.remove(group)
             remaining_groups_on_building = [
                 g for g in user.groups if g.building_id == group.building_id
             ]
@@ -51,8 +51,7 @@ class GroupRepository:
                     user.buildings = [group.building]
                 else:
                     user.buildings.append(group.building)
-                session.add(user)
-
+            session.add(user)
         group.users = users
 
     @staticmethod
@@ -66,14 +65,24 @@ class GroupRepository:
         """Check group classrooms validation.\n
         A group is valid when:
         - The group has at least one classroom
+        - Only the main group not have classrooms
         - The group classrooms are all in the same building
-        - If the group has all classrooms of the building and there isnt a main group already
+        - A not main group can not have all classrooms of the building
 
         This method will update the group classrooms and main group status.\n
 
         """
         if not classroom_ids and not group.main:
             raise GroupWithoutClassroom(group.name)
+
+        if group.main and classroom_ids:
+            raise MainGroupWithClassrooms()
+
+        main = GroupRepository.get_building_main_group(
+            building_id=building_id, session=session
+        )
+        if main and group.main and main.id != group.id:
+            raise MainGroupIsUnique()
 
         building = BuildingRepository.get_by_id(id=building_id, session=session)
         classrooms = ClassroomRepository.get_by_ids(
@@ -84,9 +93,6 @@ class GroupRepository:
                 raise GroupWithMultipleBuildings(group.name)
         group.classrooms = classrooms
 
-        main = GroupRepository.get_building_main_group(
-            building_id=building_id, session=session
-        )
         group_has_all_classrooms = False
         if not group.main:
             building_set = building.get_classrooms_ids_set()
@@ -100,8 +106,7 @@ class GroupRepository:
         if group_has_all_classrooms:
             raise GroupWithAllClassrooms(building.name)
 
-        if main and group.main and main.id != group.id:
-            raise MainGroupIsUnique()
+        session.add(group)
 
     @staticmethod
     def get_by_id(*, id: int, session: Session) -> Group:
@@ -177,13 +182,11 @@ class GroupRepository:
             classroom_ids=input.classroom_ids,
             session=session,
         )
-
         GroupRepository.__update_group_users(
             group=group,
             user_ids=input.user_ids,
             session=session,
         )
-        session.add(group)
         return group
 
     @staticmethod
@@ -277,4 +280,20 @@ class MainGroupIsUnique(HTTPException):
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Grupo principal já existe para este prédio",
+        )
+
+
+class MainGroupWithClassrooms(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Grupo principal não pode ter salas em sua criação ou edição",
+        )
+
+
+class GroupAlreadyExists(HTTPException):
+    def __init__(self, name: str) -> None:
+        super().__init__(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Grupo com o nome {name} já existe",
         )

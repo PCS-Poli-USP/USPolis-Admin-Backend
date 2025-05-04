@@ -9,7 +9,7 @@ class ClassroomBaseFactory(BaseFactory):
 
     def get_base_defaults(self) -> ClassroomBaseDict:
         return {
-            "name": self.faker.cryptocurrency_name(),
+            "name": self.faker.unique.cryptocurrency_name(),
             "capacity": self.faker.random_int(min=0, max=100),
             "floor": self.faker.random_int(min=0, max=10),
             "accessibility": self.faker.boolean(),

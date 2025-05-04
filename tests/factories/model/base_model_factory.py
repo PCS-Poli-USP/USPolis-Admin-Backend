@@ -71,6 +71,30 @@ class BaseModelFactory(Generic[M], metaclass=ABCMeta):
         self.refresh(model)
         return model
 
+    def create_many(
+        self,
+        count: int = CREATE_MANY_DEFAULT_COUNT,
+        **overrides: Unpack[InputType],  # type: ignore
+    ) -> list[M]:
+        """Create a list of model instances with default values. Count is 5 for default."""
+        models: list[M] = []
+        for _ in range(count):
+            model = self.create(**overrides)
+            models.append(model)
+            self.session.add(model)
+        return models
+
+    def create_many_and_refresh(
+        self,
+        count: int = CREATE_MANY_DEFAULT_COUNT,
+        **overrides: Unpack[InputType],  # type: ignore
+    ) -> list[M]:
+        """Create a list of model instances with default values, commit the session and return the instances refreshed."""
+        models = self.create_many(count, **overrides)
+        self.commit()
+        self.refresh_many(models)
+        return models
+
     def create_many_default(self, count: int = CREATE_MANY_DEFAULT_COUNT) -> list[M]:
         """Create a list of model instances with default values. Count is 5 for default."""
         models: list[M] = []
@@ -79,8 +103,8 @@ class BaseModelFactory(Generic[M], metaclass=ABCMeta):
             models.append(model)
             self.session.add(model)
         return models
-    
-    def create_many_and_refresh(
+
+    def create_many_default_and_refresh(
         self, count: int = CREATE_MANY_DEFAULT_COUNT
     ) -> list[M]:
         """Create a list of model instances with default values, commit the session and return the instances refreshed."""

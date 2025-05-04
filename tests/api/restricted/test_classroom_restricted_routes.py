@@ -305,7 +305,7 @@ def test_delete_classroom_with_admin_user(
 ) -> None:
     classrooms = ClassroomModelFactory(
         creator=user, group=group, session=session
-    ).create_many_and_refresh()
+    ).create_many_default_and_refresh()
     deleted = classrooms[0]
     response = client.delete(f"{URL_PREFIX}/{deleted.id}")
 
@@ -330,7 +330,7 @@ def test_delete_classroom_with_restricted_user(
 ) -> None:
     classrooms = ClassroomModelFactory(
         creator=restricted_user, group=group, session=session
-    ).create_many_and_refresh()
+    ).create_many_default_and_refresh()
     first = classrooms[0]
 
     response = restricted_client.delete(f"{URL_PREFIX}/{first.id}")
