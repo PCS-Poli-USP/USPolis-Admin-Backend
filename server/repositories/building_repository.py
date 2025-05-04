@@ -101,7 +101,7 @@ class BuildingRepository:
 
     @staticmethod
     def delete(*, id: int, session: Session) -> None:
-        building = session.get_one(Building, id)
+        building = BuildingRepository.get_by_id(id=id, session=session)
         session.delete(building)
 
 

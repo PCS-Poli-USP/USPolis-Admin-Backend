@@ -24,6 +24,30 @@ def test_create_building_with_admin_user(user: User, client: TestClient) -> None
     assert created["created_by"] == user.name
 
 
+def test_create_building_with_used_name(building: Building, client: TestClient) -> None:
+    input = BuildingRequestFactory().create_input(name=building.name)
+    body = input.model_dump()
+    response = client.post(URL_PREFIX, json=body)
+
+    assert response.status_code == status.HTTP_409_CONFLICT
+
+
+def test_create_building_with_restricted_user(restricted_client: TestClient) -> None:
+    input = BuildingRequestFactory().create_input()
+    body = input.model_dump()
+    response = restricted_client.post(URL_PREFIX, json=body)
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_create_building_with_common_user(common_client: TestClient) -> None:
+    input = BuildingRequestFactory().create_input()
+    body = input.model_dump()
+    response = common_client.post(URL_PREFIX, json=body)
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
 def test_update_building_admin_user_with_admin_user(
     building: Building, client: TestClient
 ) -> None:
@@ -36,6 +60,14 @@ def test_update_building_admin_user_with_admin_user(
     assert updated["name"] == input.name
 
 
+def test_update_building_with_used_name(building: Building, client: TestClient) -> None:
+    input = BuildingRequestFactory().update_input(name=building.name)
+    body = input.model_dump()
+    response = client.post(URL_PREFIX, json=body)
+
+    assert response.status_code == status.HTTP_409_CONFLICT
+
+
 def test_delete_building_admin_user_with_admin_user(
     building: Building, client: TestClient, session: Session
 ) -> None:
@@ -46,3 +78,17 @@ def test_delete_building_admin_user_with_admin_user(
         building = BuildingRepository.get_by_id(
             id=must_be_int(building.id), session=session
         )
+
+
+def test_delete_building_admin_user_with_restricted_user(
+    building: Building, restricted_client: TestClient
+) -> None:
+    response = restricted_client.delete(f"{URL_PREFIX}/{building.id}")
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_delete_building_admin_user_with_common_user(
+    building: Building, common_client: TestClient
+) -> None:
+    response = common_client.delete(f"{URL_PREFIX}/{building.id}")
+    assert response.status_code == status.HTTP_403_FORBIDDEN

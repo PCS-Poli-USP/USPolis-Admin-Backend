@@ -1,5 +1,6 @@
 from typing import Annotated
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from server.deps.authenticate import UserDep
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
 from server.deps.session_dep import SessionDep
@@ -48,13 +49,21 @@ class BuildingRepositoryAdapter:
         building = BuildingRepository.create(
             building_in=input, creator=self.user, session=self.session
         )
-        self.session.commit()
+        try:
+            self.session.commit()
+        except IntegrityError:
+            self.session.rollback()
+            raise BuildingAlreadyExists(input.name)
         self.session.refresh(building)
         return building
 
     def update(self, id: int, input: BuildingUpdate) -> Building:
         building = BuildingRepository.update(id=id, input=input, session=self.session)
-        self.session.commit()
+        try:
+            self.session.commit()
+        except IntegrityError:
+            self.session.rollback()
+            raise BuildingAlreadyExists(input.name)
         self.session.refresh(building)
         return building
 
@@ -67,6 +76,14 @@ class BuildingRepositoryAdapter:
             ids=self.owned_building_ids, session=self.session
         )
         return buildings
+
+
+class BuildingAlreadyExists(HTTPException):
+    def __init__(self, building_name: str) -> None:
+        super().__init__(
+            status.HTTP_409_CONFLICT,
+            f"Prédio {building_name} já existe",
+        )
 
 
 BuildingRepositoryDep = Annotated[BuildingRepositoryAdapter, Depends()]

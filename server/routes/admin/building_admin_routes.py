@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, HTTPException, Response, status
+from fastapi import APIRouter, Body, Response
 
 from server.deps.repository_adapters.building_repository_adapter import (
     BuildingRepositoryDep,
@@ -38,11 +38,3 @@ def delete_building(building_id: int, repository: BuildingRepositoryDep) -> Resp
     """Delete a building by id"""
     repository.delete(id=building_id)
     return NoContent
-
-
-class BuildingNameAlreadyExists(HTTPException):
-    def __init__(self, building_name: str) -> None:
-        super().__init__(
-            status.HTTP_409_CONFLICT,
-            f"Prédio {building_name} já existe",
-        )
