@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Unpack
 from sqlmodel import Session
+from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.group_db_model import Group
 from server.models.database.user_db_model import User
@@ -11,10 +12,16 @@ from tests.factories.model.base_model_factory import BaseModelFactory
 
 
 class ClassroomModelFactory(BaseModelFactory[Classroom]):
-    def __init__(self, creator: User, group: Group, session: Session) -> None:
+    def __init__(
+        self,
+        session: Session,
+        creator: User,
+        building: Building,
+        group: Group | None = None,
+    ) -> None:
         super().__init__(session)
         self.creator = creator
-        self.building = group.building
+        self.building = building
         self.group = group
         self.core_factory = ClassroomBaseFactory()
 
@@ -23,6 +30,9 @@ class ClassroomModelFactory(BaseModelFactory[Classroom]):
 
     def get_defaults(self) -> ClassroomModelDict:
         core = self.core_factory.get_base_defaults()
+        groups = (
+            [self.group] if self.group is not None else []
+        )
         return {
             **core,
             "updated_at": datetime.now(),
@@ -34,7 +44,7 @@ class ClassroomModelFactory(BaseModelFactory[Classroom]):
             "occurrences": [],
             "reservations": [],
             "solicitations": [],
-            "groups": [self.group],
+            "groups": groups,
         }
 
     def create(self, **overrides: Unpack[ClassroomModelDict]) -> Classroom:  # type: ignore

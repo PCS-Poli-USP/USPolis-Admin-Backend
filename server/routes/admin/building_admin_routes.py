@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Body, Response
+from fastapi import APIRouter, Body, status
+from fastapi.responses import JSONResponse
 
 from server.deps.repository_adapters.building_repository_adapter import (
     BuildingRepositoryDep,
@@ -8,7 +9,6 @@ from server.models.http.requests.building_request_models import (
     BuildingUpdate,
 )
 from server.models.http.responses.building_response_models import BuildingResponse
-from server.models.http.responses.generic_responses import NoContent
 
 embed = Body(..., embed=True)
 
@@ -34,7 +34,14 @@ def update_building(
 
 
 @router.delete("/{building_id}")
-def delete_building(building_id: int, repository: BuildingRepositoryDep) -> Response:
+def delete_building(
+    building_id: int, repository: BuildingRepositoryDep
+) -> JSONResponse:
     """Delete a building by id"""
     repository.delete(id=building_id)
-    return NoContent
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={
+            "message": "Prédio removido com sucesso",
+        },
+    )

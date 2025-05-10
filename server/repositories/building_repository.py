@@ -4,6 +4,7 @@ from sqlmodel import Session, col, select
 
 from server.models.database.building_db_model import Building
 from server.models.database.class_db_model import Class
+from server.models.database.group_db_model import Group
 from server.models.database.subject_building_link import SubjectBuildingLink
 from server.models.database.subject_db_model import Subject
 from server.models.database.user_db_model import User
@@ -90,6 +91,13 @@ class BuildingRepository:
             created_by=creator,
         )
         session.add(building)
+        group = Group(
+            name=building_in.name,
+            building=building,
+            users=[],
+            classrooms=[],
+        ) # type: ignore
+        session.add(group)
         return building
 
     @staticmethod

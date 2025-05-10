@@ -45,7 +45,7 @@ templates = Jinja2Templates(directory=template_path)
 def get_classroom_solicitations(
     building_ids: OwnedBuildingIdsDep, session: SessionDep
 ) -> list[ClassroomSolicitationResponse]:
-    solicitations = ClassroomSolicitationRepository.get_by_id_on_buildings(
+    solicitations = ClassroomSolicitationRepository.get_by_id_on_buildings_pending(
         building_ids=building_ids, session=session
     )
     return ClassroomSolicitationResponse.from_solicitation_list(solicitations)

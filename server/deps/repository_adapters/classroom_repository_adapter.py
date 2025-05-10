@@ -76,12 +76,15 @@ class ClassroomRepositoryAdapter:
     ) -> None:
         self.group_checker.check_permission(input.group_ids)
         groups = GroupRepository.get_by_ids(ids=input.group_ids, session=self.session)
-        groups = [group for group in groups if not group.main]
+        main_group = classroom.building.get_main_group()
+        groups = [group for group in groups if group != main_group]
         classroom_groups = classroom.groups
-        groups = [
-            group for group in groups if group not in classroom_groups or not group.main
+        new_groups = [
+            group
+            for group in groups
+            if group not in classroom_groups and group != main_group
         ]
-        for group in groups:
+        for group in new_groups:
             if group.building_id != input.building_id:
                 raise ClassroomInsertionOnInvalidGroup(
                     group=group.name, classroom=input.name

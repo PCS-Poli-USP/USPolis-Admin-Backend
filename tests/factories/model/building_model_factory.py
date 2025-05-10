@@ -22,11 +22,14 @@ class BuildingModelFactory(BaseModelFactory[Building]):
             **base,
             "updated_at": datetime.now(),
             "created_by_id": self.creator.id,
+            "main_group_id": None,
             "created_by": self.creator,
             "users": [],
             "classrooms": [],
             "subjects": [],
             "solicitations": [],
+            "main_group": None,
+            "groups": [],
         }
 
     def create(self, **overrides: Unpack[BuildingModelDict]) -> Building:  # type: ignore

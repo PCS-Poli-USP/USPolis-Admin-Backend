@@ -32,13 +32,13 @@ class GroupModelFactory(BaseModelFactory[Group]):
 
     def create(self, **overrides: Unpack[GroupModelDict]) -> Group:  # type: ignore
         """Create a group instance with default values.\n
-        A default group is a main group with a random name\n
+        A default group is a group without classrooms with a random name
         """
         return super().create(**overrides)
 
     def create_and_refresh(self, **overrides: Unpack[GroupModelDict]) -> Group:  # type: ignore
         """Create a group instance with default values, commit and refresh it.\n
-        A default group is a main group with a random name
+        A default group is a group without classrooms with a random name
         """
         return super().create_and_refresh(**overrides)
 

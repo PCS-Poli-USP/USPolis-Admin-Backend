@@ -22,7 +22,8 @@ class GroupResponse(BaseModel):
     @classmethod
     def from_group(cls, group: Group) -> "GroupResponse":
         classrooms = group.classrooms
-        if group.main:
+        main = group.building.main_group_id == group.id
+        if main:
             classrooms = group.building.classrooms if group.building.classrooms else []
             classrooms.sort(key=lambda c: c.name)
 
@@ -31,11 +32,11 @@ class GroupResponse(BaseModel):
             building_id=must_be_int(group.building_id),
             building=group.building.name,
             name=group.name,
-            main=group.main,
+            main=main,
             updated_at=group.updated_at,
             created_at=group.created_at,
-            user_ids=[must_be_int(user.id) for user in group.users],  # noqa: F811
-            user_strs=[f"{user.name} ({user.email})" for user in group.users],  # noqa: F811
+            user_ids=[must_be_int(user.id) for user in group.users],
+            user_strs=[f"{user.name} ({user.email})" for user in group.users],
             classroom_ids=[must_be_int(classroom.id) for classroom in classrooms],
             classroom_strs=[
                 f"{classroom.name} ({classroom.building.name})"

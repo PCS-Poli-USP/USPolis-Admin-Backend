@@ -21,11 +21,16 @@ class Group(BaseModel, table=True):
 
     name: str = Field(index=True, nullable=False, unique=True)
     building_id: int = Field(foreign_key="building.id", nullable=False)
-    main: bool = Field(default=False)
     updated_at: datetime = Field(default_factory=datetime.now)
     created_at: datetime = Field(default_factory=datetime.now)
 
-    building: "Building" = Relationship(back_populates="groups")
+    building: "Building" = Relationship(
+        back_populates="groups",
+        sa_relationship_kwargs={
+            "foreign_keys": "[Group.building_id]",
+        },
+    )
+
     classrooms: list[Classroom] = Relationship(link_model=GroupClassroomLink)
     users: list["User"] = Relationship(
         link_model=GroupUserLink, back_populates="groups"

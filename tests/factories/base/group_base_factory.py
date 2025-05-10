@@ -14,5 +14,4 @@ class GroupBaseFactory(BaseFactory):
         return {
             "name": self.faker.name(),
             "building_id": self.building_id,
-            "main": True,
         }

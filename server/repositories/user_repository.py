@@ -55,8 +55,8 @@ class UserRepository:
             groups = GroupRepository.get_by_ids(ids=group_ids, session=session)
             for group in groups:
                 buildings_set.add(group.building)
-                user.groups.append(group)
             user.buildings = list(buildings_set)
+            user.groups = groups
         else:
             user.groups = []
             user.buildings = []

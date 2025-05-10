@@ -65,24 +65,19 @@ class GroupRepository:
         """Check group classrooms validation.\n
         A group is valid when:
         - The group has at least one classroom
-        - Only the main group not have classrooms
         - The group classrooms are all in the same building
-        - A not main group can not have all classrooms of the building
+        - The group has not all classrooms of the building
+        - The group is not the main group of the building
 
         This method will update the group classrooms and main group status.\n
 
         """
-        if not classroom_ids and not group.main:
+        if not classroom_ids:
             raise GroupWithoutClassroom(group.name)
 
-        if group.main and classroom_ids:
-            raise MainGroupWithClassrooms()
-
-        main = GroupRepository.get_building_main_group(
-            building_id=building_id, session=session
-        )
-        if main and group.main and main.id != group.id:
-            raise MainGroupIsUnique()
+        main = group.building.get_main_group()
+        if main.id == group.id:
+            raise MainGroupClassroomUpdating()
 
         building = BuildingRepository.get_by_id(id=building_id, session=session)
         classrooms = ClassroomRepository.get_by_ids(
@@ -94,14 +89,9 @@ class GroupRepository:
         group.classrooms = classrooms
 
         group_has_all_classrooms = False
-        if not group.main:
-            building_set = building.get_classrooms_ids_set()
-            classrooms_set = set([classroom.id for classroom in classrooms])
-            group_has_all_classrooms = (
-                True
-                if building_set == classrooms_set and len(building_set) != 0
-                else False
-            )
+        building_set = building.get_classrooms_ids_set()
+        classrooms_set = set([classroom.id for classroom in classrooms])
+        group_has_all_classrooms = True if building_set == classrooms_set else False
 
         if group_has_all_classrooms:
             raise GroupWithAllClassrooms(building.name)
@@ -124,12 +114,9 @@ class GroupRepository:
         return list(groups)
 
     @staticmethod
-    def get_building_main_group(*, building_id: int, session: Session) -> Group | None:
-        statement = select(Group).where(
-            col(Group.building_id) == building_id, col(Group.main)
-        )
-        group = session.exec(statement).first()
-        return group
+    def get_building_main_group(*, building_id: int, session: Session) -> Group:
+        building = BuildingRepository.get_by_id(id=building_id, session=session)
+        return building.get_main_group()
 
     @staticmethod
     def get_by_user_id(*, user_id: int, session: Session) -> list[Group]:
@@ -174,7 +161,6 @@ class GroupRepository:
         group = Group(
             name=input.name,
             building_id=input.building_id,
-            main=input.main,
         )
         GroupRepository.__check_group_validation(
             group=group,
@@ -195,12 +181,14 @@ class GroupRepository:
         group.name = input.name
         group.updated_at = datetime.now()
 
-        GroupRepository.__check_group_validation(
-            group=group,
-            building_id=input.building_id,
-            classroom_ids=input.classroom_ids,
-            session=session,
-        )
+        building = group.building
+        if building.main_group and building.main_group.id != group.id:
+            GroupRepository.__check_group_validation(
+                group=group,
+                building_id=input.building_id,
+                classroom_ids=input.classroom_ids,
+                session=session,
+            )
 
         old_users = group.user_ids_set()
         new_users = set(input.user_ids)
@@ -227,6 +215,9 @@ class GroupRepository:
     @staticmethod
     def delete(*, id: int, session: Session) -> None:
         group = GroupRepository.get_by_id(id=id, session=session)
+        building = group.building
+        if group.id == building.main_group_id:
+            raise MainGroupDeleting()
         GroupRepository.__remove_users_from_group(
             group=group,
             users=group.users,
@@ -259,14 +250,6 @@ class GroupWithMultipleBuildings(HTTPException):
         )
 
 
-class EditMainGroupClassrooms(HTTPException):
-    def __init__(self) -> None:
-        super().__init__(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Grupo principal não pode ter salas editadas",
-        )
-
-
 class GroupWithAllClassrooms(HTTPException):
     def __init__(self, building_name: str):
         super().__init__(
@@ -275,19 +258,19 @@ class GroupWithAllClassrooms(HTTPException):
         )
 
 
-class MainGroupIsUnique(HTTPException):
+class MainGroupClassroomUpdating(HTTPException):
     def __init__(self) -> None:
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Grupo principal já existe para este prédio",
+            detail="Grupo principal não pode ter salas atualizadas",
         )
 
 
-class MainGroupWithClassrooms(HTTPException):
+class MainGroupDeleting(HTTPException):
     def __init__(self) -> None:
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Grupo principal não pode ter salas em sua criação ou edição",
+            detail="Grupo principal não pode ser removido",
         )
 
 

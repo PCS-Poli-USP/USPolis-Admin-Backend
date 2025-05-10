@@ -1,6 +1,7 @@
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
+from fastapi import HTTPException, status
 from sqlmodel import Field, Relationship
 
 from server.models.database.base_db_model import BaseModel
@@ -22,6 +23,7 @@ class Building(BaseModel, table=True):
     name: str = Field(index=True, unique=True)
     updated_at: datetime = Field(default_factory=datetime.now)
     created_by_id: int | None = Field(default=None, foreign_key="user.id")
+    main_group_id: int | None = Field(default=None, foreign_key="group.id")
 
     created_by: "User" = Relationship()
     users: list["User"] | None = Relationship(
@@ -36,9 +38,25 @@ class Building(BaseModel, table=True):
     solicitations: list["ClassroomSolicitation"] = Relationship(
         back_populates="building"
     )
-    groups: list["Group"] = Relationship(
-        back_populates="building", sa_relationship_kwargs={"cascade": "delete"}
+    main_group: Optional["Group"] = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "[Building.main_group_id]"}
     )
+    groups: list["Group"] = Relationship(
+        back_populates="building",
+        sa_relationship_kwargs={
+            "cascade": "delete",
+            "foreign_keys": "[Group.building_id]",
+        },
+    )
+
+    def get_main_group(self) -> "Group":
+        """Get the main group of the building.\n
+        Raises:
+            BuildingWithouMainGroup: If the building has no main group. That is a invalid building, a building must have a main group that is created on building creation.
+        """
+        if not self.main_group:
+            raise BuildingWithouMainGroup()
+        return self.main_group
 
     def get_classrooms_ids_set(self) -> set[int]:
         """
@@ -51,4 +69,12 @@ class Building(BaseModel, table=True):
             {must_be_int(classroom.id) for classroom in self.classrooms}
             if self.classrooms
             else set()
+        )
+
+
+class BuildingWithouMainGroup(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Building has no main group",
         )

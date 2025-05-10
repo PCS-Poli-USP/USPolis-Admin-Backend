@@ -239,20 +239,31 @@ def common_user_fixture(session: Session) -> Generator[User, None, None]:
 @pytest.fixture(name="building")
 def building_fixture(user: User, session: Session) -> Building:
     """Fixture to create a standard building."""
-    return BuildingModelFactory(user, session).create_and_refresh()
+    building = BuildingModelFactory(user, session).create_and_refresh()
+    group = GroupModelFactory(building, session).create_and_refresh(classrooms=[])
+    building.main_group = group
+    session.add(building)
+    session.commit()
+    session.refresh(building)
+    return building
 
 
 @pytest.fixture(name="group")
 def group_fixture(restricted_user: User, building: Building, session: Session) -> Group:
     """Fixture to create a standard main group for the standard building with a standard restricted user."""
-    return GroupModelFactory(building, session).create_and_refresh(
-        users=[restricted_user]
-    )
+    main_group = building.get_main_group()
+    main_group.users.append(restricted_user)
+    session.add(main_group)
+    session.commit()
+    session.refresh(main_group)
+    return main_group
 
 
 @pytest.fixture(name="classroom")
-def classroom_fixture(user: User, group: Group, session: Session) -> Classroom:
+def classroom_fixture(
+    user: User, building: Building, group: Group, session: Session
+) -> Classroom:
     """Fixture to create a standard classroom in the standard main group that includes the starndard restricted user."""
     return ClassroomModelFactory(
-        creator=user, group=group, session=session
+        creator=user, building=building, group=group, session=session
     ).create_and_refresh()

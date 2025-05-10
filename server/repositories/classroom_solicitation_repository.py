@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from fastapi import HTTPException, status
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
@@ -40,6 +40,23 @@ class ClassroomSolicitationRepository:
             col(ClassroomSolicitation.building_id).in_(building_ids)
         )
         solicitations = session.exec(statement).all()
+        return list(solicitations)
+
+    @staticmethod
+    def get_by_id_on_buildings_pending(
+        building_ids: list[int], session: Session
+    ) -> list[ClassroomSolicitation]:
+        today = date.today()
+        statement = select(ClassroomSolicitation).where(
+            col(ClassroomSolicitation.building_id).in_(building_ids),
+            ~col(ClassroomSolicitation.closed),
+        )
+        solicitations = session.exec(statement).all()
+        solicitations = [
+            solicitation
+            for solicitation in solicitations
+            if max(solicitation.dates) >= today
+        ]
         return list(solicitations)
 
     @staticmethod
