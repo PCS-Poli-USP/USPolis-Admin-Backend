@@ -6,6 +6,7 @@ from sqlmodel import Session
 from server.models.database.user_db_model import User
 from server.models.database.building_db_model import Building
 from server.repositories.building_repository import BuildingNotFound, BuildingRepository
+from server.repositories.group_repository import GroupRepository
 from server.utils.must_be_int import must_be_int
 from tests.factories.request.building_request_factory import BuildingRequestFactory
 
@@ -13,7 +14,9 @@ from tests.factories.request.building_request_factory import BuildingRequestFact
 URL_PREFIX = "/admin/buildings"
 
 
-def test_create_building_with_admin_user(user: User, client: TestClient) -> None:
+def test_create_building_with_admin_user(
+    user: User, session: Session, client: TestClient
+) -> None:
     input = BuildingRequestFactory().create_input()
     body = input.model_dump()
     response = client.post(URL_PREFIX, json=body)
@@ -23,12 +26,17 @@ def test_create_building_with_admin_user(user: User, client: TestClient) -> None
     assert created["name"] == input.name
     assert created["created_by"] == user.name
 
+    group = GroupRepository.get_building_main_group(
+        building_id=created["id"], session=session
+    )
+    assert group.name == created["name"]
+    assert group.building_id == created["id"]
+
 
 def test_create_building_with_used_name(building: Building, client: TestClient) -> None:
     input = BuildingRequestFactory().create_input(name=building.name)
     body = input.model_dump()
     response = client.post(URL_PREFIX, json=body)
-    print(response.json())
     assert response.status_code == status.HTTP_409_CONFLICT
 
 
@@ -72,7 +80,7 @@ def test_delete_building_admin_user_with_admin_user(
     building: Building, client: TestClient, session: Session
 ) -> None:
     response = client.delete(f"{URL_PREFIX}/{building.id}")
-    assert response.status_code == status.HTTP_204_NO_CONTENT
+    assert response.status_code == status.HTTP_200_OK
 
     with pytest.raises(BuildingNotFound):
         building = BuildingRepository.get_by_id(
@@ -83,8 +91,6 @@ def test_delete_building_admin_user_with_admin_user(
 def test_delete_building_not_found(client: TestClient, session: Session) -> None:
     response = client.delete(f"{URL_PREFIX}/10")
     assert response.status_code == status.HTTP_404_NOT_FOUND
-
-  
 
 
 def test_delete_building_admin_user_with_restricted_user(

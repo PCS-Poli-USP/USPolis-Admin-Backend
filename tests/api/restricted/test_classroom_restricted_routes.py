@@ -61,13 +61,13 @@ def test_get_classroom_by_id_with_restricted_user_outisder_group(
 ) -> None:
     insider_group = GroupModelFactory(
         building=building, session=session
-    ).create_and_refresh(main=True)
+    ).create_and_refresh()
     outsider_group = GroupModelFactory(
         building=building, session=session
-    ).create_and_refresh(users=[restricted_user], main=False)
+    ).create_and_refresh(users=[restricted_user])
 
     classroom = ClassroomModelFactory(
-        creator=restricted_user, group=insider_group, session=session
+        creator=restricted_user, building=building, group=insider_group, session=session
     ).create_and_refresh()
 
     response = restricted_client.get(f"{URL_PREFIX}/{classroom.id}")
@@ -111,7 +111,6 @@ def test_create_classroom_with_restricted_user(
 
     main_group = GroupRepository.get_by_id(id=must_be_int(group.id), session=session)
     assert len(main_group.classrooms) == 0
-    assert main_group.main
 
     assert response.status_code == status.HTTP_200_OK
     assert created["name"] == input.name
@@ -127,10 +126,10 @@ def test_create_classroom_with_restricted_user_outisder_group(
 ) -> None:
     insider_group = GroupModelFactory(
         building=building, session=session
-    ).create_and_refresh(main=True)
+    ).create_and_refresh()
     outsider_group = GroupModelFactory(
         building=building, session=session
-    ).create_and_refresh(users=[restricted_user], main=False)
+    ).create_and_refresh(users=[restricted_user])
 
     input = ClassroomRequestFactory(group=insider_group).create_input()
     response = restricted_client.post(URL_PREFIX, json=input.model_dump())
@@ -151,7 +150,7 @@ def test_create_classroom_with_group_in_other_building(
     )
     outsider_group = GroupModelFactory(
         building=building_B, session=session
-    ).create_and_refresh(users=[restricted_user], main=False)
+    ).create_and_refresh(users=[restricted_user])
 
     input = ClassroomRequestFactory(group=outsider_group).create_input(
         building_id=must_be_int(building.id)
@@ -228,12 +227,12 @@ def test_update_classroom_with_restricted_user_outisder_group(
 ) -> None:
     insider_group = GroupModelFactory(
         building=building, session=session
-    ).create_and_refresh(main=True)
+    ).create_and_refresh()
     outsider_group = GroupModelFactory(  # noqa: F841
         building=building, session=session
-    ).create_and_refresh(users=[restricted_user], main=False)
+    ).create_and_refresh(users=[restricted_user])
     classroom = ClassroomModelFactory(
-        creator=restricted_user, group=insider_group, session=session
+        creator=restricted_user, building=building, group=insider_group, session=session
     ).create_and_refresh()
     updated_input = ClassroomRequestFactory(group=insider_group).update_input()
     update_body = updated_input.model_dump()
@@ -254,7 +253,7 @@ def test_update_classroom_with_group_in_other_building(
     )
     outsider_group = GroupModelFactory(
         building=building_B, session=session
-    ).create_and_refresh(users=[restricted_user], main=False)
+    ).create_and_refresh(users=[restricted_user])
 
     input = ClassroomRequestFactory(group=outsider_group).update_input(
         building_id=must_be_int(building.id)
@@ -304,7 +303,7 @@ def test_delete_classroom_with_admin_user(
     user: User, group: Group, session: Session, client: TestClient
 ) -> None:
     classrooms = ClassroomModelFactory(
-        creator=user, group=group, session=session
+        creator=user, building=group.building, group=group, session=session
     ).create_many_default_and_refresh()
     deleted = classrooms[0]
     response = client.delete(f"{URL_PREFIX}/{deleted.id}")
@@ -329,7 +328,7 @@ def test_delete_classroom_with_restricted_user(
     restricted_client: TestClient,
 ) -> None:
     classrooms = ClassroomModelFactory(
-        creator=restricted_user, group=group, session=session
+        creator=restricted_user, building=group.building, group=group, session=session
     ).create_many_default_and_refresh()
     first = classrooms[0]
 
@@ -355,13 +354,13 @@ def test_delete_classroom_with_restricted_user_outisder_group(
 ) -> None:
     insider_group = GroupModelFactory(
         building=building, session=session
-    ).create_and_refresh(main=True)
+    ).create_and_refresh()
     outsider_group = GroupModelFactory(  # noqa: F841
         building=building, session=session
-    ).create_and_refresh(users=[restricted_user], main=False)
+    ).create_and_refresh(users=[restricted_user])
 
     classroom = ClassroomModelFactory(
-        creator=restricted_user, group=insider_group, session=session
+        creator=restricted_user, building=building, group=insider_group, session=session
     ).create_and_refresh()
     response = restricted_client.delete(f"{URL_PREFIX}/{classroom.id}")
     assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -378,7 +377,7 @@ def test_delete_classroom_with_common_user(
     user: User, group: Group, session: Session, common_client: TestClient
 ) -> None:
     created = ClassroomModelFactory(
-        creator=user, group=group, session=session
+        creator=user, building=group.building, group=group, session=session
     ).create_and_refresh()
 
     response = common_client.delete(f"{URL_PREFIX}/{created.id}")

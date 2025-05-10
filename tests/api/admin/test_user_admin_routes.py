@@ -1,4 +1,5 @@
 import pytest
+from fastapi import status
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 from sqlalchemy.exc import NoResultFound
@@ -21,11 +22,32 @@ def test_create_user_with_admin_user(client: TestClient) -> None:
     response = client.post(URL_PREFIX, json=body)
     created = response.json()
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert created["email"] == input.email
     assert created["name"] == input.name
     assert created["is_admin"] == input.is_admin
     assert created["buildings"] is None
+    assert created["groups"] == []
+
+
+def test_create_user_with_restricted_user(
+    restricted_client: TestClient,
+) -> None:
+    input = UserRequestFactory().create_input()
+    body = input.model_dump()
+    response = restricted_client.post(URL_PREFIX, json=body)
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_create_user_with_common_user(
+    common_client: TestClient,
+) -> None:
+    input = UserRequestFactory().create_input()
+    body = input.model_dump()
+    response = common_client.post(URL_PREFIX, json=body)
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 def test_get_all_users_with_admin_user(client: TestClient, session: Session) -> None:
@@ -35,13 +57,27 @@ def test_get_all_users_with_admin_user(client: TestClient, session: Session) -> 
     factory.refresh_many(users)
 
     response = client.get(URL_PREFIX)
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
 
     query_users = response.json()
     assert len(query_users) == len(users) + 1
     ids = [user["id"] for user in query_users]
     for user in users:
         assert user.id in ids
+
+
+def test_get_all_users_user_with_restricted_user(
+    restricted_client: TestClient,
+) -> None:
+    response = restricted_client.get(URL_PREFIX)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_get_all_users_user_with_common_user(
+    common_client: TestClient,
+) -> None:
+    response = common_client.get(URL_PREFIX)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 def test_update_user_to_admin_with_admin_user(
@@ -52,7 +88,7 @@ def test_update_user_to_admin_with_admin_user(
     input = UserRequestFactory().update_input(is_admin=True)
     response = client.put(f"{URL_PREFIX}/{user.id}", json=input.model_dump())
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     updated = response.json()
     assert updated["id"] == user.id
     assert updated["is_admin"] is True
@@ -64,7 +100,7 @@ def test_update_self_admin_status_with_admin_user(
 ) -> None:
     input = UserRequestFactory().update_input(group_ids=[], is_admin=False)
     response = client.put(f"{URL_PREFIX}/{user.id}", json=input.model_dump())
-    assert response.status_code == 400
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 def test_update_user_buildings_with_admin_user(
@@ -81,7 +117,7 @@ def test_update_user_buildings_with_admin_user(
         f"{URL_PREFIX}/{user.id}",
         json=input.model_dump(),
     )
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     updated = response.json()
     assert updated["id"] == user.id
     assert updated["buildings"] is not None
@@ -104,7 +140,7 @@ def test_update_user_to_admin_and_groups_with_admin_user(
         f"{URL_PREFIX}/{user.id}",
         json=input.model_dump(),
     )
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     updated = response.json()
     assert updated["id"] == user.id
     assert updated["is_admin"] is True
@@ -120,12 +156,34 @@ def test_update_user_to_admin_and_groups_with_admin_user(
     assert new_group["name"] == group.name
 
 
+def test_update_user_to_admin_with_restricted_user(
+    restricted_client: TestClient, session: Session
+) -> None:
+    factory = UserModelFactory(session)
+    user = factory.create_and_refresh()
+    input = UserRequestFactory().update_input(is_admin=True)
+    response = restricted_client.put(f"{URL_PREFIX}/{user.id}", json=input.model_dump())
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_update_user_to_admin_with_common_user(
+    common_client: TestClient, session: Session
+) -> None:
+    factory = UserModelFactory(session)
+    user = factory.create_and_refresh()
+    input = UserRequestFactory().update_input(is_admin=True)
+    response = common_client.put(f"{URL_PREFIX}/{user.id}", json=input.model_dump())
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
 def test_delete_user_with_admin_user(client: TestClient, session: Session) -> None:
     factory = UserModelFactory(session)
     user = factory.create_and_refresh()
 
     response = client.delete(f"{URL_PREFIX}/{user.id}")
-    assert response.status_code == 204
+    assert response.status_code == status.HTTP_200_OK
 
     with pytest.raises(
         NoResultFound,
@@ -135,4 +193,14 @@ def test_delete_user_with_admin_user(client: TestClient, session: Session) -> No
 
 def test_delete_self_with_admin_user(user: User, client: TestClient) -> None:
     response = client.delete(f"{URL_PREFIX}/{user.id}")
-    assert response.status_code == 400
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+def test_delete_user_with_restricted_user(restricted_client: TestClient) -> None:
+    response = restricted_client.delete(f"{URL_PREFIX}/1")
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_delete_user_with_common_user(common_client: TestClient) -> None:
+    response = common_client.delete(f"{URL_PREFIX}/1")
+    assert response.status_code == status.HTTP_403_FORBIDDEN

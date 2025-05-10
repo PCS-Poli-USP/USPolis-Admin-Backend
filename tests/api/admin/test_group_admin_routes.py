@@ -60,8 +60,15 @@ def test_get_group_by_id_with_common_user(
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
-def test_create_group_with_admin_user(building: Building, client: TestClient) -> None:
-    input = GroupRequestFactory(building).create_input()
+def test_create_group_with_admin_user(
+    user: User, building: Building, session: Session, client: TestClient
+) -> None:
+    classrooms = ClassroomModelFactory(
+        creator=user, building=building, session=session
+    ).create_many_default_and_refresh()
+    input = GroupRequestFactory(building).create_input(
+        classroom_ids=[must_be_int(classrooms[0].id)]
+    )
     response = client.post(URL_PREFIX, json=input.model_dump())
     assert response.status_code == status.HTTP_201_CREATED
 
@@ -70,91 +77,33 @@ def test_create_group_with_same_name(
     user: User, building: Building, group: Group, session: Session, client: TestClient
 ) -> None:
     classrooms = ClassroomModelFactory(
-        creator=user, group=group, session=session
+        creator=user, building=building, session=session
     ).create_many_default_and_refresh()
     input = GroupRequestFactory(building).create_input(
-        main=False, name=group.name, classroom_ids=[must_be_int(classrooms[0].id)]
+        name=group.name, classroom_ids=[must_be_int(classrooms[0].id)]
     )
     response = client.post(f"{URL_PREFIX}", json=input.model_dump())
     assert response.status_code == status.HTTP_409_CONFLICT
 
 
-def test_create_main_group_with_users(
-    building: Building, session: Session, client: TestClient
+def test_create_group_with_users(
+    building: Building, group: Group, session: Session, client: TestClient
 ) -> None:
-    user = UserModelFactory(session).create_and_refresh(buildings=[building])
+    user = UserModelFactory(session).create_and_refresh(
+        buildings=[building], groups=[group]
+    )
+    classrooms = ClassroomModelFactory(
+        creator=user, building=building, session=session
+    ).create_many_default_and_refresh()
     input = GroupRequestFactory(building).create_input(
-        user_ids=[must_be_int(user.id)], main=True
+        user_ids=[must_be_int(user.id)], classroom_ids=[must_be_int(classrooms[0].id)]
     )
     response = client.post(URL_PREFIX, json=input.model_dump())
     assert response.status_code == status.HTTP_201_CREATED
 
     user = UserRepository.get_by_id(user_id=must_be_int(user.id), session=session)
-    assert len(user.groups) == 1
-    assert user.groups[0].name == input.name
-
-
-def test_create_main_group_with_users_with_building(
-    user: User, building: Building, session: Session, client: TestClient
-) -> None:
-    users = UserModelFactory(session).create_many_default_and_refresh()
-    BuildingModelFactory(creator=user, session=session).create_and_refresh(users=users)
-
-    user_ids = [must_be_int(created.id) for created in users]
-    input = GroupRequestFactory(building).create_input(
-        user_ids=user_ids, main=True, building_id=must_be_int(building.id)
-    )
-
-    response = client.post(URL_PREFIX, json=input.model_dump())
-    assert response.status_code == status.HTTP_201_CREATED
-
-    users = UserRepository.get_by_ids(ids=user_ids, session=session)
-    for u in users:
-        assert len(u.groups) == 1
-        assert u.groups[0].name == input.name
-        assert u.buildings is not None
-        assert len(u.buildings) == 2
-
-
-def test_create_main_group_with_users_without_building(
-    building: Building, session: Session, client: TestClient
-) -> None:
-    users = UserModelFactory(session).create_many_default_and_refresh()
-    user_ids = [must_be_int(created.id) for created in users]
-    input = GroupRequestFactory(building).create_input(
-        user_ids=user_ids, main=True, building_id=must_be_int(building.id)
-    )
-
-    response = client.post(URL_PREFIX, json=input.model_dump())
-    assert response.status_code == status.HTTP_201_CREATED
-
-    users = UserRepository.get_by_ids(ids=user_ids, session=session)
-    for u in users:
-        assert len(u.groups) == 1
-        assert u.groups[0].name == input.name
-        assert u.buildings is not None
-        assert len(u.buildings) == 1
-
-
-def test_create_main_group_when_already_exists(
-    building: Building,
-    group: Group,
-    client: TestClient,
-) -> None:
-    input = GroupRequestFactory(building).create_input(
-        main=True,
-    )
-    response = client.post(URL_PREFIX, json=input.model_dump())
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-
-
-def test_create_main_group_with_classrooms(
-    building: Building,
-    client: TestClient,
-) -> None:
-    input = GroupRequestFactory(building).create_input(main=True, classroom_ids=[10])
-    response = client.post(URL_PREFIX, json=input.model_dump())
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert len(user.groups) == 2
+    assert user.groups[1].name == input.name
 
 
 def test_create_group_with_classrooms(
@@ -165,12 +114,12 @@ def test_create_group_with_classrooms(
     client: TestClient,
 ) -> None:
     classrooms = ClassroomModelFactory(
-        creator=user, group=group, session=session
+        creator=user, building=building, session=session
     ).create_many_default_and_refresh(count=10)
     ids = []
     for i in range(5):
         ids.append(must_be_int(classrooms[i].id))
-    input = GroupRequestFactory(building).create_input(main=False, classroom_ids=ids)
+    input = GroupRequestFactory(building).create_input(classroom_ids=ids)
     response = client.post(URL_PREFIX, json=input.model_dump())
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -184,11 +133,10 @@ def test_create_group_with_all_classrooms(
     client: TestClient,
 ) -> None:
     classrooms = ClassroomModelFactory(
-        creator=user, group=group, session=session
+        creator=user, building=building, session=session
     ).create_many_default_and_refresh()
     input = GroupRequestFactory(building).create_input(
         classroom_ids=[must_be_int(classroom.id) for classroom in classrooms],
-        main=False,
     )
     response = client.post(URL_PREFIX, json=input.model_dump())
     assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -198,9 +146,7 @@ def test_create_group_without_classrooms(
     building: Building,
     client: TestClient,
 ) -> None:
-    input = GroupRequestFactory(building).create_input(
-        main=False,
-    )
+    input = GroupRequestFactory(building).create_input()
     response = client.post(URL_PREFIX, json=input.model_dump())
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
@@ -214,14 +160,14 @@ def test_create_group_with_classrooms_in_other_building(
     building_B = BuildingModelFactory(
         creator=user, session=session
     ).create_and_refresh()
-    main_group_B = GroupModelFactory(
+    main_group_B = GroupModelFactory(  # noqa: F841
         building=building_B, session=session
     ).create_and_refresh()
     classrooms = ClassroomModelFactory(
-        creator=user, group=main_group_B, session=session
+        creator=user, building=building_B, session=session
     ).create_many_default_and_refresh(count=5)
     ids = [must_be_int(classroom.id) for classroom in classrooms]
-    input = GroupRequestFactory(building).create_input(main=False, classroom_ids=ids)
+    input = GroupRequestFactory(building).create_input(classroom_ids=ids)
     response = client.post(URL_PREFIX, json=input.model_dump())
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
@@ -264,13 +210,13 @@ def test_update_group_with_same_name(
     user: User, building: Building, group: Group, session: Session, client: TestClient
 ) -> None:
     classrooms = ClassroomModelFactory(
-        creator=user, group=group, session=session
+        creator=user, building=building, session=session
     ).create_many_default_and_refresh()
     group_B = GroupModelFactory(building=building, session=session).create_and_refresh(
-        main=False, classrooms=[classrooms[0]]
+        classrooms=[classrooms[0]]
     )
     input = GroupRequestFactory(building).update_input(
-        main=False, name=group.name, classroom_ids=[must_be_int(classrooms[0].id)]
+        name=group.name, classroom_ids=[must_be_int(classrooms[0].id)]
     )
     response = client.put(f"{URL_PREFIX}/{group_B.id}", json=input.model_dump())
     assert response.status_code == status.HTTP_409_CONFLICT
@@ -375,7 +321,7 @@ def test_update_group_remove_users_with_groups_on_same_building(
         buildings=[building], groups=[group]
     )
     classrooms = ClassroomModelFactory(
-        creator=user, group=group, session=session
+        creator=user, building=building, session=session
     ).create_many_and_refresh()
     selected = []
     selected_ids = []
@@ -386,11 +332,11 @@ def test_update_group_remove_users_with_groups_on_same_building(
     ids = [must_be_int(created.id) for created in users]
     group_B = GroupModelFactory(building=building, session=session).create_and_refresh(
         users=users,
-        main=False,
         classrooms=selected,
     )
     input = GroupRequestFactory(building).update_input(
-        user_ids=[], classroom_ids=selected_ids, main=False
+        user_ids=[],
+        classroom_ids=selected_ids,
     )
     response = client.put(f"{URL_PREFIX}/{group_B.id}", json=input.model_dump())
     assert response.status_code == status.HTTP_200_OK
@@ -421,13 +367,15 @@ def test_update_group_remove_users_with_groups_on_diff_buildings(
     ).create_and_refresh()
     group_B = GroupModelFactory(
         building=building_B, session=session
-    ).create_and_refresh(main=True)
+    ).create_and_refresh()
     users = UserModelFactory(session).create_many_and_refresh(
         buildings=[building, building_B], groups=[group, group_B]
     )
     ids = [must_be_int(created.id) for created in users]
 
-    input = GroupRequestFactory(building).update_input(user_ids=[], main=True)
+    input = GroupRequestFactory(building).update_input(
+        user_ids=[],
+    )
     response = client.put(f"{URL_PREFIX}/{group.id}", json=input.model_dump())
     assert response.status_code == status.HTTP_200_OK
 
@@ -476,7 +424,7 @@ def test_delete_group_with_admin_user(
 ) -> None:
     group = GroupModelFactory(building, session=session).create_and_refresh()
     response = client.delete(f"{URL_PREFIX}/{group.id}")
-
+    print(response.json())
     assert response.status_code == status.HTTP_200_OK
 
     with pytest.raises(GroupNotFound):
