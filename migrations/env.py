@@ -32,6 +32,7 @@ target_metadata = SQLModel.metadata  # UPDATED
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+
 # The os.getenv is for testing automatic migration
 def get_url() -> str:
     return os.getenv("ALEMBIC_URL") or CONFIG.alembic_url

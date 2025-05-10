@@ -1,6 +1,6 @@
 """FastAPI server configuration."""
 
-from decouple import config, RepositoryEnv, Config as DConfig  # type: ignore [import-untyped]
+from decouple import config, RepositoryEnv, Config as DConfig, Csv  # type: ignore [import-untyped]
 from pydantic import BaseModel
 
 # Mapeamento dos arquivos por ambiente
@@ -17,6 +17,12 @@ config = DConfig(RepositoryEnv(env_path))  # noqa: F811
 
 class Settings(BaseModel):
     """Server config settings."""
+
+    enviroment: str = config("ENVIRONMENT", default="DEVELOPMENT", cast=str)  # type: ignore
+    # CORS
+    allowed_origins: list[str] = config(
+        "ALLOWED_ORIGINS", default=["http://localhost:3000"], cast=Csv()
+    )  # type: ignore
 
     root_url: str = config("ROOT_URL", default="http://localhost:8000")  # type: ignore
     port: str = config("PORT", default="8000")  # type: ignore
