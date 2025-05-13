@@ -48,5 +48,5 @@ class ClassroomSolicitation(SQLModel, table=True):
     deleted_by: str | None = Field(nullable=True, default=None)
     closed: bool = Field(default=False)
     closed_by: str | None = Field(nullable=True, default=None)
-    created_at: datetime = Field(default=datetime.now())
-    updated_at: datetime = Field(default=datetime.now())
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
