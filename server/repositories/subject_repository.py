@@ -17,6 +17,7 @@ from server.services.janus_crawler.crawler import JanusCrawler
 from server.services.jupiter_crawler.crawler import JupiterCrawler
 from server.utils.enums.crawler_type_enum import CrawlerType
 from server.utils.enums.subject_type import SubjectType
+from server.utils.must_be_int import must_be_int
 
 
 class SubjectRepository:
@@ -173,7 +174,7 @@ class SubjectRepository:
                         if class_.code in new_classes_set
                     ]
                     for class_ in new_classes:
-                        class_.subject_id = old.id
+                        class_.subject_id = must_be_int(old.id)
                         class_.subject = old
                         session.add(class_)
 
