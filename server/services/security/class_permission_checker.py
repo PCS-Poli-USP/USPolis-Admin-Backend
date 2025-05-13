@@ -39,9 +39,24 @@ class ClassPermissionChecker(PermissionChecker[Class]):
 
     def __class_obj_permission_checker(self, class_: Class) -> None:
         ids = class_.classroom_ids()
-        if len(ids.intersection(self.user.classrooms_ids_set())) == 0:
+        class_building_ids = class_.building_ids()
+        user_buildings = self.user.buildings_ids_set()
+        if len(class_building_ids.intersection(user_buildings)) == 0:
             raise ForbiddenClassAccess(
-                f"Usuário não tem permissão para acessar a turma {class_.subject.code} -{class_.code}"
+                f"Usuário não tem permissão para acessar a turma {class_.subject.code} - {class_.code}"
+            )
+
+        allowed = False
+        for schedule in class_.schedules:
+            if schedule.classroom_id and schedule.classroom_id in ids:
+                allowed = True
+            else:
+                allowed = True
+                break
+
+        if not allowed:
+            raise ForbiddenClassAccess(
+                f"Usuário não tem permissão para acessar a turma {class_.subject.code} - {class_.code}"
             )
 
     def __class_list_permission_checker(self, classes: list[int] | list[Class]) -> None:

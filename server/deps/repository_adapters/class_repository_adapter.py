@@ -54,7 +54,6 @@ class ClassRepositoryAdapter:
         )
 
     def get_by_id(self, id: int) -> Class:
-        # building_permission_checker(self.user, id)
         class_ = ClassRepository.get_by_id(id=id, session=self.session)
         self.checker.check_permission(object=class_)
         return class_

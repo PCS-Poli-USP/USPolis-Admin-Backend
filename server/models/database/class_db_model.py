@@ -67,3 +67,12 @@ class Class(BaseModel, table=True):
             for schedule in self.schedules
             if schedule.classroom
         }
+
+    def building_ids(self) -> set[int]:
+        """
+        Get the list of building IDs associated with the class subject.
+
+        Returns:
+            list[int]: A list of building IDs.
+        """
+        return {must_be_int(building.id) for building in self.subject.buildings}

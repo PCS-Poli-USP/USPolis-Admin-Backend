@@ -29,7 +29,7 @@ class Building(BaseModel, table=True):
     users: list["User"] | None = Relationship(
         back_populates="buildings", link_model=UserBuildingLink
     )
-    classrooms: list["Classroom"] | None = Relationship(
+    classrooms: list["Classroom"] = Relationship(
         back_populates="building", sa_relationship_kwargs={"cascade": "delete"}
     )
     subjects: list["Subject"] | None = Relationship(
