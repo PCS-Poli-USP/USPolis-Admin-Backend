@@ -22,7 +22,7 @@ class ForumPost(SQLModel, table=True):
 
     user: "MobileUser" = Relationship()
 
-    created_at: datetime = Field(default=datetime.now(), nullable=False)
+    created_at: datetime = Field(default_factory=datetime.now)
 
     reported_by_users: list[MobileUser] = Relationship(
         link_model=ForumPostReportLink,

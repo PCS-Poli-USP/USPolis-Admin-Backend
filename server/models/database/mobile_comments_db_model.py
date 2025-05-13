@@ -18,4 +18,4 @@ class Comment(SQLModel, table=True):
         default=None,
         nullable=True,
     )
-    created_at: datetime = Field(default=datetime.now())
+    created_at: datetime = Field(default_factory=datetime.now)

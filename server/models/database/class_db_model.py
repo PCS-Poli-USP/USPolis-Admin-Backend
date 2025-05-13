@@ -33,7 +33,7 @@ class Class(SQLModel, table=True):
 
     ignore_to_allocate: bool = Field(default=False)
     full_allocated: bool = Field(default=False)
-    updated_at: datetime = Field(default=datetime.now())
+    updated_at: datetime = Field(default_factory=datetime.now)
 
     calendars: list["Calendar"] = Relationship(
         back_populates="classes",
