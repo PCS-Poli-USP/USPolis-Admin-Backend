@@ -30,7 +30,7 @@ class Building(SQLModel, table=True):
     subjects: list["Subject"] | None = Relationship(
         back_populates="buildings", link_model=SubjectBuildingLink
     )
-    updated_at: datetime = Field(default=datetime.now())
+    updated_at: datetime = Field(default_factory=datetime.now)
 
     solicitations: list["ClassroomSolicitation"] = Relationship(
         back_populates="building"

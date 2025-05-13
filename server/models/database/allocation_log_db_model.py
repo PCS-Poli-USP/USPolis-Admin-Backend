@@ -10,7 +10,7 @@ from server.utils.enums.action_type_enum import ActionType
 class AllocationLog(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     modified_by: str = Field()
-    modified_at: datetime = Field(default=datetime.now())
+    modified_at: datetime = Field(default_factory=datetime.now)
     action: ActionType = Field()
 
     old_classroom: str = Field()
