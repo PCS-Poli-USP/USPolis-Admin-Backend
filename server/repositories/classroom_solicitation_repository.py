@@ -33,7 +33,7 @@ class ClassroomSolicitationRepository:
         return list(solicitations)
 
     @staticmethod
-    def get_by_id_on_buildings(
+    def get_by_buildings_ids(
         building_ids: list[int], session: Session
     ) -> list[ClassroomSolicitation]:
         statement = select(ClassroomSolicitation).where(
@@ -43,20 +43,32 @@ class ClassroomSolicitationRepository:
         return list(solicitations)
 
     @staticmethod
-    def get_by_id_on_buildings_pending(
+    def get_by_buildings_ids_on_range(
+        start: date, end: date, building_ids: list[int], session: Session
+    ) -> list[ClassroomSolicitation]:
+        statement = select(ClassroomSolicitation).where(
+            col(ClassroomSolicitation.building_id).in_(building_ids),
+            col(ClassroomSolicitation.created_at) >= start,
+            col(ClassroomSolicitation.created_at) <= end,
+        )
+        solicitations = session.exec(statement).all()
+        return list(solicitations)
+
+    @staticmethod
+    def get_pending_by_buildings_ids(
         building_ids: list[int], session: Session
     ) -> list[ClassroomSolicitation]:
-        today = date.today()
+        # today = date.today()
         statement = select(ClassroomSolicitation).where(
             col(ClassroomSolicitation.building_id).in_(building_ids),
             ~col(ClassroomSolicitation.closed),
         )
         solicitations = session.exec(statement).all()
-        solicitations = [
-            solicitation
-            for solicitation in solicitations
-            if max(solicitation.dates) >= today
-        ]
+        # solicitations = [
+        #     solicitation
+        #     for solicitation in solicitations
+        #     if max(solicitation.dates) >= today
+        # ]
         return list(solicitations)
 
     @staticmethod
