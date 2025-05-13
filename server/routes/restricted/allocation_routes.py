@@ -59,4 +59,4 @@ def update_event(
                 )
 
     occurrence_repo.session.commit()
-    return JSONResponse(content={"message": "Event updated successfully"})
+    return JSONResponse(content={"message": "Evento atualizado com sucesso!"})
