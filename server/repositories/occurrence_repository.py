@@ -24,6 +24,17 @@ class OccurrenceRepository:
         return occurrence
 
     @staticmethod
+    def get_by_date_and_classroom(
+        date: date, classroom_id: int, session: Session
+    ) -> list[Occurrence]:
+        statement = select(Occurrence).where(
+            col(Occurrence.date) == date,
+            col(Occurrence.classroom_id) == classroom_id,
+        )
+        occurrences = session.exec(statement).all()
+        return list(occurrences)
+
+    @staticmethod
     def get_all_on_buildings(
         building_ids: list[int], session: Session
     ) -> list[Occurrence]:
@@ -58,8 +69,11 @@ class OccurrenceRepository:
 
     @staticmethod
     def allocate_schedule(
-        user: User, schedule: Schedule, classroom: Classroom, session: Session
-    ) -> None:
+        user: User,
+        schedule: Schedule,
+        classroom: Classroom,
+        session: Session,
+    ) -> list[Occurrence]:
         input = AllocationLogInput.for_allocation(
             user=user, schedule=schedule, classroom=classroom
         )
@@ -74,12 +88,15 @@ class OccurrenceRepository:
             occurrences = schedule.occurrences
 
         for occurrence in occurrences:
+            occurrence.classroom_id = classroom.id
             occurrence.classroom = classroom
+            session.add(occurrence)
         # classroom.occurrences.extend(occurrences)
         schedule.classroom = classroom
         schedule.allocated = True
         session.add(schedule)
         session.add(classroom)
+        return occurrences
 
     @staticmethod
     def remove_occurrence_allocation(occurrence: Occurrence, session: Session) -> None:

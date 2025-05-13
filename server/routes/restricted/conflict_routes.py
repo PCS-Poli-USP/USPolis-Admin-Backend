@@ -10,5 +10,5 @@ router = APIRouter(prefix="/conflicts", tags=["Conflicts"])
 def get_conflicts(
     conflict_checker: ConflictCheckerDep,
 ) -> list[BuildingConflictSpecification]:
-    conflicts = conflict_checker.conflicts_for_allowed_buildings()
+    conflicts = conflict_checker.conflicts_for_allowed_classrooms()
     return conflicts

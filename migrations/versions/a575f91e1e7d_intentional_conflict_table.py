@@ -23,10 +23,10 @@ def upgrade() -> None:
     op.create_table(
         "intentionalconflict",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("fist_occurrence_id", sa.Integer(), nullable=False),
+        sa.Column("first_occurrence_id", sa.Integer(), nullable=False),
         sa.Column("second_occurrence_id", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
-            ["fist_occurrence_id"],
+            ["first_occurrence_id"],
             ["occurrence.id"],
         ),
         sa.ForeignKeyConstraint(
@@ -35,7 +35,7 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint(
-            "fist_occurrence_id",
+            "first_occurrence_id",
             "second_occurrence_id",
             name="unique_occurrence_pair",
         ),

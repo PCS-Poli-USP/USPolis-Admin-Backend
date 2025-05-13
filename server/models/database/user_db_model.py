@@ -1,9 +1,10 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlmodel import Field, Relationship
+from sqlmodel import Field, Relationship, Session, select
 
 from server.models.database.base_db_model import BaseModel
+from server.models.database.classroom_db_model import Classroom
 from server.models.database.group_db_model import Group
 from server.models.database.group_user_link import GroupUserLink
 from server.models.database.user_building_link import UserBuildingLink
@@ -100,3 +101,33 @@ class User(BaseModel, table=True):
             list[int]: A list of group IDs.
         """
         return list(self.group_ids_set())
+
+    def classrooms_by_buildings(
+        self, session: Session
+    ) -> dict["Building", list["Classroom"]]:
+        """
+        Get a map of buildings to classrooms that the user has access to.
+
+        Returns:
+            map[Building, list[Classroom]]: A map of buildings to classrooms.
+        """
+        from server.models.database.building_db_model import Building
+        
+        if self.is_admin:
+            buildings = list(session.exec(select(Building)).all())
+            return {
+                building: building.classrooms
+                for building in buildings
+                if building.classrooms
+            }
+        classrooms_ids = self.classrooms_ids_set()
+        if self.buildings:
+            return {
+                building: [
+                    classroom
+                    for classroom in set(building.classrooms)
+                    if classroom.id in classrooms_ids
+                ]
+                for building in self.buildings
+            }
+        return {}

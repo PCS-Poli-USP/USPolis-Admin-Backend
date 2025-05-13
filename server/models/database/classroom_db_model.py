@@ -1,9 +1,10 @@
-from datetime import datetime
+from datetime import datetime, time
 from typing import TYPE_CHECKING
 
 from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, Relationship, Column, Enum
 from server.models.database.base_db_model import BaseModel
+from pydantic import BaseModel as PydanticBaseModel
 
 from server.models.database.group_classroom_link import GroupClassroomLink
 from server.utils.enums.audiovisual_type_enum import AudiovisualType
@@ -58,9 +59,43 @@ class Classroom(ClassroomBase, table=True):
     )
 
 
+class ConflictsInfo(PydanticBaseModel):
+    subject_id: int | None
+    subject: str | None
+    class_id: int | None
+    class_code: str | None
+    reservation: str | None
+    reservation_id: int | None
+    schedule_id: int
+    start: time
+    end: time
+    occurrence_ids: list[int]
+    conflicts_count: int
+
+    @classmethod
+    def from_schedule(cls, schedule: "Schedule") -> "ConflictsInfo":
+        return cls(
+            subject_id=must_be_int(schedule.class_.subject_id)
+            if schedule.class_
+            else None,
+            subject=schedule.class_.subject.code if schedule.class_ else None,
+            class_id=must_be_int(schedule.class_.id) if schedule.class_ else None,
+            class_code=schedule.class_.code if schedule.class_ else None,
+            reservation=schedule.reservation.title if schedule.reservation else None,
+            reservation_id=must_be_int(schedule.reservation.id)
+            if schedule.reservation
+            else None,
+            schedule_id=must_be_int(schedule.id),
+            start=schedule.start_time,
+            end=schedule.end_time,
+            occurrence_ids=[],
+            conflicts_count=0,
+        )
+
+
 class ClassroomWithConflictsIndicator(ClassroomBase):
-    id: int  # type: ignore
     conflicts: int = 0
+    conflicts_infos: list[ConflictsInfo] = []
 
     @classmethod
     def from_classroom(cls, classroom: Classroom) -> "ClassroomWithConflictsIndicator":

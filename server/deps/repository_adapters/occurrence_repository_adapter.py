@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import Depends
 
 from server.deps.authenticate import UserDep
+from server.deps.conflict_checker import ConflictCheckerDep
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
 from server.deps.repository_adapters.classroom_repository_adapter import (
     ClassroomRepositoryDep,
@@ -14,6 +15,9 @@ from server.deps.session_dep import SessionDep
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.schedule_db_model import Schedule
 from server.models.http.requests.allocate_request_models import AllocateSchedule
+from server.repositories.intentional_conflict_repository import (
+    IntentionalConflictRepository,
+)
 from server.repositories.occurrence_repository import OccurrenceRepository
 from server.services.security.classrooms_permission_checker import (
     ClassroomPermissionChecker,
@@ -34,6 +38,7 @@ class OccurrenceRepositoryAdapter:
         user: UserDep,
         classroom_repo: ClassroomRepositoryDep,
         schedule_repo: ScheduleRepositoryDep,
+        conflict_checker: ConflictCheckerDep,
     ):
         self.owned_building_ids = owned_building_ids
         self.session = session
@@ -46,6 +51,7 @@ class OccurrenceRepositoryAdapter:
             user=user, session=session
         )
         self.schedule_checker = SchedulePermissionChecker(user=user, session=session)
+        self.conflict_checker = conflict_checker
 
     def get_all(self) -> list[Occurrence]:
         occurrences = OccurrenceRepository.get_all_on_buildings(
@@ -58,12 +64,18 @@ class OccurrenceRepositoryAdapter:
         self.occurrence_checker.check_permission(occurrence)
         return occurrence
 
-    def allocate_schedule(self, schedule_id: int, classroom_id: int) -> Schedule:
+    def allocate_schedule(
+        self, schedule_id: int, classroom_id: int, intentional_conflict: bool = False
+    ) -> Schedule:
         schedule = self.schedule_repo.get_by_id(schedule_id)
         classroom = self.classroom_repo.get_by_id(classroom_id)
         OccurrenceRepository.allocate_schedule(
-            user=self.user, schedule=schedule, classroom=classroom, session=self.session
+            user=self.user,
+            schedule=schedule,
+            classroom=classroom,
+            session=self.session,
         )
+
         self.session.commit()
         self.session.refresh(schedule)
         return schedule
@@ -84,12 +96,28 @@ class OccurrenceRepositoryAdapter:
             classroom = self.classroom_repo.get_by_id(pair.classroom_id)
             self.checker.check_permission(classroom)
 
-            OccurrenceRepository.allocate_schedule(
+            occurrences = OccurrenceRepository.allocate_schedule(
                 user=self.user,
                 schedule=schedule,
                 classroom=classroom,
                 session=self.session,
             )
+            if pair.intentional_conflict and pair.conflict_infos:
+                for conflict_info in pair.conflict_infos:
+                    pass
+                for occurrence in occurrences:
+                    conflicts = (
+                        self.conflict_checker.conflicting_occurrences_by_occurence(
+                            occurrence=occurrence
+                        )
+                    )
+                    if conflicts:
+                        IntentionalConflictRepository.create_many(
+                            first_occurrence=occurrence,
+                            second_occurrences=conflicts,
+                            session=self.session,
+                        )
+
         self.session.commit()
 
     def remove_schedule_allocation(self, schedule_id: int) -> Schedule:

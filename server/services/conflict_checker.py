@@ -4,6 +4,7 @@ from collections import defaultdict
 
 from pydantic import BaseModel
 
+from server.deps.authenticate import UserDep
 from server.deps.repository_adapters.building_repository_adapter import (
     BuildingRepositoryDep,
 )
@@ -17,10 +18,12 @@ from server.deps.session_dep import SessionDep
 from server.models.database.classroom_db_model import (
     Classroom,
     ClassroomWithConflictsIndicator,
+    ConflictsInfo,
 )
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.schedule_db_model import Schedule
 from server.repositories.classroom_repository import ClassroomRepository
+from server.repositories.occurrence_repository import OccurrenceRepository
 from server.utils.must_be_int import must_be_int
 from server.utils.occurrence_utils import OccurrenceUtils
 
@@ -38,6 +41,32 @@ class OccurrenceConflictSpecification(BaseModel):
     reservation_title: str | None
     reservation_id: int | None
 
+    @classmethod
+    def from_occurrence(
+        cls, occurrence: Occurrence
+    ) -> "OccurrenceConflictSpecification":
+        return cls(
+            id=must_be_int(occurrence.id),
+            start_time=occurrence.start_time,
+            end_time=occurrence.end_time,
+            date=occurrence.date,
+            subject_code=occurrence.schedule.class_.subject.code
+            if occurrence.schedule.class_
+            else None,
+            class_code=occurrence.schedule.class_.code
+            if occurrence.schedule.class_
+            else None,
+            class_id=must_be_int(occurrence.schedule.class_.id)
+            if occurrence.schedule.class_
+            else None,
+            reservation_title=occurrence.schedule.reservation.title
+            if occurrence.schedule.reservation
+            else None,
+            reservation_id=must_be_int(occurrence.schedule.reservation.id)
+            if occurrence.schedule.reservation
+            else None,
+        )
+
 
 class ClassroomConflictsSpecification(BaseModel):
     id: int
@@ -54,11 +83,13 @@ class BuildingConflictSpecification(BaseModel):
 class ConflictChecker:
     def __init__(
         self,
+        user: UserDep,
         session: SessionDep,
         classroom_repository: ClassroomRepositoryDep,
         schedule_repository: ScheduleRepositoryDep,
         building_repository: BuildingRepositoryDep,
     ):
+        self.user = user
         self.session = session
         self.classroom_repository = classroom_repository
         self.schedule_repository = schedule_repository
@@ -77,6 +108,25 @@ class ConflictChecker:
                 grouped_occurrences[must_be_int(classroom.id)] = conflicting_occurrences
         return grouped_occurrences
 
+    def conflicting_occurrences_by_occurence(
+        self, occurrence: Occurrence
+    ) -> list[Occurrence]:
+        """Returns a list of occurrences that conflict with the given occurrence"""
+        if occurrence.classroom_id is None:
+            return []
+        occurrences = OccurrenceRepository.get_by_date_and_classroom(
+            date=occurrence.date,
+            classroom_id=occurrence.classroom_id,
+            session=self.session,
+        )
+        conflicts = [
+            oc
+            for oc in occurrences
+            if oc.id != occurrence.id
+            and occurrence.conflicts_with_time(oc.start_time, oc.end_time)
+        ]
+        return conflicts
+
     def classrooms_with_conflicts_indicator_for_schedule(
         self, building_id: int, schedule_id: int
     ) -> list[ClassroomWithConflictsIndicator]:
@@ -85,11 +135,14 @@ class ConflictChecker:
 
         classrooms_with_conflicts: list[ClassroomWithConflictsIndicator] = []
         for classroom in classrooms:
-            count = self.__count_conflicts_schedule_in_classroom(schedule, classroom)
+            total_count, infos = self.__count_conflicts_schedule_in_classroom(
+                schedule, classroom
+            )
             classroom_with_conflicts = ClassroomWithConflictsIndicator.from_classroom(
                 classroom
             )
-            classroom_with_conflicts.conflicts = count
+            classroom_with_conflicts.conflicts = total_count
+            classroom_with_conflicts.conflicts_infos = infos
             classrooms_with_conflicts.append(classroom_with_conflicts)
 
         return classrooms_with_conflicts
@@ -114,43 +167,23 @@ class ConflictChecker:
 
         return classrooms_with_conflicts
 
-    def conflicts_for_allowed_buildings(self) -> list[BuildingConflictSpecification]:
-        allowed_buildings = self.building_repository.get_owned_buildings()
+    def conflicts_for_allowed_classrooms(self) -> list[BuildingConflictSpecification]:
+        classrooms_by_building = self.user.classrooms_by_buildings(session=self.session)
         result: list[BuildingConflictSpecification] = []
-        for building in allowed_buildings:
-            if building.classrooms is None:
+        for building, classrooms in classrooms_by_building.items():
+            if not classrooms:
                 continue
             on_building_result = BuildingConflictSpecification(
                 id=must_be_int(building.id), name=building.name, conflicts=[]
             )
-            for classroom in building.classrooms:
+            for classroom in classrooms:
                 conflicts = self.__conflicts_for_classroom(classroom)
                 classroom_conflicts: dict[str, list] = defaultdict(list)
                 for conflict in conflicts:
                     conflict_specs: list[OccurrenceConflictSpecification] = []
                     for occurrence in conflict:
-                        conflict_specification = OccurrenceConflictSpecification(
-                            id=must_be_int(occurrence.id),
-                            start_time=occurrence.start_time,
-                            end_time=occurrence.end_time,
-                            date=occurrence.date,
-                            subject_code=occurrence.schedule.class_.subject.code
-                            if occurrence.schedule.class_
-                            else None,
-                            class_code=occurrence.schedule.class_.code
-                            if occurrence.schedule.class_
-                            else None,
-                            class_id=must_be_int(occurrence.schedule.class_.id)
-                            if occurrence.schedule.class_
-                            else None,
-                            reservation_title=occurrence.schedule.reservation.title
-                            if occurrence.schedule.reservation
-                            else None,
-                            reservation_id=must_be_int(
-                                occurrence.schedule.reservation.id
-                            )
-                            if occurrence.schedule.reservation
-                            else None,
+                        conflict_specification = (
+                            OccurrenceConflictSpecification.from_occurrence(occurrence)
                         )
                         conflict_specs.append(conflict_specification)
                     for conflict_spec in conflict_specs:
@@ -187,17 +220,32 @@ class ConflictChecker:
 
     def __count_conflicts_schedule_in_classroom(
         self, schedule: Schedule, classroom: Classroom
-    ) -> int:
-        count = 0
+    ) -> tuple[int, list[ConflictsInfo]]:
+        total_count = 0
         occurrences_to_be_generated = OccurrenceUtils.generate_occurrences(schedule)
+        infos: list[ConflictsInfo] = []
         for classroom_occurrence in classroom.occurrences:
             for schedule_occurrence in occurrences_to_be_generated:
                 if classroom_occurrence.schedule_id == schedule.id:
                     continue
                 schedule_occurrence.classroom_id = classroom.id
                 if classroom_occurrence.conflicts_with(schedule_occurrence):
-                    count += 1
-        return count
+                    total_count += 1
+                    schedule_id = classroom_occurrence.schedule_id
+                    currente_schedule = classroom_occurrence.schedule
+                    current_info = next(
+                        (info for info in infos if info.schedule_id == schedule_id),
+                        None,
+                    )
+                    if current_info is None:
+                        current_info = ConflictsInfo.from_schedule(currente_schedule)
+                        infos.append(current_info)
+                    current_info.occurrence_ids.append(
+                        must_be_int(classroom_occurrence.id)
+                    )
+                    current_info.conflicts_count += 1
+
+        return total_count, infos
 
     def __count_conflicts_time_in_classroom(
         self, start_time: time, end_time: time, classroom: Classroom
@@ -243,7 +291,7 @@ class ConflictChecker:
                             groups.remove(other_group)
                     else:
                         if curr_group is None:
-                            curr_group = {occurrence, other_occurrence}
+                            curr_group = {occurrence, other_occurrence}  # type: ignore
                             occurrence_group_map[occurrence] = curr_group
                             occurrence_group_map[other_occurrence] = curr_group
                             groups.append(curr_group)
