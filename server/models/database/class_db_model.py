@@ -40,7 +40,7 @@ class Class(BaseModel, table=True):
     full_allocated: bool = Field(default=False)
     updated_at: datetime = Field(default_factory=datetime.now)
 
-    subject_id: int | None = Field(
+    subject_id: int = Field(
         foreign_key="subject.id", index=True, default=None, nullable=False
     )
 
