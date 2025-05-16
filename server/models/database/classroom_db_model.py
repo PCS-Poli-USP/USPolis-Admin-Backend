@@ -69,8 +69,11 @@ class ConflictsInfo(PydanticBaseModel):
     schedule_id: int
     start: time
     end: time
-    occurrence_ids: list[int]
-    conflicts_count: int
+    total_count: int
+    intentional_ids: list[int]
+    intentional_count: int
+    unintentional_ids: list[int]
+    unintentional_count: int
 
     @classmethod
     def from_schedule(cls, schedule: "Schedule") -> "ConflictsInfo":
@@ -88,8 +91,11 @@ class ConflictsInfo(PydanticBaseModel):
             schedule_id=must_be_int(schedule.id),
             start=schedule.start_time,
             end=schedule.end_time,
-            occurrence_ids=[],
-            conflicts_count=0,
+            total_count=0,
+            intentional_ids=[],
+            intentional_count=0,
+            unintentional_ids=[],
+            unintentional_count=0,
         )
 
 

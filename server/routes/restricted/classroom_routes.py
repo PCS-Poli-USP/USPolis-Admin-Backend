@@ -53,7 +53,9 @@ def get_classroom_full(id: int, session: SessionDep) -> ClassroomFullResponse:
 
 @router.get("/with-conflict-count/{building_id}/{schedule_id}")
 def get_classrooms_with_conflicts_count(
-    building_id: int, schedule_id: int, conflict_checker: ConflictCheckerDep
+    building_id: int,
+    schedule_id: int,
+    conflict_checker: ConflictCheckerDep,
 ) -> list[ClassroomWithConflictsIndicator]:
     classrooms = conflict_checker.classrooms_with_conflicts_indicator_for_schedule(
         building_id, schedule_id
@@ -71,7 +73,10 @@ def get_classroom_with_conflicts_count_for_time(
 ) -> list[ClassroomWithConflictsIndicator]:
     classrooms = (
         conflict_checker.classrooms_with_conflicts_indicator_for_time_and_dates(
-            building_id, start_time, end_time, dates
+            building_id,
+            start_time,
+            end_time,
+            dates,
         )
     )
     return classrooms

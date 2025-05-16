@@ -1,5 +1,4 @@
-from typing import Annotated, Generic, TypeVar
-from fastapi import Depends, Query
+from typing import Generic, TypeVar
 from pydantic import BaseModel, Field
 
 from sqlmodel import Session, select

@@ -102,21 +102,19 @@ class OccurrenceRepositoryAdapter:
                 classroom=classroom,
                 session=self.session,
             )
-            if pair.intentional_conflict and pair.conflict_infos:
-                for conflict_info in pair.conflict_infos:
-                    pass
+            if pair.intentional_conflict and pair.intentional_occurrence_ids:
+                intentional_occurrences = OccurrenceRepository.get_by_ids(
+                    ids=pair.intentional_occurrence_ids, session=self.session
+                )
+                occurrences.sort(key=lambda x: x.date)
                 for occurrence in occurrences:
-                    conflicts = (
-                        self.conflict_checker.conflicting_occurrences_by_occurence(
-                            occurrence=occurrence
-                        )
-                    )
-                    if conflicts:
-                        IntentionalConflictRepository.create_many(
-                            first_occurrence=occurrence,
-                            second_occurrences=conflicts,
-                            session=self.session,
-                        )
+                    for intentional_occurrence in intentional_occurrences:
+                        if occurrence.conflicts_with(intentional_occurrence):
+                            IntentionalConflictRepository.create(
+                                first_occurrence=occurrence,
+                                second_occurrence=intentional_occurrence,
+                                session=self.session,
+                            )
 
         self.session.commit()
 

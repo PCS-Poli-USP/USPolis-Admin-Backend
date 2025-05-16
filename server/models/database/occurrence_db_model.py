@@ -31,6 +31,11 @@ class Occurrence(BaseModel, table=True):
             and self.conflicts_with_time(other.start_time, other.end_time)
         )
 
+    def conflicts_with_time_and_date(
+        self, start_time: time, end_time: time, date: datetime_date
+    ) -> bool:
+        return self.date == date and self.conflicts_with_time(start_time, end_time)
+
     def conflicts_with_time(self, start_time: time, end_time: time) -> bool:
         if self.start_time < start_time and self.end_time > end_time:
             return True

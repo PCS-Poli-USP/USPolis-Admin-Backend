@@ -58,17 +58,17 @@ class ClassroomSolicitationRepository:
     def get_pending_by_buildings_ids(
         building_ids: list[int], session: Session
     ) -> list[ClassroomSolicitation]:
-        # today = date.today()
+        today = date.today()
         statement = select(ClassroomSolicitation).where(
             col(ClassroomSolicitation.building_id).in_(building_ids),
             ~col(ClassroomSolicitation.closed),
         )
         solicitations = session.exec(statement).all()
-        # solicitations = [
-        #     solicitation
-        #     for solicitation in solicitations
-        #     if max(solicitation.dates) >= today
-        # ]
+        solicitations = [
+            solicitation
+            for solicitation in solicitations
+            if max(solicitation.dates) >= today
+        ]
         return list(solicitations)
 
     @staticmethod

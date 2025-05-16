@@ -1,4 +1,3 @@
-from datetime import date
 from fastapi import APIRouter, Body
 from fastapi.templating import Jinja2Templates
 
@@ -56,16 +55,9 @@ async def get_pending_classroom_solicitations(
 async def get_all_classroom_solicitations(
     building_ids: OwnedBuildingIdsDep,
     session: SessionDep,
-    start: date = date(
-        year=date.today().year, month=7 if date.today().month > 6 else 1, day=1
-    ),
-    end: date = date(
-        year=date.today().year, month=12 if date.today().month > 6 else 7, day=1
-    ),
 ) -> list[ClassroomSolicitationResponse]:
-    print(f"start: {start}, end: {end}")
-    solicitations = ClassroomSolicitationRepository.get_by_buildings_ids_on_range(
-        start=start, end=end, building_ids=building_ids, session=session
+    solicitations = ClassroomSolicitationRepository.get_by_buildings_ids(
+        building_ids=building_ids, session=session
     )
     return ClassroomSolicitationResponse.from_solicitation_list(solicitations)
 

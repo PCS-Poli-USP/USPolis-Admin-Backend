@@ -1,7 +1,5 @@
-from typing import Any
 from fastapi import APIRouter, Response
 
-from server.deps.conflict_checker import ConflictCheckerDep
 from server.deps.repository_adapters.occurrence_repository_adapter import (
     OccurrenceRepositoryDep,
 )
@@ -39,11 +37,3 @@ def remove_schedule_allocation(
 ) -> Schedule:
     schedule = occurrence_repository.remove_schedule_allocation(schedule_id)
     return schedule
-
-
-@router.get("/get-all-conflicting-occurrences")
-def get_all_occurrences_grouped_by_classroom(
-    conflict_checker: ConflictCheckerDep,
-) -> Any:
-    occurences = conflict_checker.conflicting_occurrences_by_classroom()
-    return occurences
