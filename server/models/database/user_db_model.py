@@ -8,7 +8,7 @@ from server.models.database.classroom_db_model import Classroom
 from server.models.database.group_db_model import Group
 from server.models.database.group_user_link import GroupUserLink
 from server.models.database.user_building_link import UserBuildingLink
-from server.utils.brasil_datetime import BrasilDatetime
+from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.must_be_int import must_be_int
 
 if TYPE_CHECKING:
@@ -26,8 +26,8 @@ class User(BaseModel, table=True):
     email: str = Field(index=True, unique=True)
     is_admin: bool
     name: str
-    updated_at: datetime = Field(default_factory=BrasilDatetime.now_utc)
-    last_visited: datetime = Field(default_factory=BrasilDatetime.now_utc)
+    updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
+    last_visited: datetime = Field(default_factory=BrazilDatetime.now_utc)
 
     created_by_id: int | None = Field(
         foreign_key="user.id",

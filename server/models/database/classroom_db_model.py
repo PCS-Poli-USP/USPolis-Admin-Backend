@@ -7,7 +7,7 @@ from server.models.database.base_db_model import BaseModel
 from pydantic import BaseModel as PydanticBaseModel
 
 from server.models.database.group_classroom_link import GroupClassroomLink
-from server.utils.brasil_datetime import BrasilDatetime
+from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.audiovisual_type_enum import AudiovisualType
 from server.utils.must_be_int import must_be_int
 
@@ -32,7 +32,7 @@ class ClassroomBase(BaseModel):
         sa_column=Column(Enum(AudiovisualType), nullable=False)
     )
     air_conditioning: bool = False
-    updated_at: datetime = Field(default_factory=BrasilDatetime.now_utc)
+    updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
 
     created_by_id: int = Field(foreign_key="user.id")
     building_id: int = Field(foreign_key="building.id")

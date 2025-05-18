@@ -7,7 +7,7 @@ from sqlmodel import Field, Relationship
 from server.models.database.base_db_model import BaseModel
 from server.models.database.subject_building_link import SubjectBuildingLink
 from server.models.database.user_building_link import UserBuildingLink
-from server.utils.brasil_datetime import BrasilDatetime
+from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.must_be_int import must_be_int
 
 if TYPE_CHECKING:
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 class Building(BaseModel, table=True):
     name: str = Field(index=True, unique=True)
-    updated_at: datetime = Field(default_factory=BrasilDatetime.now_utc)
+    updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
     created_by_id: int | None = Field(default=None, foreign_key="user.id")
     main_group_id: int | None = Field(default=None, foreign_key="group.id")
 

@@ -9,7 +9,7 @@ from server.models.http.requests.classroom_solicitation_request_models import (
 )
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.classroom_repository import ClassroomRepository
-from server.utils.brasil_datetime import BrasilDatetime
+from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.must_be_int import must_be_int
 
 
@@ -27,8 +27,10 @@ class ClassroomSolicitationRepository:
 
     @staticmethod
     def get_by_user(user: User, session: Session) -> list[ClassroomSolicitation]:
-        statement = select(ClassroomSolicitation).where(
-            col(ClassroomSolicitation.user_id) == user.id
+        statement = (
+            select(ClassroomSolicitation)
+            .where(col(ClassroomSolicitation.user_id) == user.id)
+            .order_by(col(ClassroomSolicitation.updated_at).desc())
         )
         solicitations = session.exec(statement).all()
         return list(solicitations)
@@ -37,8 +39,10 @@ class ClassroomSolicitationRepository:
     def get_by_buildings_ids(
         building_ids: list[int], session: Session
     ) -> list[ClassroomSolicitation]:
-        statement = select(ClassroomSolicitation).where(
-            col(ClassroomSolicitation.building_id).in_(building_ids)
+        statement = (
+            select(ClassroomSolicitation)
+            .where(col(ClassroomSolicitation.building_id).in_(building_ids))
+            .order_by(col(ClassroomSolicitation.updated_at).desc())
         )
         solicitations = session.exec(statement).all()
         return list(solicitations)
@@ -47,10 +51,14 @@ class ClassroomSolicitationRepository:
     def get_by_buildings_ids_on_range(
         start: date, end: date, building_ids: list[int], session: Session
     ) -> list[ClassroomSolicitation]:
-        statement = select(ClassroomSolicitation).where(
-            col(ClassroomSolicitation.building_id).in_(building_ids),
-            col(ClassroomSolicitation.created_at) >= start,
-            col(ClassroomSolicitation.created_at) <= end,
+        statement = (
+            select(ClassroomSolicitation)
+            .where(
+                col(ClassroomSolicitation.building_id).in_(building_ids),
+                col(ClassroomSolicitation.created_at) >= start,
+                col(ClassroomSolicitation.created_at) <= end,
+            )
+            .order_by(col(ClassroomSolicitation.updated_at).desc())
         )
         solicitations = session.exec(statement).all()
         return list(solicitations)
@@ -60,9 +68,13 @@ class ClassroomSolicitationRepository:
         building_ids: list[int], session: Session
     ) -> list[ClassroomSolicitation]:
         today = date.today()
-        statement = select(ClassroomSolicitation).where(
-            col(ClassroomSolicitation.building_id).in_(building_ids),
-            ~col(ClassroomSolicitation.closed),
+        statement = (
+            select(ClassroomSolicitation)
+            .where(
+                col(ClassroomSolicitation.building_id).in_(building_ids),
+                ~col(ClassroomSolicitation.closed),
+            )
+            .order_by(col(ClassroomSolicitation.updated_at).desc())
         )
         solicitations = session.exec(statement).all()
         solicitations = [
@@ -118,7 +130,7 @@ class ClassroomSolicitationRepository:
         solicitation.denied = False
         solicitation.closed = True
         solicitation.closed_by = user.name
-        solicitation.updated_at = BrasilDatetime.now_utc()
+        solicitation.updated_at = BrazilDatetime.now_utc()
         session.add(solicitation)
         return solicitation
 
@@ -129,7 +141,7 @@ class ClassroomSolicitationRepository:
         solicitation.denied = True
         solicitation.closed = True
         solicitation.closed_by = user.name
-        solicitation.updated_at = BrasilDatetime.now_utc()
+        solicitation.updated_at = BrazilDatetime.now_utc()
         session.add(solicitation)
         return solicitation
 

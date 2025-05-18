@@ -11,7 +11,7 @@ from collections.abc import Sequence
 from alembic import op
 import sqlalchemy as sa
 
-from server.utils.brasil_datetime import BrasilDatetime
+from server.utils.brazil_datetime import BrazilDatetime
 
 
 # revision identifiers, used by Alembic.
@@ -45,7 +45,7 @@ def upgrade() -> None:
     # op.execute("COMMIT")
 
     op.add_column("user", sa.Column("last_visited", sa.DateTime(), nullable=True))
-    now = BrasilDatetime.now_utc()
+    now = BrazilDatetime.now_utc()
     op.execute(f"UPDATE \"user\" SET last_visited = '{now}' WHERE last_visited IS NULL")
     op.alter_column("user", "last_visited", nullable=False)
 

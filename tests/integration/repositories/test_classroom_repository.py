@@ -37,7 +37,9 @@ def test_classroom_repository_get_all(
     - number of classrooms get is correct\n
     - classrooms read are the same as the ones created\n
     """
-    factory = ClassroomModelFactory(creator=user, group=group, session=session)
+    factory = ClassroomModelFactory(
+        creator=user, building=group.building, group=group, session=session
+    )
     old_classrooms = factory.create_many_default()
     classrooms = ClassroomRepository.get_all(session=session)
 
@@ -53,7 +55,9 @@ def test_classroom_repository_get_by_id(
     Tests:\n
     - classrooms read are the same as the ones created\n
     """
-    factory = ClassroomModelFactory(creator=user, group=group, session=session)
+    factory = ClassroomModelFactory(
+        creator=user, building=group.building, group=group, session=session
+    )
     classroom = factory.create_and_refresh()
     query = ClassroomRepository.get_by_id(id=must_be_int(classroom.id), session=session)
     assert query.name == classroom.name
@@ -66,7 +70,9 @@ def test_classroom_repository_get_by_ids(
     Tests:\n
     - classrooms read are the same as the ones created\n
     """
-    factory = ClassroomModelFactory(creator=user, group=group, session=session)
+    factory = ClassroomModelFactory(
+        creator=user, building=group.building, group=group, session=session
+    )
     classrooms = factory.create_many_default()
     factory.commit()
     factory.refresh_many(classrooms)
@@ -89,7 +95,9 @@ def test_classroom_repository_get_by_name_and_building(
     - Check if classroom name are same\n
     - Check if classroom id are same\n
     """
-    factory = ClassroomModelFactory(creator=user, group=group, session=session)
+    factory = ClassroomModelFactory(
+        creator=user, building=group.building, group=group, session=session
+    )
     classroom = factory.create_and_refresh()
     query = ClassroomRepository.get_by_name_and_building(
         name=classroom.name, building=group.building, session=session

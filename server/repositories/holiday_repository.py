@@ -12,7 +12,7 @@ from server.models.http.requests.holiday_request_models import (
     HolidayUpdate,
 )
 from server.repositories.holiday_category_repository import HolidayCategoryRepository
-from server.utils.brasil_datetime import BrasilDatetime
+from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.must_be_int import must_be_int
 
 
@@ -57,7 +57,7 @@ class HolidayRepository:
             date=input.date,
             category_id=input.category_id,
             category=category,
-            updated_at=BrasilDatetime.now_utc(),
+            updated_at=BrazilDatetime.now_utc(),
             created_by_id=must_be_int(creator.id),
             created_by=creator,
         )
@@ -94,7 +94,7 @@ class HolidayRepository:
             )
         holiday.name = input.name
         holiday.date = input.date
-        holiday.updated_at = BrasilDatetime.now_utc()
+        holiday.updated_at = BrazilDatetime.now_utc()
         session.add(holiday)
         session.commit()
         return holiday

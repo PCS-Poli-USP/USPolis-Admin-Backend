@@ -7,7 +7,7 @@ from sqlmodel import Field, Relationship, Enum
 from server.models.database.base_db_model import BaseModel
 
 from server.models.database.class_calendar_link import ClassCalendarLink
-from server.utils.brasil_datetime import BrasilDatetime
+from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.audiovisual_type_enum import AudiovisualType
 from server.utils.enums.class_type import ClassType
 from server.utils.must_be_int import must_be_int
@@ -39,7 +39,7 @@ class Class(BaseModel, table=True):
 
     ignore_to_allocate: bool = Field(default=False)
     full_allocated: bool = Field(default=False)
-    updated_at: datetime = Field(default_factory=BrasilDatetime.now_utc)
+    updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
 
     subject_id: int = Field(
         foreign_key="subject.id", index=True, default=None, nullable=False

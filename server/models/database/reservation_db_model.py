@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional
 from sqlmodel import Relationship, Field
 
 from server.models.database.base_db_model import BaseModel
-from server.utils.brasil_datetime import BrasilDatetime
+from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.reservation_type import ReservationType
 
 if TYPE_CHECKING:
@@ -20,7 +20,7 @@ class Reservation(BaseModel, table=True):
     title: str = Field()
     type: ReservationType = Field()
     reason: str | None = Field(nullable=True, default=None)
-    updated_at: datetime = Field(default_factory=BrasilDatetime.now_utc)
+    updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
 
     classroom_id: int = Field(foreign_key="classroom.id", nullable=False)
     classroom: "Classroom" = Relationship(back_populates="reservations")

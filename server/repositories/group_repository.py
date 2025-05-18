@@ -11,7 +11,7 @@ from server.models.http.requests.group_request_models import GroupRegister, Grou
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.classroom_repository import ClassroomRepository
 from server.repositories.user_repository import UserRepository
-from server.utils.brasil_datetime import BrasilDatetime
+from server.utils.brazil_datetime import BrazilDatetime
 
 
 class GroupRepository:
@@ -179,7 +179,7 @@ class GroupRepository:
     def update(*, id: int, input: GroupUpdate, session: Session) -> Group:
         group = GroupRepository.get_by_id(id=id, session=session)
         group.name = input.name
-        group.updated_at = BrasilDatetime.now_utc()
+        group.updated_at = BrazilDatetime.now_utc()
 
         building = group.building
         if building.main_group and building.main_group.id != group.id:

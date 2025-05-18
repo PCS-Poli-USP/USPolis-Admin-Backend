@@ -5,7 +5,7 @@ from server.models.http.requests.institutional_event_request_models import (
     InstitutionalEventRegister,
     InstitutionalEventUpdate,
 )
-from server.utils.brasil_datetime import BrasilDatetime
+from server.utils.brazil_datetime import BrazilDatetime
 
 
 class InstitutionalEventRepository:
@@ -33,7 +33,7 @@ class InstitutionalEventRepository:
             location=input.location,
             external_link=input.external_link,
             category=input.category,
-            created_at=BrasilDatetime.now_utc(),
+            created_at=BrazilDatetime.now_utc(),
             building=input.building,
             classroom=input.classroom,
         )

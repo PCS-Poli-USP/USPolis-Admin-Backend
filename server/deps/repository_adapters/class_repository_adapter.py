@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import Depends
 
 from server.deps.authenticate import UserDep
+from server.deps.interval_dep import QueryIntervalDep
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
 from server.deps.session_dep import SessionDep
 from server.models.database.class_db_model import Class
@@ -20,8 +21,10 @@ class ClassRepositoryAdapter:
         owned_building_ids: OwnedBuildingIdsDep,
         session: SessionDep,
         user: UserDep,
+        interval: QueryIntervalDep,
     ):
         self.session = session
+        self.interval = interval
         self.user = user
         self.owned_building_ids = owned_building_ids
         self.checker = ClassPermissionChecker(user=user, session=session)
@@ -30,7 +33,7 @@ class ClassRepositoryAdapter:
     def get_all(self) -> list[Class]:
         """Get all class on buildings that the user has access to."""
         if self.user.is_admin:
-            return ClassRepository.get_all(session=self.session)
+            return ClassRepository.get_all(session=self.session, interval=self.interval)
         classes = self.get_all_on_my_classrooms()
         classes.extend(self.get_all_unallocated())
         return classes
@@ -38,19 +41,25 @@ class ClassRepositoryAdapter:
     def get_all_on_my_classrooms(self) -> list[Class]:
         """Get all classes on classrooms that the user has access to."""
         return ClassRepository.get_all_on_classrooms(
-            classroom_ids=self.user.classrooms_ids(), session=self.session
+            classroom_ids=self.user.classrooms_ids(),
+            session=self.session,
+            interval=self.interval,
         )
 
     def get_all_unallocated(self) -> list[Class]:
         """Get all classes that are not allocated in all schedules and are in one of the buildings."""
         return ClassRepository.get_all_unallocated_on_buildings(
-            building_ids=self.owned_building_ids, session=self.session
+            building_ids=self.owned_building_ids,
+            session=self.session,
+            interval=self.interval,
         )
 
     def get_all_on_my_buildings(self) -> list[Class]:
         """Get all classes on buildings that the user has access to."""
         return ClassRepository.get_all_on_buildings(
-            building_ids=self.owned_building_ids, session=self.session
+            building_ids=self.owned_building_ids,
+            session=self.session,
+            interval=self.interval,
         )
 
     def get_by_id(self, id: int) -> Class:
