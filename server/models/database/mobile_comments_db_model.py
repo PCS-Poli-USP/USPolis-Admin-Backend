@@ -3,6 +3,7 @@ from sqlmodel import Field
 from typing import TYPE_CHECKING
 
 from server.models.database.base_db_model import BaseModel
+from server.utils.brasil_datetime import BrasilDatetime
 
 if TYPE_CHECKING:
     pass
@@ -19,4 +20,4 @@ class Comment(BaseModel, table=True):
         default=None,
         nullable=True,
     )
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=BrasilDatetime.now_utc)

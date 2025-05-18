@@ -6,6 +6,7 @@ from server.models.database.building_db_model import Building
 from server.models.database.user_building_link import UserBuildingLink
 from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister, UserUpdate
+from server.utils.brasil_datetime import BrasilDatetime
 
 
 class UserRepository:
@@ -101,7 +102,7 @@ class UserRepository:
             session=session,
         )
         user_to_update.is_admin = input.is_admin
-        user_to_update.updated_at = datetime.now()
+        user_to_update.updated_at = BrasilDatetime.now_utc()
         session.add(user_to_update)
         return user_to_update
 
@@ -111,7 +112,7 @@ class UserRepository:
         user: User,
         session: Session,
     ) -> User:
-        user.last_visited = datetime.now()
+        user.last_visited = BrasilDatetime.now_utc()
         session.add(user)
         return user
 

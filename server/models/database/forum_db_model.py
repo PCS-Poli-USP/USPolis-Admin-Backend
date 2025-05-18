@@ -6,6 +6,7 @@ from server.models.database.base_db_model import BaseModel
 from server.models.database.forum_post_report_link import ForumPostReportLink
 from server.models.database.mobile_user_db_model import MobileUser
 from server.models.database.forum_post_reacts_link import ForumPostReactsLink
+from server.utils.brasil_datetime import BrasilDatetime
 
 
 class ForumPost(BaseModel, table=True):
@@ -21,7 +22,7 @@ class ForumPost(BaseModel, table=True):
 
     user: "MobileUser" = Relationship()
 
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=BrasilDatetime.now_utc)
 
     reported_by_users: list[MobileUser] = Relationship(
         link_model=ForumPostReportLink,

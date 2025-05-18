@@ -21,6 +21,7 @@ from server.repositories.classroom_solicitation_repository import (
     ClassroomSolicitationRepository,
 )
 from server.repositories.schedule_repository import ScheduleRepository
+from server.utils.brasil_datetime import BrasilDatetime
 from server.utils.enums.recurrence import Recurrence
 from server.utils.must_be_int import must_be_int
 
@@ -81,7 +82,7 @@ class ReservationRepository:
             title=input.title,
             type=input.type,
             reason=input.reason,
-            updated_at=datetime.now(),
+            updated_at=BrasilDatetime.now_utc(),
             classroom_id=must_be_int(classroom.id),
             classroom=classroom,
             created_by_id=must_be_int(creator.id),
@@ -125,7 +126,7 @@ class ReservationRepository:
             title=solicitation.reservation_title,
             type=solicitation.reservation_type,
             reason=solicitation.reason,
-            updated_at=datetime.now(),
+            updated_at=BrasilDatetime.now_utc(),
             classroom_id=must_be_int(classroom.id),
             classroom=classroom,
             created_by_id=must_be_int(creator.id),

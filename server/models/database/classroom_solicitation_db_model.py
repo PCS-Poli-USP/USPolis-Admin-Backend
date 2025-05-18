@@ -4,6 +4,7 @@ from sqlmodel import Field, Relationship
 from sqlalchemy import CheckConstraint, Column, ARRAY, Date
 
 from server.models.database.base_db_model import BaseModel
+from server.utils.brasil_datetime import BrasilDatetime
 from server.utils.enums.reservation_type import ReservationType
 
 
@@ -48,5 +49,5 @@ class ClassroomSolicitation(BaseModel, table=True):
     deleted_by: str | None = Field(nullable=True, default=None)
     closed: bool = Field(default=False)
     closed_by: str | None = Field(nullable=True, default=None)
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=BrasilDatetime.now_utc)
+    updated_at: datetime = Field(default_factory=BrasilDatetime.now_utc)

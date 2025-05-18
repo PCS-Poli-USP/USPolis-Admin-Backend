@@ -5,12 +5,13 @@ from server.models.database.base_db_model import BaseModel
 
 if TYPE_CHECKING:
     from server.models.database.schedule_db_model import Schedule
+from server.utils.brasil_datetime import BrasilDatetime
 from server.utils.enums.action_type_enum import ActionType
 
 
 class AllocationLog(BaseModel, table=True):
     modified_by: str = Field()
-    modified_at: datetime = Field(default_factory=datetime.now)
+    modified_at: datetime = Field(default_factory=BrasilDatetime.now_utc)
     action: ActionType = Field()
 
     old_classroom: str = Field()

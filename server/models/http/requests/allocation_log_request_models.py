@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.schedule_db_model import Schedule
 from server.models.database.user_db_model import User
+from server.utils.brasil_datetime import BrasilDatetime
 from server.utils.enums.action_type_enum import ActionType
 from server.utils.enums.allocation_enum import AllocationEnum
 from server.utils.must_be_int import must_be_int
@@ -31,7 +32,7 @@ class AllocationLogInput(AllocationLogBase):
             schedule_id=must_be_int(schedule.id),
             schedule=schedule,
             modified_by=user.name,
-            modified_at=datetime.now(),
+            modified_at=BrasilDatetime.now_utc(),
             action=ActionType.ALLOCATE,
             old_classroom=str(schedule.classroom.name)
             if schedule.classroom
@@ -51,7 +52,7 @@ class AllocationLogInput(AllocationLogBase):
             schedule_id=schedule.id,
             schedule=schedule,
             modified_by=user.name,
-            modified_at=datetime.now(),
+            modified_at=BrasilDatetime.now_utc(),
             action=ActionType.ALLOCATE,
             old_classroom=str(schedule.classroom.name)
             if schedule.classroom

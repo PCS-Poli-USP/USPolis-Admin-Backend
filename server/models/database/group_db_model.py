@@ -7,6 +7,7 @@ from server.models.database.base_db_model import BaseModel
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.group_classroom_link import GroupClassroomLink
 from server.models.database.group_user_link import GroupUserLink
+from server.utils.brasil_datetime import BrasilDatetime
 from server.utils.must_be_int import must_be_int
 
 if TYPE_CHECKING:
@@ -21,8 +22,8 @@ class Group(BaseModel, table=True):
 
     name: str = Field(index=True, nullable=False, unique=True)
     building_id: int = Field(foreign_key="building.id", nullable=False)
-    updated_at: datetime = Field(default_factory=datetime.now)
-    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=BrasilDatetime.now_utc)
+    created_at: datetime = Field(default_factory=BrasilDatetime.now_utc)
 
     building: "Building" = Relationship(
         back_populates="groups",

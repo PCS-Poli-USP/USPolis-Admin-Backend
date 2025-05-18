@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlmodel import Field
 
 from server.models.database.base_db_model import BaseModel
+from server.utils.brasil_datetime import BrasilDatetime
 
 
 class InstitutionalEvent(BaseModel, table=True):
@@ -16,4 +17,4 @@ class InstitutionalEvent(BaseModel, table=True):
     classroom: str | None = Field()
     external_link: str | None = Field()
     likes: int = Field(default=0)
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=BrasilDatetime.now_utc)

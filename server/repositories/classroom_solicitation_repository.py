@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 from fastapi import HTTPException, status
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
@@ -9,6 +9,7 @@ from server.models.http.requests.classroom_solicitation_request_models import (
 )
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.classroom_repository import ClassroomRepository
+from server.utils.brasil_datetime import BrasilDatetime
 from server.utils.must_be_int import must_be_int
 
 
@@ -117,7 +118,7 @@ class ClassroomSolicitationRepository:
         solicitation.denied = False
         solicitation.closed = True
         solicitation.closed_by = user.name
-        solicitation.updated_at = datetime.now()
+        solicitation.updated_at = BrasilDatetime.now_utc()
         session.add(solicitation)
         return solicitation
 
@@ -128,7 +129,7 @@ class ClassroomSolicitationRepository:
         solicitation.denied = True
         solicitation.closed = True
         solicitation.closed_by = user.name
-        solicitation.updated_at = datetime.now()
+        solicitation.updated_at = BrasilDatetime.now_utc()
         session.add(solicitation)
         return solicitation
 

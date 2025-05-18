@@ -6,6 +6,7 @@ from sqlalchemy import UniqueConstraint
 from sqlmodel import Relationship, Field
 
 from server.models.database.base_db_model import BaseModel
+from server.utils.brasil_datetime import BrasilDatetime
 
 
 if TYPE_CHECKING:
@@ -21,7 +22,7 @@ class Holiday(BaseModel, table=True):
     )
     name: str = Field()
     date: datetime_date = Field()
-    updated_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=BrasilDatetime.now_utc)
 
     category_id: int = Field(foreign_key="holidaycategory.id")
     category: "HolidayCategory" = Relationship(back_populates="holidays")
