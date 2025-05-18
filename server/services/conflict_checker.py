@@ -20,6 +20,7 @@ from server.models.database.classroom_db_model import (
     ClassroomWithConflictsIndicator,
     ConflictsInfo,
 )
+from server.models.database.intentional_conflict_db_model import IntentionalConflict
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.schedule_db_model import Schedule
 from server.repositories.classroom_repository import ClassroomRepository
@@ -228,32 +229,50 @@ class ConflictChecker:
         )
         return occurrences
 
+    def __get_intentional_conflicts_for_classroom(
+        self,
+        classroom: Classroom,
+        start: date,
+        end: date,
+    ) -> list[IntentionalConflict]:
+        intentional = IntentionalConflictRepository.get_all_on_classroom_by_range(
+            classroom_id=must_be_int(classroom.id),
+            start=start,
+            end=end,
+            session=self.session,
+        )
+        return intentional
+
+    def __get_intentional_pairs_for_classroom(
+        self, classroom: Classroom, start: date, end: date
+    ) -> set[tuple[Occurrence, Occurrence]]:
+        intentional = IntentionalConflictRepository.get_all_on_classroom_by_range(
+            classroom_id=must_be_int(classroom.id),
+            start=start,
+            end=end,
+            session=self.session,
+        )
+        intentional_pairs = set(
+            [(i.first_occurrence, i.second_occurrence) for i in intentional]
+        )
+        return intentional_pairs
+
     def __unintentional_conflicts_for_classroom(
         self,
         classroom: Classroom,
         start: date,
         end: date,
     ) -> list[Group]:
-        occurrences = OccurrenceRepository.get_all_on_interval_for_classroom(
-            classroom_id=must_be_int(classroom.id),
-            start=start,
-            end=end,
-            session=self.session,
+        occurrences = self.__get_classroom_occurrences_by_range(
+            must_be_int(classroom.id), start, end
         )
-        intentional_conflicts = (
-            IntentionalConflictRepository.get_all_on_classroom_by_range(
-                classroom_id=must_be_int(classroom.id),
-                start=start,
-                end=end,
-                session=self.session,
-            )
+        intentional_pairs = self.__get_intentional_pairs_for_classroom(
+            classroom, start, end
         )
-        intentional_occurrences = set(
-            [i.first_occurrence for i in intentional_conflicts]
-            + [i.second_occurrence for i in intentional_conflicts]
+        conflictings = self.__get_grouped_unintentional_conflicting_occurrences_in_list(
+            occurrences,
+            intentional_pairs,
         )
-        occurrences = [o for o in occurrences if o not in intentional_occurrences]
-        conflictings = self.__get_grouped_conflicting_occurrences_in_list(occurrences)
         return conflictings
 
     def __intentional_conflicts_for_classroom(
@@ -262,17 +281,18 @@ class ConflictChecker:
         start: date,
         end: date,
     ) -> list[Group]:
-        intentional = IntentionalConflictRepository.get_all_on_classroom_by_range(
-            classroom_id=must_be_int(classroom.id),
-            start=start,
-            end=end,
-            session=self.session,
+        intentional = self.__get_intentional_conflicts_for_classroom(
+            classroom, start, end
         )
         firsts = set([i.first_occurrence for i in intentional])
         seconds = set([i.second_occurrence for i in intentional])
         intentional_occurrences = set(firsts).union(set(seconds))
-        conflictings = self.__get_grouped_conflicting_occurrences_in_list(
-            list(intentional_occurrences)
+        intentional_pairs = set(
+            [(i.first_occurrence, i.second_occurrence) for i in intentional]
+        )
+        conflictings = self.__get_grouped_intentional_conflicting_occurrences_in_list(
+            list(intentional_occurrences),
+            intentional_pairs,
         )
         return conflictings
 
@@ -381,35 +401,87 @@ class ConflictChecker:
                 count += 1
         return count
 
-    def __get_grouped_conflicting_occurrences_in_list(
+    def __pair_exists_in_intentional_pairs(
+        self,
+        first_occurrence: Occurrence,
+        second_occurrence: Occurrence,
+        intentional_pairs: set[tuple[Occurrence, Occurrence]],
+    ) -> bool:
+        return (first_occurrence, second_occurrence) in intentional_pairs or (
+            second_occurrence,
+            first_occurrence,
+        ) in intentional_pairs
+
+    def __insert_pair_in_group_map(
+        self,
+        occurrence: Occurrence,
+        other_occurrence: Occurrence,
+        curr_group: Group | None,
+        groups: list[Group],
+        occurrence_group_map: dict[Occurrence, Group],
+    ) -> None:
+        if other_occurrence in occurrence_group_map:
+            other_group = occurrence_group_map[other_occurrence]
+            if curr_group is None:
+                curr_group = other_group
+                curr_group.add(occurrence)
+                occurrence_group_map[occurrence] = curr_group
+            else:
+                curr_group.update(other_group)
+                for item in other_group:
+                    occurrence_group_map[item] = curr_group
+                groups.remove(other_group)
+        else:
+            if curr_group is None:
+                curr_group = {occurrence, other_occurrence}  # type: ignore
+                occurrence_group_map[occurrence] = curr_group
+                occurrence_group_map[other_occurrence] = curr_group
+                groups.append(curr_group)
+            else:
+                curr_group.add(other_occurrence)
+                occurrence_group_map[other_occurrence] = curr_group
+
+    def __get_grouped_intentional_conflicting_occurrences_in_list(
         self,
         occurrences: list[Occurrence],
+        intentional_pairs: set[tuple[Occurrence, Occurrence]],
     ) -> list[Group]:
         groups: list[Group] = []
         occurrence_group_map: dict[Occurrence, Group] = {}
-
         for i, occurrence in enumerate(occurrences):
             curr_group: Group | None = None
             for other_occurrence in occurrences[i + 1 :]:
-                if occurrence.conflicts_with(other_occurrence):
-                    if other_occurrence in occurrence_group_map:
-                        other_group = occurrence_group_map[other_occurrence]
-                        if curr_group is None:
-                            curr_group = other_group
-                            curr_group.add(occurrence)
-                            occurrence_group_map[occurrence] = curr_group
-                        else:
-                            curr_group.update(other_group)
-                            for item in other_group:
-                                occurrence_group_map[item] = curr_group
-                            groups.remove(other_group)
-                    else:
-                        if curr_group is None:
-                            curr_group = {occurrence, other_occurrence}  # type: ignore
-                            occurrence_group_map[occurrence] = curr_group
-                            occurrence_group_map[other_occurrence] = curr_group
-                            groups.append(curr_group)
-                        else:
-                            curr_group.add(other_occurrence)
-                            occurrence_group_map[other_occurrence] = curr_group
+                if self.__pair_exists_in_intentional_pairs(
+                    occurrence, other_occurrence, intentional_pairs
+                ) and occurrence.conflicts_with(other_occurrence):
+                    self.__insert_pair_in_group_map(
+                        occurrence,
+                        other_occurrence,
+                        curr_group,
+                        groups,
+                        occurrence_group_map,
+                    )
+
+        return groups
+
+    def __get_grouped_unintentional_conflicting_occurrences_in_list(
+        self,
+        occurrences: list[Occurrence],
+        intentional_pairs: set[tuple[Occurrence, Occurrence]],
+    ) -> list[Group]:
+        groups: list[Group] = []
+        occurrence_group_map: dict[Occurrence, Group] = {}
+        for i, occurrence in enumerate(occurrences):
+            curr_group: Group | None = None
+            for other_occurrence in occurrences[i + 1 :]:
+                if not self.__pair_exists_in_intentional_pairs(
+                    occurrence, other_occurrence, intentional_pairs
+                ) and occurrence.conflicts_with(other_occurrence):
+                    self.__insert_pair_in_group_map(
+                        occurrence,
+                        other_occurrence,
+                        curr_group,
+                        groups,
+                        occurrence_group_map,
+                    )
         return groups
