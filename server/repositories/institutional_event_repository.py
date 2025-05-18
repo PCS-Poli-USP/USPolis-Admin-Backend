@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from sqlmodel import Session, col, select
 
 from server.models.database.institutional_event_db_model import InstitutionalEvent

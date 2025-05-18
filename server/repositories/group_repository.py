@@ -1,4 +1,3 @@
-from datetime import datetime
 from sqlmodel import Session, col, select
 from sqlalchemy.exc import NoResultFound
 from fastapi import HTTPException, status

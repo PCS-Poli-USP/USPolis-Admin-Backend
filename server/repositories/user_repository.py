@@ -1,4 +1,3 @@
-from datetime import datetime
 from fastapi import HTTPException, status
 from sqlmodel import Session, col, select
 

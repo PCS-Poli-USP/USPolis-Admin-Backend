@@ -113,7 +113,7 @@ class User(BaseModel, table=True):
             map[Building, list[Classroom]]: A map of buildings to classrooms.
         """
         from server.models.database.building_db_model import Building
-        
+
         if self.is_admin:
             buildings = list(session.exec(select(Building)).all())
             return {

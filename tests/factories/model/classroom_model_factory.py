@@ -30,9 +30,7 @@ class ClassroomModelFactory(BaseModelFactory[Classroom]):
 
     def get_defaults(self) -> ClassroomModelDict:
         core = self.core_factory.get_base_defaults()
-        groups = (
-            [self.group] if self.group is not None else []
-        )
+        groups = [self.group] if self.group is not None else []
         return {
             **core,
             "updated_at": datetime.now(),

@@ -96,7 +96,7 @@ class BuildingRepository:
             building=building,
             users=[],
             classrooms=[],
-        ) # type: ignore
+        )  # type: ignore
         session.add(group)
         return building
 
