@@ -23,15 +23,19 @@ from server.app import app
 from server.deps.authenticate import authenticate, google_authenticate
 from server.deps.session_dep import SessionDep
 from server.models.database.building_db_model import Building
+from server.models.database.class_db_model import Class
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.group_db_model import Group
+from server.models.database.subject_db_model import Subject
 from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister
 from server.repositories.user_repository import UserRepository
 from server.services.auth.auth_user_info import AuthUserInfo
 from tests.factories.model.building_model_factory import BuildingModelFactory
+from tests.factories.model.class_model_factory import ClassModelFactory
 from tests.factories.model.classroom_model_factory import ClassroomModelFactory
 from tests.factories.model.group_model_factory import GroupModelFactory
+from tests.factories.model.subject_model_factory import SubjectModelFactory
 from tests.factories.model.user_model_factory import UserModelFactory
 
 test_db_url = f"{CONFIG.test_db_uri}/{CONFIG.test_db_database}"
@@ -267,3 +271,15 @@ def classroom_fixture(
     return ClassroomModelFactory(
         creator=user, building=building, group=group, session=session
     ).create_and_refresh()
+
+
+@pytest.fixture(name="subject")
+def subject_fixture(building: Building, session: Session) -> Subject:
+    """Fixture to create a standard subject in the standard building."""
+    return SubjectModelFactory(building=building, session=session).create_and_refresh()
+
+
+@pytest.fixture(name="class_")
+def class_fixture(subject: Subject, session: Session) -> Class:
+    """Fixture to create a standard class in the standard subject."""
+    return ClassModelFactory(subject=subject, session=session).create_and_refresh()

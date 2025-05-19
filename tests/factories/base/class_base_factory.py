@@ -1,5 +1,5 @@
-from datetime import date, timedelta
 from server.models.dicts.base.class_base_dict import ClassBaseDict
+from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.audiovisual_type_enum import AudiovisualType
 from server.utils.enums.class_type import ClassType
 from tests.factories.base.base_factory import BaseFactory
@@ -10,9 +10,10 @@ class ClassBaseFactory(BaseFactory):
         super().__init__()
 
     def get_base_defaults(self) -> ClassBaseDict:
+        semester = BrazilDatetime.current_semester()
         return {
-            "start_date": date.today(),
-            "end_date": date.today() + timedelta(days=30),
+            "start_date": semester[0].date(),
+            "end_date": semester[1].date(),
             "code": self.faker.numerify(text="%%%%%%%"),
             "professors": [self.faker.name()],
             "type": self.faker.random_element(ClassType.values()),

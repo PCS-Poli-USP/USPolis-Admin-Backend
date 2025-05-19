@@ -68,6 +68,16 @@ class WeekDay(Enum):
             WeekDay.SUNDAY,
         ]
 
+    @staticmethod
+    def workdays() -> list["WeekDay"]:
+        return [
+            WeekDay.MONDAY,
+            WeekDay.TUESDAY,
+            WeekDay.WEDNESDAY,
+            WeekDay.THURSDAY,
+            WeekDay.FRIDAY,
+        ]
+
 
 class NoSuchWeekDay(Exception):
     pass

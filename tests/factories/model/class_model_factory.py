@@ -6,6 +6,7 @@ from server.models.database.subject_db_model import Subject
 from server.models.dicts.database.class_database_dicts import ClassModelDict
 from tests.factories.base.class_base_factory import ClassBaseFactory
 from tests.factories.model.base_model_factory import BaseModelFactory
+from tests.factories.model.schedule_model_factory import ScheduleModelFactory
 
 
 class ClassModelFactory(BaseModelFactory[Class]):
@@ -30,12 +31,23 @@ class ClassModelFactory(BaseModelFactory[Class]):
         }
 
     def create(self, **overrides: Unpack[ClassModelDict]) -> Class:  # type: ignore
-        """Create a class instance with default values."""
-        return super().create(**overrides)
+        """Create a class instance with default values.\n
+        A default class has a single schedule.\n
+        """
+        class_ = super().create(**overrides)
+        if overrides.get("schedules") is None:
+            factory = ScheduleModelFactory(
+                class_=class_, reservation=None, session=self.session
+            )
+            factory.create()
+        return class_
 
     def create_and_refresh(self, **overrides: Unpack[ClassModelDict]) -> Class:  # type: ignore
         """Create a class instance with default values, commit and refresh it."""
-        return super().create_and_refresh(**overrides)
+        class_ = self.create(**overrides)
+        self.session.commit()
+        self.session.refresh(class_)
+        return class_
 
     def update(self, class_id: int, **overrides: Unpack[ClassModelDict]) -> Class:  # type: ignore
         """Create a class instance with default values."""
