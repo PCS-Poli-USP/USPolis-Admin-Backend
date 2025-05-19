@@ -91,6 +91,8 @@ class BuildingRepository:
             created_by=creator,
         )
         session.add(building)
+        session.flush()
+
         group = Group(
             name=building_in.name,
             building=building,
@@ -98,6 +100,10 @@ class BuildingRepository:
             classrooms=[],
         )  # type: ignore
         session.add(group)
+        session.flush()
+
+        building.main_group = group
+        session.add(building)
         return building
 
     @staticmethod
