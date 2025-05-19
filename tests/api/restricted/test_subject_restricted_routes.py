@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 
 from server.models.database.building_db_model import Building
+from server.models.database.subject_db_model import Subject
 from server.utils.must_be_int import must_be_int
 from tests.factories.model.subject_model_factory import SubjectModelFactory
 from tests.factories.request.subject_request_factory import SubjectRequestFactory
@@ -87,6 +88,16 @@ def test_create_subject_with_restricted_user(
     assert subject["code"] == input.code
 
 
+def test_create_subject_with_used_code(
+    subject: Subject, building: Building, restricted_client: TestClient
+) -> None:
+    factory = SubjectRequestFactory(building_ids=[must_be_int(building.id)])
+    input = factory.create_input(code=subject.code)
+    response = restricted_client.post(URL_PREFIX, json=input.model_dump())
+
+    assert response.status_code == status.HTTP_409_CONFLICT
+
+
 def test_create_subject_with_common_user(
     building: Building, common_client: TestClient
 ) -> None:
@@ -97,7 +108,7 @@ def test_create_subject_with_common_user(
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
-def test_create_subject_with_public_client(
+def test_create_subject_with_public_user(
     building: Building, session: Session, public_client: TestClient
 ) -> None:
     factory = SubjectModelFactory(building=building, session=session)
@@ -143,6 +154,24 @@ def test_update_subject_with_restricted_user(
     assert updated["code"] == input.code
 
 
+def test_update_subject_with_used_code(
+    subject: Subject,
+    building: Building,
+    session: Session,
+    restricted_client: TestClient,
+) -> None:
+    factory = SubjectModelFactory(building=building, session=session)
+    new_subject = factory.create_and_refresh()
+
+    request_factory = SubjectRequestFactory(building_ids=[must_be_int(building.id)])
+    input = request_factory.update_input(code=subject.code)
+
+    response = restricted_client.put(
+        f"{URL_PREFIX}/{new_subject.id}", json=input.model_dump()
+    )
+    assert response.status_code == status.HTTP_409_CONFLICT
+
+
 def test_update_subject_with_common_user(
     building: Building, session: Session, common_client: TestClient
 ) -> None:
@@ -155,6 +184,20 @@ def test_update_subject_with_common_user(
     response = common_client.put(f"{URL_PREFIX}/{subject.id}", json=input.model_dump())
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_update_subject_with_public_user(
+    building: Building, session: Session, public_client: TestClient
+) -> None:
+    factory = SubjectModelFactory(building=building, session=session)
+    subject = factory.create_and_refresh()
+
+    request_factory = SubjectRequestFactory(building_ids=[must_be_int(building.id)])
+    input = request_factory.update_input()
+
+    response = public_client.put(f"{URL_PREFIX}/{subject.id}", json=input.model_dump())
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 def test_delete_subject_with_admin_user(
@@ -194,3 +237,16 @@ def test_delete_subject_with_common_user(
     )
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_delete_subject_with_public_user(
+    building: Building, session: Session, public_client: TestClient
+) -> None:
+    factory = SubjectModelFactory(building=building, session=session)
+    subject = factory.create_and_refresh()
+
+    response = public_client.delete(
+        f"{URL_PREFIX}/{subject.id}",
+    )
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED

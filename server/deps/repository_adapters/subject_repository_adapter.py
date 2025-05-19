@@ -1,7 +1,7 @@
 from typing import Annotated
 
-from fastapi import Depends
-
+from fastapi import Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from server.deps.authenticate import UserDep
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
 from server.deps.session_dep import SessionDep
@@ -53,17 +53,39 @@ class SubjectRepositoryAdapter:
     def create(self, input: SubjectRegister) -> Subject:
         self.building_checker.check_permission(input.building_ids)
         subject = SubjectRepository.create(input=input, session=self.session)
+
+        try:
+            self.session.commit()
+        except IntegrityError:
+            self.session.rollback()
+            raise SubjectAlreadyExists(input.code)
+        self.session.refresh(subject)
         return subject
 
     def update(self, id: int, input: SubjectUpdate) -> Subject:
         self.checker.check_permission(object=id)
         subject = SubjectRepository.update(id=id, input=input, session=self.session)
+
+        try:
+            self.session.commit()
+        except IntegrityError:
+            self.session.rollback()
+            raise SubjectAlreadyExists(input.code)
         return subject
 
     def delete(self, id: int) -> None:
         subject = SubjectRepository.get_by_id(id=id, session=self.session)
         self.checker.check_permission(object=subject)
         SubjectRepository.delete(id=id, session=self.session)
+        self.session.commit()
+
+
+class SubjectAlreadyExists(HTTPException):
+    def __init__(self, subject_code: str) -> None:
+        super().__init__(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"A disciplina {subject_code} já existe",
+        )
 
 
 SubjectRepositoryDep = Annotated[SubjectRepositoryAdapter, Depends()]

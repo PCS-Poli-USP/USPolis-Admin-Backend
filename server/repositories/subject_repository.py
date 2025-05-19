@@ -94,8 +94,6 @@ class SubjectRepository:
             work_credit=input.work_credit,
         )
         session.add(new_subject)
-        session.commit()
-        session.refresh(new_subject)
         return new_subject
 
     @staticmethod
@@ -309,15 +307,12 @@ class SubjectRepository:
         )
         SubjectRepository.__update_subject_core_data(subject=subject, input=input)
         session.add(subject)
-        session.commit()
-        session.refresh(subject)
         return subject
 
     @staticmethod
     def delete(*, id: int, session: Session) -> None:
         subject = SubjectRepository.get_by_id(id=id, session=session)
         session.delete(subject)
-        session.commit()
 
     @staticmethod
     def create_general_forum(*, id: int, name: str, session: Session) -> Subject:
