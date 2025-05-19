@@ -34,3 +34,10 @@ def test_get_building_by_id_with_common_user(
     response = common_client.get(f"{URL_PREFIX}/{building.id}")
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
+
+def test_get_building_by_id_with_public_user(
+    building: Building, public_client: TestClient
+) -> None:
+    response = public_client.get(f"{URL_PREFIX}/{building.id}")
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED

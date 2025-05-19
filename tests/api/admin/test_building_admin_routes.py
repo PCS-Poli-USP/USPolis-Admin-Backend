@@ -48,6 +48,14 @@ def test_create_building_with_restricted_user(restricted_client: TestClient) -> 
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
+def test_create_building_with_public_user(public_client: TestClient) -> None:
+    input = BuildingRequestFactory().create_input()
+    body = input.model_dump()
+    response = public_client.post(URL_PREFIX, json=body)
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
 def test_create_building_with_common_user(common_client: TestClient) -> None:
     input = BuildingRequestFactory().create_input()
     body = input.model_dump()
@@ -105,3 +113,10 @@ def test_delete_building_admin_user_with_common_user(
 ) -> None:
     response = common_client.delete(f"{URL_PREFIX}/{building.id}")
     assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_delete_building_admin_user_with_public_user(
+    building: Building, public_client: TestClient
+) -> None:
+    response = public_client.delete(f"{URL_PREFIX}/{building.id}")
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
