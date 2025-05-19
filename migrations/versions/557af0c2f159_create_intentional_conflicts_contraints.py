@@ -25,7 +25,7 @@ def upgrade() -> None:
         type_="foreignkey",
     )
     op.drop_constraint(
-        "intentionalconflict_fist_occurrence_id_fkey",
+        "intentionalconflict_first_occurrence_id_fkey",
         "intentionalconflict",
         type_="foreignkey",
     )
@@ -48,8 +48,16 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_constraint(None, "intentionalconflict", type_="foreignkey")
-    op.drop_constraint(None, "intentionalconflict", type_="foreignkey")
+    op.drop_constraint(
+        "intentionalconflict_first_occurrence_id_fkey",
+        "intentionalconflict",
+        type_="foreignkey",
+    )
+    op.drop_constraint(
+        "intentionalconflict_second_occurrence_id_fkey",
+        "intentionalconflict",
+        type_="foreignkey",
+    )
     op.create_foreign_key(
         "intentionalconflict_fist_occurrence_id_fkey",
         "intentionalconflict",

@@ -15,7 +15,9 @@ class QueryInterval(BaseModel):
     @model_validator(mode="after")
     def check_dates(self) -> Self:
         if not self.today and not self.start and not self.end:
-            self.today = BrazilDatetime.now_utc().date()
+            current_semester = BrazilDatetime.current_semester()
+            self.start = current_semester[0]
+            self.end = current_semester[1]
             return self
 
         if self.today and (self.start or self.end):
