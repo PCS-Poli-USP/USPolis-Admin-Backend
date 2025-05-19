@@ -116,6 +116,9 @@ class BuildingRepository:
     @staticmethod
     def delete(*, id: int, session: Session) -> None:
         building = BuildingRepository.get_by_id(id=id, session=session)
+        building.main_group = None
+        session.add(building)
+        session.flush()
         session.delete(building)
 
 

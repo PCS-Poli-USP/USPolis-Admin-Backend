@@ -37,10 +37,13 @@ class Building(BaseModel, table=True):
         back_populates="buildings", link_model=SubjectBuildingLink
     )
     solicitations: list["ClassroomSolicitation"] = Relationship(
-        back_populates="building"
+        back_populates="building", sa_relationship_kwargs={"cascade": "delete"}
     )
     main_group: Optional["Group"] = Relationship(
-        sa_relationship_kwargs={"foreign_keys": "[Building.main_group_id]"}
+        sa_relationship_kwargs={
+            "foreign_keys": "[Building.main_group_id]",
+            "cascade": "delete",
+        }
     )
     groups: list["Group"] = Relationship(
         back_populates="building",
