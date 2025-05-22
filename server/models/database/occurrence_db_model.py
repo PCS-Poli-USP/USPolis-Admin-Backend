@@ -21,7 +21,7 @@ class Occurrence(BaseModel, table=True):
     )
     classroom: Optional["Classroom"] = Relationship(back_populates="occurrences")
 
-    schedule_id: int | None = Field(default=None, index=True, foreign_key="schedule.id")
+    schedule_id: int = Field(default=None, index=True, foreign_key="schedule.id")
     schedule: "Schedule" = Relationship(back_populates="occurrences")
 
     def conflicts_with(self, other: "Occurrence") -> bool:

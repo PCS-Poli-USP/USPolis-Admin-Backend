@@ -13,6 +13,7 @@ from server.models.http.requests.occurrence_request_models import (
 )
 from server.repositories.allocation_log_repository import AllocationLogRepository
 from server.utils.enums.recurrence import Recurrence
+from server.utils.must_be_int import must_be_int
 from server.utils.occurrence_utils import OccurrenceUtils
 
 
@@ -106,13 +107,13 @@ class OccurrenceRepository:
             previous_occurrences = schedule.occurrences
             for occurrence in previous_occurrences:
                 session.delete(occurrence)
-            schedule.occurrences = occurrences
 
         for occurrence in occurrences:
             occurrence.classroom_id = classroom.id
             occurrence.classroom = classroom
             session.add(occurrence)
 
+        schedule.occurrences = occurrences
         schedule.classroom = classroom
         schedule.allocated = True
         session.add(schedule)
@@ -155,7 +156,7 @@ class OccurrenceRepository:
                 id=input.classroom_id, session=session
             )
         occurrence = Occurrence(
-            schedule_id=input.schedule_id,
+            schedule_id=must_be_int(input.schedule_id),
             schedule=schedule,
             classroom_id=input.classroom_id,
             classroom=classroom,
