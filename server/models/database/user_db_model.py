@@ -60,11 +60,17 @@ class User(BaseModel, table=True):
         Returns:
             set[int]: A set of classroom IDs.
         """
-        return {
-            must_be_int(classroom.id)
-            for group in self.groups
-            for classroom in group.classrooms
-        }
+        classrooms_ids: set[int] = set()
+        for group in self.groups:
+            if group.classrooms:
+                classrooms_ids.update(
+                    must_be_int(classroom.id) for classroom in group.classrooms
+                )
+            if not group.classrooms:
+                classrooms_ids.update(
+                    must_be_int(classroom.id) for classroom in group.building.classrooms
+                )
+        return classrooms_ids
 
     def classrooms_ids(self) -> list[int]:
         """
