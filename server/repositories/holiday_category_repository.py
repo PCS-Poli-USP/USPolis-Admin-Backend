@@ -44,6 +44,7 @@ class HolidayCategoryRepository:
     ) -> HolidayCategory:
         new_holiday_category = HolidayCategory(
             name=input.name,
+            year=input.year,
             created_by=creator,
         )
         session.add(new_holiday_category)
@@ -58,7 +59,10 @@ class HolidayCategoryRepository:
         holiday_category = HolidayCategoryRepository.get_by_id(id=id, session=session)
         if not user.is_admin and holiday_category.created_by_id != user.id:
             raise HolidayCategoryOperationNotAllowed("atualizar", holiday_category.name)
+        
         holiday_category.name = input.name
+        holiday_category.year = input.year
+        
         session.add(holiday_category)
         session.commit()
         return holiday_category

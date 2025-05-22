@@ -48,6 +48,7 @@ class CalendarRepository:
             )
         new_calendar = Calendar(
             name=input.name,
+            year=input.year,
             categories=categories,
             created_by=creator,
         )
@@ -63,7 +64,9 @@ class CalendarRepository:
         calendar = CalendarRepository.get_by_id(id=id, session=session)
         if not user.is_admin and calendar.created_by_id != user.id:
             raise CalendarOperationNotAllowed("atualizar", input.name)
+        
         calendar.name = input.name
+        calendar.year = input.year
         if input.categories_ids is not None:
             calendar.categories = HolidayCategoryRepository.get_by_ids(
                 ids=input.categories_ids, session=session

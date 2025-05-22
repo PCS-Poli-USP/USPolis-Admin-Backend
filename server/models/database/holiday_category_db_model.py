@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, Relationship
 
 from server.models.database.base_db_model import BaseModel
@@ -14,8 +15,12 @@ if TYPE_CHECKING:
 
 
 class HolidayCategory(BaseModel, table=True):
-    name: str = Field(index=True, unique=True)
+    __table_args__ = (
+        UniqueConstraint("name", "year", name="unique_holiday_category_name_for_year"),
+    )
 
+    name: str = Field()
+    year: int = Field()
     created_by_id: int | None = Field(
         foreign_key="user.id", default=None, nullable=False
     )
