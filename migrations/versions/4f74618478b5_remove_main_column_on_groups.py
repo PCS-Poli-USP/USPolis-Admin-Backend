@@ -82,8 +82,6 @@ def upgrade() -> None:
         current_users = set(group.users)
         new_users = set(users)
         final_users = current_users.union(new_users)
-        print(final_users)
-        print(building.name)
         group.users = list(final_users)
         session.add(group)
 
