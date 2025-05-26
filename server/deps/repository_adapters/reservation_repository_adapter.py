@@ -35,6 +35,10 @@ class ReservationRespositoryAdapter:
 
     def get_all(self) -> list[Reservation]:
         """Get all reservations for authenticated user on owned buildings"""
+        if self.user.is_admin:
+            return ReservationRepository.get_all(
+                session=self.session, interval=self.interval
+            )
         return ReservationRepository.get_all_on_classrooms(
             classroom_ids=self.user.classrooms_ids(),
             session=self.session,
