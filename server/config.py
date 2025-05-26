@@ -34,7 +34,6 @@ class Settings(BaseModel):
     alembic_url: str = config("ALEMBIC_URL")  # type: ignore
 
     first_superuser_email: str = config("FIRST_SUPERUSER_EMAIL", "amdmin@uspolis.com")  # type: ignore
-    first_superuser_password: str = config("FIRST_SUPERUSER_PASSWORD", "admin")  # type: ignore
     first_superuser_name: str = config("FIRST_SUPERUSER_NAME", "admin")  # type: ignore
 
     # Email
@@ -48,13 +47,14 @@ class Settings(BaseModel):
     google_auth_client_secret: str = config("GOOGLE_AUTH_CLIENT_SECRET")  # type: ignore
     google_auth_redirect_uri: str = config("GOOGLE_AUTH_REDIRECT_URI")  # type: ignore
 
-    # Testing / Development:
-    test_db_uri: str = config("TEST_DATABASE_URI")  # type: ignore
-    test_db_database: str = config("TEST_DATABASE_NAME")  # type: ignore
-    test_alembic_url: str = config("TEST_ALEMBIC_URL")  # type: ignore
-    testing: bool = config("TESTING", default=False, cast=bool)
-    override_auth: bool = config("OVERRIDE_AUTH", default=False, cast=bool)
-    mock_email: str = config("MOCK_EMAIL", default="uspolis@usp.br")  # type: ignore
+    if env == "DEVELOPMENT":
+        # Testing / Development:
+        test_db_uri: str = config("TEST_DATABASE_URI")  # type: ignore
+        test_db_database: str = config("TEST_DATABASE_NAME")  # type: ignore
+        test_alembic_url: str = config("TEST_ALEMBIC_URL")  # type: ignore
+        testing: bool = config("TESTING", default=False, cast=bool)
+        override_auth: bool = config("OVERRIDE_AUTH", default=False, cast=bool)
+        mock_email: str = config("MOCK_EMAIL", default="uspolis@usp.br")  # type: ignore
 
 
 CONFIG = Settings()
