@@ -27,7 +27,7 @@ class WeekDay(Enum):
                 f"No such week day: {day_str}. Valid week days: {mapping.keys()}"
             )
         return result
-    
+
     @classmethod
     def from_long_str(cls, day_str: str) -> "WeekDay":
         mapping = {
@@ -55,6 +55,28 @@ class WeekDay(Enum):
     def to_rrule(cls, value: int) -> str:
         dayOfWeek = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"]
         return dayOfWeek[value]
+
+    @staticmethod
+    def values() -> list["WeekDay"]:
+        return [
+            WeekDay.MONDAY,
+            WeekDay.TUESDAY,
+            WeekDay.WEDNESDAY,
+            WeekDay.THURSDAY,
+            WeekDay.FRIDAY,
+            WeekDay.SATURDAY,
+            WeekDay.SUNDAY,
+        ]
+
+    @staticmethod
+    def workdays() -> list["WeekDay"]:
+        return [
+            WeekDay.MONDAY,
+            WeekDay.TUESDAY,
+            WeekDay.WEDNESDAY,
+            WeekDay.THURSDAY,
+            WeekDay.FRIDAY,
+        ]
 
 
 class NoSuchWeekDay(Exception):

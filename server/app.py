@@ -9,15 +9,16 @@ from server.routes.admin import router as AdminRouter
 from server.routes.public import router as PublicRouter
 from server.routes.restricted import router as RestrictedRouter
 
+from server.config import CONFIG
+
 app = FastAPI(
     title="USPolis Server",
     version="2.0.0",
 )
 
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CONFIG.allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

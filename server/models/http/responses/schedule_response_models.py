@@ -88,12 +88,14 @@ class ScheduleResponse(ScheduleResponseBase):
 
     @classmethod
     def from_schedule_list(cls, schedules: list[Schedule]) -> list["ScheduleResponse"]:
+        schedules = sorted(
+            schedules,
+            key=lambda x: (x.week_day is None, x.week_day.value if x.week_day else 0),
+        )
         return [cls.from_schedule(schedule) for schedule in schedules]
 
     @classmethod
     def get_occurences_ids(cls, schedule: Schedule) -> list[int]:
-        if schedule.occurrences is None:
-            return []
         ids = []
         for occurence in schedule.occurrences:
             if occurence.id is None:

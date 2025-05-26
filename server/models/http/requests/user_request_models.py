@@ -1,9 +1,9 @@
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, EmailStr
 
 
 class UserUpdate(BaseModel):
     is_admin: bool
-    building_ids: list[int] | None = None
+    group_ids: list[int] = []
 
 
 class UserRegister(UserUpdate):

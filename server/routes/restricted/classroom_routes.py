@@ -8,7 +8,10 @@ from server.deps.repository_adapters.classroom_repository_adapter import (
 )
 from server.deps.session_dep import SessionDep
 from server.models.database.classroom_db_model import ClassroomWithConflictsIndicator
-from server.models.http.requests.classroom_request_models import ClassroomRegister
+from server.models.http.requests.classroom_request_models import (
+    ClassroomRegister,
+    ClassroomUpdate,
+)
 from server.models.http.responses.classroom_response_models import (
     ClassroomResponse,
     ClassroomFullResponse,
@@ -25,13 +28,15 @@ router = APIRouter(
 
 
 @router.get("/{id}")
-def get_classroom(id: int, repository: ClassroomRepositoryDep) -> ClassroomResponse:
+def get_classroom_by_id(
+    id: int, repository: ClassroomRepositoryDep
+) -> ClassroomResponse:
     classroom = repository.get_by_id(id)
     return ClassroomResponse.from_classroom(classroom)
 
 
 @router.get("/building/{building_id}")
-def get_classrooms_by_building(
+def get_classrooms_by_building_id(
     building_id: int, repository: ClassroomRepositoryDep
 ) -> list[ClassroomResponse]:
     """Get all classrooms on building"""
@@ -48,7 +53,9 @@ def get_classroom_full(id: int, session: SessionDep) -> ClassroomFullResponse:
 
 @router.get("/with-conflict-count/{building_id}/{schedule_id}")
 def get_classrooms_with_conflicts_count(
-    building_id: int, schedule_id: int, conflict_checker: ConflictCheckerDep
+    building_id: int,
+    schedule_id: int,
+    conflict_checker: ConflictCheckerDep,
 ) -> list[ClassroomWithConflictsIndicator]:
     classrooms = conflict_checker.classrooms_with_conflicts_indicator_for_schedule(
         building_id, schedule_id
@@ -66,7 +73,10 @@ def get_classroom_with_conflicts_count_for_time(
 ) -> list[ClassroomWithConflictsIndicator]:
     classrooms = (
         conflict_checker.classrooms_with_conflicts_indicator_for_time_and_dates(
-            building_id, start_time, end_time, dates
+            building_id,
+            start_time,
+            end_time,
+            dates,
         )
     )
     return classrooms
@@ -74,20 +84,20 @@ def get_classroom_with_conflicts_count_for_time(
 
 @router.post("")
 def create_classroom(
-    classroom_in: ClassroomRegister, repository: ClassroomRepositoryDep
+    input: ClassroomRegister, repository: ClassroomRepositoryDep
 ) -> ClassroomResponse:
     """Create a classroom"""
-    classroom = repository.create(classroom_in)
+    classroom = repository.create(input)
     return ClassroomResponse.from_classroom(classroom)
 
 
 @router.put("/{id}")
 def update_classroom(
     id: int,
-    classroom_input: ClassroomRegister,
+    input: ClassroomUpdate,
     repository: ClassroomRepositoryDep,
 ) -> ClassroomResponse:
-    classroom = repository.update(id, classroom_input)
+    classroom = repository.update(id, input)
     return ClassroomResponse.from_classroom(classroom)
 
 

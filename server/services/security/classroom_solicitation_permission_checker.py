@@ -6,72 +6,56 @@ from server.models.database.user_db_model import User
 from server.repositories.classroom_solicitation_repository import (
     ClassroomSolicitationRepository,
 )
+from server.services.security.base_permission_checker import PermissionChecker
 
 
-def classroom_solicitation_permission_checker(
-    user: User,
-    solicitation: int | ClassroomSolicitation | list[int] | list[ClassroomSolicitation],
-    session: Session,
-) -> None:
+class ClassroomSolicitationPermissionChecker(PermissionChecker[ClassroomSolicitation]):
     """
-    Checks the permission of a user for a specific classroom solicitation.
-
-    Parameters:
-    - user (User): The user object for which the permission needs to be checked.
-    - solicitation (int | ClassroomSolicitation | list[int] | list[ClassroomSolicitation]): The solicitation ID, ClassroomSolicitation object, list of solicitation IDs, or list of ClassroomSolicitation objects for which the permission needs to be checked.
-    - Session: The session of database
+    Permission checker for ClassroomSolicitation.
     """
-    if user.is_admin:
-        return
 
-    if isinstance(solicitation, int):
-        __solicitation_id_permission_checker(user, solicitation, session)
-    elif isinstance(solicitation, ClassroomSolicitation):
-        __solicitation_obj_permission_checker(user, solicitation)
-    elif isinstance(solicitation, list):
-        __solicitation_list_permission_checker(user, solicitation, session)
+    def __init__(self, user: User, session: Session):
+        super().__init__(user=user, session=session)
 
+    def check_permission(
+        self,
+        object: int | ClassroomSolicitation | list[int] | list[ClassroomSolicitation],
+    ) -> None:
+        if self.user.is_admin:
+            return
 
-def __solicitation_id_permission_checker(
-    user: User, solicitation_id: int, session: Session
-) -> None:
-    solicitation = ClassroomSolicitationRepository.get_by_id(
-        id=solicitation_id, session=session
-    )
-    if user.buildings is None or solicitation.building.id not in [
-        building.id for building in user.buildings
-    ]:
-        raise ForbiddenClassroomSolicitationAccess(
-            "Usuário não tem permissão para acessar a solicitação de sala"
+        if isinstance(object, int):
+            self.__solicitation_id_permission_checker(object)
+        elif isinstance(object, ClassroomSolicitation):
+            self.__solicitation_obj_permission_checker(object)
+        elif isinstance(object, list):
+            self.__solicitation_list_permission_checker(object)
+
+    def __solicitation_id_permission_checker(self, solicitation_id: int) -> None:
+        solicitation = ClassroomSolicitationRepository.get_by_id(
+            id=solicitation_id, session=self.session
         )
+        self.__solicitation_obj_permission_checker(solicitation)
 
+    def __solicitation_obj_permission_checker(
+        self,
+        solicitation: ClassroomSolicitation,
+    ) -> None:
+        user_ids = self.user.classrooms_ids_set()
+        if solicitation.classroom_id not in user_ids:
+            raise ForbiddenClassroomSolicitationAccess(
+                f"Usuário não tem permissão para acessar a solicitação de sala {solicitation.id}"
+            )
 
-def __solicitation_obj_permission_checker(
-    user: User, solicitation: ClassroomSolicitation
-) -> None:
-    if user.buildings is None or solicitation.building not in user.buildings:
-        raise ForbiddenClassroomSolicitationAccess(
-            "Usuário não tem permissão para acessar a solicitação de sala"
-        )
-
-
-def __solicitation_list_permission_checker(
-    user: User, solicitations: list[int] | list[ClassroomSolicitation], session: Session
-) -> None:
-    building_ids = [
-        solicitation.building.id
-        if isinstance(solicitation, ClassroomSolicitation)
-        else ClassroomSolicitationRepository.get_by_id(
-            id=solicitation, session=session
-        ).building.id
-        for solicitation in solicitations
-    ]
-    if user.buildings is None or not set(building_ids).issubset(
-        set([building.id for building in user.buildings])
-    ):
-        raise ForbiddenClassroomSolicitationAccess(
-            "Usuário não tem permissão para acessar uma ou mais solicitações de sala"
-        )
+    def __solicitation_list_permission_checker(
+        self,
+        solicitations: list[int] | list[ClassroomSolicitation],
+    ) -> None:
+        for solicitation in solicitations:
+            if isinstance(solicitation, ClassroomSolicitation):
+                self.__solicitation_obj_permission_checker(solicitation)
+            else:
+                self.__solicitation_id_permission_checker(solicitation)
 
 
 class ForbiddenClassroomSolicitationAccess(HTTPException):

@@ -1,9 +1,14 @@
-from datetime import datetime
+from datetime import datetime, time
 from typing import TYPE_CHECKING
 
 from sqlalchemy import UniqueConstraint
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship, Column, Enum
+from server.models.database.base_db_model import BaseModel
+from pydantic import BaseModel as PydanticBaseModel
 
+from server.models.database.group_classroom_link import GroupClassroomLink
+from server.utils.brazil_datetime import BrazilDatetime
+from server.utils.enums.audiovisual_type_enum import AudiovisualType
 from server.utils.must_be_int import must_be_int
 
 if TYPE_CHECKING:
@@ -15,17 +20,19 @@ if TYPE_CHECKING:
     from server.models.database.classroom_solicitation_db_model import (
         ClassroomSolicitation,
     )
+    from server.models.database.group_db_model import Group
 
 
-class ClassroomBase(SQLModel):
+class ClassroomBase(BaseModel):
     name: str
     capacity: int
     floor: int
-    ignore_to_allocate: bool = False
     accessibility: bool = False
-    projector: bool = False
+    audiovisual: AudiovisualType = Field(
+        sa_column=Column(Enum(AudiovisualType), nullable=False)
+    )
     air_conditioning: bool = False
-    updated_at: datetime = datetime.now()
+    updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
 
     created_by_id: int = Field(foreign_key="user.id")
     building_id: int = Field(foreign_key="building.id")
@@ -37,7 +44,6 @@ class Classroom(ClassroomBase, table=True):
             "name", "building_id", name="unique_classroom_name_for_building"
         ),
     )
-    id: int | None = Field(primary_key=True, default=None)
 
     created_by: "User" = Relationship()
     building: "Building" = Relationship(back_populates="classrooms")
@@ -49,11 +55,54 @@ class Classroom(ClassroomBase, table=True):
     solicitations: list["ClassroomSolicitation"] = Relationship(
         back_populates="classroom"
     )
+    groups: list["Group"] = Relationship(
+        back_populates="classrooms", link_model=GroupClassroomLink
+    )
+
+
+class ConflictsInfo(PydanticBaseModel):
+    subject_id: int | None
+    subject: str | None
+    class_id: int | None
+    class_code: str | None
+    reservation: str | None
+    reservation_id: int | None
+    schedule_id: int
+    start: time
+    end: time
+    total_count: int
+    intentional_ids: list[int]
+    intentional_count: int
+    unintentional_ids: list[int]
+    unintentional_count: int
+
+    @classmethod
+    def from_schedule(cls, schedule: "Schedule") -> "ConflictsInfo":
+        return cls(
+            subject_id=must_be_int(schedule.class_.subject_id)
+            if schedule.class_
+            else None,
+            subject=schedule.class_.subject.code if schedule.class_ else None,
+            class_id=must_be_int(schedule.class_.id) if schedule.class_ else None,
+            class_code=schedule.class_.code if schedule.class_ else None,
+            reservation=schedule.reservation.title if schedule.reservation else None,
+            reservation_id=must_be_int(schedule.reservation.id)
+            if schedule.reservation
+            else None,
+            schedule_id=must_be_int(schedule.id),
+            start=schedule.start_time,
+            end=schedule.end_time,
+            total_count=0,
+            intentional_ids=[],
+            intentional_count=0,
+            unintentional_ids=[],
+            unintentional_count=0,
+        )
 
 
 class ClassroomWithConflictsIndicator(ClassroomBase):
-    id: int
     conflicts: int = 0
+    conflicts_infos: list[ConflictsInfo] = []
 
     @classmethod
     def from_classroom(cls, classroom: Classroom) -> "ClassroomWithConflictsIndicator":
@@ -62,9 +111,8 @@ class ClassroomWithConflictsIndicator(ClassroomBase):
             name=classroom.name,
             capacity=classroom.capacity,
             floor=classroom.floor,
-            ignore_to_allocate=classroom.ignore_to_allocate,
             accessibility=classroom.accessibility,
-            projector=classroom.projector,
+            audiovisual=classroom.audiovisual,
             air_conditioning=classroom.air_conditioning,
             updated_at=classroom.updated_at,
             created_by_id=classroom.created_by_id,

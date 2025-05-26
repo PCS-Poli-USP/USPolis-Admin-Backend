@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 
-from server.models.database.class_db_model import Class
 from server.models.database.subject_db_model import Subject
 from server.models.http.responses.building_response_models import BuildingResponse
 from server.utils.enums.subject_type import SubjectType
@@ -11,7 +10,6 @@ class SubjectResponse(BaseModel):
     id: int
     building_ids: list[int]
     buildings: list[BuildingResponse]
-    classes: list[Class]
     code: str
     name: str
     professors: list[str]
@@ -31,7 +29,6 @@ class SubjectResponse(BaseModel):
                 BuildingResponse.from_building(building)
                 for building in subject.buildings
             ],
-            classes=subject.classes,
             code=subject.code,
             name=subject.name,
             type=subject.type,

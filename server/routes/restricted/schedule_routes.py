@@ -8,7 +8,7 @@ from server.models.http.requests.schedule_request_models import (
 from server.models.http.responses.schedule_response_models import ScheduleFullResponse
 from server.repositories.schedule_repository import ScheduleRepository
 from server.services.security.schedule_permission_checker import (
-    schedule_permission_checker,
+    SchedulePermissionChecker,
 )
 
 router = APIRouter(
@@ -24,7 +24,8 @@ def update_occurentes(
     user: UserDep,
     session: SessionDep,
 ) -> ScheduleFullResponse:
-    schedule_permission_checker(user, schedule_id, session)
+    checker = SchedulePermissionChecker(user=user, session=session)
+    checker.check_permission(schedule_id)
     schedule = ScheduleRepository.update_occurrences(
         id=schedule_id, input=input, session=session
     )

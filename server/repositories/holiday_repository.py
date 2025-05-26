@@ -2,6 +2,7 @@ from datetime import datetime
 
 from fastapi import HTTPException, status
 from sqlmodel import col, select, Session
+from sqlalchemy.exc import NoResultFound
 
 from server.models.database.holiday_db_model import Holiday
 from server.models.database.user_db_model import User
@@ -11,6 +12,7 @@ from server.models.http.requests.holiday_request_models import (
     HolidayUpdate,
 )
 from server.repositories.holiday_category_repository import HolidayCategoryRepository
+from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.must_be_int import must_be_int
 
 
@@ -24,7 +26,10 @@ class HolidayRepository:
     @staticmethod
     def get_by_id(*, id: int, session: Session) -> Holiday:
         statement = select(Holiday).where(col(Holiday.id) == id)
-        holiday = session.exec(statement).one()
+        try:
+            holiday = session.exec(statement).one()
+        except NoResultFound:
+            raise HolidayNotFound(f"id {id}")
         return holiday
 
     @staticmethod
@@ -52,7 +57,7 @@ class HolidayRepository:
             date=input.date,
             category_id=input.category_id,
             category=category,
-            updated_at=datetime.now(),
+            updated_at=BrazilDatetime.now_utc(),
             created_by_id=must_be_int(creator.id),
             created_by=creator,
         )
@@ -84,10 +89,12 @@ class HolidayRepository:
     ) -> Holiday:
         holiday = HolidayRepository.get_by_id(id=id, session=session)
         if not user.is_admin and holiday.created_by_id != user.id:
-            raise HolidayOperationNotAllowed("update", input.date.strftime("%d/%m/%Y"))
+            raise HolidayOperationNotAllowed(
+                "atualizar", input.date.strftime("%d/%m/%Y")
+            )
         holiday.name = input.name
         holiday.date = input.date
-        holiday.updated_at = datetime.now()
+        holiday.updated_at = BrazilDatetime.now_utc()
         session.add(holiday)
         session.commit()
         return holiday
@@ -97,18 +104,25 @@ class HolidayRepository:
         holiday = HolidayRepository.get_by_id(id=id, session=session)
         if not user.is_admin and holiday.created_by_id != user.id:
             raise HolidayOperationNotAllowed(
-                "delete", holiday.date.strftime("%d/%m/%Y")
+                "remover", holiday.date.strftime("%d/%m/%Y")
             )
         session.delete(holiday)
         session.commit()
+
+
+class HolidayNotFound(HTTPException):
+    def __init__(self, holiday_info: str) -> None:
+        super().__init__(
+            status.HTTP_404_NOT_FOUND,
+            f"Feriado {holiday_info} não encontrado",
+        )
 
 
 class HolidayInCategoryAlreadyExists(HTTPException):
     def __init__(self, holiday_info: str, category_info: str) -> None:
         super().__init__(
             status.HTTP_409_CONFLICT,
-            f"Holiday {holiday_info} in Category {
-                category_info} already exists",
+            f"Feriado {holiday_info} na Categoria {category_info} já existe",
         )
 
 
@@ -116,6 +130,5 @@ class HolidayOperationNotAllowed(HTTPException):
     def __init__(self, operation: str, holiday_info: str) -> None:
         super().__init__(
             status.HTTP_403_FORBIDDEN,
-            f"Only the creator is Allowed to {
-                operation} Holiday {holiday_info}",
+            f"Apenas o criado pode {operation} o Feriado {holiday_info}",
         )

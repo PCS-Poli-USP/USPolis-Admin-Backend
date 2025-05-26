@@ -44,8 +44,9 @@ class SolicitationDeniedMail(SolicitationMailBase):
             classroom=solicitation.classroom.name
             if solicitation.classroom
             else "Não informada",
-            time=f"{solicitation.start_time.strftime('%H:%M')} ~ {solicitation.end_time.strftime(
-                '%H:%M')}"
+            time=f"{solicitation.start_time.strftime('%H:%M')} ~ {
+                solicitation.end_time.strftime('%H:%M')
+            }"
             if (solicitation.start_time and solicitation.end_time)
             else "Não informado",
             dates=", ".join(str_dates),
@@ -71,15 +72,17 @@ class SolicitationApprovedMail(SolicitationMailBase):
             classroom=solicitation.classroom.name
             if solicitation.classroom
             else "Não informada",
-            time=f"{solicitation.start_time.strftime('%H:%M')} ~ {solicitation.end_time.strftime(
-                '%H:%M')}"
+            time=f"{solicitation.start_time.strftime('%H:%M')} ~ {
+                solicitation.end_time.strftime('%H:%M')
+            }"
             if (solicitation.start_time and solicitation.end_time)
             else "Não informado",
             dates=", ".join(str_dates),
             capacity=solicitation.capacity,
             approved_classroom=input.classroom_name,
             approved_time=f"{input.start_time.strftime('%H:%M')} ~ {
-                input.end_time.strftime('%H:%M')}",
+                input.end_time.strftime('%H:%M')
+            }",
         )
 
 
@@ -101,8 +104,9 @@ class SolicitationRequestedMail(SolicitationMailBase):
             classroom=solicitation.classroom.name
             if solicitation.classroom
             else "Não informada",
-            time=f"{solicitation.start_time.strftime('%H:%M')} ~ {solicitation.end_time.strftime(
-                '%H:%M')}"
+            time=f"{solicitation.start_time.strftime('%H:%M')} ~ {
+                solicitation.end_time.strftime('%H:%M')
+            }"
             if (solicitation.start_time and solicitation.end_time)
             else "Não informado",
             dates=", ".join(str_dates),
@@ -136,8 +140,9 @@ class SolicitationDeletedMail(SolicitationMailBase):
             type=ReservationType.to_str(reservation.type),
             building=reservation.classroom.building.name,
             classroom=reservation.classroom.name,
-            time=f"{reservation.schedule.start_time.strftime('%H:%M')} ~ {reservation.schedule.end_time.strftime(
-                '%H:%M')}",
+            time=f"{reservation.schedule.start_time.strftime('%H:%M')} ~ {
+                reservation.schedule.end_time.strftime('%H:%M')
+            }",
             dates=", ".join(str_dates),
             capacity=0,
             reason="Não informado",

@@ -3,7 +3,10 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import UniqueConstraint
-from sqlmodel import Relationship, SQLModel, Field
+from sqlmodel import Relationship, Field
+
+from server.models.database.base_db_model import BaseModel
+from server.utils.brazil_datetime import BrazilDatetime
 
 
 if TYPE_CHECKING:
@@ -11,16 +14,15 @@ if TYPE_CHECKING:
     from server.models.database.holiday_category_db_model import HolidayCategory
 
 
-class Holiday(SQLModel, table=True):
+class Holiday(BaseModel, table=True):
     __table_args__ = (
         UniqueConstraint(
             "date", "category_id", name="unique_holiday_date_for_category"
         ),
     )
-    id: int | None = Field(default=None, primary_key=True)
     name: str = Field()
     date: datetime_date = Field()
-    updated_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
 
     category_id: int = Field(foreign_key="holidaycategory.id")
     category: "HolidayCategory" = Relationship(back_populates="holidays")

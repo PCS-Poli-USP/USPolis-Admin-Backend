@@ -1,17 +1,27 @@
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 
 from server.deps.authenticate import UserDep
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
 from server.deps.session_dep import SessionDep
 from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
-from server.models.http.requests.classroom_request_models import ClassroomRegister
-from server.repositories.classroom_repository import ClassroomRepository
-from server.services.security.buildings_permission_checker import (
-    building_permission_checker,
+from server.models.http.requests.classroom_request_models import (
+    ClassroomRegister,
+    ClassroomUpdate,
 )
+from server.repositories.classroom_repository import ClassroomRepository
+from server.repositories.group_repository import GroupRepository
+from server.services.security.buildings_permission_checker import (
+    BuildingPermissionChecker,
+)
+from server.services.security.classrooms_permission_checker import (
+    ClassroomPermissionChecker,
+)
+from server.services.security.group_permission_checker import GroupPermissionChecker
+from server.utils.must_be_int import must_be_int
 
 
 class ClassroomRepositoryAdapter:
@@ -24,67 +34,137 @@ class ClassroomRepositoryAdapter:
         self.session = session
         self.user = user
         self.owned_building_ids = owned_building_ids
+        self.building_checker = BuildingPermissionChecker(user=user, session=session)
+        self.classroom_checker = ClassroomPermissionChecker(user=user, session=session)
+        self.group_checker = GroupPermissionChecker(user=user, session=session)
 
     def get_all(self) -> list[Classroom]:
-        return ClassroomRepository.get_all_on_buildings(
-            building_ids=self.owned_building_ids, session=self.session
-        )
+        """Get all classrooms on buildings that the user has access to."""
+        if self.user.is_admin:
+            return ClassroomRepository.get_all(session=self.session)
+
+        ids = self.user.classrooms_ids_set()
+        return ClassroomRepository.get_by_ids(ids=list(ids), session=self.session)
 
     def get_all_on_building(self, building_id: int) -> list[Classroom]:
-        building_permission_checker(self.user, building_id)
+        """Get all classrooms on a building that the user has access to."""
+        self.building_checker.check_permission(building_id)
         return ClassroomRepository.get_all_on_buildings(
             building_ids=[building_id], session=self.session
         )
 
-    def get_by_id(self, id: int) -> Classroom:
-        return ClassroomRepository.get_by_id_on_buildings(
-            building_ids=self.owned_building_ids, id=id, session=self.session
+    def get_all_on_my_buildings(self) -> list[Classroom]:
+        """Get all classrooms on buildings that the user has access to."""
+        return ClassroomRepository.get_all_on_buildings(
+            building_ids=self.owned_building_ids, session=self.session
         )
 
+    def get_by_id(self, id: int) -> Classroom:
+        self.classroom_checker.check_permission(object=id)
+        classroom = ClassroomRepository.get_by_id(id=id, session=self.session)
+        return classroom
+
     def get_by_name_and_building(self, name: str, building: Building) -> Classroom:
-        building_permission_checker(self.user, building)
-        return ClassroomRepository.get_by_name_and_building(
+        classroom = ClassroomRepository.get_by_name_and_building(
             name, building, self.session
         )
+        self.classroom_checker.check_permission(classroom)
+        return classroom
+
+    def __update_groups_classrooms(
+        self, classroom: Classroom, input: ClassroomUpdate | ClassroomRegister
+    ) -> None:
+        self.group_checker.check_permission(input.group_ids)
+        groups = GroupRepository.get_by_ids(ids=input.group_ids, session=self.session)
+        main_group = classroom.building.get_main_group()
+        groups = [group for group in groups if group != main_group]
+        classroom_groups = classroom.groups
+        new_groups = [
+            group
+            for group in groups
+            if group not in classroom_groups and group != main_group
+        ]
+        for group in new_groups:
+            if group.building_id != input.building_id:
+                raise ClassroomInsertionOnInvalidGroup(
+                    group=group.name, classroom=input.name
+                )
+            group.classrooms.append(classroom)
+            self.session.add(group)
 
     def create(
         self,
-        classroom: ClassroomRegister,
+        input: ClassroomRegister,
     ) -> Classroom:
-        building_permission_checker(self.user, classroom.building_id)
-        new_classroom = ClassroomRepository.create(
-            classroom=classroom,
-            creator=self.user,
-            session=self.session,
-        )
-        self.session.commit()
+        self.building_checker.check_permission(input.building_id)
+        try:
+            new_classroom = ClassroomRepository.create(
+                input=input,
+                creator=self.user,
+                session=self.session,
+            )
+            self.__update_groups_classrooms(
+                classroom=new_classroom,
+                input=input,
+            )
+            self.session.commit()
+        except IntegrityError:
+            raise ClassroomNameAlreadyExists(name=input.name)
         self.session.refresh(new_classroom)
         return new_classroom
 
     def update(
         self,
         classroom_id: int,
-        classroom_in: ClassroomRegister,
+        input: ClassroomUpdate,
     ) -> Classroom:
-        building_permission_checker(self.user, classroom_in.building_id)
-        classroom = ClassroomRepository.update_on_buildings(
+        self.classroom_checker.check_permission(classroom_id)
+        classroom = ClassroomRepository.update(
             id=classroom_id,
-            building_ids=self.owned_building_ids,
-            classroom_in=classroom_in,
+            input=input,
             session=self.session,
+        )
+        self.__update_groups_classrooms(
+            classroom=classroom,
+            input=input,
         )
         self.session.commit()
         self.session.refresh(classroom)
         return classroom
 
     def delete(self, id: int) -> None:
-        ClassroomRepository.delete_on_buildings(
-            id=id,
-            building_ids=self.owned_building_ids,
-            user=self.user,
-            session=self.session,
-        )
+        classroom = ClassroomRepository.get_by_id(id=id, session=self.session)
+        self.classroom_checker.check_permission(must_be_int(classroom.id))
+        groups = classroom.groups
+        for group in groups:
+            if len(group.classrooms) == 1:
+                raise DeleteLastClassroomOnGroups(classroom=classroom.name)
+        self.session.delete(classroom)
         self.session.commit()
+
+
+class ClassroomInsertionOnInvalidGroup(HTTPException):
+    def __init__(self, group: str, classroom: str) -> None:
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Sala {classroom} não pode ser inserida no grupo {group}",
+        )
+
+
+class DeleteLastClassroomOnGroups(HTTPException):
+    def __init__(self, classroom: str) -> None:
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"A sala {classroom} não pode ser excluída, pois um ou mais grupos irão ficar sem sala",
+        )
+
+
+class ClassroomNameAlreadyExists(HTTPException):
+    def __init__(self, name: str) -> None:
+        super().__init__(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Sala com o nome {name} já existe",
+        )
 
 
 ClassroomRepositoryDep = Annotated[ClassroomRepositoryAdapter, Depends()]

@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class ActionType(Enum):
+class ActionType(str, Enum):
     ALLOCATE = "allocate"
     DEALLOCATE = "deallocate"
 

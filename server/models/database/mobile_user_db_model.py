@@ -1,8 +1,9 @@
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field
+
+from server.models.database.base_db_model import BaseModel
 
 
-class MobileUser(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
+class MobileUser(BaseModel, table=True):
     sub: str = Field()  # The unique ID of the user's Google Account
     email: str = Field()
     given_name: str = Field()

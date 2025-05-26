@@ -1,8 +1,10 @@
 from datetime import datetime, time, date
 from typing import TYPE_CHECKING, Optional
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship
 from sqlalchemy import CheckConstraint, Column, ARRAY, Date
 
+from server.models.database.base_db_model import BaseModel
+from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.reservation_type import ReservationType
 
 
@@ -13,7 +15,7 @@ if TYPE_CHECKING:
     from server.models.database.reservation_db_model import Reservation
 
 
-class ClassroomSolicitation(SQLModel, table=True):
+class ClassroomSolicitation(BaseModel, table=True):
     __table_args__ = (
         CheckConstraint(
             "(classroom_id IS NOT NULL) OR (required_classroom = FALSE)",
@@ -21,7 +23,6 @@ class ClassroomSolicitation(SQLModel, table=True):
         ),
     )
 
-    id: int | None = Field(primary_key=True, default=None)
     classroom_id: int | None = Field(foreign_key="classroom.id", nullable=True)
     classroom: Optional["Classroom"] = Relationship(back_populates="solicitations")
     required_classroom: bool = Field(default=False)
@@ -48,5 +49,5 @@ class ClassroomSolicitation(SQLModel, table=True):
     deleted_by: str | None = Field(nullable=True, default=None)
     closed: bool = Field(default=False)
     closed_by: str | None = Field(nullable=True, default=None)
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
+    updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)

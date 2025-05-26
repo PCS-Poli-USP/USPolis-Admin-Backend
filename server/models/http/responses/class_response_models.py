@@ -7,6 +7,7 @@ from server.models.http.responses.schedule_response_models import (
     ScheduleResponse,
     ScheduleFullResponse,
 )
+from server.utils.enums.audiovisual_type_enum import AudiovisualType
 from server.utils.enums.class_type import ClassType
 from server.utils.must_be_int import must_be_int
 
@@ -22,7 +23,7 @@ class ClassResponseBase(BaseModel):
 
     air_conditionating: bool
     accessibility: bool
-    projector: bool
+    audiovisual: AudiovisualType
 
     ignore_to_allocate: bool
     full_allocated: bool
@@ -47,7 +48,7 @@ class ClassResponseBase(BaseModel):
             vacancies=_class.vacancies,
             air_conditionating=_class.air_conditionating,
             accessibility=_class.accessibility,
-            projector=_class.projector,
+            audiovisual=_class.audiovisual,
             ignore_to_allocate=_class.ignore_to_allocate,
             full_allocated=_class.full_allocated,
             updated_at=_class.updated_at,

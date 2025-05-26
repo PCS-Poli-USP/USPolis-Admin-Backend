@@ -1,6 +1,6 @@
 import logging
 
-from sqlmodel import Session, SQLModel, select
+from sqlmodel import Session, select
 
 from server.config import CONFIG
 from server.db import engine
@@ -13,9 +13,6 @@ logger = logging.getLogger(__name__)
 
 
 def init_db(session: Session) -> None:
-    if CONFIG.testing:
-        SQLModel.metadata.create_all(engine)
-
     user = session.exec(
         select(User).where(User.email == CONFIG.first_superuser_email)
     ).first()
@@ -28,8 +25,10 @@ def init_db(session: Session) -> None:
         user = UserRepository.create(
             creator=None,
             session=session,
-            user_in=user_in,
+            input=user_in,
         )
+        session.commit()
+        session.refresh(user)
 
 
 def init() -> None:

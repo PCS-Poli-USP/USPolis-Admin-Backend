@@ -1,8 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
 from server.deps.authenticate import UserDep
 from server.deps.repository_adapters.class_repository_adapter import (
-    ClassRepositoryAdapterDep,
+    ClassRepositoryDep,
 )
 from server.deps.repository_adapters.reservation_repository_adapter import (
     ReservationRepositoryDep,
@@ -12,7 +12,7 @@ from server.deps.repository_adapters.subject_repository_adapter import (
 )
 from server.deps.session_dep import SessionDep
 from server.deps.repository_adapters.building_repository_adapter import (
-    BuildingRespositoryAdapterDep,
+    BuildingRepositoryDep,
 )
 from server.deps.repository_adapters.classroom_repository_adapter import (
     ClassroomRepositoryDep,
@@ -24,6 +24,7 @@ from server.models.http.responses.classroom_response_models import ClassroomResp
 from server.models.http.responses.classroom_solicitation_response_models import (
     ClassroomSolicitationResponse,
 )
+from server.models.http.responses.group_response_models import GroupResponse
 from server.models.http.responses.reservation_response_models import ReservationResponse
 from server.models.http.responses.subject_response_models import SubjectResponse
 from server.models.http.responses.user_response_models import UserResponse
@@ -31,7 +32,9 @@ from server.models.http.responses.building_response_models import BuildingRespon
 from server.repositories.classroom_solicitation_repository import (
     ClassroomSolicitationRepository,
 )
+from server.repositories.group_repository import GroupRepository
 from server.repositories.user_repository import UserRepository
+from server.utils.must_be_int import must_be_int
 
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -39,19 +42,43 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.get("")
 def get_current_user(
+    request: Request,
+    session: SessionDep,
     user: UserDep,
 ) -> UserResponse:
     """Get current user"""
-    return UserResponse.from_user(user)
+    UserRepository.visit_user(user=user, session=session)
+    session.commit()
+    response = UserResponse.from_user(user)
+    if hasattr(request.state, "user_info"):
+        response.user_info = request.state.user_info
+    else:
+        response.user_info = None
+    return response
 
 
 @router.get("/my-buildings")
 def get_my_buildings(
-    repository: BuildingRespositoryAdapterDep,
+    repository: BuildingRepositoryDep,
 ) -> list[BuildingResponse]:
     """Get all buildings for authenticated user"""
     buildings = repository.get_all()
     return BuildingResponse.from_building_list(buildings)
+
+
+@router.get("/my-groups")
+def get_my_groups(
+    user: UserDep,
+    session: SessionDep,
+) -> list[GroupResponse]:
+    """Get all groups for authenticated user"""
+    if user.is_admin:
+        groups = GroupRepository.get_all(session=session)
+    else:
+        groups = GroupRepository.get_by_user_id(
+            user_id=must_be_int(user.id), session=session
+        )
+    return GroupResponse.from_group_list(groups)
 
 
 @router.get("/my-subjects")
@@ -65,7 +92,7 @@ def get_my_subjects(
 
 @router.get("/my-classes")
 def get_my_classes(
-    repository: ClassRepositoryAdapterDep,
+    repository: ClassRepositoryDep,
 ) -> list[ClassResponse]:
     """Get all classes for authenticated user"""
     classes = repository.get_all()

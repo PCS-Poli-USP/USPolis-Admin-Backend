@@ -1,4 +1,5 @@
-from typing import Protocol, Sequence, TypeVar
+from typing import Protocol, TypeVar
+from collections.abc import Sequence
 
 
 class GenericTable(Protocol):

@@ -16,11 +16,12 @@ from server.repositories.classroom_repository import ClassroomRepository
 from server.repositories.classroom_solicitation_repository import (
     ClassroomSolicitationRepository,
 )
+from server.repositories.group_repository import GroupRepository
 from server.repositories.reservation_repository import ReservationRepository
 from server.repositories.user_repository import UserRepository
 from server.services.email.email_service import EmailService
 from server.services.security.classroom_solicitation_permission_checker import (
-    classroom_solicitation_permission_checker,
+    ClassroomSolicitationPermissionChecker,
 )
 from pathlib import Path
 
@@ -40,11 +41,22 @@ image_path = (
 templates = Jinja2Templates(directory=template_path)
 
 
-@router.get("")
-def get_classroom_solicitations(
+@router.get("/pending")
+async def get_pending_classroom_solicitations(
     building_ids: OwnedBuildingIdsDep, session: SessionDep
 ) -> list[ClassroomSolicitationResponse]:
-    solicitations = ClassroomSolicitationRepository.get_by_id_on_buildings(
+    solicitations = ClassroomSolicitationRepository.get_pending_by_buildings_ids(
+        building_ids=building_ids, session=session
+    )
+    return ClassroomSolicitationResponse.from_solicitation_list(solicitations)
+
+
+@router.get("")
+async def get_all_classroom_solicitations(
+    building_ids: OwnedBuildingIdsDep,
+    session: SessionDep,
+) -> list[ClassroomSolicitationResponse]:
+    solicitations = ClassroomSolicitationRepository.get_by_buildings_ids(
         building_ids=building_ids, session=session
     )
     return ClassroomSolicitationResponse.from_solicitation_list(solicitations)
@@ -60,9 +72,17 @@ async def create_classroom_solicitation(
     solicitation = ClassroomSolicitationRepository.create(
         requester=user, input=input, session=session
     )
-    users = UserRepository.get_all_on_building(
-        building_id=input.building_id, session=session
-    )
+    if solicitation.classroom_id:
+        groups = GroupRepository.get_by_classroom_id(
+            classroom_id=solicitation.classroom_id, session=session
+        )
+        users = [user for group in groups for user in group.users]
+        users_set = set(users)
+        users = list(users_set)
+    else:
+        users = UserRepository.get_all_on_building(
+            building_id=input.building_id, session=session
+        )
     session.commit()
     await EmailService.send_solicitation_request_email(users, solicitation)
     return ClassroomSolicitationResponse.from_solicitation(solicitation)
@@ -76,7 +96,8 @@ async def approve_classroom_solicitation(
     user: UserDep,
 ) -> ClassroomSolicitationResponse:
     """Aprove a class reservation solicitation"""
-    classroom_solicitation_permission_checker(user, solicitation_id, session)
+    checker = ClassroomSolicitationPermissionChecker(user, session)
+    checker.check_permission(solicitation_id)
     solicitation = ClassroomSolicitationRepository.approve(
         id=solicitation_id, user=user, session=session
     )
@@ -107,7 +128,9 @@ async def deny_classroom_solicitation(
     user: UserDep,
 ) -> ClassroomSolicitationResponse:
     """Deny a class reservation solicitation"""
-    classroom_solicitation_permission_checker(user, solicitation_id, session)
+    checker = ClassroomSolicitationPermissionChecker(user, session)
+    checker.check_permission(solicitation_id)
+
     solicitation = ClassroomSolicitationRepository.deny(
         id=solicitation_id, user=user, session=session
     )

@@ -6,6 +6,7 @@ from server.models.database.classroom_db_model import (
     Classroom,
 )
 from server.models.http.responses.schedule_response_models import ScheduleFullResponse
+from server.utils.enums.audiovisual_type_enum import AudiovisualType
 from server.utils.must_be_int import must_be_int
 
 
@@ -14,9 +15,8 @@ class ClassroomResponseBase(BaseModel):
     name: str
     capacity: int
     floor: int
-    ignore_to_allocate: bool
     accessibility: bool
-    projector: bool
+    audiovisual: AudiovisualType
     air_conditioning: bool
     updated_at: datetime
 
@@ -32,9 +32,8 @@ class ClassroomResponseBase(BaseModel):
             name=classroom.name,
             capacity=classroom.capacity,
             floor=classroom.floor,
-            ignore_to_allocate=classroom.ignore_to_allocate,
             accessibility=classroom.accessibility,
-            projector=classroom.projector,
+            audiovisual=classroom.audiovisual,
             air_conditioning=classroom.air_conditioning,
             updated_at=classroom.updated_at,
             created_by_id=must_be_int(classroom.created_by_id),

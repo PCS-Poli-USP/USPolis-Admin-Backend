@@ -7,6 +7,7 @@ from server.models.http.requests.schedule_request_models import (
     ScheduleRegister,
     ScheduleUpdate,
 )
+from server.utils.enums.audiovisual_type_enum import AudiovisualType
 from server.utils.enums.class_type import ClassType
 
 
@@ -23,8 +24,7 @@ class ClassRequestBase(BaseModel):
 
     air_conditionating: bool
     accessibility: bool
-    projector: bool
-
+    audiovisual: AudiovisualType
     ignore_to_allocate: bool
 
 
@@ -76,6 +76,5 @@ class ClassConflictedData(HTTPException):
     def __init__(self, first_data: str, second_data: str) -> None:
         super().__init__(
             status.HTTP_400_BAD_REQUEST,
-            f"Schedule must have {first_data} value or {
-                second_data} value, not both",
+            f"Schedule must have {first_data} value or {second_data} value, not both",
         )
