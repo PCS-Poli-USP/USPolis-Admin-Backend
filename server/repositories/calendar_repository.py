@@ -22,7 +22,7 @@ class CalendarRepository:
         statement = select(Calendar).where(col(Calendar.id) == id)
         calendar = session.exec(statement).first()
         if calendar is None:
-            raise CalendarNotExists(str(id))
+            raise CalendarNotFound(str(id))
         return calendar
 
     @staticmethod
@@ -36,7 +36,7 @@ class CalendarRepository:
         statement = select(Calendar).where(col(Calendar.name) == name)
         calendar = session.exec(statement).first()
         if calendar is None:
-            raise CalendarNotExists(name)
+            raise CalendarNotFound(name)
         return calendar
 
     @staticmethod
@@ -48,6 +48,7 @@ class CalendarRepository:
             )
         new_calendar = Calendar(
             name=input.name,
+            year=input.year,
             categories=categories,
             created_by=creator,
         )
@@ -62,8 +63,10 @@ class CalendarRepository:
     ) -> Calendar:
         calendar = CalendarRepository.get_by_id(id=id, session=session)
         if not user.is_admin and calendar.created_by_id != user.id:
-            raise CalendarOperationNotAllowed("Update", input.name)
+            raise CalendarOperationNotAllowed("atualizar", input.name)
+        
         calendar.name = input.name
+        calendar.year = input.year
         if input.categories_ids is not None:
             calendar.categories = HolidayCategoryRepository.get_by_ids(
                 ids=input.categories_ids, session=session
@@ -76,15 +79,15 @@ class CalendarRepository:
     def delete(*, id: int, user: User, session: Session) -> None:
         calendar = CalendarRepository.get_by_id(id=id, session=session)
         if not user.is_admin and calendar.created_by_id != user.id:
-            raise CalendarOperationNotAllowed("Delete", calendar.name)
+            raise CalendarOperationNotAllowed("remover", calendar.name)
         session.delete(calendar)
         session.commit()
 
 
-class CalendarNotExists(HTTPException):
+class CalendarNotFound(HTTPException):
     def __init__(self, calendar_info: str) -> None:
         super().__init__(
-            status.HTTP_404_NOT_FOUND, f"Calendar {calendar_info} not exists"
+            status.HTTP_404_NOT_FOUND, f"Calendário {calendar_info} não encontrado"
         )
 
 
@@ -92,6 +95,5 @@ class CalendarOperationNotAllowed(HTTPException):
     def __init__(self, operation: str, calendar_info: str) -> None:
         super().__init__(
             status.HTTP_403_FORBIDDEN,
-            f"Only the creator is Allowed to {
-                operation} Calendar {calendar_info}",
+            f"Apenas o criado é permitido a {operation} o calendário {calendar_info}",
         )

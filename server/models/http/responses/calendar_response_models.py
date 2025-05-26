@@ -11,6 +11,7 @@ class CalendarResponse(BaseModel):
     id: int
     owner_id: int
     name: str
+    year: int
     categories: list[HolidayCategoryResponse]
     created_by: str
 
@@ -20,6 +21,7 @@ class CalendarResponse(BaseModel):
             id=must_be_int(calendar.id),
             owner_id=must_be_int(calendar.created_by.id),
             name=calendar.name,
+            year=calendar.year,
             categories=HolidayCategoryResponse.from_holiday_category_list(
                 calendar.categories
             ),

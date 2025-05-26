@@ -3,96 +3,68 @@ from sqlmodel import Session
 
 from server.models.database.class_db_model import Class
 from server.models.database.user_db_model import User
-from server.repositories.building_repository import BuildingRepository
-from server.utils.must_be_int import must_be_int
+from server.repositories.class_repository import ClassRepository
+from server.services.security.base_permission_checker import PermissionChecker
 
 
-def class_permission_checker(
-    user: User,
-    class_: int | Class | list[int] | list[Class],
-    session: Session,
-) -> None:
+class ClassPermissionChecker(PermissionChecker[Class]):
     """
-    Checks the permission of a user for a specific class.
-
-    Parameters:
-    - user (User): The user object for which the permission needs to be checked.
-    - class_ (int | Class | list[int] | list[Class]): The class ID, class object, list of class IDs, or list of class objects for which the permission needs to be checked.
-    - Session: The session of database
+    Class to check permissions for classes.
     """
-    if user.is_admin:
-        return
 
-    if isinstance(class_, int):
-        __class_id_permission_checker(user, class_, session)
-    elif isinstance(class_, Class):
-        __class_obj_permission_checker(user, class_, session)
-    elif isinstance(class_, list):
-        __class_list_permission_checker(user, class_, session)
+    def __init__(self, user: User, session: Session) -> None:
+        super().__init__(user=user, session=session)
 
+    def check_permission(self, object: int | Class | list[int] | list[Class]) -> None:
+        """
+        Checks the permission of a user for a specific class.
 
-def __class_id_permission_checker(user: User, class_id: int, session: Session) -> None:
-    if user.buildings is None:
-        raise ForbiddenClassAccess(
-            f"Usuário não tem permissão para acessar a turma de ID {class_id}"
-        )
+        Parameters:
+        - user (User): The user object for which the permission needs to be checked.
+        - class_ (int | Class | list[int] | list[Class]): The class ID, class object, list of class IDs, or list of class objects for which the permission needs to be checked.
+        """
+        if self.user.is_admin:
+            return
 
-    buildings = BuildingRepository.get_by_class_id(class_id=class_id, session=session)
-    buildings_ids = [must_be_int(building.id) for building in buildings]
-    buildings_set = set(buildings_ids)
-    users_set = set([building.id for building in user.buildings])
-    if len(buildings_set.intersection(users_set)) == 0:
-        raise ForbiddenClassAccess(
-            f"Usuário não tem permissão para acessar a turma de ID {class_id}"
-        )
+        if isinstance(object, int):
+            self.__class_id_permission_checker(object)
+        elif isinstance(object, Class):
+            self.__class_obj_permission_checker(object)
+        elif isinstance(object, list):
+            self.__class_list_permission_checker(object)
 
+    def __class_id_permission_checker(self, class_id: int) -> None:
+        class_ = ClassRepository.get_by_id(id=class_id, session=self.session)
+        self.__class_obj_permission_checker(class_)
 
-def __class_obj_permission_checker(user: User, class_: Class, session: Session) -> None:
-    if user.buildings is None:
-        raise ForbiddenClassAccess([class_.id])  # type: ignore
-    buildings = BuildingRepository.get_by_class(class_=class_, session=session)
-    buildings_ids = [must_be_int(building.id) for building in buildings]
-    buildings_set = set(buildings_ids)
-    users_set = set([building.id for building in user.buildings])
-    if len(buildings_set.intersection(users_set)) == 0:
-        raise ForbiddenClassAccess(
-            f"Usuário não tem permissão para acessar a turma {class_.subject.code} -{class_.code}"
-        )
-
-
-def __class_list_permission_checker(
-    user: User, classes: list[int] | list[Class], session: Session
-) -> None:
-    buildings_ids: list[int] = []
-    for class_ in classes:
-        if isinstance(class_, Class):
-            buildings = BuildingRepository.get_by_class(class_=class_, session=session)
-            buildings_ids.extend([must_be_int(building.id) for building in buildings])
-        else:
-            buildings = BuildingRepository.get_by_class_id(
-                class_id=class_, session=session
+    def __class_obj_permission_checker(self, class_: Class) -> None:
+        ids = class_.classroom_ids()
+        class_building_ids = class_.building_ids()
+        user_buildings = self.user.buildings_ids_set()
+        if len(class_building_ids.intersection(user_buildings)) == 0:
+            raise ForbiddenClassAccess(
+                f"Usuário não tem permissão para acessar a turma {class_.subject.code} - {class_.code}"
             )
-            buildings_ids.extend([must_be_int(building.id) for building in buildings])
 
-    if (
-        user.buildings is None
-        or len(
-            set(buildings_ids).intersection(
-                set([building.id for building in user.buildings])
+        allowed = False
+        for schedule in class_.schedules:
+            if schedule.classroom_id and schedule.classroom_id in ids:
+                allowed = True
+            else:
+                allowed = True
+                break
+
+        if not allowed:
+            raise ForbiddenClassAccess(
+                f"Usuário não tem permissão para acessar a turma {class_.subject.code} - {class_.code}"
             )
-        )
-        == 0
-    ):
-        classes_ids: list[int] = []
+
+    def __class_list_permission_checker(self, classes: list[int] | list[Class]) -> None:
         for class_ in classes:
             if isinstance(class_, Class):
-                if class_.id:
-                    classes_ids.append(class_.id)
+                self.__class_obj_permission_checker(class_)
             else:
-                classes_ids.append(class_)
-        raise ForbiddenClassAccess(
-            "Usuário não tem permissão para acessar uma ou mais turmas"
-        )
+                self.__class_id_permission_checker(class_)
 
 
 class ForbiddenClassAccess(HTTPException):

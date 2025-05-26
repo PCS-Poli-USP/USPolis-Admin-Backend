@@ -15,7 +15,15 @@ class OccurrenceUtils:
         if schedule.week_day is None and schedule.recurrence is not Recurrence.DAILY:
             raise ValueError("Week day is required with this Recurrence")
         if schedule.recurrence is Recurrence.CUSTOM:
-            raise ValueError("Recurrence Custom is not valid with this method")
+            return [
+                Occurrence(
+                    date=oc.date,
+                    start_time=oc.start_time,
+                    end_time=oc.end_time,
+                    schedule_id=schedule.id,
+                )
+                for oc in schedule.occurrences
+            ]
         dates = OccurrenceUtils._dates_for_recurrence(
             schedule.week_day.value if schedule.week_day else -1,
             schedule.recurrence,

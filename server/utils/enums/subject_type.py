@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class SubjectType(Enum):
+class SubjectType(str, Enum):
     BIANNUAL = "biannual"
     FOUR_MONTHLY = "four_monthly"
     POSTGRADUATE = "postgraduate"
@@ -23,6 +23,15 @@ class SubjectType(Enum):
         if value in pos_graduation_values:
             return cls.POSTGRADUATE
         raise NoSuchSubjectType(f"Subject type {value} is not valid.")
+
+    @staticmethod
+    def values() -> list["SubjectType"]:
+        return [
+            SubjectType.BIANNUAL,
+            SubjectType.FOUR_MONTHLY,
+            SubjectType.POSTGRADUATE,
+            SubjectType.OTHER,
+        ]
 
 
 class NoSuchSubjectType(Exception):

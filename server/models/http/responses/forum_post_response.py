@@ -4,6 +4,8 @@ from server.models.database.forum_db_model import ForumPost
 from server.repositories.forum_repository import ForumRepository
 from sqlmodel import Session
 
+from server.utils.must_be_int import must_be_int
+
 
 class ForumPostResponse(BaseModel):
     id: int
@@ -22,7 +24,7 @@ class ForumPostResponse(BaseModel):
         cls, mobile_user_id: int | None, post: ForumPost, session: Session
     ) -> "ForumPostResponse":
         return cls(
-            id=post.id,
+            id=must_be_int(post.id),
             user_id=post.user_id,
             class_id=post.class_id,
             subject_id=post.subject_id,
@@ -32,7 +34,9 @@ class ForumPostResponse(BaseModel):
             replies_count=post.replies_count,
             likes_count=post.likes_count,
             user_liked=ForumRepository.get_post_like_reaction(
-                mobile_user_id=mobile_user_id, post_id=post.id, session=session
+                mobile_user_id=mobile_user_id,
+                post_id=must_be_int(post.id),
+                session=session,
             ),
         )
 
@@ -51,7 +55,7 @@ class ForumPostReplyResponse(ForumPostResponse):
         cls, reply: ForumPost, mobile_user_id: int | None, session: Session
     ) -> "ForumPostReplyResponse":
         return cls(
-            id=reply.id,
+            id=must_be_int(reply.id),
             reply_of_post_id=reply.reply_of_post_id,
             user_id=reply.user_id,
             class_id=reply.class_id,
@@ -62,7 +66,9 @@ class ForumPostReplyResponse(ForumPostResponse):
             replies_count=reply.replies_count,
             likes_count=reply.likes_count,
             user_liked=ForumRepository.get_post_like_reaction(
-                mobile_user_id=mobile_user_id, post_id=reply.id, session=session
+                mobile_user_id=mobile_user_id,
+                post_id=must_be_int(reply.id),
+                session=session,
             ),
         )
 

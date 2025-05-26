@@ -2,6 +2,7 @@ from datetime import date, time
 from pydantic import BaseModel
 from server.utils.enums.week_day import WeekDay
 
+
 class SubjectInfo(BaseModel):
     class_code: str
     subject_name: str

@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class ReservationType(Enum):
+class ReservationType(str, Enum):
     EXAM = "exam"
     MEETING = "meeting"
     EVENT = "event"
@@ -35,6 +35,15 @@ class ReservationType(Enum):
                 return "Evento"
             case ReservationType.OTHER:
                 return "Outro"
+
+    @staticmethod
+    def values() -> list["ReservationType"]:
+        return [
+            ReservationType.EXAM,
+            ReservationType.MEETING,
+            ReservationType.EVENT,
+            ReservationType.OTHER,
+        ]
 
 
 class NoSuchReservationType(Exception):

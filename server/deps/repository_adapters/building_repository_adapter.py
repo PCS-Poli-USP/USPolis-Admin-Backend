@@ -1,5 +1,6 @@
 from typing import Annotated
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from server.deps.authenticate import UserDep
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
 from server.deps.session_dep import SessionDep
@@ -10,7 +11,7 @@ from server.models.http.requests.building_request_models import (
 )
 from server.repositories.building_repository import BuildingRepository
 from server.services.security.buildings_permission_checker import (
-    building_permission_checker,
+    BuildingPermissionChecker,
 )
 
 
@@ -24,6 +25,7 @@ class BuildingRepositoryAdapter:
         self.session = session
         self.user = user
         self.owned_building_ids = owned_building_ids
+        self.checker = BuildingPermissionChecker(user=user, session=session)
 
     def get_all(self) -> list[Building]:
         return BuildingRepository.get_by_ids(
@@ -31,13 +33,13 @@ class BuildingRepositoryAdapter:
         )
 
     def get_by_id(self, id: int) -> Building:
-        building_permission_checker(self.user, id)
+        self.checker.check_permission(id)
         building = BuildingRepository.get_by_id(id=id, session=self.session)
         return building
 
     def get_by_name(self, name: str) -> Building:
         building = BuildingRepository.get_by_name(name=name, session=self.session)
-        building_permission_checker(self.user, building)
+        self.checker.check_permission(building)
         return building
 
     def create(
@@ -47,13 +49,21 @@ class BuildingRepositoryAdapter:
         building = BuildingRepository.create(
             building_in=input, creator=self.user, session=self.session
         )
-        self.session.commit()
+        try:
+            self.session.commit()
+        except IntegrityError:
+            self.session.rollback()
+            raise BuildingAlreadyExists(input.name)
         self.session.refresh(building)
         return building
 
     def update(self, id: int, input: BuildingUpdate) -> Building:
         building = BuildingRepository.update(id=id, input=input, session=self.session)
-        self.session.commit()
+        try:
+            self.session.commit()
+        except IntegrityError:
+            self.session.rollback()
+            raise BuildingAlreadyExists(input.name)
         self.session.refresh(building)
         return building
 
@@ -68,6 +78,12 @@ class BuildingRepositoryAdapter:
         return buildings
 
 
-BuildingRepositoryDep = Annotated[BuildingRepositoryAdapter, Depends()]
+class BuildingAlreadyExists(HTTPException):
+    def __init__(self, building_name: str) -> None:
+        super().__init__(
+            status.HTTP_409_CONFLICT,
+            f"Prédio {building_name} já existe",
+        )
 
-BuildingRespositoryAdapterDep = Annotated[BuildingRepositoryAdapter, Depends()]
+
+BuildingRepositoryDep = Annotated[BuildingRepositoryAdapter, Depends()]

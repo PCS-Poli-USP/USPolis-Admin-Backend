@@ -46,10 +46,15 @@ class JupiterCrawlerTestUtils:
 
         for subject_code, content in contents_dict.items():
             print(subject_code)
-            results[subject_code] = await JupiterCrawler.crawl_subject_static(
-                subject_code,
-                content,  # type: ignore
-            )
+            try:
+                results[subject_code] = await JupiterCrawler.crawl_subject_static(
+                    subject_code=subject_code,
+                    calendars=[],
+                    page_content=content,  # type: ignore
+                )
+            except Exception as e:
+                print(f"Error processing {subject_code}: {e}")
+                continue
 
         cls._save_reference_results(results)
 

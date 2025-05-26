@@ -4,6 +4,7 @@ from sqlmodel import Session, col, select
 
 from server.models.database.building_db_model import Building
 from server.models.database.class_db_model import Class
+from server.models.database.group_db_model import Group
 from server.models.database.subject_building_link import SubjectBuildingLink
 from server.models.database.subject_db_model import Subject
 from server.models.database.user_db_model import User
@@ -64,7 +65,7 @@ class BuildingRepository:
         try:
             buildings = session.exec(statement).all()
         except NoResultFound:
-            raise BuildingNotFound(f"Class ${class_id}")
+            raise BuildingNotFound(f"Classe ${class_id}")
         return list(buildings)
 
     @staticmethod
@@ -78,7 +79,7 @@ class BuildingRepository:
         try:
             buildings = session.exec(statement).all()
         except NoResultFound:
-            raise BuildingNotFound(f"Subject ${subject_id}")
+            raise BuildingNotFound(f"Disciplina ${subject_id}")
         return list(buildings)
 
     @staticmethod
@@ -89,6 +90,19 @@ class BuildingRepository:
             name=building_in.name,
             created_by=creator,
         )
+        session.add(building)
+        session.flush()
+
+        group = Group(
+            name=building_in.name,
+            building=building,
+            users=[],
+            classrooms=[],
+        )  # type: ignore
+        session.add(group)
+        session.flush()
+
+        building.main_group = group
         session.add(building)
         return building
 
@@ -101,7 +115,10 @@ class BuildingRepository:
 
     @staticmethod
     def delete(*, id: int, session: Session) -> None:
-        building = session.get_one(Building, id)
+        building = BuildingRepository.get_by_id(id=id, session=session)
+        building.main_group = None
+        session.add(building)
+        session.flush()
         session.delete(building)
 
 
@@ -109,6 +126,5 @@ class BuildingNotFound(HTTPException):
     def __init__(self, building_info: str) -> None:
         super().__init__(
             status.HTTP_404_NOT_FOUND,
-            f"Building with {
-                building_info} not found",
+            f"Prédio com {building_info} não encontrado",
         )

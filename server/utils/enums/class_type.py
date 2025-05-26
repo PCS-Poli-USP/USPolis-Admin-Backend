@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class ClassType(Enum):
+class ClassType(str, Enum):
     PRACTIC = "practic"
     THEORIC = "theoric"
     VINCULATED_THEORIC = "vinculated_theoric"
@@ -22,6 +22,15 @@ class ClassType(Enum):
         if value in vinculated_practic_values:
             return cls.VINCULATED_PRACTIC
         raise NoSuchClassType(f"Class type {value} is not valid.")
+
+    @staticmethod
+    def values() -> list["ClassType"]:
+        return [
+            ClassType.PRACTIC,
+            ClassType.THEORIC,
+            ClassType.VINCULATED_THEORIC,
+            ClassType.VINCULATED_PRACTIC,
+        ]
 
 
 class NoSuchClassType(Exception):

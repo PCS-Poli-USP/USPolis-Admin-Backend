@@ -1,7 +1,10 @@
+from typing import Any
 from fastapi import HTTPException, status
+from sqlalchemy import Select, exists, and_
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 
+from server.deps.interval_dep import QueryInterval
 from server.models.database.building_db_model import Building
 from server.models.database.class_db_model import Class
 from server.models.database.classroom_db_model import Classroom
@@ -21,14 +24,42 @@ from server.utils.schedule_utils import ScheduleUtils
 
 class ClassRepository:
     @staticmethod
-    def get_all(*, session: Session) -> list[Class]:
+    def __apply_interval_filter(
+        *,
+        statement: Select,
+        interval: QueryInterval,
+    ) -> Any:
+        if interval.today:
+            statement = statement.where(col(Class.end_date) >= interval.today)
+
+        if interval.start and interval.end:
+            statement = statement.where(
+                col(Class.start_date) >= interval.start,
+                col(Class.end_date) <= interval.end,
+            )
+        return statement
+
+    @staticmethod
+    def get_all(
+        *,
+        session: Session,
+        interval: QueryInterval,
+    ) -> list[Class]:
+        """Get all classes of database."""
         statement = select(Class)
+        statement = ClassRepository.__apply_interval_filter(
+            statement=statement,
+            interval=interval,
+        )
         classes = session.exec(statement).all()
         return list(classes)
 
     @staticmethod
     def get_all_allocated_on_building(
-        *, building_id: int, session: Session
+        *,
+        building_id: int,
+        session: Session,
+        interval: QueryInterval,
     ) -> list[Class]:
         statement = (
             select(Class)
@@ -37,12 +68,70 @@ class ClassRepository:
             .where(col(Classroom.building_id) == (building_id))
             .distinct()  # avoid duplicates
         )
+        statement = ClassRepository.__apply_interval_filter(
+            statement=statement,
+            interval=interval,
+        )
+        classes = session.exec(statement).all()
+        return list(classes)
+
+    @staticmethod
+    def get_all_unallocated_on_buildings(
+        *,
+        building_ids: list[int],
+        session: Session,
+        interval: QueryInterval,
+    ) -> list[Class]:
+        """Get all classes that are not allocated in all schedules and are in one of the buildings."""
+        # Query to get all schedules allocated for the class
+        subquery = select(Schedule.id).where(
+            and_(col(Schedule.class_id) == Class.id, col(Schedule.allocated))
+        )
+        statement = (
+            select(Class)
+            .join(Subject)
+            .join(SubjectBuildingLink)
+            .where(
+                col(SubjectBuildingLink.building_id).in_(building_ids),
+                ~exists(subquery),
+            )
+            .distinct()  # avoid duplicates
+        )
+        statement = ClassRepository.__apply_interval_filter(
+            statement=statement,
+            interval=interval,
+        )
+        classes = session.exec(statement).all()
+        return list(classes)
+
+    @staticmethod
+    def get_all_on_classrooms(
+        *,
+        classroom_ids: list[int],
+        session: Session,
+        interval: QueryInterval,
+    ) -> list[Class]:
+        """Get all classes that are in one of his schedules are in classrooms_ids."""
+        subquery = select(Schedule.id).where(
+            and_(
+                col(Schedule.class_id) == Class.id,
+                col(Schedule.classroom_id).in_(classroom_ids),
+            )
+        )
+        statement = select(Class).where(exists(subquery))
+        statement = ClassRepository.__apply_interval_filter(
+            statement=statement,
+            interval=interval,
+        )
         classes = session.exec(statement).all()
         return list(classes)
 
     @staticmethod
     def get_all_on_buildings(
-        *, building_ids: list[int], session: Session
+        *,
+        building_ids: list[int],
+        session: Session,
+        interval: QueryInterval,
     ) -> list[Class]:
         statement = (
             select(Class)
@@ -51,16 +140,30 @@ class ClassRepository:
             .where(col(SubjectBuildingLink.building_id).in_(building_ids))
             .distinct()  # avoid duplicates
         )
+        statement = ClassRepository.__apply_interval_filter(
+            statement=statement,
+            interval=interval,
+        )
         classes = session.exec(statement).all()
         return list(classes)
 
     @staticmethod
-    def get_all_on_subject(*, subject_id: int, session: Session) -> list[Class]:
+    def get_all_on_subject(
+        *,
+        subject_id: int,
+        session: Session,
+        interval: QueryInterval,
+    ) -> list[Class]:
+        """Get all classes of a subject."""
         statement = (
             select(Class)
             .join(Subject)
             .where(col(Subject.id) == subject_id)
             .distinct()  # avoid duplicates
+        )
+        statement = ClassRepository.__apply_interval_filter(
+            statement=statement,
+            interval=interval,
         )
         classes = session.exec(statement).all()
         return list(classes)
@@ -93,10 +196,14 @@ class ClassRepository:
     ) -> Class:
         statement = (
             select(Class)
-            .join(Subject)
-            .join(SubjectBuildingLink)
+            .join(Subject, col(Class.subject_id) == col(Subject.id))
+            .join(
+                SubjectBuildingLink,
+                col(Subject.id) == col(SubjectBuildingLink.subject_id),
+            )
             .where(col(SubjectBuildingLink.building_id).in_(building_ids))
             .where(col(Class.id) == id)
+            .distinct()
         )
         try:
             class_ = session.exec(statement).one()
@@ -123,7 +230,7 @@ class ClassRepository:
             vacancies=input.vacancies,
             air_conditionating=input.air_conditionating,
             accessibility=input.accessibility,
-            projector=input.projector,
+            audiovisual=input.audiovisual,
             ignore_to_allocate=input.ignore_to_allocate,
             full_allocated=False,
         )

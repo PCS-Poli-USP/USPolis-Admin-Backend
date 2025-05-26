@@ -1,4 +1,3 @@
-from datetime import datetime
 from fastapi import HTTPException, status
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
@@ -6,13 +5,14 @@ from sqlmodel import Session, col, select
 from server.models.database.forum_db_model import ForumPost
 from server.models.database.forum_post_report_link import ForumPostReportLink
 from server.models.database.forum_post_reacts_link import ForumPostReactsLink
+from server.utils.brazil_datetime import BrazilDatetime
 
 
 class ForumRepository:
     @staticmethod
     def create(*, input: ForumPost, session: Session) -> ForumPost:
         new_post = input
-        new_post.created_at = datetime.now()
+        new_post.created_at = BrazilDatetime.now_utc()
         new_post.report_count = 0
 
         session.add(new_post)
@@ -160,7 +160,7 @@ class ForumRepository:
                 raise PostNotFoundException(input.reply_of_post_id)  # type: ignore
             post.replies_count = replies_count
 
-            input.created_at = datetime.now()
+            input.created_at = BrazilDatetime.now_utc()
 
             session.add(input)
             session.add(post)

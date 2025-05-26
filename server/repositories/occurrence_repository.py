@@ -13,6 +13,7 @@ from server.models.http.requests.occurrence_request_models import (
 )
 from server.repositories.allocation_log_repository import AllocationLogRepository
 from server.utils.enums.recurrence import Recurrence
+from server.utils.must_be_int import must_be_int
 from server.utils.occurrence_utils import OccurrenceUtils
 
 
@@ -22,6 +23,27 @@ class OccurrenceRepository:
         statement = select(Occurrence).where(col(Occurrence.id) == id)
         occurrence = session.exec(statement).one()
         return occurrence
+
+    @staticmethod
+    def get_by_ids(ids: list[int], session: Session) -> list[Occurrence]:
+        statement = (
+            select(Occurrence)
+            .where(col(Occurrence.id).in_(ids))
+            .order_by(col(Occurrence.date))
+        )
+        occurrences = session.exec(statement).all()
+        return list(occurrences)
+
+    @staticmethod
+    def get_by_date_and_classroom(
+        date: date, classroom_id: int, session: Session
+    ) -> list[Occurrence]:
+        statement = select(Occurrence).where(
+            col(Occurrence.date) == date,
+            col(Occurrence.classroom_id) == classroom_id,
+        )
+        occurrences = session.exec(statement).all()
+        return list(occurrences)
 
     @staticmethod
     def get_all_on_buildings(
@@ -47,6 +69,19 @@ class OccurrenceRepository:
         return list(occurrences)
 
     @staticmethod
+    def get_all_on_interval_for_classroom(
+        classroom_id: int, start: date, end: date, session: Session
+    ) -> list[Occurrence]:
+        """Get all occurrences on interval for classroom"""
+        statement = select(Occurrence).where(
+            Occurrence.date >= start,
+            Occurrence.date <= end,
+            Occurrence.classroom_id == classroom_id,
+        )
+        occurrences = session.exec(statement).all()
+        return list(occurrences)
+
+    @staticmethod
     def allocate_occurrence(
         occurrence: Occurrence, classroom: Classroom, session: Session
     ) -> None:
@@ -58,28 +93,32 @@ class OccurrenceRepository:
 
     @staticmethod
     def allocate_schedule(
-        user: User, schedule: Schedule, classroom: Classroom, session: Session
-    ) -> None:
+        user: User,
+        schedule: Schedule,
+        classroom: Classroom,
+        session: Session,
+    ) -> list[Occurrence]:
         input = AllocationLogInput.for_allocation(
             user=user, schedule=schedule, classroom=classroom
         )
         AllocationLogRepository.create(input=input, schedule=schedule, session=session)
-        if schedule.recurrence != Recurrence.CUSTOM:
-            occurrences = OccurrenceUtils.generate_occurrences(schedule)
+        occurrences = OccurrenceUtils.generate_occurrences(schedule)
+        if schedule.allocated:
             previous_occurrences = schedule.occurrences
             for occurrence in previous_occurrences:
                 session.delete(occurrence)
-            schedule.occurrences = occurrences
-        else:
-            occurrences = schedule.occurrences
 
         for occurrence in occurrences:
+            occurrence.classroom_id = classroom.id
             occurrence.classroom = classroom
-        # classroom.occurrences.extend(occurrences)
+            session.add(occurrence)
+
+        schedule.occurrences = occurrences
         schedule.classroom = classroom
         schedule.allocated = True
         session.add(schedule)
         session.add(classroom)
+        return occurrences
 
     @staticmethod
     def remove_occurrence_allocation(occurrence: Occurrence, session: Session) -> None:
@@ -117,7 +156,7 @@ class OccurrenceRepository:
                 id=input.classroom_id, session=session
             )
         occurrence = Occurrence(
-            schedule_id=input.schedule_id,
+            schedule_id=must_be_int(input.schedule_id),
             schedule=schedule,
             classroom_id=input.classroom_id,
             classroom=classroom,

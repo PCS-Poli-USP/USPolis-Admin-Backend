@@ -192,10 +192,12 @@ class EventResponse(BaseModel):
     @classmethod
     def from_occurrence(cls, occurrence: Occurrence) -> "EventResponse":
         resource = f"{AllocationEnum.UNALLOCATED_BUILDING_ID.value}-{
-            AllocationEnum.UNALLOCATED_CLASSROOM_ID.value}"
+            AllocationEnum.UNALLOCATED_CLASSROOM_ID.value
+        }"
         if occurrence.classroom:
-            resource = f"{
-                occurrence.classroom.building.name}-{occurrence.classroom.name}"
+            resource = (
+                f"{occurrence.classroom.building.name}-{occurrence.classroom.name}"
+            )
         title = ""
         if occurrence.schedule.class_:
             title = occurrence.schedule.class_.subject.code
@@ -220,10 +222,10 @@ class EventResponse(BaseModel):
     @classmethod
     def from_schedule(cls, schedule: Schedule) -> list["EventResponse"]:
         resource = f"{AllocationEnum.UNALLOCATED_BUILDING_ID.value}-{
-            AllocationEnum.UNALLOCATED_CLASSROOM_ID.value}"
+            AllocationEnum.UNALLOCATED_CLASSROOM_ID.value
+        }"
         if schedule.classroom:
-            resource = f"{
-                schedule.classroom.building.name}-{schedule.classroom.name}"
+            resource = f"{schedule.classroom.building.name}-{schedule.classroom.name}"
         title = ""
         if schedule.class_:
             title = schedule.class_.subject.code

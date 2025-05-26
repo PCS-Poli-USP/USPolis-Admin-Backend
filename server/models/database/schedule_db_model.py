@@ -2,8 +2,9 @@ from datetime import date, time
 from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import Column, ForeignKey, Integer
-from sqlmodel import Field, Relationship, SQLModel, desc
+from sqlmodel import Field, Relationship, desc
 
+from server.models.database.base_db_model import BaseModel
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.allocation_log_db_model import AllocationLog
 
@@ -17,8 +18,7 @@ from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.week_day import WeekDay
 
 
-class Schedule(SQLModel, table=True):
-    id: int | None = Field(primary_key=True, default=None)
+class Schedule(BaseModel, table=True):
     start_date: date = Field()
     end_date: date = Field()
     start_time: time = Field()

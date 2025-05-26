@@ -55,26 +55,24 @@ async def update_crawl_subjects(
 
 @router.post("")
 def create_subject(
-    subject_input: SubjectRegister, session: SessionDep
+    subject_input: SubjectRegister, repository: SubjectRepositoryDep
 ) -> SubjectResponse:
     """Create a subject"""
-    subject = SubjectRepository.create(input=subject_input, session=session)
+    subject = repository.create(input=subject_input)
     return SubjectResponse.from_subject(subject)
 
 
 @router.put("/{subject_id}")
 def update_subject(
-    subject_id: int, subject_input: SubjectUpdate, session: SessionDep
+    subject_id: int, subject_input: SubjectUpdate, repository: SubjectRepositoryDep
 ) -> SubjectResponse:
     """Update a subject"""
-    subject = SubjectRepository.update(
-        id=subject_id, input=subject_input, session=session
-    )
+    subject = repository.update(id=subject_id, input=subject_input)
     return SubjectResponse.from_subject(subject)
 
 
 @router.delete("/{subject_id}")
-def delete_subject(subject_id: int, session: SessionDep) -> Response:
+def delete_subject(subject_id: int, repository: SubjectRepositoryDep) -> Response:
     """Delete a subject"""
-    SubjectRepository.delete(id=subject_id, session=session)
+    repository.delete(id=subject_id)
     return NoContent
