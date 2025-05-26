@@ -35,7 +35,7 @@ def upgrade() -> None:
     metadata = sa.MetaData()
     groups_table = sa.Table("group", metadata, autoload_with=bind)
     buildings = session.exec(
-        select(Building).where(
+        select(Building.id, Building.name).where(
             ~sa.exists().where(
                 sa.and_(
                     col(groups_table.c.building_id) == Building.id,
@@ -48,18 +48,18 @@ def upgrade() -> None:
     op.drop_column("group", "main")
     for building in buildings:
         group = Group(
-            name=building.name,
+            name=building[1],
             building_id=building.id,  # type: ignore
         )
         session.add(group)
         session.flush()  # group.id seja gerado
 
-    buildings = session.exec(select(Building)).all()
+    buildings = session.exec(select(Building.id, Building.name)).all()
     for building in buildings:
         # Getting the main group
         subquery = select(Group.id).where(col(GroupClassroomLink.group_id) == Group.id)
         statement = select(Group).where(
-            col(Group.building_id) == building.id, ~sa.exists(subquery)
+            col(Group.building_id) == building[0], ~sa.exists(subquery)
         )
         group = session.exec(statement).one()
 
@@ -72,7 +72,7 @@ def upgrade() -> None:
             select(User)
             .join(UserBuildingLink)
             .where(
-                col(UserBuildingLink.building_id) == building.id,
+                col(UserBuildingLink.building_id) == building[0],
                 col(UserBuildingLink.user_id) == User.id,
                 ~sa.exists(subquery),
             )
