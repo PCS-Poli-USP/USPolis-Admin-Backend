@@ -17,9 +17,9 @@ class BrazilDatetime(datetime):
     @staticmethod
     def now_utc() -> datetime:
         """
-        Returns the current date and time in the Brazilian utc.
+        Returns the current date and time in the Brazilian utc, without time zone.
         """
-        return datetime.now(tz=BrazilDatetime.brazil_tz())
+        return datetime.now(tz=BrazilDatetime.brazil_tz()).replace(tzinfo=None)
 
     def format_brazil(self) -> str:
         """
