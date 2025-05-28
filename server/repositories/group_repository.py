@@ -158,8 +158,12 @@ class GroupRepository:
 
     @staticmethod
     def create(*, input: GroupRegister, session: Session) -> Group:
+        building = BuildingRepository.get_by_id(
+            id=input.building_id, session=session
+        )
         group = Group(
             name=input.name,
+            building=building,
             building_id=input.building_id,
         )
         GroupRepository.__check_group_validation(
@@ -274,9 +278,3 @@ class MainGroupDeleting(HTTPException):
         )
 
 
-class GroupAlreadyExists(HTTPException):
-    def __init__(self, name: str) -> None:
-        super().__init__(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Grupo com o nome {name} já existe",
-        )

@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Body, status
+from fastapi import APIRouter, Body, HTTPException, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 
 from server.deps.session_dep import SessionDep
 from server.models.http.requests.group_request_models import GroupRegister, GroupUpdate
 from server.models.http.responses.group_response_models import GroupResponse
-from server.repositories.group_repository import GroupAlreadyExists, GroupRepository
+from server.repositories.group_repository import GroupRepository
 
 embed = Body(..., embed=True)
 
@@ -94,3 +94,11 @@ def delete_group(
             "message": "Grupo deletado com sucesso",
         },
     )
+
+
+class GroupAlreadyExists(HTTPException):
+    def __init__(self, name: str) -> None:
+        super().__init__(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Grupo com o nome {name} já existe no prédio informado.",
+        )

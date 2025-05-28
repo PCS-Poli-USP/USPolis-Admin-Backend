@@ -20,7 +20,7 @@ class Group(BaseModel, table=True):
         UniqueConstraint("building_id", "name", name="unique_group_name_for_building"),
     )
 
-    name: str = Field(index=True, nullable=False, unique=True)
+    name: str = Field()
     building_id: int = Field(foreign_key="building.id", nullable=False)
     updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
     created_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
