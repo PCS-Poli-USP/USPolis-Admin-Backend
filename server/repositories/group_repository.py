@@ -158,9 +158,7 @@ class GroupRepository:
 
     @staticmethod
     def create(*, input: GroupRegister, session: Session) -> Group:
-        building = BuildingRepository.get_by_id(
-            id=input.building_id, session=session
-        )
+        building = BuildingRepository.get_by_id(id=input.building_id, session=session)
         group = Group(
             name=input.name,
             building=building,
@@ -197,6 +195,7 @@ class GroupRepository:
         old_users = group.user_ids_set()
         new_users = set(input.user_ids)
         users_ids_to_remove = old_users - new_users
+
         if len(new_users) > 0:
             GroupRepository.__update_group_users(
                 group=group,
@@ -276,5 +275,3 @@ class MainGroupDeleting(HTTPException):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Grupo principal não pode ser removido",
         )
-
-

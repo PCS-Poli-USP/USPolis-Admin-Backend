@@ -43,6 +43,7 @@ class Building(BaseModel, table=True):
         sa_relationship_kwargs={
             "foreign_keys": "[Building.main_group_id]",
             "cascade": "delete",
+            "post_update": True 
         }
     )
     groups: list["Group"] = Relationship(
