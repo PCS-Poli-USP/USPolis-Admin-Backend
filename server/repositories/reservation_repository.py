@@ -271,6 +271,8 @@ class ReservationRepository:
             solicitation = ClassroomSolicitationRepository.get_by_id(
                 id=must_be_int(reservation.solicitation.id), session=session
             )
+            solicitation.closed = True
+            solicitation.closed_by = user.name
             solicitation.deleted = True
             solicitation.deleted_by = user.name
             solicitation.reservation = None
