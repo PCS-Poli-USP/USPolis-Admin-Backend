@@ -22,7 +22,7 @@ class Settings(BaseModel):
     # CORS
     allowed_origins: list[str] = config(
         "ALLOWED_ORIGINS",
-        default=["http://localhost:3000", "https://www.uspolis.com.br"],
+        default=["http://localhost:3000", "https://uspolis.com.br"],
         cast=Csv(),
     )  # type: ignore
 
