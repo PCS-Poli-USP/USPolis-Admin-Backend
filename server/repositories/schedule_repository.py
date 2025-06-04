@@ -79,6 +79,31 @@ class ScheduleRepository:
         return schedule
 
     @staticmethod
+    def find_old_allocation(
+        *, year: int, target: Schedule, session: Session
+    ) -> list[Schedule]:
+        """Get all schedules that can be reused for allocation"""
+        if not target.class_:
+            raise InvalidScheduleAllocationReuseTarget()
+        class_number = target.class_.code[-2:]
+        statement = select(Schedule).where(
+            Schedule.start_date.year == year,
+            Schedule.end_date.year == year,
+            Schedule.week_day == target.week_day,
+            Schedule.month_week == target.month_week,
+            Schedule.recurrence == target.recurrence,
+            Schedule.start_time == target.start_time,
+            Schedule.end_time == target.end_time,
+        )
+        schedules = list(session.exec(statement).all())
+        schedules = [
+            schedule
+            for schedule in schedules
+            if schedule.class_ and schedule.class_.code.endswith(class_number)
+        ]
+        return schedules
+
+    @staticmethod
     def create_with_class(
         *, class_input: Class, input: ScheduleRegister, session: Session
     ) -> Schedule:
@@ -270,4 +295,12 @@ class ScheduleNotFound(HTTPException):
     def __init__(self) -> None:
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND, detail="Schedule not found"
+        )
+
+
+class InvalidScheduleAllocationReuseTarget(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Agenda deve ser de uma turma para reutilização de alocação",
         )

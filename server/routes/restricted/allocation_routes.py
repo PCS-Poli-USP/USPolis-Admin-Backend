@@ -60,3 +60,10 @@ def update_event(
 
     occurrence_repo.session.commit()
     return JSONResponse(content={"message": "Evento atualizado com sucesso!"})
+
+
+@router.post("/reuse-options")
+def allocation_reuse_options(
+    input: EventUpdate,
+) -> JSONResponse:
+    return JSONResponse(content={"message": "Allocation reused successfully!"})

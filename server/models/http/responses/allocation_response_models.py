@@ -316,3 +316,9 @@ class ResourceResponse(BaseModel):
             parentId=AllocationEnum.UNALLOCATED_BUILDING_ID.value,
             title=AllocationEnum.UNALLOCATED.value,
         )
+
+
+class AllocationReuseResponse(BaseModel):
+    building_id: int
+    allocation_year: int
+    strict: bool = True
