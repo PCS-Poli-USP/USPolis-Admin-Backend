@@ -10,6 +10,9 @@ from server.models.database.class_db_model import Class
 from server.models.http.requests.class_request_models import ClassRegister, ClassUpdate
 from server.repositories.class_repository import ClassRepository
 from server.services.security.class_permission_checker import ClassPermissionChecker
+from server.services.security.schedule_permission_checker import (
+    SchedulePermissionChecker,
+)
 from server.services.security.subjects_permission_checker import (
     SubjectPermissionChecker,
 )
@@ -28,6 +31,7 @@ class ClassRepositoryAdapter:
         self.user = user
         self.owned_building_ids = owned_building_ids
         self.checker = ClassPermissionChecker(user=user, session=session)
+        self.schedule_checker = SchedulePermissionChecker(user=user, session=session)
         self.subject_checker = SubjectPermissionChecker(user=user, session=session)
 
     def get_all(self) -> list[Class]:
@@ -85,12 +89,21 @@ class ClassRepositoryAdapter:
         return updated_class
 
     def delete(self, id: int) -> None:
-        self.checker.check_permission(object=id)
+        class_ = ClassRepository.get_by_id(id=id, session=self.session)
+        self.checker.check_permission(object=class_)
+        self.schedule_checker.check_permission(object=class_.schedules)
         ClassRepository.delete(id=id, session=self.session)
         self.session.commit()
 
     def delete_many(self, ids: list[int]) -> None:
-        self.checker.check_permission(object=ids)
+        classes = ClassRepository.get_by_ids(
+            ids=ids, session=self.session
+        )
+        self.checker.check_permission(object=classes)
+
+        for class_ in classes:
+            self.schedule_checker.check_permission(object=class_.schedules)
+            
         ClassRepository.delete_many(ids=ids, session=self.session)
         self.session.commit()
 

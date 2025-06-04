@@ -45,6 +45,8 @@ class ScheduleUtils:
             return True
         if schedule.week_day != schedule_input.week_day:
             return True
+        if schedule.month_week != schedule_input.month_week:
+            return True
         if schedule.start_date != schedule_input.start_date:
             return True
         if schedule.end_date != schedule_input.end_date:
