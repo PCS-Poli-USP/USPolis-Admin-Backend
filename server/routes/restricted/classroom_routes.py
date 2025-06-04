@@ -35,15 +35,6 @@ def get_classroom_by_id(
     return ClassroomResponse.from_classroom(classroom)
 
 
-@router.get("/building/{building_id}")
-def get_classrooms_by_building_id(
-    building_id: int, repository: ClassroomRepositoryDep
-) -> list[ClassroomResponse]:
-    """Get all classrooms on building"""
-    classrooms = repository.get_all_on_building(building_id)
-    return ClassroomResponse.from_classroom_list(classrooms)
-
-
 @router.get("/full/{id}")
 def get_classroom_full(id: int, session: SessionDep) -> ClassroomFullResponse:
     """Get by ID a classrooms with schedules and occurrences"""
