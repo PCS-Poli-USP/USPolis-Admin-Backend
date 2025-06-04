@@ -26,8 +26,7 @@ class Settings(BaseModel):
         cast=Csv(),
     )  # type: ignore
 
-    root_url: str = config("ROOT_URL", default="http://localhost:8000")  # type: ignore
-    port: str = config("PORT", default="8000")  # type: ignore
+    port: str = config("PORT", default="5000")  # type: ignore
     debug: bool = config("DEBUG", default=False, cast=bool)  # type: ignore
 
     # SQLAlchemy settings
