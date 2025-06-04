@@ -52,9 +52,19 @@ def authenticate(
     return user
 
 
+def restricted_authenticate(
+    user: Annotated[User, Depends(authenticate)],
+) -> User:
+    if user.is_admin:
+        return user
+    if not user.groups:
+        raise RestrictedAccessRequired()
+    return user
+
+
 def admin_authenticate(user: Annotated[User, Depends(authenticate)]) -> None:
     if not user.is_admin:
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "Usuário deve ser administrador")
+        raise AdminAccessRequired()
 
 
 # -- permission authentications :
@@ -83,6 +93,22 @@ class InvalidToken(HTTPException):
             detail="Token inválido",
         )
         self.headers = {"WWW-Authenticate": "Bearer"}
+
+
+class AdminAccessRequired(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Usuário deve ser administrador",
+        )
+
+
+class RestrictedAccessRequired(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Usuário deve ter acesso restrito a algum grupo",
+        )
 
 
 # exports:
