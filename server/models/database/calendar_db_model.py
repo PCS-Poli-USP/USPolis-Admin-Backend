@@ -23,13 +23,14 @@ class Calendar(BaseModel, table=True):
     )
     name: str = Field()
     year: int = Field()
+    created_by_id: int = Field(default=None, foreign_key="user.id")
+
     categories: list["HolidayCategory"] = Relationship(
         back_populates="calendars", link_model=CalendarHolidayCategoryLink
     )
     classes: list["Class"] = Relationship(
         back_populates="calendars", link_model=ClassCalendarLink
     )
-    created_by_id: int | None = Field(default=None, foreign_key="user.id")
     created_by: "User" = Relationship(back_populates="calendars")
 
     def dates(self) -> Generator[date, Any, None]:
