@@ -21,7 +21,9 @@ class Settings(BaseModel):
     enviroment: str = config("ENVIRONMENT", default="DEVELOPMENT", cast=str)  # type: ignore
     # CORS
     allowed_origins: list[str] = config(
-        "ALLOWED_ORIGINS", default=["http://localhost:3000"], cast=Csv()
+        "ALLOWED_ORIGINS",
+        default=["http://localhost:3000", "https://uspolis.com.br"],
+        cast=Csv(),
     )  # type: ignore
 
     root_url: str = config("ROOT_URL", default="http://localhost:8000")  # type: ignore
