@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
 from fastapi import HTTPException, status
+from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, Relationship
 
 from server.models.database.base_db_model import BaseModel
@@ -21,6 +22,8 @@ if TYPE_CHECKING:
 
 
 class Building(BaseModel, table=True):
+    __table__args__ = (UniqueConstraint("main_group_id", name="unique_main_group_id"),)
+
     name: str = Field(index=True, unique=True)
     updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
     created_by_id: int | None = Field(default=None, foreign_key="user.id")
@@ -43,7 +46,7 @@ class Building(BaseModel, table=True):
         sa_relationship_kwargs={
             "foreign_keys": "[Building.main_group_id]",
             "cascade": "delete",
-            "post_update": True 
+            "post_update": True,
         }
     )
     groups: list["Group"] = Relationship(

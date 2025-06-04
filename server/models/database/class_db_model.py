@@ -26,7 +26,9 @@ class Class(BaseModel, table=True):
     start_date: date = Field()
     end_date: date = Field()
     code: str = Field()
-    professors: list[str] = Field(sa_column=Column(postgresql.ARRAY(String())))
+    professors: list[str] = Field(
+        sa_column=Column(postgresql.ARRAY(String()), nullable=False)
+    )
     type: ClassType = Field()
     vacancies: int = Field()
 

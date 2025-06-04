@@ -19,7 +19,5 @@ class AllocationLog(BaseModel, table=True):
     new_classroom: str = Field()
     new_building: str = Field()
 
-    schedule_id: int | None = Field(
-        default=None, nullable=False, foreign_key="schedule.id"
-    )
+    schedule_id: int = Field(default=None, nullable=False, foreign_key="schedule.id")
     schedule: "Schedule" = Relationship(back_populates="logs")

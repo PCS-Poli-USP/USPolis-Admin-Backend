@@ -39,7 +39,9 @@ class ClassroomSolicitation(BaseModel, table=True):
     reason: str | None = Field(nullable=True, default=None)
     reservation_title: str
     reservation_type: ReservationType
-    dates: list[date] = Field(sa_column=Column(ARRAY(Date)), min_length=1)
+    dates: list[date] = Field(
+        sa_column=Column(ARRAY(Date), nullable=False), min_length=1
+    )
     start_time: time | None = Field(nullable=True, default=None)
     end_time: time | None = Field(nullable=True, default=None)
     capacity: int

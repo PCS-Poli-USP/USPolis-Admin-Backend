@@ -29,7 +29,6 @@ class Schedule(BaseModel, table=True):
     month_week: MonthWeek | None = Field(default=None, nullable=True)
     all_day: bool = Field(default=False)
 
-    # class_id: int | None = Field(foreign_key="class.id", nullable=True, default=None)
     class_id: int | None = Field(
         sa_column=Column(Integer, ForeignKey("class.id", ondelete="CASCADE")),
         default=None,

@@ -27,7 +27,7 @@ class ClassroomBase(BaseModel):
     name: str
     capacity: int
     floor: int
-    accessibility: bool = False
+    accessibility: bool = Field(default=False)
     audiovisual: AudiovisualType = Field(
         sa_column=Column(Enum(AudiovisualType), nullable=False)
     )

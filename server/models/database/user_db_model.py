@@ -67,9 +67,12 @@ class User(BaseModel, table=True):
                     must_be_int(classroom.id) for classroom in group.classrooms
                 )
             if not group.classrooms:
-                classrooms_ids.update(
-                    must_be_int(classroom.id) for classroom in group.building.classrooms
-                )
+                building = group.building
+                main_group = building.get_main_group()
+                if main_group == group:
+                    classrooms_ids.update(
+                        must_be_int(classroom.id) for classroom in group.building.classrooms
+                    )
         return classrooms_ids
 
     def classrooms_ids(self) -> list[int]:
