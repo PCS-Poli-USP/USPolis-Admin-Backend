@@ -23,7 +23,7 @@ from server.utils.must_be_int import must_be_int
 class SubjectRepository:
     @staticmethod
     def get_all(*, session: Session) -> list[Subject]:
-        statement = select(Subject)
+        statement = select(Subject).where(col(Subject.id) > 0)
         subjects = session.exec(statement).all()
         return list(subjects)
 
