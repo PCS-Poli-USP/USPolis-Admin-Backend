@@ -1,4 +1,6 @@
+from datetime import date as datetime_date
 from fastapi import HTTPException, status
+from sqlalchemy import func
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 
@@ -7,6 +9,7 @@ from server.models.database.classroom_db_model import Classroom
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.schedule_db_model import Schedule
+from server.models.database.subject_db_model import Subject
 from server.models.database.user_db_model import User
 from server.models.http.requests.occurrence_request_models import OccurenceManyRegister
 from server.models.http.requests.schedule_request_models import (
@@ -30,7 +33,10 @@ class ScheduleRepository:
     @staticmethod
     def get_by_id(*, id: int, session: Session) -> Schedule:
         statement = select(Schedule).where(col(Schedule.id) == id)
-        schedule = session.exec(statement).one()
+        try:
+            schedule = session.exec(statement).one()
+        except NoResultFound:
+            raise ScheduleNotFound()
         return schedule
 
     @staticmethod
@@ -52,7 +58,10 @@ class ScheduleRepository:
             .where(Schedule.class_id == class_.id)
             .where(Schedule.id == id)
         )
-        schedule = session.exec(statement).one()
+        try:
+            schedule = session.exec(statement).one()
+        except NoResultFound:
+            raise ScheduleNotFound()
         return schedule
 
     @staticmethod
@@ -86,21 +95,31 @@ class ScheduleRepository:
         if not target.class_:
             raise InvalidScheduleAllocationReuseTarget()
         class_number = target.class_.code[-2:]
-        statement = select(Schedule).where(
-            Schedule.start_date.year == year,
-            Schedule.end_date.year == year,
-            Schedule.week_day == target.week_day,
-            Schedule.month_week == target.month_week,
-            Schedule.recurrence == target.recurrence,
-            Schedule.start_time == target.start_time,
-            Schedule.end_time == target.end_time,
+        start = datetime_date(year, 1, 1)
+        end = datetime_date(year, 12, 31)
+        statement = (
+            select(Schedule)
+            .join(Class)
+            .join(Subject)
+            .where(
+                Schedule.start_date >= start,
+                Schedule.end_date <= end,
+                Schedule.week_day == target.week_day,
+                Schedule.month_week == target.month_week,
+                Schedule.recurrence == target.recurrence,
+                Schedule.start_time == target.start_time,
+                Schedule.end_time == target.end_time,
+                func.right(Class.code, 2) == class_number,
+                col(Subject.code) == target.class_.subject.code,
+            )
         )
+
         schedules = list(session.exec(statement).all())
-        schedules = [
-            schedule
-            for schedule in schedules
-            if schedule.class_ and schedule.class_.code.endswith(class_number)
-        ]
+        # schedules = [
+        #     schedule
+        #     for schedule in schedules
+        #     if schedule.class_ and schedule.class_.code.endswith(class_number)
+        # ]
         return schedules
 
     @staticmethod
@@ -283,18 +302,10 @@ class ScheduleRepository:
         return
 
 
-class ScheduleInvalidData(HTTPException):
-    def __init__(self, schedule_info: str, data_info: str) -> None:
-        super().__init__(
-            status.HTTP_400_BAD_REQUEST,
-            f"Schedule with {schedule_info} has invalid {data_info} value",
-        )
-
-
 class ScheduleNotFound(HTTPException):
     def __init__(self) -> None:
         super().__init__(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Schedule not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Agenda não encontrada"
         )
 
 
