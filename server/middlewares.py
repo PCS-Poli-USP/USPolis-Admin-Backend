@@ -6,15 +6,15 @@ from pydantic import BaseModel
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 
-from server.models.database.user_db_model import User
 from server.logger import logger
+from server.services.auth.auth_user_info import AuthUserInfo
 
 
 class LoggerMessage(BaseModel):
     method: str
     url: str
     type: str = "Request"
-    user_id: int | None = None
+    user_email: str | None = None
     user_name: str | None = None
     status_code: int | None = None
     detail: str | None = None
@@ -24,7 +24,7 @@ class LoggerMessage(BaseModel):
             f"{self.type}, "
             f"Method: {self.method}, "
             f"URL: {self.url}, "
-            f"User ID: {self.user_id}, "
+            f"User Email: {self.user_email}, "
             f"User Name: {self.user_name}, "
             f"Status Code: {self.status_code}, "
             f"Detail: {self.detail}, "
@@ -36,11 +36,11 @@ class LoggerMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.detail: Any | None = None
 
-    def __get_user_from_request(self, request: Request) -> User | None:
-        if hasattr(request.state, "current_user") and isinstance(
-            request.state.current_user, User
+    def __get_user_info_from_request(self, request: Request) -> AuthUserInfo | None:
+        if hasattr(request.state, "user_info") and isinstance(
+            request.state.user_info, AuthUserInfo
         ):
-            return request.state.current_user
+            return request.state.user_info
         return None
 
     async def __get_response_detail(self, response: Response) -> Response:
@@ -66,11 +66,13 @@ class LoggerMiddleware(BaseHTTPMiddleware):
             media_type=response.media_type,
         )
 
-    def __load_user_in_message(self, message: LoggerMessage, user: User | None) -> None:
-        if not user:
+    def __load_user_info_in_message(
+        self, message: LoggerMessage, user_info: AuthUserInfo | None
+    ) -> None:
+        if not user_info:
             return
-        message.user_id = user.id
-        message.user_name = user.name
+        message.user_email = user_info.email
+        message.user_name = user_info.name
 
     def write_log(self, message: LoggerMessage) -> None:
         logger.info(str(message))
@@ -80,8 +82,8 @@ class LoggerMiddleware(BaseHTTPMiddleware):
             method=request.method,
             url=request.url.path,
         )
-        user = self.__get_user_from_request(request)
-        self.__load_user_in_message(msg, user)
+        info = self.__get_user_info_from_request(request)
+        self.__load_user_info_in_message(msg, info)
         self.write_log(msg)
 
     async def log_response(self, request: Request, response: Response) -> Response:
@@ -94,8 +96,8 @@ class LoggerMiddleware(BaseHTTPMiddleware):
             type="Response",
             status_code=response.status_code,
         )
-        user = self.__get_user_from_request(request)
-        self.__load_user_in_message(msg, user)
+        info = self.__get_user_info_from_request(request)
+        self.__load_user_info_in_message(msg, info)
         new_response = await self.__get_response_detail(response)
         msg.detail = self.detail
         self.write_log(msg)
