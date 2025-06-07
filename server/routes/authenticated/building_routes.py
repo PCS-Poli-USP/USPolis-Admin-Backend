@@ -1,10 +1,8 @@
 from fastapi import APIRouter, Body
 
-from server.deps.repository_adapters.building_repository_adapter import (
-    BuildingRepositoryDep,
-)
-from server.models.database.building_db_model import Building
+from server.deps.session_dep import SessionDep
 from server.models.http.responses.building_response_models import BuildingResponse
+from server.repositories.building_repository import BuildingRepository
 
 embed = Body(..., embed=True)
 
@@ -12,9 +10,7 @@ router = APIRouter(prefix="/buildings", tags=["Buildings"])
 
 
 @router.get("/{building_id}")
-def get_building_by_id(
-    building_id: int, repository: BuildingRepositoryDep
-) -> BuildingResponse:
+def get_building_by_id(building_id: int, session: SessionDep) -> BuildingResponse:
     """Get an building by id"""
-    building: Building = repository.get_by_id(id=building_id)
+    building = BuildingRepository.get_by_id(id=building_id, session=session)
     return BuildingResponse.from_building(building)
