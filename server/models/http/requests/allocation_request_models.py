@@ -15,7 +15,6 @@ class EventUpdate(BaseModel):
 
 class AllocationReuseTarget(BaseModel):
     subject_id: int
-    subject_code: str
     class_ids: list[int]
 
 

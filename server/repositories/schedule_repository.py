@@ -88,8 +88,8 @@ class ScheduleRepository:
         return schedule
 
     @staticmethod
-    def find_old_allocation(
-        *, year: int, target: Schedule, session: Session
+    def find_old_allocation_options(
+        *, building_id: int, year: int, target: Schedule, session: Session
     ) -> list[Schedule]:
         """Get all schedules that can be reused for allocation"""
         if not target.class_:
@@ -115,11 +115,11 @@ class ScheduleRepository:
         )
 
         schedules = list(session.exec(statement).all())
-        # schedules = [
-        #     schedule
-        #     for schedule in schedules
-        #     if schedule.class_ and schedule.class_.code.endswith(class_number)
-        # ]
+        schedules = [
+            schedule
+            for schedule in schedules
+            if (not schedule.classroom or schedule.classroom.building_id == building_id)
+        ]
         return schedules
 
     @staticmethod

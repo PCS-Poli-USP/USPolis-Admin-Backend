@@ -6,6 +6,7 @@ from server.models.database.classroom_db_model import Classroom
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.schedule_db_model import Schedule
+from server.models.http.responses.schedule_response_models import ScheduleResponseBase
 from server.utils.enums.allocation_enum import AllocationEnum
 from server.utils.enums.month_week import MonthWeek
 from server.utils.enums.recurrence import Recurrence
@@ -318,7 +319,26 @@ class ResourceResponse(BaseModel):
         )
 
 
+class AllocationScheduleOptions(BaseModel):
+    schedule_target_id: int
+    options: list[ScheduleResponseBase]
+
+
+class AllocationClassOptions(BaseModel):
+    class_id: int
+    class_code: str
+    schedule_options: list[AllocationScheduleOptions]
+
+
+class AllocationReuseTargetOptions(BaseModel):
+    subject_id: int
+    subject_code: str
+    subject_name: str
+    class_options: list[AllocationClassOptions]
+
+
 class AllocationReuseResponse(BaseModel):
     building_id: int
     allocation_year: int
+    target_options: list[AllocationReuseTargetOptions]
     strict: bool = True
