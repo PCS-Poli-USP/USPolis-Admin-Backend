@@ -1,4 +1,3 @@
-from datetime import date
 from fastapi import APIRouter, Body, Response
 
 from server.deps.authenticate import UserDep
@@ -14,22 +13,6 @@ from server.repositories.calendar_repository import CalendarRepository
 embed = Body(..., embed=True)
 
 router = APIRouter(prefix="/calendars", tags=["Calendars"])
-
-
-@router.get("")
-def get_all_calendars_on_year(
-    session: SessionDep, year: int = date.today().year
-) -> list[CalendarResponse]:
-    """Get all calendars on a specific year, by default is the current year"""
-    calendars = CalendarRepository.get_all_on_year(session=session, year=year)
-    return CalendarResponse.from_calendar_list(calendars)
-
-
-@router.get("/{calendar_id}")
-def get_calendar(calendar_id: int, session: SessionDep) -> CalendarResponse:
-    """Get a calendar by id"""
-    calendar = CalendarRepository.get_by_id(id=calendar_id, session=session)
-    return CalendarResponse.from_calendar(calendar)
 
 
 @router.post("")

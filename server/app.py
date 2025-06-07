@@ -8,6 +8,7 @@ from server.exception_handlers import add_exception_handlers
 from server.middlewares import LoggerMiddleware
 from server.routes.admin import router as AdminRouter
 from server.routes.public import router as PublicRouter
+from server.routes.authenticated import router as AuthenticatedRouter
 from server.routes.restricted import router as RestrictedRouter
 
 from server.config import CONFIG
@@ -26,9 +27,10 @@ app.add_middleware(
 )
 app.add_middleware(LoggerMiddleware)
 
-app.include_router(AdminRouter)
-app.include_router(RestrictedRouter)
 app.include_router(PublicRouter)
+app.include_router(AuthenticatedRouter)
+app.include_router(RestrictedRouter)
+app.include_router(AdminRouter)
 
 app.dependency_overrides = DepsOverrides
 

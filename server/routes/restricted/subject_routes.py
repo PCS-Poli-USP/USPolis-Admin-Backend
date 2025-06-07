@@ -23,13 +23,6 @@ embed = Body(..., embed=True)
 router = APIRouter(prefix="/subjects", tags=["Subjects"])
 
 
-@router.get("/{subject_id}")
-def get_subject(subject_id: int, repository: SubjectRepositoryDep) -> SubjectResponse:
-    """Get a subject"""
-    subject = repository.get_by_id(id=subject_id)
-    return SubjectResponse.from_subject(subject)
-
-
 @router.post("/crawl")
 async def crawl_subjects(
     building: BuildingDep, session: SessionDep, input: CrawlSubject
