@@ -112,7 +112,6 @@ def mock_authenticate(user: User, request: Request, session: SessionDep) -> User
     return user
 
 
-# This user call user fixture that creates the mocked user
 @pytest.fixture(name="client")
 def client_fixture(user: User, session: Session) -> Generator[TestClient, None, None]:
     """
@@ -160,7 +159,7 @@ def common_client_fixture(
     """
     Common client fixture, wich is a TestClient with the mocked common authentication and the mocked google authentication.
 
-    - A common user is a user that not has a building
+    - A common user is a user that not has a building and groups
     """
     app.dependency_overrides[get_db] = lambda: session
     app.dependency_overrides[google_authenticate] = mock_google_authenticate
