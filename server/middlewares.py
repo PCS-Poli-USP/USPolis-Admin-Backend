@@ -24,9 +24,9 @@ class LoggerMessage(BaseModel):
             f"{self.type}, "
             f"Method: {self.method}, "
             f"URL: {self.url}, "
-            f"User Email: {self.user_email}, "
-            f"User Name: {self.user_name}, "
-            f"Status Code: {self.status_code}, "
+            f"Email: {self.user_email}, "
+            f"Name: {self.user_name}, "
+            f"Code: {self.status_code}, "
             f"Detail: {self.detail}, "
         )
 

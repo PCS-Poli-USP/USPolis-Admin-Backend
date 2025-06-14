@@ -3,10 +3,10 @@ from logging.config import fileConfig
 import os
 
 from alembic import context
-from sqlalchemy import pool
+from sqlalchemy import pool, engine_from_config
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
-from sqlmodel import SQLModel  # NEW
+from sqlmodel import SQLModel
 
 from server.config import CONFIG
 from server.db import engine  # noqa
@@ -21,17 +21,10 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-target_metadata = SQLModel.metadata  # UPDATED
+target_metadata = SQLModel.metadata
 
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
-
+if config.config_file_name is not None:
+    fileConfig(config.config_file_name)
 
 # The os.getenv is for testing automatic migration
 def get_url() -> str:
@@ -89,11 +82,23 @@ async def run_async_migrations() -> None:
 
     await connectable.dispose()
 
+def run_sync_migrations() -> None:
+    connectable = engine_from_config(
+        config.get_section(config.config_ini_section), # type: ignore
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+    )
+    with connectable.connect() as connection:
+        do_run_migrations(connection)
+
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-
-    asyncio.run(run_async_migrations())
+    url = get_url()
+    if url.startswith("postgresql+asyncpg://"):
+        asyncio.run(run_async_migrations())
+    else:
+        run_sync_migrations()
 
 
 if context.is_offline_mode():
