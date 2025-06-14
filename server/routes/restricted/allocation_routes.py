@@ -102,6 +102,7 @@ def allocation_reuse_options(
                 schedule_options.append(
                     AllocationScheduleOptions(
                         schedule_target_id=must_be_int(schedule.id),
+                        schedule_target=ScheduleResponseBase.from_schedule(schedule),
                         options=ScheduleResponseBase.from_schedule_list(options),
                     )
                 )

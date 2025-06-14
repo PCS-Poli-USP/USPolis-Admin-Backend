@@ -321,6 +321,7 @@ class ResourceResponse(BaseModel):
 
 class AllocationScheduleOptions(BaseModel):
     schedule_target_id: int
+    schedule_target: ScheduleResponseBase
     options: list[ScheduleResponseBase]
 
 
