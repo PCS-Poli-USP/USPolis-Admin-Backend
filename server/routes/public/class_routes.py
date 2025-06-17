@@ -53,5 +53,4 @@ async def get_all_classes_allocated_by_building_name(
     classes = ClassRepository.get_all_allocated_on_building(
         building_id=must_be_int(building.id), session=session, interval=interval
     )
-    print(f"Classes: {len(classes)}")
     return ClassResponse.from_class_list(classes)
