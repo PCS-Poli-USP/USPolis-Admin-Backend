@@ -10,6 +10,7 @@ from server.models.http.requests.classroom_solicitation_request_models import (
 from server.models.http.responses.classroom_solicitation_response_models import (
     ClassroomSolicitationResponse,
 )
+from server.repositories.building_repository import BuildingRepository
 from server.repositories.classroom_repository import ClassroomRepository
 from server.repositories.classroom_solicitation_repository import (
     ClassroomSolicitationRepository,
