@@ -10,6 +10,7 @@ from server.models.http.requests.classroom_solicitation_request_models import (
 from server.models.http.responses.classroom_solicitation_response_models import (
     ClassroomSolicitationResponse,
 )
+from server.repositories.building_repository import BuildingRepository
 from server.repositories.classroom_solicitation_repository import (
     ClassroomSolicitationRepository,
 )
@@ -66,9 +67,12 @@ async def create_classroom_solicitation(
         requester=user, input=input, session=session
     )
     if solicitation.classroom_id:
+        building = BuildingRepository.get_by_id(id=input.building_id, session=session)
         groups = GroupRepository.get_by_classroom_id(
             classroom_id=solicitation.classroom_id, session=session
         )
+        if building.main_group:
+            groups.append(building.main_group)
         users = [user for group in groups for user in group.users]
         users_set = set(users)
         users = list(users_set)
