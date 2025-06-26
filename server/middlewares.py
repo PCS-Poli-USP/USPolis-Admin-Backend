@@ -12,7 +12,8 @@ from server.services.auth.auth_user_info import AuthUserInfo
 
 class LoggerMessage(BaseModel):
     method: str
-    url: str
+    url: Any
+    host: str | None = None
     type: str = "Request"
     user_email: str | None = None
     user_name: str | None = None
@@ -20,10 +21,12 @@ class LoggerMessage(BaseModel):
     detail: str | None = None
 
     def __str__(self) -> str:
+        short_url = self.url.path + self.url.query if self.url.query else self.url.path
         return (
             f"{self.type}, "
+            f"Host: {self.host}, " 
             f"Method: {self.method}, "
-            f"URL: {self.url}, "
+            f"URL: {short_url}, "
             f"Email: {self.user_email}, "
             f"Name: {self.user_name}, "
             f"Code: {self.status_code}, "
@@ -80,7 +83,8 @@ class LoggerMiddleware(BaseHTTPMiddleware):
     def log_request(self, request: Request) -> None:
         msg = LoggerMessage(
             method=request.method,
-            url=request.url.path,
+            url=request.url,
+            host=request.client.host if request.client else None,
         )
         info = self.__get_user_info_from_request(request)
         self.__load_user_info_in_message(msg, info)
@@ -92,7 +96,8 @@ class LoggerMiddleware(BaseHTTPMiddleware):
         """
         msg = LoggerMessage(
             method=request.method,
-            url=request.url.path,
+            url=request.url,
+            host=request.client.host if request.client else None,
             type="Response",
             status_code=response.status_code,
         )
