@@ -16,6 +16,7 @@ class ClassroomRegister(BaseModel):
     accessibility: bool
     audiovisual: AudiovisualType
     air_conditioning: bool
+    observation: str = ""
 
     @model_validator(mode="after")
     def check_classroom_body(self) -> Self:

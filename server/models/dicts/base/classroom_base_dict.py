@@ -9,3 +9,4 @@ class ClassroomBaseDict(BaseDict, total=False):
     accessibility: bool
     audiovisual: AudiovisualType
     air_conditioning: bool
+    observation: str

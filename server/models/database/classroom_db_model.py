@@ -32,6 +32,7 @@ class ClassroomBase(BaseModel):
         sa_column=Column(Enum(AudiovisualType), nullable=False)
     )
     air_conditioning: bool = False
+    observation: str = Field(default="")
     updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
 
     created_by_id: int = Field(foreign_key="user.id")
@@ -61,7 +62,7 @@ class Classroom(ClassroomBase, table=True):
 
     def get_groups(self) -> list["Group"]:
         """Get the groups associated with this classroom.\n
-           This method ensures that the main group of the building is included
+        This method ensures that the main group of the building is included
         """
         groups = self.groups
         main_group = self.building.main_group
