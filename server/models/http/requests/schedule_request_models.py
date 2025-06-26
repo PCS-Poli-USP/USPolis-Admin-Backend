@@ -46,9 +46,6 @@ class ScheduleRegister(ScheduleBase):
         classroom_id = self.classroom_id
         reservation_id = self.reservation_id
 
-        # if class_id is None and reservation_id is None:
-        #     raise ValueError("Class Id and Reservation Id cannot be both empty")
-
         if class_id is not None and reservation_id is not None:
             raise ScheduleConflictedData("Class Id", "Reservation Id")
 
@@ -71,6 +68,12 @@ class ScheduleRegister(ScheduleBase):
                 )
 
         return self
+
+
+class ScheduleManyRegister(BaseModel):
+    """Schedule register body for many schedules"""
+
+    inputs: list[ScheduleRegister]
 
 
 class ScheduleUpdate(ScheduleRegister):
