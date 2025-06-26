@@ -59,6 +59,16 @@ class Classroom(ClassroomBase, table=True):
         back_populates="classrooms", link_model=GroupClassroomLink
     )
 
+    def get_groups(self) -> list["Group"]:
+        """Get the groups associated with this classroom.\n
+           This method ensures that the main group of the building is included
+        """
+        groups = self.groups
+        main_group = self.building.main_group
+        if main_group and main_group not in groups:
+            groups.append(main_group)
+        return self.groups
+
 
 class ConflictsInfo(PydanticBaseModel):
     subject_id: int | None

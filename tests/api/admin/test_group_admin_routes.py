@@ -102,8 +102,11 @@ def test_create_group_with_users(
     assert response.status_code == status.HTTP_201_CREATED
 
     user = UserRepository.get_by_id(user_id=must_be_int(user.id), session=session)
-    assert len(user.groups) == 2
-    assert user.groups[1].name == input.name
+    user_groups = user.groups
+    user_groups_names = [g.name for g in user_groups]
+    assert len(user_groups) == 2
+    assert input.name in user_groups_names
+    assert group.name in user_groups_names
 
 
 def test_create_group_with_classrooms(
@@ -191,12 +194,19 @@ def test_create_group_with_common_user(
 
 
 def test_update_group_with_admin_user(
-    building: Building, session: Session, client: TestClient
+    building: Building, user: User, session: Session, client: TestClient
 ) -> None:
-    group = GroupModelFactory(building=building, session=session).create_and_refresh()
-    input = GroupRequestFactory(building).update_input()
-    response = client.put(f"{URL_PREFIX}/{group.id}", json=input.model_dump())
+    classrooms = ClassroomModelFactory(
+        session=session, creator=user, building=building, group=building.main_group
+    ).create_many_default_and_refresh()
 
+    group = GroupModelFactory(building=building, session=session).create_and_refresh(
+        classrooms=[classrooms[0]]
+    )
+    input = GroupRequestFactory(building).update_input(
+        classroom_ids=[must_be_int(classrooms[0].id)]
+    )
+    response = client.put(f"{URL_PREFIX}/{group.id}", json=input.model_dump())
     updated = GroupRepository.get_by_id(
         id=must_be_int(group.id),
         session=session,
@@ -204,6 +214,8 @@ def test_update_group_with_admin_user(
 
     assert response.status_code == status.HTTP_200_OK
     assert updated.name == input.name
+    assert len(updated.classrooms) == 1
+    assert updated.classrooms[0].id == classrooms[0].id
 
 
 def test_update_group_with_same_name(
@@ -424,7 +436,6 @@ def test_delete_group_with_admin_user(
 ) -> None:
     group = GroupModelFactory(building, session=session).create_and_refresh()
     response = client.delete(f"{URL_PREFIX}/{group.id}")
-    print(response.json())
     assert response.status_code == status.HTTP_200_OK
 
     with pytest.raises(GroupNotFound):

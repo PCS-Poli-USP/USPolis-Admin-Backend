@@ -24,9 +24,12 @@ class ClassroomResponseBase(BaseModel):
     created_by: str
     building_id: int
     building: str
+    group_ids: list[int]
+    groups: list[str]
 
     @classmethod
     def from_classroom(cls, classroom: Classroom) -> "ClassroomResponseBase":
+        classroom_groups = classroom.get_groups()
         return cls(
             id=must_be_int(classroom.id),
             name=classroom.name,
@@ -40,6 +43,8 @@ class ClassroomResponseBase(BaseModel):
             created_by=classroom.created_by.name,
             building_id=must_be_int(classroom.building_id),
             building=classroom.building.name,
+            group_ids=[must_be_int(group.id) for group in classroom_groups],
+            groups=[group.name for group in classroom_groups],
         )
 
 
