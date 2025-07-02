@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <head>
-    <title>Solicitação Negada</title>
+    <title>Solicitação Cancelada</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -49,14 +49,14 @@
         </div>
         <p>Caro(a) {{ data.username }},</p>
         <p>
-          A sua solicitação foi <b>NEGADA</b> com a seguinte justificativa:<br>
-          <br>
-          <p class="justification-text">{{ data.justification }}</p>
+          Uma reserva de sala foi <b>cancelada</b> pelo solicitante. Não é necessário tomar nenhuma ação.<br>
         </p>
         <p>
             <br>
-            <b>Detalhes da solicitação:</b> <br>
+            <b>Detalhes da solicitação (CANCELADA):</b> <br>
             <br>
+            <b>Solicitante: </b> {{ data.requester }}<br>
+            <b>Email: </b> {{ data.requester_email }}<br>
             <b>Título: </b> {{ data.title }}<br>
             <b>Tipo: </b> {{ data.type }}<br>
             <b>Prédio: </b> {{ data.building }}<br>
@@ -64,11 +64,11 @@
             <b>Horário: </b> {{ data.time }}<br>
             <b>Datas: </b> {{ data.dates }}<br>
             <b>Capacidade: </b> {{ data.capacity }}<br>
-
+            <b>Motivo: </b> {{ data.reason }}
         </p>
-            <br>
-            Atenciosamente, <br>
-            Equipe USPolis
+     
+        Atenciosamente, <br>
+        Equipe USPolis
         </p>
         <p>ATENÇÃO! Este e-mail é apenas informativo, não é necessário respondê-lo.</p>
     </div>
