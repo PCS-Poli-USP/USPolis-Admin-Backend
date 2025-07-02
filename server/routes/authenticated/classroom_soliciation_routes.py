@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Body
+from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 
 from server.deps.authenticate import UserDep
@@ -55,6 +56,15 @@ async def get_all_classroom_solicitations(
     )
     return ClassroomSolicitationResponse.from_solicitation_list(solicitations)
 
+@router.post("/cancel/{solicitation_id}")
+async def cancel_classroom_solicitation(solicitation_id: int, user: UserDep, session: SessionDep) -> JSONResponse:
+    """Cancel a class reservation solicitation"""
+    ClassroomSolicitationRepository.cancel(id=solicitation_id, user=user,session=session)
+    session.commit()
+    return JSONResponse(
+        status_code=200,
+        content={"message": "Solicitaçao cancelada com sucesso."},
+    )
 
 @router.post("")
 async def create_classroom_solicitation(

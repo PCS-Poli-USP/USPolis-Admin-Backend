@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 from server.models.database.classroom_solicitation_db_model import ClassroomSolicitation
 from server.utils.enums.reservation_type import ReservationType
+from server.utils.enums.solicitation_status import SolicitationStatus
 from server.utils.must_be_int import must_be_int
 
 
@@ -23,11 +24,8 @@ class ClassroomSolicitationResponse(BaseModel):
     start_time: time | None
     end_time: time | None
     capacity: int
-    approved: bool
-    denied: bool
-    deleted: bool
+    status: SolicitationStatus
     deleted_by: str | None
-    closed: bool
     closed_by: str | None
     created_at: datetime
     updated_at: datetime
@@ -53,11 +51,8 @@ class ClassroomSolicitationResponse(BaseModel):
             start_time=solicitation.start_time,
             end_time=solicitation.end_time,
             capacity=solicitation.capacity,
-            approved=solicitation.approved,
-            denied=solicitation.denied,
-            deleted=solicitation.deleted,
+            status=solicitation.status,
             deleted_by=solicitation.deleted_by,
-            closed=solicitation.closed,
             closed_by=solicitation.closed_by,
             created_at=solicitation.created_at,
             updated_at=solicitation.updated_at,
