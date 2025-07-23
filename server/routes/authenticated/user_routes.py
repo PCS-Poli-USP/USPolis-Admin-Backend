@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Query, Request
+from fastapi.responses import JSONResponse
 
 from server.deps.authenticate import UserDep
 from server.deps.repository_adapters.class_repository_adapter import (
@@ -55,6 +56,22 @@ def get_current_user(
     else:
         response.user_info = None
     return response
+
+
+@router.patch("/notifications/email")
+def update_email_notifications(
+    user: UserDep,
+    session: SessionDep,
+    receive_emails: bool = Query(...),
+) -> JSONResponse:
+    """Update email notifications for the current user"""
+    UserRepository.update_email_notifications(
+        user=user, receive_emails=receive_emails, session=session
+    )
+    session.commit()
+    return JSONResponse(
+        content={"message": "Notificações de e-mails atualizadas."},
+    )
 
 
 @router.get("/my-buildings")
