@@ -53,3 +53,32 @@ class ClassroomSolicitation(BaseModel, table=True):
 
     created_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
     updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
+
+    def get_administrative_users(self) -> list["User"]:
+        """
+        Get the list of users who have administrative access to this solicitation. That means users who can approve, deny, or update the solicitation.
+
+        If the solicitation is associated with a classroom, it returns the users that have access to the classroom.
+
+        Otherwise, it returns the users that have access to the building.
+
+        Returns:
+            List of User objects.
+        """
+        if self.classroom:
+            return self.classroom.get_users()
+        return self.building.get_users()
+
+    def get_administrative_users_for_email(self) -> list["User"]:
+        """
+        Get the list of users who have administrative access to this solicitation. That means users who can approve, deny, or update the solicitation.
+
+        If the solicitation is associated with a classroom, it returns the users that have access to the classroom.
+
+        Otherwise, it returns the users that have access to the building.
+
+        Returns:
+            List of User objects.
+        """
+        users = self.get_administrative_users()
+        return [user for user in users if user.receive_emails]

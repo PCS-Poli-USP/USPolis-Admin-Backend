@@ -106,6 +106,15 @@ class UserRepository:
         return user_to_update
 
     @staticmethod
+    def update_email_notifications(
+        *, user: User, receive_emails: bool, session: Session
+    ) -> User:
+        user.receive_emails = receive_emails
+        user.updated_at = BrazilDatetime.now_utc()
+        session.add(user)
+        return user
+
+    @staticmethod
     def visit_user(
         *,
         user: User,
