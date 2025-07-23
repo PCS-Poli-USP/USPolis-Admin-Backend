@@ -10,6 +10,7 @@ from server.models.http.requests.classroom_solicitation_request_models import (
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.classroom_repository import ClassroomRepository
 from server.utils.brazil_datetime import BrazilDatetime
+from server.utils.enums.solicitation_status import SolicitationStatus
 from server.utils.must_be_int import must_be_int
 
 
@@ -72,7 +73,7 @@ class ClassroomSolicitationRepository:
             select(ClassroomSolicitation)
             .where(
                 col(ClassroomSolicitation.building_id).in_(building_ids),
-                ~col(ClassroomSolicitation.closed),
+                col(ClassroomSolicitation.status) == SolicitationStatus.PENDING,
             )
             .order_by(col(ClassroomSolicitation.updated_at).desc())
         )
@@ -110,6 +111,7 @@ class ClassroomSolicitationRepository:
             start_time=input.start_time,
             end_time=input.end_time,
             capacity=input.capacity,
+            status=SolicitationStatus.PENDING,
         )
         session.add(solicitation)
         return solicitation
@@ -126,9 +128,7 @@ class ClassroomSolicitationRepository:
     def approve_solicitation_obj(
         solicitation: ClassroomSolicitation, user: User, session: Session
     ) -> ClassroomSolicitation:
-        solicitation.approved = True
-        solicitation.denied = False
-        solicitation.closed = True
+        solicitation.status = SolicitationStatus.APPROVED
         solicitation.closed_by = user.name
         solicitation.updated_at = BrazilDatetime.now_utc()
         session.add(solicitation)
@@ -137,9 +137,18 @@ class ClassroomSolicitationRepository:
     @staticmethod
     def deny(id: int, user: User, session: Session) -> ClassroomSolicitation:
         solicitation = ClassroomSolicitationRepository.get_by_id(id=id, session=session)
-        solicitation.approved = False
-        solicitation.denied = True
-        solicitation.closed = True
+        solicitation.status = SolicitationStatus.DENIED
+        solicitation.closed_by = user.name
+        solicitation.updated_at = BrazilDatetime.now_utc()
+        session.add(solicitation)
+        return solicitation
+    
+    @staticmethod
+    def cancel(id: int, user: User, session: Session) -> ClassroomSolicitation:
+        solicitation = ClassroomSolicitationRepository.get_by_id(id=id, session=session)
+        if not user.is_admin and solicitation.user_id != user.id:
+            raise ClassroomSolicitationPermissionDenied("Não é permitido cancelar a solicitação de outro usuário.")
+        solicitation.status = SolicitationStatus.CANCELLED
         solicitation.closed_by = user.name
         solicitation.updated_at = BrazilDatetime.now_utc()
         session.add(solicitation)
@@ -151,4 +160,11 @@ class ClassroomSolicitationNotFound(HTTPException):
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Solicitação {info} não encontrada",
+        )
+
+class ClassroomSolicitationPermissionDenied(HTTPException):
+    def __init__(self, detail: str) -> None:
+        super().__init__(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=detail,
         )

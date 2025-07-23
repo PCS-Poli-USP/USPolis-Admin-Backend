@@ -10,5 +10,5 @@ if __name__ == "__main__":
         "server.app:app",
         host="0.0.0.0",
         port=int(CONFIG.port),
-        reload=CONFIG.enviroment == "development",
+        reload=CONFIG.environment == "development",
     )

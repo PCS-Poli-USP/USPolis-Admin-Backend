@@ -70,6 +70,18 @@ class Classroom(ClassroomBase, table=True):
             groups.append(main_group)
         return self.groups
 
+    def get_users(self) -> list["User"]:
+        """
+        Get the list of users who have access to this classroom.
+
+        Returns:
+            List of User objects.
+        """
+        users: set[User] = set()
+        for group in self.get_groups():
+            users.update(group.users)
+        return list(users)
+
 
 class ConflictsInfo(PydanticBaseModel):
     subject_id: int | None

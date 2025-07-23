@@ -24,6 +24,7 @@ class UserResponse(BaseModel):
     id: int
     email: str
     is_admin: bool
+    receive_emails: bool
     name: str
     updated_at: datetime
     last_visited: datetime
@@ -39,6 +40,7 @@ class UserResponse(BaseModel):
             id=must_be_int(user.id),
             email=user.email,
             is_admin=user.is_admin,
+            receive_emails=user.receive_emails,
             name=user.name,
             created_by=user.created_by.name if user.created_by else None,
             buildings=[
@@ -71,7 +73,7 @@ class UserGroupResponse(BaseModel):
     @classmethod
     def from_group(cls, group: Group) -> "UserGroupResponse":
         classrooms = group.classrooms
-        main = classrooms == []
+        main = group.building.main_group_id == group.id
         if main:
             classrooms = group.building.classrooms if group.building.classrooms else []
             classrooms.sort(key=lambda c: c.name)

@@ -18,7 +18,7 @@ config = DConfig(RepositoryEnv(env_path))  # noqa: F811
 class Settings(BaseModel):
     """Server config settings."""
 
-    enviroment: str = config("ENVIRONMENT", default="DEVELOPMENT", cast=str)  # type: ignore
+    environment: str = config("ENVIRONMENT", default="development", cast=str)  # type: ignore
     # CORS
     allowed_origins: list[str] = config(
         "ALLOWED_ORIGINS",

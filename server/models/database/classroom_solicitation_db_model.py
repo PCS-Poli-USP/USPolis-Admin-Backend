@@ -6,6 +6,7 @@ from sqlalchemy import CheckConstraint, Column, ARRAY, Date
 from server.models.database.base_db_model import BaseModel
 from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.reservation_type import ReservationType
+from server.utils.enums.solicitation_status import SolicitationStatus
 
 
 if TYPE_CHECKING:
@@ -45,11 +46,39 @@ class ClassroomSolicitation(BaseModel, table=True):
     start_time: time | None = Field(nullable=True, default=None)
     end_time: time | None = Field(nullable=True, default=None)
     capacity: int
-    approved: bool = Field(default=False)
-    denied: bool = Field(default=False)
-    deleted: bool = Field(default=False)
-    deleted_by: str | None = Field(nullable=True, default=None)
-    closed: bool = Field(default=False)
+
+    status: SolicitationStatus = Field()
     closed_by: str | None = Field(nullable=True, default=None)
+    deleted_by: str | None = Field(nullable=True, default=None)
+
     created_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
     updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
+
+    def get_administrative_users(self) -> list["User"]:
+        """
+        Get the list of users who have administrative access to this solicitation. That means users who can approve, deny, or update the solicitation.
+
+        If the solicitation is associated with a classroom, it returns the users that have access to the classroom.
+
+        Otherwise, it returns the users that have access to the building.
+
+        Returns:
+            List of User objects.
+        """
+        if self.classroom:
+            return self.classroom.get_users()
+        return self.building.get_users()
+
+    def get_administrative_users_for_email(self) -> list["User"]:
+        """
+        Get the list of users who have administrative access to this solicitation. That means users who can approve, deny, or update the solicitation.
+
+        If the solicitation is associated with a classroom, it returns the users that have access to the classroom.
+
+        Otherwise, it returns the users that have access to the building.
+
+        Returns:
+            List of User objects.
+        """
+        users = self.get_administrative_users()
+        return [user for user in users if user.receive_emails]

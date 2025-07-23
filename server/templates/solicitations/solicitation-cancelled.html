@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <head>
-    <title>Solicitação pendente</title>
+    <title>Solicitação Cancelada</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -49,11 +49,11 @@
         </div>
         <p>Caro(a),</p>
         <p>
-          Uma reserva de sala foi <b>solicitada</b>.
+          Uma reserva de sala foi <b>cancelada</b> pelo solicitante. Não é necessário tomar nenhuma ação.<br>
         </p>
         <p>
             <br>
-            <b>Detalhes da solicitação:</b> <br>
+            <b>Detalhes da solicitação (CANCELADA):</b> <br>
             <br>
             <b>Solicitante: </b> {{ data.requester }}<br>
             <b>Email: </b> {{ data.requester_email }}<br>
@@ -66,8 +66,7 @@
             <b>Capacidade: </b> {{ data.capacity }}<br>
             <b>Motivo: </b> {{ data.reason }}
         </p>
-        Para <b>negar/aprovar</b> acesse <a href="https://www.uspolis.com.br/solicitations">aqui</a>.<br>
-        <br>
+     
         Atenciosamente, <br>
         Equipe USPolis
         </p>

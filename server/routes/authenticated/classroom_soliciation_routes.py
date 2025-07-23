@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Body
+from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 
 from server.deps.authenticate import UserDep
@@ -10,12 +11,9 @@ from server.models.http.requests.classroom_solicitation_request_models import (
 from server.models.http.responses.classroom_solicitation_response_models import (
     ClassroomSolicitationResponse,
 )
-from server.repositories.building_repository import BuildingRepository
 from server.repositories.classroom_solicitation_repository import (
     ClassroomSolicitationRepository,
 )
-from server.repositories.group_repository import GroupRepository
-from server.repositories.user_repository import UserRepository
 from server.services.email.email_service import EmailService
 from pathlib import Path
 
@@ -46,7 +44,7 @@ async def get_pending_classroom_solicitations(
 
 
 @router.get("")
-async def get_all_classroom_solicitations(
+def get_all_classroom_solicitations(
     building_ids: OwnedBuildingIdsDep,
     session: SessionDep,
 ) -> list[ClassroomSolicitationResponse]:
@@ -54,6 +52,23 @@ async def get_all_classroom_solicitations(
         building_ids=building_ids, session=session
     )
     return ClassroomSolicitationResponse.from_solicitation_list(solicitations)
+
+
+@router.patch("/cancel/{solicitation_id}")
+async def cancel_classroom_solicitation(
+    solicitation_id: int, user: UserDep, session: SessionDep
+) -> JSONResponse:
+    """Cancel a class reservation solicitation"""
+    solicitation = ClassroomSolicitationRepository.cancel(
+        id=solicitation_id, user=user, session=session
+    )
+    session.commit()
+    users = solicitation.get_administrative_users_for_email()
+    await EmailService.send_solicitation_cancelled_email(users, solicitation)
+    return JSONResponse(
+        status_code=200,
+        content={"message": "Solicitaçao cancelada com sucesso."},
+    )
 
 
 @router.post("")
@@ -66,20 +81,7 @@ async def create_classroom_solicitation(
     solicitation = ClassroomSolicitationRepository.create(
         requester=user, input=input, session=session
     )
-    if solicitation.classroom_id:
-        building = BuildingRepository.get_by_id(id=input.building_id, session=session)
-        groups = GroupRepository.get_by_classroom_id(
-            classroom_id=solicitation.classroom_id, session=session
-        )
-        if building.main_group:
-            groups.append(building.main_group)
-        users = [user for group in groups for user in group.users]
-        users_set = set(users)
-        users = list(users_set)
-    else:
-        users = UserRepository.get_all_on_building(
-            building_id=input.building_id, session=session
-        )
+    users = solicitation.get_administrative_users_for_email()
     session.commit()
     await EmailService.send_solicitation_request_email(users, solicitation)
     return ClassroomSolicitationResponse.from_solicitation(solicitation)

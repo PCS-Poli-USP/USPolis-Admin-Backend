@@ -79,6 +79,18 @@ class Building(BaseModel, table=True):
             else set()
         )
 
+    def get_users(self) -> list["User"]:
+        """
+        Get the list of users who have access to the building.
+
+        Returns:
+            List of User objects.
+        """
+        users: set[User] = set()
+        for group in self.groups:
+            users.update(group.users)
+        return list(users)
+
 
 class BuildingWithouMainGroup(HTTPException):
     def __init__(self) -> None:

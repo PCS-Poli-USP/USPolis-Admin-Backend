@@ -85,7 +85,6 @@ async def delete_reservation(
     reservation = repository.get_by_id(id=reservation_id)
     if reservation.solicitation:
         await EmailService.send_solicitation_deleted_email(
-            reservation=reservation,
             solicitation=reservation.solicitation,
         )
     repository.delete(id=reservation_id)
