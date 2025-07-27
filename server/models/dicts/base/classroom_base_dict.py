@@ -10,3 +10,5 @@ class ClassroomBaseDict(BaseDict, total=False):
     audiovisual: AudiovisualType
     air_conditioning: bool
     observation: str
+    reservable: bool
+    remote: bool

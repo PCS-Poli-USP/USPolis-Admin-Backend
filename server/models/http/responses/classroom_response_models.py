@@ -18,6 +18,8 @@ class ClassroomResponseBase(BaseModel):
     accessibility: bool
     audiovisual: AudiovisualType
     air_conditioning: bool
+    remote: bool
+    reservable: bool
     observation: str
     updated_at: datetime
 
@@ -40,6 +42,8 @@ class ClassroomResponseBase(BaseModel):
             audiovisual=classroom.audiovisual,
             air_conditioning=classroom.air_conditioning,
             observation=classroom.observation,
+            reservable=classroom.reservable,
+            remote=classroom.remote,
             updated_at=classroom.updated_at,
             created_by_id=must_be_int(classroom.created_by_id),
             created_by=classroom.created_by.name,

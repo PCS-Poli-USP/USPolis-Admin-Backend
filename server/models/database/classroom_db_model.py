@@ -32,6 +32,8 @@ class ClassroomBase(BaseModel):
         sa_column=Column(Enum(AudiovisualType), nullable=False)
     )
     air_conditioning: bool = False
+    reservable: bool = Field(default=True)
+    remote: bool = Field(default=True)
     observation: str = Field(default="")
     updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
 
@@ -140,4 +142,5 @@ class ClassroomWithConflictsIndicator(ClassroomBase):
             updated_at=classroom.updated_at,
             created_by_id=classroom.created_by_id,
             building_id=classroom.building_id,
+            observation=classroom.observation,
         )
