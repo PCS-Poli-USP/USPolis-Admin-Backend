@@ -301,7 +301,11 @@ class ResourceResponse(BaseModel):
     def from_classroom_list(
         cls, classrooms: list[Classroom]
     ) -> list["ResourceResponse"]:
-        return [ResourceResponse.from_classroom(classroom) for classroom in classrooms]
+        return [
+            ResourceResponse.from_classroom(classroom)
+            for classroom in classrooms
+            if not classroom.remote
+        ]
 
     @classmethod
     def unnallocated_building(cls) -> "ResourceResponse":

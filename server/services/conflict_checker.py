@@ -164,6 +164,8 @@ class ConflictChecker:
                 id=must_be_int(building.id), name=building.name, conflicts=[]
             )
             for classroom in classrooms:
+                if classroom.remote:
+                    continue
                 conflicts = self.calculate_conflicts_for_allowed_classroom(
                     classroom=classroom,
                     start=start,

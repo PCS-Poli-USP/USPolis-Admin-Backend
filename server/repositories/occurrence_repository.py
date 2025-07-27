@@ -69,6 +69,19 @@ class OccurrenceRepository:
         return list(occurrences)
 
     @staticmethod
+    def get_all_on_interval_for_allocation(
+        start: date, end: date, session: Session
+    ) -> list[Occurrence]:
+        statement = (
+            select(Occurrence)
+            .join(Classroom)
+            .where(Occurrence.date >= start, Occurrence.date <= end)
+            .where(~col(Classroom.remote))
+        )
+        occurrences = session.exec(statement).all()
+        return list(occurrences)
+
+    @staticmethod
     def get_all_on_interval_for_classroom(
         classroom_id: int, start: date, end: date, session: Session
     ) -> list[Occurrence]:

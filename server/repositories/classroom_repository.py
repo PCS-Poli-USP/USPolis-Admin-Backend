@@ -27,6 +27,9 @@ class ClassroomRepository:
         classroom.audiovisual = input.audiovisual
         classroom.air_conditioning = input.air_conditioning
         classroom.building_id = input.building_id
+        classroom.reservable = input.reservable
+        classroom.remote = input.remote
+        classroom.observation = input.observation
 
     @staticmethod
     def get_all(*, session: Session) -> list[Classroom]:

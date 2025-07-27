@@ -95,6 +95,10 @@ class ClassroomSolicitationRepository:
             classroom = ClassroomRepository.get_by_id(
                 id=input.classroom_id, session=session
             )
+            if not classroom.reservable:
+                raise ClassroomNotReservable(
+                    f"A sala {classroom.name} não é reservável."
+                )
         solicitation = ClassroomSolicitation(
             classroom_id=must_be_int(classroom.id) if classroom else None,
             classroom=classroom,
@@ -142,12 +146,14 @@ class ClassroomSolicitationRepository:
         solicitation.updated_at = BrazilDatetime.now_utc()
         session.add(solicitation)
         return solicitation
-    
+
     @staticmethod
     def cancel(id: int, user: User, session: Session) -> ClassroomSolicitation:
         solicitation = ClassroomSolicitationRepository.get_by_id(id=id, session=session)
         if not user.is_admin and solicitation.user_id != user.id:
-            raise ClassroomSolicitationPermissionDenied("Não é permitido cancelar a solicitação de outro usuário.")
+            raise ClassroomSolicitationPermissionDenied(
+                "Não é permitido cancelar a solicitação de outro usuário."
+            )
         solicitation.status = SolicitationStatus.CANCELLED
         solicitation.closed_by = user.name
         solicitation.updated_at = BrazilDatetime.now_utc()
@@ -162,9 +168,15 @@ class ClassroomSolicitationNotFound(HTTPException):
             detail=f"Solicitação {info} não encontrada",
         )
 
+
 class ClassroomSolicitationPermissionDenied(HTTPException):
     def __init__(self, detail: str) -> None:
         super().__init__(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=detail,
         )
+
+
+class ClassroomNotReservable(HTTPException):
+    def __init__(self, message: str) -> None:
+        super().__init__(status_code=status.HTTP_400_BAD_REQUEST, detail=message)

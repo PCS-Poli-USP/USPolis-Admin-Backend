@@ -21,7 +21,7 @@ def get_all_allocation_events(
     end: date = date.today(),
 ) -> list[EventResponse]:
     """Get all events in date interval [start, end], if not provided, it will return all events on current day"""
-    occurrences = OccurrenceRepository.get_all_on_interval(start, end, session)
+    occurrences = OccurrenceRepository.get_all_on_interval_for_allocation(start, end, session)
     schedules = ScheduleRepository.get_all_unallocated(session=session)
     events = EventResponse.from_occurrence_list(occurrences)
     events.extend(EventResponse.from_schedule_list(schedules))
