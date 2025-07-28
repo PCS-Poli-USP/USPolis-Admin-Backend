@@ -43,5 +43,16 @@ class BuildingModelFactory(BaseModelFactory[Building]):
     def update(  # type: ignore
         self, building_id: int, **overrides: Unpack[BuildingModelDict]
     ) -> Building:
-        """Create a building instance with default values."""
-        return super().update(model_id=building_id, **overrides)
+        """Update a building instance with default values."""
+        building = super().update(building_id, **overrides)
+        building.updated_at = datetime.now()
+        return building
+
+    def update_and_refresh(  # type: ignore
+        self, building_id: int, **overrides: Unpack[BuildingModelDict]
+    ) -> Building:
+        """Update a building, commit the session and return the instance refreshed."""
+        building = self.update(building_id, **overrides)
+        self.session.commit()
+        self.session.refresh(building)
+        return building

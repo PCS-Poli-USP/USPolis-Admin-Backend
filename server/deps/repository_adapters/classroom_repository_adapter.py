@@ -147,7 +147,7 @@ class ClassroomInsertionOnInvalidGroup(HTTPException):
     def __init__(self, group: str, classroom: str) -> None:
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Sala {classroom} não pode ser inserida no grupo {group}",
+            detail=f"Sala {classroom} não pode ser inserida no grupo {group}, pois pertence a outro prédio",
         )
 
 

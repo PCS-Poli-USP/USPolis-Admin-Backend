@@ -131,7 +131,18 @@ class BaseModelFactory(Generic[M], metaclass=ABCMeta):
             self.__update_default_dict(defaults, overrides)  # type: ignore
         model = self.get_by_id(model_id)
         for key, value in defaults.items():
-            if value is not None:
+            if hasattr(model, key):
                 setattr(model, key, value)
-        self.session.refresh(model)
+        self.session.add(model)
+        return model
+
+    def update_and_refresh(
+        self,
+        model_id: int,
+        **overrides: Unpack[InputType],  # type: ignore
+    ) -> M:
+        """Update a model instance by its ID, commit the session and return the instance refreshed."""
+        model = self.update(model_id, **overrides)
+        self.session.commit()
+        self.refresh(model)
         return model

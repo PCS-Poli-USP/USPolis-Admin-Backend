@@ -155,7 +155,7 @@ def test_create_classroom_with_restricted_user(
     created = response.json()
 
     main_group = GroupRepository.get_by_id(id=must_be_int(group.id), session=session)
-    assert len(main_group.classrooms) == 0
+    assert len(main_group.classrooms) == 1
 
     assert response.status_code == status.HTTP_200_OK
     assert created["name"] == input.name
@@ -302,19 +302,27 @@ def test_update_classroom_with_group_in_other_building(
     session: Session,
     restricted_client: TestClient,
 ) -> None:
-    building_B = BuildingModelFactory(creator=user, session=session).create_and_refresh(
-        users=[restricted_user]
-    )
+    factory = BuildingModelFactory(creator=user, session=session)
+    building_B = factory.create_and_refresh(users=[restricted_user])
     outsider_group = GroupModelFactory(
         building=building_B, session=session
     ).create_and_refresh(users=[restricted_user])
 
+    data = building_B.model_dump()
+    data["main_group_id"] = must_be_int(outsider_group.id)
+    data["main_group"] = outsider_group
+    data["groups"] = [outsider_group]
+    building_B = factory.update_and_refresh(
+        building_id=must_be_int(building_B.id),
+        **data,
+    )
     input = ClassroomRequestFactory(group=outsider_group).update_input(
         building_id=must_be_int(building.id)
     )
     response = restricted_client.put(
         f"{URL_PREFIX}/{classroom.id}", json=input.model_dump()
     )
+    print(response.json())
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
