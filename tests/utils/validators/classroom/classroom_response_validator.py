@@ -32,3 +32,13 @@ def assert_get_classroom_full_response(
         assert schedule["start_time"] == class_.schedules[0].start_time.isoformat()
         assert schedule["end_time"] == class_.schedules[0].end_time.isoformat()
         assert len(schedule["occurrences"]) > 0
+
+
+def assert_create_classroom_response(response: Response, classroom: Classroom) -> None:
+    """Assert that the create classroom response contains the expected data."""
+    assert_get_classroom_response(response, classroom)
+
+
+def assert_update_classroom_response(response: Response, classroom: Classroom) -> None:
+    """Assert that the update classroom response contains the expected data."""
+    assert_get_classroom_response(response, classroom)
