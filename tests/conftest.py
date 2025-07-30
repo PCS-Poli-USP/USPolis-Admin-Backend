@@ -259,6 +259,16 @@ def classroom_fixture(
     ).create_and_refresh()
 
 
+@pytest.fixture(name="classrooms")
+def classrooms_fixture(
+    user: User, building: Building, group: Group, session: Session
+) -> list[Classroom]:
+    """Fixture to create a many classroom in the standard main group that includes the starndard restricted user."""
+    return ClassroomModelFactory(
+        creator=user, building=building, group=group, session=session
+    ).create_many_and_refresh()
+
+
 @pytest.fixture(name="allocated_classroom")
 def allocated_classroom_fixture(
     user: User, building: Building, group: Group, class_: Class, session: Session
@@ -273,7 +283,35 @@ def allocated_classroom_fixture(
     OccurrenceRepository.allocate_schedule(
         user=user, classroom=classroom, schedule=class_.schedules[0], session=session
     )
+    session.commit()
+    session.refresh(classroom)
     return classroom
+
+
+@pytest.fixture(name="allocated_classrooms")
+def allocated_classrooms_fixture(
+    user: User, building: Building, subject: Subject, group: Group, session: Session
+) -> tuple[list[Classroom], list[Class]]:
+    """Fixture to **create many classrooms** in the default group of default building and **allocate the many classes in**.
+
+    Keep in mind that this fixture will allocate the classes, so make sure that you not use it at class allocation tests.
+    """
+    classrooms = ClassroomModelFactory(
+        creator=user, building=building, group=group, session=session
+    ).create_many_and_refresh()
+    classes = ClassModelFactory(
+        subject=subject, session=session
+    ).create_many_and_refresh()
+    for i in range(len(classrooms)):
+        OccurrenceRepository.allocate_schedule(
+            user=user,
+            classroom=classrooms[i],
+            schedule=classes[i].schedules[0],
+            session=session,
+        )
+        session.commit()
+        session.refresh(classrooms[i])
+    return classrooms, classes
 
 
 @pytest.fixture(name="subject")
@@ -284,5 +322,15 @@ def subject_fixture(building: Building, session: Session) -> Subject:
 
 @pytest.fixture(name="class_")
 def class_fixture(subject: Subject, session: Session) -> Class:
-    """Fixture to create a standard class in the standard subject."""
+    """Fixture to create a standard class in the standard subject.
+    - **This class has only one schedule WITHOUT occurrences.**
+    """
     return ClassModelFactory(subject=subject, session=session).create_and_refresh()
+
+
+@pytest.fixture(name="classes")
+def classes_fixture(subject: Subject, session: Session) -> list[Class]:
+    """Fixture to create multiple standard classes in the standard subject.
+    - **Each class has only one schedule WITHOU occurrences.**
+    """
+    return ClassModelFactory(subject=subject, session=session).create_many_and_refresh()

@@ -39,7 +39,8 @@ class ClassModelFactory(BaseModelFactory[Class]):
             factory = ScheduleModelFactory(
                 class_=class_, reservation=None, session=self.session
             )
-            factory.create()
+            schedule = factory.create()
+            class_.schedules.append(schedule)
         return class_
 
     def create_and_refresh(self, **overrides: Unpack[ClassModelDict]) -> Class:  # type: ignore
