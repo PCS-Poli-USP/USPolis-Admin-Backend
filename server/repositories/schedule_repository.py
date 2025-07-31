@@ -1,6 +1,5 @@
 from datetime import date as datetime_date
 from fastapi import HTTPException, status
-from sqlalchemy import func
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 
@@ -94,7 +93,7 @@ class ScheduleRepository:
         """Get all schedules that can be reused for allocation"""
         if not target.class_:
             raise InvalidScheduleAllocationReuseTarget()
-        class_number = target.class_.code[-2:]
+        # class_number = target.class_.code[-2:]
         start = datetime_date(year, 1, 1)
         end = datetime_date(year, 12, 31)
         statement = (
@@ -109,7 +108,7 @@ class ScheduleRepository:
                 Schedule.recurrence == target.recurrence,
                 Schedule.start_time == target.start_time,
                 Schedule.end_time == target.end_time,
-                func.right(Class.code, 2) == class_number,
+                # func.right(Class.code, 2) == class_number,
                 col(Subject.code) == target.class_.subject.code,
             )
         )
@@ -118,7 +117,7 @@ class ScheduleRepository:
         schedules = [
             schedule
             for schedule in schedules
-            if (not schedule.classroom or schedule.classroom.building_id == building_id)
+            if (schedule.classroom and schedule.classroom.building_id == building_id)
         ]
         return schedules
 
