@@ -24,28 +24,15 @@ class ClassroomSolicitation(BaseModel, table=True):
         ),
     )
 
-    classroom_id: int | None = Field(foreign_key="classroom.id", nullable=True)
-    classroom: Optional["Classroom"] = Relationship(back_populates="solicitations")
-    required_classroom: bool = Field(default=False)
-
-    building_id: int = Field(foreign_key="building.id")
-    building: "Building" = Relationship(back_populates="solicitations")
-
-    user_id: int = Field(foreign_key="user.id")
-    user: "User" = Relationship(back_populates="solicitations")
-
-    reservation_id: int | None = Field(foreign_key="reservation.id", nullable=True)
-    reservation: Optional["Reservation"] = Relationship(back_populates="solicitation")
-
-    reason: str | None = Field(nullable=True, default=None)
     reservation_title: str
     reservation_type: ReservationType
+    capacity: int
+    start_time: time | None = Field(nullable=True, default=None)
+    end_time: time | None = Field(nullable=True, default=None)
     dates: list[date] = Field(
         sa_column=Column(ARRAY(Date), nullable=False), min_length=1
     )
-    start_time: time | None = Field(nullable=True, default=None)
-    end_time: time | None = Field(nullable=True, default=None)
-    capacity: int
+    reason: str | None = Field(nullable=True, default=None)
 
     status: SolicitationStatus = Field()
     closed_by: str | None = Field(nullable=True, default=None)
@@ -53,6 +40,17 @@ class ClassroomSolicitation(BaseModel, table=True):
 
     created_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
     updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
+
+    required_classroom: bool = Field(default=False)
+    classroom_id: int | None = Field(foreign_key="classroom.id", nullable=True)
+    building_id: int = Field(foreign_key="building.id")
+    user_id: int = Field(foreign_key="user.id")
+    reservation_id: int | None = Field(foreign_key="reservation.id", nullable=True)
+
+    building: "Building" = Relationship(back_populates="solicitations")
+    user: "User" = Relationship(back_populates="solicitations")
+    classroom: Optional["Classroom"] = Relationship(back_populates="solicitations")
+    reservation: Optional["Reservation"] = Relationship(back_populates="solicitation")
 
     def get_administrative_users(self) -> list["User"]:
         """
