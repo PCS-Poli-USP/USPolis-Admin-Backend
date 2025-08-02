@@ -10,6 +10,36 @@ from server.logger import logger
 from server.services.auth.auth_user_info import AuthUserInfo
 
 
+class RoutesDescription(BaseModel):
+    method: str
+    start_with: str
+    end_with: str
+
+
+ROUTES_LOG_BODY = {
+    "GET": {
+        "start_with": ["/admin"],
+        "end_with": [""],
+    },
+    "POST": {
+        "start_with": ["/admin"],
+        "end_with": [""],
+    },
+    "PUT": {
+        "start_with": ["/classes", "/classrooms"],
+        "end_with": [""],
+    },
+    "PATCH": {
+        "start_with": ["/classes", "/classrooms"],
+        "end_with": [""],
+    },
+    "DELETE": {
+        "start_with": ["/admin"],
+        "end_with": [""],
+    },
+}
+
+
 class LoggerMessage(BaseModel):
     method: str
     url: Any
@@ -19,18 +49,20 @@ class LoggerMessage(BaseModel):
     user_name: str | None = None
     status_code: int | None = None
     detail: str | None = None
+    body: str | None = None
 
     def __str__(self) -> str:
         short_url = self.url.path + self.url.query if self.url.query else self.url.path
         return (
             f"{self.type}, "
-            f"Host: {self.host}, " 
+            f"Host: {self.host}, "
             f"Method: {self.method}, "
             f"URL: {short_url}, "
             f"Email: {self.user_email}, "
             f"Name: {self.user_name}, "
             f"Code: {self.status_code}, "
             f"Detail: {self.detail}, "
+            f"Body: {self.body}"
         )
 
 
@@ -46,6 +78,28 @@ class LoggerMiddleware(BaseHTTPMiddleware):
             return request.state.user_info
         return None
 
+    async def __get_request_body(self, request: Request) -> str | None:
+        method = request.method
+        if method in ROUTES_LOG_BODY:
+            start_with = ROUTES_LOG_BODY[method]["start_with"]
+            end_with = ROUTES_LOG_BODY[method]["end_with"]
+            url_path = request.url.path
+
+            if any(url_path.startswith(prefix) for prefix in start_with) and any(
+                url_path.endswith(suffix) for suffix in end_with
+            ):
+                try:
+                    body = await request.body()
+
+                    async def receive() -> dict[str, Any]:
+                        return {"type": "http.request", "body": body}
+
+                    request._receive = receive
+                    return body.decode("utf-8")
+                except Exception as e:
+                    logger.error(f"Error reading request body: {e}")
+        return None
+
     async def __get_response_detail(self, response: Response) -> Response:
         if not hasattr(response, "body_iterator"):
             return response
@@ -57,7 +111,7 @@ class LoggerMiddleware(BaseHTTPMiddleware):
         detail = None
         try:
             json_data = json.loads(body)
-            detail = json_data.get("detail")
+            detail = json_data.get("message")
         except Exception:
             pass
         self.detail = detail
@@ -80,7 +134,7 @@ class LoggerMiddleware(BaseHTTPMiddleware):
     def write_log(self, message: LoggerMessage) -> None:
         logger.info(str(message))
 
-    def log_request(self, request: Request) -> None:
+    async def log_request(self, request: Request) -> None:
         msg = LoggerMessage(
             method=request.method,
             url=request.url,
@@ -88,6 +142,7 @@ class LoggerMiddleware(BaseHTTPMiddleware):
         )
         info = self.__get_user_info_from_request(request)
         self.__load_user_info_in_message(msg, info)
+        msg.body = await self.__get_request_body(request)
         self.write_log(msg)
 
     async def log_response(self, request: Request, response: Response) -> Response:
@@ -110,7 +165,7 @@ class LoggerMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         # Log the request details
-        self.log_request(request)
+        await self.log_request(request)
 
         # Call the next middleware or endpoint
         response: Response = await call_next(request)
