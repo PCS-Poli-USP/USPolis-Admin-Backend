@@ -26,7 +26,7 @@ ROUTES_LOG_BODY = {
         "end_with": [""],
     },
     "PUT": {
-        "start_with": ["/classes", "/classrooms"],
+        "start_with": ["/classes", "/classrooms", "/admin"],
         "end_with": [""],
     },
     "PATCH": {
