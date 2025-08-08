@@ -1,6 +1,6 @@
 from datetime import date as datetime_date
 from fastapi import HTTPException, status
-from sqlalchemy import func
+# from sqlalchemy import func
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 
