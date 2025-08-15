@@ -10,6 +10,7 @@ from server.utils.enums.action_type_enum import ActionType
 
 
 class AllocationLog(BaseModel, table=True):
+    user_email: str = Field()
     modified_by: str = Field()
     modified_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
     action: ActionType = Field()

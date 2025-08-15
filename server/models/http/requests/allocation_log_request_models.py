@@ -11,6 +11,7 @@ from server.utils.must_be_int import must_be_int
 
 
 class AllocationLogBase(BaseModel):
+    user_email: str
     modified_by: str
     modified_at: datetime
     action: ActionType
@@ -31,6 +32,7 @@ class AllocationLogInput(AllocationLogBase):
         return cls(
             schedule_id=must_be_int(schedule.id),
             schedule=schedule,
+            user_email=user.email,
             modified_by=user.name,
             modified_at=BrazilDatetime.now_utc(),
             action=ActionType.ALLOCATE,
@@ -51,6 +53,7 @@ class AllocationLogInput(AllocationLogBase):
         return cls(
             schedule_id=schedule.id,
             schedule=schedule,
+            user_email=user.email,
             modified_by=user.name,
             modified_at=BrazilDatetime.now_utc(),
             action=ActionType.ALLOCATE,

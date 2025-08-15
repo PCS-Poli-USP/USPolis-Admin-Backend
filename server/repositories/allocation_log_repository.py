@@ -13,6 +13,7 @@ class AllocationLogRepository:
         allocation_log = AllocationLog(
             schedule=schedule,
             schedule_id=must_be_int(schedule.id),
+            user_email=input.user_email,
             modified_by=input.modified_by,
             modified_at=input.modified_at,
             action=input.action,
