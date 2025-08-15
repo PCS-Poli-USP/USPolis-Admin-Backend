@@ -1,16 +1,32 @@
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, Body, Query
 
+from server.deps.interval_dep import QueryIntervalDep
 from server.deps.repository_adapters.class_repository_adapter import (
     ClassRepositoryDep,
 )
+from server.deps.session_dep import SessionDep
 from server.models.http.responses.class_response_models import (
     ClassResponse,
     ClassFullResponse,
 )
+from server.repositories.class_repository import ClassRepository
 
 embed = Body(..., embed=True)
 
 router = APIRouter(prefix="/classes", tags=["Classes"])
+
+
+@router.get("/subjects")
+def get_classes_allocated_by_subjects(
+    session: SessionDep,
+    interval: QueryIntervalDep,
+    subject_ids: list[int] = Query(...),
+) -> list[ClassResponse]:
+    """Get classes by subject ids"""
+    classes = ClassRepository.get_all_allocated_by_subjects(
+        subject_ids=subject_ids, session=session, interval=interval
+    )
+    return ClassResponse.from_class_list(classes)
 
 
 @router.get("/{class_id}")

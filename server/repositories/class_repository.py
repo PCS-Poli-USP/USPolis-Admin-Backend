@@ -172,6 +172,32 @@ class ClassRepository:
         return list(classes)
 
     @staticmethod
+    def get_all_allocated_by_subjects(
+        *,
+        subject_ids: list[int],
+        session: Session,
+        interval: QueryInterval,
+    ) -> list[Class]:
+        subquery = (
+            select(Schedule.id)
+            .where(col(Schedule.class_id) == col(Class.id))
+            .where(col(Schedule.allocated) == False)  # noqa: E712
+        )
+        statement = (
+            select(Class)
+            .where(col(Class.subject_id).in_(subject_ids))
+            .where(~exists(subquery))
+            .distinct()
+        )  # avoid duplicates
+
+        statement = ClassRepository.__apply_interval_filter(
+            statement=statement,
+            interval=interval,
+        )
+        classes = session.exec(statement).all()
+        return list(classes)
+
+    @staticmethod
     def get_by_id(*, id: int, session: Session) -> Class:
         statement = select(Class).where(col(Class.id) == id)
         try:
