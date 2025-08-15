@@ -38,8 +38,8 @@ class ClassRepositoryAdapter:
         """Get all class on buildings that the user has access to."""
         if self.user.is_admin:
             return ClassRepository.get_all(session=self.session, interval=self.interval)
-        classes = self.get_all_on_my_classrooms()
-        classes.extend(self.get_all_unallocated())
+        classes = self.get_all_on_my_buildings()
+        # classes.extend(self.get_all_unallocated())
         return classes
 
     def get_all_on_my_classrooms(self) -> list[Class]:
