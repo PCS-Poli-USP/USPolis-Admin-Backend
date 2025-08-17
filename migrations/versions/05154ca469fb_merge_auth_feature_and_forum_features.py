@@ -11,7 +11,7 @@ from collections.abc import Sequence
 
 # revision identifiers, used by Alembic.
 revision: str = "05154ca469fb"
-down_revision: str | None = ("4abbc03d3542", "64a70f848243")
+down_revision: str | tuple[str, ...] | None = ("4abbc03d3542", "64a70f848243")
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
