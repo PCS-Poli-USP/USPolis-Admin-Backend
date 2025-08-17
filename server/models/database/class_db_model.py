@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from server.models.database.schedule_db_model import Schedule
     from server.models.database.subject_db_model import Subject
     from server.models.database.forum_db_model import ForumPost
+    from server.models.database.exam_db_model import Exam
 
 
 class Class(BaseModel, table=True):
@@ -57,6 +58,7 @@ class Class(BaseModel, table=True):
     )
     subject: "Subject" = Relationship(back_populates="classes")
     posts: list["ForumPost"] = Relationship(cascade_delete=True)
+    exams: list["Exam"] = Relationship(back_populates="class_")
 
     def classroom_ids(self) -> set[int]:
         """
