@@ -26,6 +26,7 @@ target_metadata = SQLModel.metadata
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
+
 # The os.getenv is for testing automatic migration
 def get_url() -> str:
     return os.getenv("ALEMBIC_URL") or CONFIG.alembic_url
@@ -82,9 +83,10 @@ async def run_async_migrations() -> None:
 
     await connectable.dispose()
 
+
 def run_sync_migrations() -> None:
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section), # type: ignore
+        config.get_section(config.config_ini_section),  # type: ignore
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
