@@ -1,17 +1,19 @@
 from fastapi import HTTPException
 from sqlmodel import Session
 
-from server.models.database.classroom_solicitation_db_model import ClassroomSolicitation
+from server.models.database.solicitation_db_model import (
+    Solicitation,
+)
 from server.models.database.user_db_model import User
-from server.repositories.classroom_solicitation_repository import (
-    ClassroomSolicitationRepository,
+from server.repositories.solicitation_repository import (
+    SolicitationRepository,
 )
 from server.services.security.base_permission_checker import PermissionChecker
 
 
-class ClassroomSolicitationPermissionChecker(PermissionChecker[ClassroomSolicitation]):
+class SolicitationPermissionChecker(PermissionChecker[Solicitation]):
     """
-    Permission checker for ClassroomSolicitation.
+    Permission checker for Solicitation.
     """
 
     def __init__(self, user: User, session: Session):
@@ -19,51 +21,46 @@ class ClassroomSolicitationPermissionChecker(PermissionChecker[ClassroomSolicita
 
     def check_permission(
         self,
-        object: int | ClassroomSolicitation | list[int] | list[ClassroomSolicitation],
+        object: int | Solicitation | list[int] | list[Solicitation],
     ) -> None:
         if self.user.is_admin:
             return
 
         if isinstance(object, int):
             self.__solicitation_id_permission_checker(object)
-        elif isinstance(object, ClassroomSolicitation):
+        elif isinstance(object, Solicitation):
             self.__solicitation_obj_permission_checker(object)
         elif isinstance(object, list):
             self.__solicitation_list_permission_checker(object)
 
     def __solicitation_id_permission_checker(self, solicitation_id: int) -> None:
-        solicitation = ClassroomSolicitationRepository.get_by_id(
+        solicitation = SolicitationRepository.get_by_id(
             id=solicitation_id, session=self.session
         )
         self.__solicitation_obj_permission_checker(solicitation)
 
     def __solicitation_obj_permission_checker(
         self,
-        solicitation: ClassroomSolicitation,
+        solicitation: Solicitation,
     ) -> None:
-        building_ids = self.user.buildings_ids_set()
-        user_ids = self.user.classrooms_ids_set()
-        if not solicitation.classroom_id and solicitation.building_id not in building_ids:
-            raise ForbiddenClassroomSolicitationAccess(
-                f"Usuário não tem permissão para acessar a solicitação de sala {solicitation.id}"
-            )
-        if solicitation.classroom_id and solicitation.classroom_id not in user_ids:
-            raise ForbiddenClassroomSolicitationAccess(
-                f"Usuário não tem permissão para acessar a solicitação de sala {solicitation.id}"
+        user_classrooms_ids = self.user.classrooms_ids_set()
+        if solicitation.reservation.classroom_id not in user_classrooms_ids:
+            raise ForbiddenSolicitationAccess(
+                f"Usuário não tem permissão para acessar a solicitação de sala {solicitation.reservation.title}"
             )
 
     def __solicitation_list_permission_checker(
         self,
-        solicitations: list[int] | list[ClassroomSolicitation],
+        solicitations: list[int] | list[Solicitation],
     ) -> None:
         for solicitation in solicitations:
-            if isinstance(solicitation, ClassroomSolicitation):
+            if isinstance(solicitation, Solicitation):
                 self.__solicitation_obj_permission_checker(solicitation)
             else:
                 self.__solicitation_id_permission_checker(solicitation)
 
 
-class ForbiddenClassroomSolicitationAccess(HTTPException):
+class ForbiddenSolicitationAccess(HTTPException):
     def __init__(self, detail: str):
         super().__init__(
             status_code=403,
