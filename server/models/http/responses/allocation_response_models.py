@@ -175,7 +175,7 @@ class EventExtendedProps(BaseModel):
         return data
 
 
-class EventResponse(BaseModel):
+class AllocationEventResponse(BaseModel):
     id: str
     title: str
     start: str
@@ -191,7 +191,7 @@ class EventResponse(BaseModel):
     extendedProps: EventExtendedProps | None = None
 
     @classmethod
-    def from_occurrence(cls, occurrence: Occurrence) -> "EventResponse":
+    def from_occurrence(cls, occurrence: Occurrence) -> "AllocationEventResponse":
         resource = f"{AllocationEnum.UNALLOCATED_BUILDING_ID.value}-{
             AllocationEnum.UNALLOCATED_CLASSROOM_ID.value
         }"
@@ -221,7 +221,7 @@ class EventResponse(BaseModel):
         )
 
     @classmethod
-    def from_schedule(cls, schedule: Schedule) -> list["EventResponse"]:
+    def from_schedule(cls, schedule: Schedule) -> list["AllocationEventResponse"]:
         resource = f"{AllocationEnum.UNALLOCATED_BUILDING_ID.value}-{
             AllocationEnum.UNALLOCATED_CLASSROOM_ID.value
         }"
@@ -234,7 +234,7 @@ class EventResponse(BaseModel):
             title = f"Reserva - {schedule.reservation.title}"
         if schedule.recurrence == Recurrence.CUSTOM:
             return [
-                EventResponse.from_occurrence(occurrence)
+                AllocationEventResponse.from_occurrence(occurrence)
                 for occurrence in schedule.occurrences
             ]
         return [
@@ -255,42 +255,49 @@ class EventResponse(BaseModel):
     @classmethod
     def from_occurrence_list(
         cls, occurrences: list[Occurrence]
-    ) -> list["EventResponse"]:
-        return [EventResponse.from_occurrence(occurrence) for occurrence in occurrences]
+    ) -> list["AllocationEventResponse"]:
+        return [
+            AllocationEventResponse.from_occurrence(occurrence)
+            for occurrence in occurrences
+        ]
 
     @classmethod
-    def from_schedule_list(cls, schedules: list[Schedule]) -> list["EventResponse"]:
+    def from_schedule_list(
+        cls, schedules: list[Schedule]
+    ) -> list["AllocationEventResponse"]:
         events = []
         for schedule in schedules:
-            events.extend(EventResponse.from_schedule(schedule))
+            events.extend(AllocationEventResponse.from_schedule(schedule))
         return events
 
 
-class ResourceResponse(BaseModel):
+class AllocationResourceResponse(BaseModel):
     id: str
     parentId: str | None = None
     title: str
 
     @classmethod
-    def from_building(cls, building: Building) -> list["ResourceResponse"]:
+    def from_building(cls, building: Building) -> list["AllocationResourceResponse"]:
         """Returns a list of resources, the first one is the building and the rest are the classrooms of the building"""
-        resources: list[ResourceResponse] = []
+        resources: list[AllocationResourceResponse] = []
         resources.append(cls(id=building.name, title=building.name))
-        classrooms_resources = ResourceResponse.from_classroom_list(
+        classrooms_resources = AllocationResourceResponse.from_classroom_list(
             building.classrooms if building.classrooms else []
         )
         resources.extend(classrooms_resources)
         return resources
 
     @classmethod
-    def from_building_list(cls, buildings: list[Building]) -> list["ResourceResponse"]:
-        resources: list[ResourceResponse] = []
+    def from_building_list(
+        cls, buildings: list[Building]
+    ) -> list["AllocationResourceResponse"]:
+        resources: list[AllocationResourceResponse] = []
         for building in buildings:
-            resources.extend(ResourceResponse.from_building(building))
+            resources.extend(AllocationResourceResponse.from_building(building))
         return resources
 
     @classmethod
-    def from_classroom(cls, classroom: Classroom) -> "ResourceResponse":
+    def from_classroom(cls, classroom: Classroom) -> "AllocationResourceResponse":
         return cls(
             id=f"{classroom.building.name}-{classroom.name}",
             parentId=str(classroom.building.name),
@@ -300,22 +307,22 @@ class ResourceResponse(BaseModel):
     @classmethod
     def from_classroom_list(
         cls, classrooms: list[Classroom]
-    ) -> list["ResourceResponse"]:
+    ) -> list["AllocationResourceResponse"]:
         return [
-            ResourceResponse.from_classroom(classroom)
+            AllocationResourceResponse.from_classroom(classroom)
             for classroom in classrooms
             if not classroom.remote
         ]
 
     @classmethod
-    def unnallocated_building(cls) -> "ResourceResponse":
+    def unnallocated_building(cls) -> "AllocationResourceResponse":
         return cls(
             id=AllocationEnum.UNALLOCATED_BUILDING_ID.value,
             title=AllocationEnum.UNALLOCATED.value,
         )
 
     @classmethod
-    def unnallocated_classroom(cls) -> "ResourceResponse":
+    def unnallocated_classroom(cls) -> "AllocationResourceResponse":
         return cls(
             id=f"{AllocationEnum.UNALLOCATED_BUILDING_ID.value}-{AllocationEnum.UNALLOCATED_CLASSROOM_ID.value}",
             parentId=AllocationEnum.UNALLOCATED_BUILDING_ID.value,

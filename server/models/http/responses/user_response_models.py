@@ -5,8 +5,8 @@ from pydantic import BaseModel
 from server.models.database.group_db_model import Group
 from server.models.database.user_db_model import User
 from server.models.http.responses.building_response_models import BuildingResponse
-from server.models.http.responses.classroom_solicitation_response_models import (
-    ClassroomSolicitationResponse,
+from server.models.http.responses.solicitation_response_models import (
+    SolicitationResponse,
 )
 from server.utils.must_be_int import must_be_int
 
@@ -31,7 +31,7 @@ class UserResponse(BaseModel):
     user_info: UserInfo | None = None
     created_by: str | None = None
     buildings: list[BuildingResponse] | None = None
-    solicitations: list[ClassroomSolicitationResponse]
+    solicitations: list[SolicitationResponse]
     groups: list["UserGroupResponse"]
 
     @classmethod
@@ -48,7 +48,7 @@ class UserResponse(BaseModel):
             ]
             if user.buildings
             else None,
-            solicitations=ClassroomSolicitationResponse.from_solicitation_list(
+            solicitations=SolicitationResponse.from_solicitation_list(
                 user.solicitations
             ),
             updated_at=user.updated_at,

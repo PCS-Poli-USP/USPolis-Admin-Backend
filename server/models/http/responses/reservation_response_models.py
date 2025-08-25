@@ -9,6 +9,7 @@ from server.models.http.responses.schedule_response_models import (
     ScheduleFullResponse,
 )
 from server.utils.enums.reservation_type import ReservationType
+from server.utils.enums.solicitation_status import SolicitationStatus
 from server.utils.must_be_int import must_be_int
 
 
@@ -31,8 +32,8 @@ class ReservationResponseBase(BaseModel):
     created_by: str
 
     requester: str | None
-    has_solicitation: bool
     solicitation_id: int | None
+    solicitation_status: SolicitationStatus | None = None
 
     @classmethod
     def from_reservation(cls, reservation: Reservation) -> "ReservationResponseBase":
@@ -54,7 +55,6 @@ class ReservationResponseBase(BaseModel):
             requester=reservation.solicitation.user.name
             if reservation.solicitation
             else None,
-            has_solicitation=reservation.solicitation is not None,
             solicitation_id=reservation.solicitation.id
             if reservation.solicitation
             else None,

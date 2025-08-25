@@ -2,7 +2,7 @@ from datetime import time
 from pydantic import BaseModel
 
 
-class EventUpdate(BaseModel):
+class AllocationEventUpdate(BaseModel):
     desalocate: bool
     all_occurrences: bool
     start_time: time

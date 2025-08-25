@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from server.models.database.classroom_db_model import Classroom
-from server.models.database.classroom_solicitation_db_model import ClassroomSolicitation
+from server.models.database.solicitation_db_model import Solicitation
 from server.models.database.group_db_model import Group
 from server.models.database.subject_db_model import Subject
 from server.models.database.user_db_model import User
@@ -23,6 +23,6 @@ class BuildingModelDict(BuildingBaseDict, BaseModelDict, total=False):
     users: list[User]
     classrooms: list[Classroom]
     subjects: list[Subject]
-    solicitations: list[ClassroomSolicitation]
+    solicitations: list[Solicitation]
     main_group: Group | None
     groups: list[Group]

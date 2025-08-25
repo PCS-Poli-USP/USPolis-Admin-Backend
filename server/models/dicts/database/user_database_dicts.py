@@ -1,7 +1,9 @@
 from datetime import datetime
 from server.models.database.building_db_model import Building
 from server.models.database.calendar_db_model import Calendar
-from server.models.database.classroom_solicitation_db_model import ClassroomSolicitation
+from server.models.database.solicitation_db_model import (
+    Solicitation,
+)
 from server.models.database.group_db_model import Group
 from server.models.database.holiday_category_db_model import HolidayCategory
 from server.models.database.holiday_db_model import Holiday
@@ -29,5 +31,5 @@ class UserModelDict(BaseModelDict, UserBaseDict, total=False):
     holidays: list[Holiday]
     calendars: list[Calendar]
     reservations: list[Reservation]
-    solicitations: list[ClassroomSolicitation]
+    solicitations: list[Solicitation]
     groups: list[Group]
