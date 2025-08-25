@@ -54,7 +54,7 @@ class ScheduleRepositoryAdapter:
         checker = ClassPermissionChecker(user=self.user, session=self.session)
         checker.check_permission(class_)
         schedule = ScheduleRepository.create_with_class(
-            class_input=class_, input=input, session=self.session
+            class_=class_, input=input, session=self.session
         )
         if input.classroom_id:
             classroom = ClassroomRepository.get_by_id(

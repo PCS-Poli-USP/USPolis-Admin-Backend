@@ -96,14 +96,12 @@ class ClassRepositoryAdapter:
         self.session.commit()
 
     def delete_many(self, ids: list[int]) -> None:
-        classes = ClassRepository.get_by_ids(
-            ids=ids, session=self.session
-        )
+        classes = ClassRepository.get_by_ids(ids=ids, session=self.session)
         self.checker.check_permission(object=classes)
 
         for class_ in classes:
             self.schedule_checker.check_permission(object=class_.schedules)
-            
+
         ClassRepository.delete_many(ids=ids, session=self.session)
         self.session.commit()
 

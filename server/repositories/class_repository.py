@@ -270,7 +270,7 @@ class ClassRepository:
             full_allocated=False,
         )
         schedules = ScheduleRepository.create_many_with_class(
-            university_class=new_class, input=input.schedules_data, session=session
+            class_=new_class, input=input.schedules_data, session=session
         )
         new_class.schedules = schedules
         session.add(new_class)

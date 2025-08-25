@@ -1,5 +1,6 @@
 from datetime import date as datetime_date
 from fastapi import HTTPException, status
+
 # from sqlalchemy import func
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
@@ -124,7 +125,7 @@ class ScheduleRepository:
 
     @staticmethod
     def create_with_class(
-        *, class_input: Class, input: ScheduleRegister, session: Session
+        *, class_: Class, input: ScheduleRegister, session: Session
     ) -> Schedule:
         new_schedule = Schedule(
             start_date=input.start_date,
@@ -136,8 +137,8 @@ class ScheduleRepository:
             week_day=input.week_day,
             start_time=input.start_time,
             end_time=input.end_time,
-            class_id=class_input.id,
-            class_=class_input,
+            class_id=class_.id,
+            class_=class_,
             reservation_id=None,
             classroom_id=None,
         )
@@ -165,6 +166,7 @@ class ScheduleRepository:
         input: ScheduleRegister,
         classroom: Classroom,
         session: Session,
+        allocate: bool = True,
     ) -> Schedule:
         new_schedule = Schedule(
             start_date=input.start_date,
@@ -172,7 +174,7 @@ class ScheduleRepository:
             recurrence=input.recurrence,
             month_week=input.month_week,
             all_day=input.all_day,
-            allocated=input.allocated if input.allocated else False,
+            allocated=input.allocated,
             week_day=input.week_day,
             start_time=input.start_time,
             end_time=input.end_time,
@@ -180,12 +182,12 @@ class ScheduleRepository:
             class_=None,
             reservation_id=reservation.id,
             reservation=reservation,
-            classroom_id=input.classroom_id,
+            classroom_id=classroom.id,
         )
 
         if input.dates and input.recurrence == Recurrence.CUSTOM:
             occurences_input = OccurenceManyRegister(
-                classroom_id=classroom.id,
+                classroom_id=classroom.id if allocate else None,
                 start_time=input.start_time,
                 end_time=input.end_time,
                 dates=input.dates,
@@ -194,23 +196,29 @@ class ScheduleRepository:
                 schedule=new_schedule, input=occurences_input, session=session
             )
             new_schedule.occurrences = occurences
-            if input.classroom_id:
+            if allocate:
                 new_schedule.allocated = True
             session.add(new_schedule)
         else:
-            # schedule is add to sesion here
-            OccurrenceRepository.allocate_schedule(
-                user=user, schedule=new_schedule, classroom=classroom, session=session
-            )
+            if allocate:
+                # schedule is add to sesion here
+                OccurrenceRepository.allocate_schedule(
+                    user=user,
+                    schedule=new_schedule,
+                    classroom=classroom,
+                    session=session,
+                )
+            else:
+                session.add(new_schedule)
         return new_schedule
 
     @staticmethod
     def create_many_with_class(
-        *, university_class: Class, input: list[ScheduleRegister], session: Session
+        *, class_: Class, input: list[ScheduleRegister], session: Session
     ) -> list[Schedule]:
         return [
             ScheduleRepository.create_with_class(
-                class_input=university_class, input=schedule_input, session=session
+                class_=class_, input=schedule_input, session=session
             )
             for schedule_input in input
         ]
@@ -226,7 +234,7 @@ class ScheduleRepository:
         new_schedules = []
         for schedule_input in input:
             new_schedule = ScheduleRepository.create_with_class(
-                class_input=class_, input=schedule_input, session=session
+                class_=class_, input=schedule_input, session=session
             )
             if schedule_input.allocated and schedule_input.classroom_id:
                 classroom = ClassroomRepository.get_by_id(
