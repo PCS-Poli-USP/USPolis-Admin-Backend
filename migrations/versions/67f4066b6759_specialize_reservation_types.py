@@ -26,7 +26,7 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("reservation_id", sa.Integer(), nullable=False),
         sa.Column("subject_id", sa.Integer(), nullable=False),
-        sa.Column("class_id", sa.Integer(), nullable=False),
+        sa.Column("class_id", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["class_id"],
             ["class.id"],
