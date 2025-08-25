@@ -7,6 +7,7 @@ from sqlmodel import Field, Relationship, Enum
 from server.models.database.base_db_model import BaseModel
 
 from server.models.database.class_calendar_link import ClassCalendarLink
+from server.models.database.exam_class_link import ExamClassLink
 from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.audiovisual_type_enum import AudiovisualType
 from server.utils.enums.class_type import ClassType
@@ -58,7 +59,7 @@ class Class(BaseModel, table=True):
     )
     subject: "Subject" = Relationship(back_populates="classes")
     posts: list["ForumPost"] = Relationship(cascade_delete=True)
-    exams: list["Exam"] = Relationship(back_populates="class_")
+    exams: list["Exam"] = Relationship(back_populates="classes", link_model=ExamClassLink)
 
     def classroom_ids(self) -> set[int]:
         """

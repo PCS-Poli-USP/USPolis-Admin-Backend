@@ -17,9 +17,6 @@ if TYPE_CHECKING:
     from server.models.database.reservation_db_model import Reservation
     from server.models.database.schedule_db_model import Schedule
     from server.models.database.user_db_model import User
-    from server.models.database.classroom_solicitation_db_model import (
-        ClassroomSolicitation,
-    )
     from server.models.database.group_db_model import Group
 
 
@@ -55,9 +52,6 @@ class Classroom(ClassroomBase, table=True):
         back_populates="classroom", sa_relationship_kwargs={"cascade": "all, delete"}
     )
     schedules: list["Schedule"] = Relationship(back_populates="classroom")
-    solicitations: list["ClassroomSolicitation"] = Relationship(
-        back_populates="classroom"
-    )
     groups: list["Group"] = Relationship(
         back_populates="classrooms", link_model=GroupClassroomLink
     )

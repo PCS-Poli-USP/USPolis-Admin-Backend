@@ -1,22 +1,20 @@
-from datetime import datetime, time, date
-from typing import TYPE_CHECKING, Optional
+from datetime import datetime
+from typing import TYPE_CHECKING
 from sqlmodel import Field, Relationship
-from sqlalchemy import CheckConstraint, Column, ARRAY, Date
+from sqlalchemy import CheckConstraint
 
 from server.models.database.base_db_model import BaseModel
 from server.utils.brazil_datetime import BrazilDatetime
-from server.utils.enums.reservation_type import ReservationType
 from server.utils.enums.solicitation_status import SolicitationStatus
 
 
 if TYPE_CHECKING:
     from server.models.database.user_db_model import User
     from server.models.database.building_db_model import Building
-    from server.models.database.classroom_db_model import Classroom
     from server.models.database.reservation_db_model import Reservation
 
 
-class ClassroomSolicitation(BaseModel, table=True):
+class Solicitation(BaseModel, table=True):
     __table_args__ = (
         CheckConstraint(
             "(classroom_id IS NOT NULL) OR (required_classroom = FALSE)",
@@ -24,16 +22,8 @@ class ClassroomSolicitation(BaseModel, table=True):
         ),
     )
 
-    reservation_title: str
-    reservation_type: ReservationType
     capacity: int
-    start_time: time | None = Field(nullable=True, default=None)
-    end_time: time | None = Field(nullable=True, default=None)
-    dates: list[date] = Field(
-        sa_column=Column(ARRAY(Date), nullable=False), min_length=1
-    )
-    reason: str | None = Field(nullable=True, default=None)
-
+    required_classroom: bool = Field(default=False)
     status: SolicitationStatus = Field()
     closed_by: str | None = Field(nullable=True, default=None)
     deleted_by: str | None = Field(nullable=True, default=None)
@@ -41,16 +31,13 @@ class ClassroomSolicitation(BaseModel, table=True):
     created_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
     updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
 
-    required_classroom: bool = Field(default=False)
-    classroom_id: int | None = Field(foreign_key="classroom.id", nullable=True)
-    building_id: int = Field(foreign_key="building.id")
     user_id: int = Field(foreign_key="user.id")
-    reservation_id: int | None = Field(foreign_key="reservation.id", nullable=True)
+    building_id: int = Field(foreign_key="building.id")
+    reservation_id: int = Field(foreign_key="reservation.id")
 
     building: "Building" = Relationship(back_populates="solicitations")
+    reservation: "Reservation" = Relationship(back_populates="solicitation")
     user: "User" = Relationship(back_populates="solicitations")
-    classroom: Optional["Classroom"] = Relationship(back_populates="solicitations")
-    reservation: Optional["Reservation"] = Relationship(back_populates="solicitation")
 
     def get_administrative_users(self) -> list["User"]:
         """
@@ -63,9 +50,7 @@ class ClassroomSolicitation(BaseModel, table=True):
         Returns:
             List of User objects.
         """
-        if self.classroom:
-            return self.classroom.get_users()
-        return self.building.get_users()
+        return self.reservation.classroom.get_users()
 
     def get_administrative_users_for_email(self) -> list["User"]:
         """

@@ -4,7 +4,7 @@ from server.models.database.reservation_db_model import Reservation
 from server.utils.enums.event_type_enum import EventType
 
 
-class ReservationEvent(BaseModel, table=True):
+class Event(BaseModel, table=True):
     reservation_id: int = Field(foreign_key="reservation.id")
     link: str | None = Field(nullable=True, default=None)
     type: EventType = Field(
