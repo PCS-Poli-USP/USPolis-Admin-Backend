@@ -15,8 +15,8 @@ from server.routes.authenticated.institutional_event_routes import (
 )
 from server.routes.authenticated.subject_routes import router as SubjectRouter
 from server.routes.authenticated.user_routes import router as UserRouter
-from server.routes.authenticated.classroom_soliciation_routes import (
-    router as ClassroomSolicitationRouter,
+from server.routes.authenticated.solicitation_routes import (
+    router as SolicitationRouter,
 )
 
 
@@ -32,4 +32,4 @@ router.include_router(CalendarRouter)
 router.include_router(InstitutionalEventRouter)
 router.include_router(ClassRouter)
 router.include_router(ReservationRouter)
-router.include_router(ClassroomSolicitationRouter)
+router.include_router(SolicitationRouter)

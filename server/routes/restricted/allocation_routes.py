@@ -7,7 +7,7 @@ from server.deps.repository_adapters.occurrence_repository_adapter import (
 from server.deps.session_dep import SessionDep
 from server.models.http.requests.allocation_request_models import (
     AllocationReuseInput,
-    EventUpdate,
+    AllocationEventUpdate,
 )
 from server.models.http.responses.allocation_response_models import (
     AllocationClassOptions,
@@ -29,7 +29,7 @@ router = APIRouter(prefix="/allocations", tags=["Allocations"])
 
 @router.patch("/events")
 def update_event(
-    input: EventUpdate,
+    input: AllocationEventUpdate,
     occurrence_repo: OccurrenceRepositoryDep,
 ) -> JSONResponse:
     """Update an event with the provided data"""

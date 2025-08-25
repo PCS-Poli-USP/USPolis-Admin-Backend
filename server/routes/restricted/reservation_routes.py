@@ -3,9 +3,9 @@ from fastapi import APIRouter, Body, Response
 from server.deps.repository_adapters.reservation_repository_adapter import (
     ReservationRepositoryDep,
 )
-from server.models.http.requests.classroom_solicitation_request_models import (
-    ClassroomSolicitationApprove,
-    ClassroomSolicitationUpdated,
+from server.models.http.requests.solicitation_request_models import (
+    SolicitationApprove,
+    SolicitationUpdated,
 )
 from server.models.http.requests.reservation_request_models import (
     ReservationRegister,
@@ -17,9 +17,16 @@ from server.models.http.responses.reservation_response_models import (
 )
 from server.services.email.email_service import EmailService
 
+from server.routes.restricted.exam_routes import router as ExamRouter
+from server.routes.restricted.event_routes import router as EventRouter
+from server.routes.restricted.meeting_routes import router as MeetingRouter
+
 embed = Body(..., embed=True)
 
 router = APIRouter(prefix="/reservations", tags=["Reservations"])
+router.include_router(ExamRouter)
+router.include_router(EventRouter)
+router.include_router(MeetingRouter)
 
 
 @router.post("")
@@ -28,12 +35,8 @@ async def create_reservation(
 ) -> ReservationResponse:
     """Create a reservation"""
     reservation = repository.create(reservation=input)
-    if (
-        reservation.solicitation
-        and input.solicitation_id
-        and input.solicitation_id == reservation.solicitation.id
-    ):
-        solicitation_approve = ClassroomSolicitationApprove(
+    if reservation.solicitation:
+        solicitation_approve = SolicitationApprove(
             classroom_id=reservation.classroom_id,
             classroom_name=reservation.classroom.name,
             start_time=reservation.schedule.start_time,
@@ -54,7 +57,7 @@ async def update_reservation(
     reservation = repository.update(id=reservation_id, input=input)
     if input.has_solicitation and input.solicitation_id:
         if old_reservation.solicitation and reservation.solicitation:
-            solicitation_input = ClassroomSolicitationUpdated(
+            solicitation_input = SolicitationUpdated(
                 classroom_id=reservation.classroom_id,
                 classroom_name=reservation.classroom.name,
                 start_time=reservation.schedule.start_time,
@@ -65,7 +68,7 @@ async def update_reservation(
             )
         else:
             if reservation.solicitation and not old_reservation.solicitation:
-                solicitation_approve = ClassroomSolicitationApprove(
+                solicitation_approve = SolicitationApprove(
                     classroom_id=reservation.classroom_id,
                     classroom_name=reservation.classroom.name,
                     start_time=reservation.schedule.start_time,

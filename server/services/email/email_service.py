@@ -6,12 +6,14 @@ from email.mime.text import MIMEText
 from smtplib import SMTP_SSL
 from jinja2 import Environment, FileSystemLoader
 from server.config import CONFIG
-from server.models.database.classroom_solicitation_db_model import ClassroomSolicitation
+from server.models.database.solicitation_db_model import (
+    Solicitation,
+)
 from server.models.database.user_db_model import User
-from server.models.http.requests.classroom_solicitation_request_models import (
-    ClassroomSolicitationApprove,
-    ClassroomSolicitationDeny,
-    ClassroomSolicitationUpdated,
+from server.models.http.requests.solicitation_request_models import (
+    SolicitationApprove,
+    SolicitationDeny,
+    SolicitationUpdated,
 )
 from server.models.http.requests.email_request_models import (
     BCCMailSend,
@@ -78,7 +80,7 @@ class EmailService:
     @staticmethod
     async def send_solicitation_request_email(
         users: list[User],
-        solicitation: ClassroomSolicitation,
+        solicitation: Solicitation,
     ) -> None:
         template = env.get_template("/solicitations/solicitation-requested.html")
         bcc_list = [user.email for user in users]
@@ -96,8 +98,8 @@ class EmailService:
 
     @staticmethod
     async def send_solicitation_approved_email(
-        input: ClassroomSolicitationApprove,
-        solicitation: ClassroomSolicitation,
+        input: SolicitationApprove,
+        solicitation: Solicitation,
     ) -> None:
         template = env.get_template("/solicitations/solicitation-approved.html")
         body = template.render(
@@ -109,8 +111,8 @@ class EmailService:
 
     @staticmethod
     async def send_solicitation_updated_email(
-        input: ClassroomSolicitationUpdated,
-        solicitation: ClassroomSolicitation,
+        input: SolicitationUpdated,
+        solicitation: Solicitation,
     ) -> None:
         template = env.get_template("/solicitations/solicitation-updated.html")
         body = template.render(
@@ -122,7 +124,7 @@ class EmailService:
 
     @staticmethod
     async def send_solicitation_deleted_email(
-        solicitation: ClassroomSolicitation,
+        solicitation: Solicitation,
     ) -> None:
         template = env.get_template("/solicitations/solicitation-deleted.html")
         body = template.render(
@@ -134,8 +136,8 @@ class EmailService:
 
     @staticmethod
     async def send_solicitation_denied_email(
-        input: ClassroomSolicitationDeny,
-        solicitation: ClassroomSolicitation,
+        input: SolicitationDeny,
+        solicitation: Solicitation,
     ) -> None:
         template = env.get_template("/solicitations/solicitation-denied.html")
         body = template.render(
@@ -148,7 +150,7 @@ class EmailService:
     @staticmethod
     async def send_solicitation_cancelled_email(
         users: list[User],
-        solicitation: ClassroomSolicitation,
+        solicitation: Solicitation,
     ) -> None:
         template = env.get_template("/solicitations/solicitation-cancelled.html")
         bcc_list = [user.email for user in users]

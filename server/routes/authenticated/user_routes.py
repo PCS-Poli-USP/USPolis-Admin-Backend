@@ -22,16 +22,16 @@ from server.deps.repository_adapters.classroom_repository_adapter import (
 from server.models.database.user_db_model import User
 from server.models.http.responses.class_response_models import ClassResponse
 from server.models.http.responses.classroom_response_models import ClassroomResponse
-from server.models.http.responses.classroom_solicitation_response_models import (
-    ClassroomSolicitationResponse,
+from server.models.http.responses.solicitation_response_models import (
+    SolicitationResponse,
 )
 from server.models.http.responses.group_response_models import GroupResponse
 from server.models.http.responses.reservation_response_models import ReservationResponse
 from server.models.http.responses.subject_response_models import SubjectResponse
 from server.models.http.responses.user_response_models import UserResponse
 from server.models.http.responses.building_response_models import BuildingResponse
-from server.repositories.classroom_solicitation_repository import (
-    ClassroomSolicitationRepository,
+from server.repositories.solicitation_repository import (
+    SolicitationRepository,
 )
 from server.repositories.group_repository import GroupRepository
 from server.repositories.user_repository import UserRepository
@@ -138,10 +138,10 @@ def get_my_reservations(
 def get_my_solicitaions(
     user: UserDep,
     session: SessionDep,
-) -> list[ClassroomSolicitationResponse]:
+) -> list[SolicitationResponse]:
     """Get all solicitations for authenticated user"""
-    solicitations = ClassroomSolicitationRepository.get_by_user(user, session)
-    return ClassroomSolicitationResponse.from_solicitation_list(solicitations)
+    solicitations = SolicitationRepository.get_by_user(user, session)
+    return SolicitationResponse.from_solicitation_list(solicitations)
 
 
 @router.get("/{building_id}")
