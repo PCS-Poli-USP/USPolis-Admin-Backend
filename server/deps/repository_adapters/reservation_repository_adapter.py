@@ -46,9 +46,11 @@ class ReservationRespositoryAdapter:
         )
 
     def get_by_id(self, id: int) -> Reservation:
-        reservation = ReservationRepository.get_by_id_on_buildings(
-            id=id, building_ids=self.owned_building_ids, session=self.session
-        )
+        """Get a reservation by id, checking if the user has permission to access it.
+        - If the user is not an admin, check if they have permission on the classroom of reservation.
+        """
+        reservation = ReservationRepository.get_by_id(id=id, session=self.session)
+        self.checker.check_permission(reservation.classroom)
         return reservation
 
     def create(
