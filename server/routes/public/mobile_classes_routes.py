@@ -17,4 +17,4 @@ async def get_all_classes(
 ) -> list[MobileClassResponse]:
     """Get all classes, converted for mobile use"""
     classes: list[Class] = ClassRepository.get_all(session=session, interval=interval)
-    return MobileClassResponse.from_model_list(classes)
+    return MobileClassResponse.from_model_list(classes, interval=interval)
