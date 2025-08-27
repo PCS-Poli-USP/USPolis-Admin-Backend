@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 from sqlmodel import Field, Relationship
-from sqlalchemy import CheckConstraint
 
 from server.models.database.base_db_model import BaseModel
 from server.utils.brazil_datetime import BrazilDatetime
@@ -15,13 +14,6 @@ if TYPE_CHECKING:
 
 
 class Solicitation(BaseModel, table=True):
-    __table_args__ = (
-        CheckConstraint(
-            "(classroom_id IS NOT NULL) OR (required_classroom = FALSE)",
-            name="check_required_classroom_with_classroom_id_not_null",
-        ),
-    )
-
     capacity: int
     required_classroom: bool = Field(default=False)
     status: SolicitationStatus = Field()
@@ -50,6 +42,8 @@ class Solicitation(BaseModel, table=True):
         Returns:
             List of User objects.
         """
+        if self.reservation.classroom is None:
+            return self.building.get_users()
         return self.reservation.classroom.get_users()
 
     def get_administrative_users_for_email(self) -> list["User"]:

@@ -34,9 +34,7 @@ class Reservation(BaseModel, table=True):
         ),
     )
     created_by_id: int = Field(index=True, foreign_key="user.id", nullable=False)
-    classroom_id: int = Field(foreign_key="classroom.id", nullable=False)
 
-    classroom: "Classroom" = Relationship(back_populates="reservations")
     schedule: "Schedule" = Relationship(
         back_populates="reservation", sa_relationship_kwargs={"cascade": "delete"}
     )

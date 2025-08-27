@@ -28,7 +28,7 @@ def upgrade() -> None:
         "DELETED",
         name="solicitationstatus",
     )
-    status_type.create(op.get_bind(), checkfirst=False)
+    status_type.create(op.get_bind(), checkfirst=True)
 
     op.add_column(
         "classroomsolicitation",

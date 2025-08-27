@@ -47,30 +47,16 @@ class ClassroomSolicitationSchema(BaseModel):
     reservation_id: int | None
 
 
-class SolicitationDowngradeSchema(BaseModel):
-    id: int
-    reservation_title: str
-    reservation_type: ReservationType
-    capacity: int
-    start_time: time | None
-    end_time: time | None
-    dates: list[date]
-    reason: str | None
-    status: SolicitationStatus
-    closed_by: str | None
-    deleted_by: str | None
-    created_at: datetime
-    updated_at: datetime
-    user_id: int
-    building_id: int
-    classroom_id: int | None
-    reservation_id: int
-
-
 def upgrade() -> None:
     bind = op.get_bind()
 
     op.rename_table("reservationevent", "event")
+    op.drop_constraint(
+        "reservationevent_reservation_id_fkey", "event", type_="foreignkey"
+    )
+    op.create_foreign_key(
+        "event_reservation_id_fkey", "event", "reservation", ["reservation_id"], ["id"]
+    )
 
     admin_id = bind.execute(
         sa.text("""
@@ -81,7 +67,23 @@ def upgrade() -> None:
     if not admin_id:
         raise Exception(f"No {CONFIG.first_superuser_email} admin user found")
 
+    op.drop_constraint(
+        "reservation_classroom_id_fkey", "reservation", type_="foreignkey"
+    )
+    op.drop_column("reservation", "classroom_id")
+
     op.rename_table("classroomsolicitation", "solicitation")
+    op.drop_constraint(
+        "classroomsolicitation_building_id_fkey", "solicitation", type_="foreignkey"
+    )
+    op.create_foreign_key(
+        "solicitation_building_id_fkey",
+        "solicitation",
+        "building",
+        ["building_id"],
+        ["id"],
+    )
+
     rows = bind.execute(sa.text("SELECT * FROM solicitation")).fetchall()
     solicitations: list[ClassroomSolicitationSchema] = []
     for row in rows:
@@ -100,69 +102,81 @@ def upgrade() -> None:
         )
 
     for data in solicitations:
-        # Caso a solicitação já foi aprovada e tem uma reserva
-        if data.status == SolicitationStatus.APPROVED:
-            if not data.reservation_id:
-                raise Exception(
-                    f"Solicitation ID {data.id} is approved but has no reservation_id"
-                )
-
-            r_id = bind.execute(
-                sa.text("""
-                    SELECT classroom_id
-                    FROM reservation
-                    WHERE id = :rid
-                    LIMIT 1
-                """),
-                {"rid": data.reservation_id},
-            ).scalar()
-            if not r_id:
-                raise Exception(
-                    f"Solicitation ID {data.id} has reservation_id {data.reservation_id} but no classroom_id found on reservation"
-                )
-            bind.execute(
-                sa.text("""
-                INSERT INTO event (reservation_id, link, type)
-                VALUES (:rid, NULL, :etype)
-            """),
-                {"rid": r_id, "etype": "OTHER"},
-            )
-            continue
-
         classroom_id = data.classroom_id
-        if not classroom_id:
-            classroom_id = bind.execute(
-                sa.text("""
-                    SELECT id
-                    FROM classroom
-                    WHERE building_id = :bid AND remote = true
-                    LIMIT 1
-                """),
-                {"bid": data.building_id},
+        reservation_id = data.reservation_id
+
+        if reservation_id:
+            check = bind.execute(
+                sa.text("SELECT id from reservation WHERE id = :id"),
+                {"id": reservation_id},
             ).scalar()
-
-            if not classroom_id:
-                raise Exception(
-                    f"No remote classroom found on Building ID {data.building_id}"
+            if not check:
+                bind.execute(
+                    sa.text("DELETE FROM solicitation WHERE id = :id"), {"id": data.id}
                 )
+                continue
 
-        reservation_id = bind.execute(
-            sa.text("""
-                INSERT INTO reservation
-                    (title, type, reason, updated_at, classroom_id, created_by_id)
-                VALUES
-                    (:title, :type, :reason, :updated_at, :classroom_id, :created_by_id)
-                RETURNING id
-            """),
-            dict(
-                title=data.reservation_title,
-                type=str(data.reservation_type.value).upper(),
-                reason=data.reason,
-                updated_at=BrazilDatetime.now_utc(),
-                classroom_id=classroom_id,
-                created_by_id=int(admin_id),
-            ),
-        ).scalar_one()
+        # Se não tiver reserva, cria uma, sua agenda e suas ocorrencias
+        if not reservation_id:
+            reservation_id = bind.execute(
+                sa.text("""
+                    INSERT INTO reservation
+                        (title, type, reason, updated_at, created_by_id)
+                    VALUES
+                        (:title, :type, :reason, :updated_at, :created_by_id)
+                    RETURNING id
+                """),
+                dict(
+                    title=data.reservation_title,
+                    type=str(data.reservation_type.value).upper(),
+                    reason=data.reason,
+                    updated_at=BrazilDatetime.now_utc(),
+                    created_by_id=int(admin_id),
+                ),
+            ).scalar_one()
+
+            start_date = min(data.dates) if data.dates else None
+            end_date = max(data.dates) if data.dates else None
+            start_time = data.start_time or time(12, 0)
+            end_time = data.end_time or time(13, 0)
+
+            schedule_id = bind.execute(
+                sa.text("""
+                    INSERT INTO schedule
+                        (start_date, end_date, start_time, end_time,
+                        classroom_id, recurrence, reservation_id, allocated, all_day)
+                    VALUES
+                        (:sd, :ed, :st, :et, :cid, :rec, :rid, :alloc, :all_day)
+                    RETURNING id
+                """),
+                dict(
+                    sd=start_date,
+                    ed=end_date,
+                    st=start_time,
+                    et=end_time,
+                    cid=classroom_id,
+                    rec="CUSTOM",
+                    rid=reservation_id,
+                    alloc=False,
+                    all_day=False,
+                ),
+            ).scalar_one()
+
+            if data.dates:
+                for d in data.dates:
+                    bind.execute(
+                        sa.text("""
+                            INSERT INTO occurrence (date, start_time, end_time, classroom_id, schedule_id)
+                            VALUES (:d, :st, :et, :cid, :sid)
+                        """),
+                        dict(
+                            d=d,
+                            st=start_time,
+                            et=end_time,
+                            cid=classroom_id,
+                            sid=schedule_id,
+                        ),
+                    )
 
         bind.execute(
             sa.text("UPDATE solicitation SET reservation_id = :rid WHERE id = :sid"),
@@ -177,48 +191,6 @@ def upgrade() -> None:
             {"rid": reservation_id, "etype": "OTHER"},
         )
 
-        start_date = min(data.dates) if data.dates else None
-        end_date = max(data.dates) if data.dates else None
-        start_time = data.start_time or time(12, 0)
-        end_time = data.end_time or time(13, 0)
-
-        schedule_id = bind.execute(
-            sa.text("""
-                INSERT INTO schedule
-                    (start_date, end_date, start_time, end_time,
-                     classroom_id, recurrence, reservation_id, allocated, all_day)
-                VALUES
-                    (:sd, :ed, :st, :et, :cid, :rec, :rid, :alloc, :all_day)
-                RETURNING id
-            """),
-            dict(
-                sd=start_date,
-                ed=end_date,
-                st=start_time,
-                et=end_time,
-                cid=classroom_id,
-                rec="CUSTOM",
-                rid=reservation_id,
-                alloc=False,
-                all_day=False,
-            ),
-        ).scalar_one()
-
-        if data.dates:
-            for d in data.dates:
-                bind.execute(
-                    sa.text("""
-                        INSERT INTO occurrence (date, start_time, end_time, schedule_id)
-                        VALUES (:d, :st, :et, :sid)
-                    """),
-                    dict(
-                        d=d,
-                        st=start_time,
-                        et=end_time,
-                        sid=schedule_id,
-                    ),
-                )
-
     op.drop_column("solicitation", "reservation_title")
     op.drop_column("solicitation", "reservation_type")
     op.drop_column("solicitation", "start_time")
@@ -230,8 +202,18 @@ def upgrade() -> None:
         "solicitation",
         type_="check",
     )
+    op.drop_constraint(
+        "classroomsolicitation_classroom_id_fkey", "solicitation", type_="foreignkey"
+    )
     op.drop_column("solicitation", "classroom_id")
     op.alter_column("solicitation", "reservation_id", nullable=False)
+    op.create_foreign_key(
+        "solicitation_reservation_id_fkey",
+        "solicitation",
+        "reservation",
+        ["reservation_id"],
+        ["id"],
+    )
 
     op.create_table(
         "examclasslink",
@@ -250,6 +232,11 @@ def downgrade() -> None:
     bind = op.get_bind()
 
     # --- Solicitation rollback ---
+    op.drop_constraint(
+        "solicitation_reservation_id_fkey",
+        "solicitation",
+        type_="foreignkey",
+    )
     op.alter_column("solicitation", "reservation_id", nullable=True)
     op.add_column(
         "solicitation",
@@ -286,14 +273,21 @@ def downgrade() -> None:
     rows = (
         bind.execute(
             sa.text("""
-        SELECT s.id as solicitation_id, r.title, r.type, r.reason, r.classroom_id,
-               sch.start_time, sch.end_time, array_agg(o.date ORDER BY o.date) as dates
+        SELECT s.id AS solicitation_id,
+               r.title,
+               r.type,
+               r.reason,
+               sch.classroom_id,
+               sch.start_time,
+               sch.end_time,
+               COALESCE(array_agg(o.date ORDER BY o.date), '{}') AS dates
         FROM solicitation s
-        JOIN reservation r ON r.id = s.reservation_id
+        LEFT JOIN reservation r ON r.id = s.reservation_id
         LEFT JOIN schedule sch ON sch.reservation_id = r.id
         LEFT JOIN occurrence o ON o.schedule_id = sch.id
-        GROUP BY s.id, r.title, r.type, r.reason, r.classroom_id, sch.start_time, sch.end_time
-    """)
+        GROUP BY s.id, r.title, r.type, r.reason, sch.classroom_id,
+                 sch.start_time, sch.end_time
+        """)
         )
         .mappings()
         .all()
@@ -330,72 +324,67 @@ def downgrade() -> None:
         sa.text("(classroom_id IS NOT NULL) OR (required_classroom = FALSE)"),
     )
 
+    # --- Reservation rollback ---
     # Deletar as reservas caso a solicitação não foi aprovada (e suas tabelas de especialização junto)
     # Tem que colocar um cascade delete na ordem ocorrencias -> agendas -> (eventos | reuniões | provas) -> reservas
     # Lembrando de atualizar as solicitações (tirar o reservation_id delas)
+    # Além disso, voltar o classroom_id para a tabela e a constraint de FK
 
+    reservation_ids = (
+        bind.execute(
+            sa.text(
+                "SELECT reservation_id FROM solicitation s WHERE NOT s.status = 'APPROVED'"
+            )
+        )
+        .scalars()
+        .all()
+    )
     # Apagar as ocorrências
     bind.execute(
         sa.text("""
         DELETE FROM occurrence
         WHERE schedule_id IN (
-            SELECT id FROM schedule
-            WHERE reservation_id IN (
-                SELECT reservation_id FROM solicitation WHERE NOT status = 'APPROVED'
-            )
+            SELECT id FROM schedule s
+            WHERE s.reservation_id = ANY(:ids)
         )
-        """)
+        """),
+        {"ids": reservation_ids},
     )
 
     # Apagar as agendas
     bind.execute(
         sa.text("""
-        DELETE FROM schedule
-        WHERE reservation_id IN (
-            SELECT reservation_id FROM solicitation WHERE NOT status = 'APPROVED'
-        )
-        """)
+        DELETE FROM schedule s
+        WHERE s.reservation_id = ANY(:ids)
+        """),
+        {"ids": reservation_ids},
     )
 
     # Apagar eventos de reservas não aprovadas (que serão excluidas)
     bind.execute(
         sa.text("""
-        DELETE FROM event
-        WHERE reservation_id IN (
-            SELECT reservation_id FROM solicitation WHERE NOT status = 'APPROVED'
-        )
-        """)
+        DELETE FROM event e
+        WHERE e.reservation_id = ANY(:ids)
+        """),
+        {"ids": reservation_ids},
     )
 
     # Apagar provas de reservas não aprovadas (que serão excluidas)
     bind.execute(
         sa.text("""
-        DELETE FROM exam
-        WHERE reservation_id IN (
-            SELECT reservation_id FROM solicitation WHERE NOT status = 'APPROVED'
-        )
-        """)
+        DELETE FROM exam e
+        WHERE e.reservation_id = ANY(:ids)
+        """),
+        {"ids": reservation_ids},
     )
 
     # Apagar reuniões de reservas não aprovadas (que serão excluidas)
     bind.execute(
         sa.text("""
-        DELETE FROM meeting
-        WHERE reservation_id IN (
-            SELECT reservation_id FROM solicitation WHERE NOT status = 'APPROVED'
-        )
-        """)
-    )
-
-    # Pega todos ids de reservas a partir das solicitações não aprovadas
-    reservation_ids = (
-        bind.execute(
-            sa.text(
-                "SELECT reservation_id FROM solicitation WHERE NOT status = 'APPROVED'"
-            )
-        )
-        .scalars()
-        .all()
+        DELETE FROM meeting m
+        WHERE m.reservation_id = ANY(:ids)
+        """),
+        {"ids": reservation_ids},
     )
 
     # Remove a reservation_id das solicitações não aprovadas
@@ -414,13 +403,44 @@ def downgrade() -> None:
         {"ids": reservation_ids},
     )
 
+    op.add_column("reservation", sa.Column("classroom_id", sa.Integer(), nullable=True))
+    op.create_foreign_key(
+        "reservation_classroom_id_fkey",
+        "reservation",
+        "classroom",
+        ["classroom_id"],
+        ["id"],
+    )
+    bind.execute(
+        sa.text("""
+        UPDATE reservation
+        SET classroom_id = s.classroom_id
+        FROM schedule s
+        WHERE s.reservation_id = reservation.id;
+    """),
+    )
+
+    ids = bind.execute(sa.text("SELECT r.id FROM reservation r WHERE r.classroom_id IS NULL")).scalars().all()
+    # op.alter_column("reservation", "classroom_id", nullable=False)
+
     # tornar colunas not null
     op.alter_column("solicitation", "reservation_title", nullable=False)
     op.alter_column("solicitation", "reservation_type", nullable=False)
 
-    # renomear de volta
+    # renomear de volta + renomear fks
     op.rename_table("event", "reservationevent")
+    op.execute(
+        sa.text(
+            """ALTER TABLE public."reservationevent" RENAME CONSTRAINT event_reservation_id_fkey TO reservationevent_reservation_id_fkey;"""
+        )
+    )
+
     op.rename_table("solicitation", "classroomsolicitation")
+    op.execute(
+        sa.text(
+            """ALTER TABLE public."classroomsolicitation" RENAME CONSTRAINT solicitation_building_id_fkey TO classroomsolicitation_building_id_fkey;"""
+        )
+    )
 
     # --- Exam rollback ---
     op.add_column("exam", sa.Column("class_id", sa.Integer(), nullable=True))

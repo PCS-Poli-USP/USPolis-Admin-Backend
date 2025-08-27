@@ -14,7 +14,6 @@ from server.utils.must_be_int import must_be_int
 if TYPE_CHECKING:
     from server.models.database.building_db_model import Building
     from server.models.database.occurrence_db_model import Occurrence
-    from server.models.database.reservation_db_model import Reservation
     from server.models.database.schedule_db_model import Schedule
     from server.models.database.user_db_model import User
     from server.models.database.group_db_model import Group
@@ -48,9 +47,6 @@ class Classroom(ClassroomBase, table=True):
     created_by: "User" = Relationship()
     building: "Building" = Relationship(back_populates="classrooms")
     occurrences: list["Occurrence"] = Relationship(back_populates="classroom")
-    reservations: list["Reservation"] = Relationship(
-        back_populates="classroom", sa_relationship_kwargs={"cascade": "all, delete"}
-    )
     schedules: list["Schedule"] = Relationship(back_populates="classroom")
     groups: list["Group"] = Relationship(
         back_populates="classrooms", link_model=GroupClassroomLink
