@@ -39,7 +39,7 @@ class ClassroomRepositoryAdapter:
         self.group_checker = GroupPermissionChecker(user=user, session=session)
 
     def get_all(self) -> list[Classroom]:
-        """Get all classrooms on buildings that the user has access to."""
+        """Get all classrooms that the user has access to."""
         if self.user.is_admin:
             return ClassroomRepository.get_all(session=self.session)
 
