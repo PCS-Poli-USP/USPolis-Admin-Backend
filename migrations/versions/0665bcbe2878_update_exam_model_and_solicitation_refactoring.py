@@ -67,23 +67,58 @@ def upgrade() -> None:
     if not admin_id:
         raise Exception(f"No {CONFIG.first_superuser_email} admin user found")
 
+    # --- Reservation migration ---
+
     op.drop_constraint(
         "reservation_classroom_id_fkey", "reservation", type_="foreignkey"
     )
     op.drop_column("reservation", "classroom_id")
 
-    op.rename_table("classroomsolicitation", "solicitation")
-    op.drop_constraint(
-        "classroomsolicitation_building_id_fkey", "solicitation", type_="foreignkey"
+    # --- Solicitation migration ---
+    # Rename FKS
+    op.execute(
+        sa.text(
+            """ALTER TABLE public."classroomsolicitation" RENAME CONSTRAINT classroomsolicitation_building_id_fkey TO solicitation_building_id_fkey;"""
+        )
     )
-    op.create_foreign_key(
-        "solicitation_building_id_fkey",
-        "solicitation",
-        "building",
-        ["building_id"],
-        ["id"],
+    op.execute(
+        sa.text(
+            """ALTER TABLE public."classroomsolicitation" RENAME CONSTRAINT classroomsolicitation_classroom_id_fkey TO solicitation_solicited_classroom_id_fkey;"""
+        )
+    )
+    op.execute(
+        sa.text(
+            """ALTER TABLE public."classroomsolicitation" RENAME CONSTRAINT classroomsolicitation_user_id_fkey TO solicitation_user_id_fkey;"""
+        )
+    )
+    op.execute(
+        sa.text(
+            """ALTER TABLE public."classroomsolicitation" RENAME CONSTRAINT classroomsolicitation_reservation_id_fkey TO solicitation_reservation_id_fkey;"""
+        )
     )
 
+    op.rename_table("classroomsolicitation", "solicitation")
+
+    # Rename Constraints
+    op.execute(
+        sa.text(
+            "ALTER TABLE solicitation RENAME COLUMN classroom_id TO solicited_classroom_id"
+        )
+    )
+
+    op.create_check_constraint(
+        "check_required_classroom_with_solicited_classroom_id_not_null",
+        "solicitation",
+        sa.text("(solicited_classroom_id IS NOT NULL) OR (required_classroom = FALSE)"),
+    )
+
+    op.drop_constraint(
+        "check_required_classroom_with_classroom_id_not_null",
+        "solicitation",
+        type_="check",
+    )
+
+    # Le as solicitações e cria os schemas
     rows = bind.execute(sa.text("SELECT * FROM solicitation")).fetchall()
     solicitations: list[ClassroomSolicitationSchema] = []
     for row in rows:
@@ -101,10 +136,14 @@ def upgrade() -> None:
             )
         )
 
+    # Para cada solicitação, cria uma reserva (se não tiver), uma agenda e suas ocorrências
+
     for data in solicitations:
         classroom_id = data.classroom_id
         reservation_id = data.reservation_id
 
+        # Se tiver reserva checa se ela existe, se não existir apaga essa solicitação (inconsistência de dados)
+        # Esqueci de deixar NOT NULL em alguma migration passada
         if reservation_id:
             check = bind.execute(
                 sa.text("SELECT id from reservation WHERE id = :id"),
@@ -191,30 +230,17 @@ def upgrade() -> None:
             {"rid": reservation_id, "etype": "OTHER"},
         )
 
+    # Deleta as colunas antigas
     op.drop_column("solicitation", "reservation_title")
     op.drop_column("solicitation", "reservation_type")
     op.drop_column("solicitation", "start_time")
     op.drop_column("solicitation", "end_time")
     op.drop_column("solicitation", "dates")
     op.drop_column("solicitation", "reason")
-    op.drop_constraint(
-        "check_required_classroom_with_classroom_id_not_null",
-        "solicitation",
-        type_="check",
-    )
-    op.drop_constraint(
-        "classroomsolicitation_classroom_id_fkey", "solicitation", type_="foreignkey"
-    )
-    op.drop_column("solicitation", "classroom_id")
-    op.alter_column("solicitation", "reservation_id", nullable=False)
-    op.create_foreign_key(
-        "solicitation_reservation_id_fkey",
-        "solicitation",
-        "reservation",
-        ["reservation_id"],
-        ["id"],
-    )
 
+    op.alter_column("solicitation", "reservation_id", nullable=False)
+
+    # --- Exam migration ---
     op.create_table(
         "examclasslink",
         sa.Column("exam_id", sa.Integer(), nullable=False),
@@ -232,12 +258,47 @@ def downgrade() -> None:
     bind = op.get_bind()
 
     # --- Solicitation rollback ---
-    op.drop_constraint(
-        "solicitation_reservation_id_fkey",
-        "solicitation",
-        type_="foreignkey",
+    # Rename FKS
+    op.execute(
+        sa.text(
+            """ALTER TABLE public."solicitation" RENAME CONSTRAINT solicitation_building_id_fkey TO classroomsolicitation_building_id_fkey;"""
+        )
     )
-    op.alter_column("solicitation", "reservation_id", nullable=True)
+    op.execute(
+        sa.text(
+            """ALTER TABLE public."solicitation" RENAME CONSTRAINT solicitation_solicited_classroom_id_fkey TO classroomsolicitation_classroom_id_fkey;"""
+        )
+    )
+    op.execute(
+        sa.text(
+            """ALTER TABLE public."solicitation" RENAME CONSTRAINT solicitation_user_id_fkey TO classroomsolicitation_user_id_fkey;"""
+        )
+    )
+    op.execute(
+        sa.text(
+            """ALTER TABLE public."solicitation" RENAME CONSTRAINT solicitation_reservation_id_fkey TO classroomsolicitation_reservation_id_fkey;"""
+        )
+    )
+
+    # Rename Constraints
+    op.drop_constraint(
+        "check_required_classroom_with_solicited_classroom_id_not_null",
+        "solicitation",
+        type_="check",
+    )
+
+    op.execute(
+        sa.text(
+            "ALTER TABLE solicitation RENAME COLUMN solicited_classroom_id TO classroom_id"
+        )
+    )
+
+    op.create_check_constraint(
+        "check_required_classroom_with_classroom_id_not_null",
+        "solicitation",
+        sa.text("(classroom_id IS NOT NULL) OR (required_classroom = FALSE)"),
+    )
+
     op.add_column(
         "solicitation",
         sa.Column("reservation_title", sa.String(), nullable=True),
@@ -257,17 +318,6 @@ def downgrade() -> None:
         sa.Column("dates", sa.ARRAY(sa.Date()), nullable=False, server_default="{}"),
     )
     op.add_column("solicitation", sa.Column("reason", sa.String(), nullable=True))
-    op.add_column(
-        "solicitation", sa.Column("classroom_id", sa.Integer(), nullable=True)
-    )
-
-    op.create_foreign_key(
-        "classroomsolicitation_classroom_id_fkey",
-        "solicitation",
-        "classroom",
-        ["classroom_id"],
-        ["id"],
-    )
 
     # repopular colunas a partir de reservation/schedule/occurrence
     rows = (
@@ -277,7 +327,6 @@ def downgrade() -> None:
                r.title,
                r.type,
                r.reason,
-               sch.classroom_id,
                sch.start_time,
                sch.end_time,
                COALESCE(array_agg(o.date ORDER BY o.date), '{}') AS dates
@@ -285,7 +334,7 @@ def downgrade() -> None:
         LEFT JOIN reservation r ON r.id = s.reservation_id
         LEFT JOIN schedule sch ON sch.reservation_id = r.id
         LEFT JOIN occurrence o ON o.schedule_id = sch.id
-        GROUP BY s.id, r.title, r.type, r.reason, sch.classroom_id,
+        GROUP BY s.id, r.title, r.type, r.reason,
                  sch.start_time, sch.end_time
         """)
         )
@@ -300,7 +349,6 @@ def downgrade() -> None:
                 SET reservation_title = :title,
                     reservation_type = :rtype,
                     reason = :reason,
-                    classroom_id = :cid,
                     start_time = :st,
                     end_time = :et,
                     dates = :dates
@@ -310,7 +358,6 @@ def downgrade() -> None:
                 title=row["title"],
                 rtype=row["type"],
                 reason=row["reason"],
-                cid=row["classroom_id"],
                 st=row["start_time"],
                 et=row["end_time"],
                 dates=row["dates"] or [],
@@ -318,17 +365,30 @@ def downgrade() -> None:
             ),
         )
 
-    op.create_check_constraint(
-        "check_required_classroom_with_classroom_id_not_null",
-        "solicitation",
-        sa.text("(classroom_id IS NOT NULL) OR (required_classroom = FALSE)"),
-    )
-
     # --- Reservation rollback ---
     # Deletar as reservas caso a solicitação não foi aprovada (e suas tabelas de especialização junto)
     # Tem que colocar um cascade delete na ordem ocorrencias -> agendas -> (eventos | reuniões | provas) -> reservas
     # Lembrando de atualizar as solicitações (tirar o reservation_id delas)
     # Além disso, voltar o classroom_id para a tabela e a constraint de FK
+
+    # --- Reservation classroom_id column rollback ---
+    # Adiciona a coluna e coloca como valor o classroom_id da sua agenda
+    op.add_column("reservation", sa.Column("classroom_id", sa.Integer(), nullable=True))
+    op.create_foreign_key(
+        "reservation_classroom_id_fkey",
+        "reservation",
+        "classroom",
+        ["classroom_id"],
+        ["id"],
+    )
+    bind.execute(
+        sa.text("""
+        UPDATE reservation
+        SET classroom_id = s.classroom_id
+        FROM schedule s
+        WHERE s.reservation_id = reservation.id;
+    """),
+    )
 
     reservation_ids = (
         bind.execute(
@@ -339,6 +399,18 @@ def downgrade() -> None:
         .scalars()
         .all()
     )
+
+    no_classroom_reservation_ids = (
+        bind.execute(
+            sa.text("SELECT r.id FROM reservation r WHERE r.classroom_id IS NULL")
+        )
+        .scalars()
+        .all()
+    )
+
+    reservation_ids = list(set(reservation_ids) | set(no_classroom_reservation_ids))
+    print("Reservations to delete:", len(reservation_ids))
+
     # Apagar as ocorrências
     bind.execute(
         sa.text("""
@@ -360,7 +432,7 @@ def downgrade() -> None:
         {"ids": reservation_ids},
     )
 
-    # Apagar eventos de reservas não aprovadas (que serão excluidas)
+    # Apagar eventos de reservas não aprovadas/sem sala (que serão excluidas)
     bind.execute(
         sa.text("""
         DELETE FROM event e
@@ -369,7 +441,7 @@ def downgrade() -> None:
         {"ids": reservation_ids},
     )
 
-    # Apagar provas de reservas não aprovadas (que serão excluidas)
+    # Apagar provas de reservas não aprovadas/sem sala (que serão excluidas)
     bind.execute(
         sa.text("""
         DELETE FROM exam e
@@ -378,7 +450,7 @@ def downgrade() -> None:
         {"ids": reservation_ids},
     )
 
-    # Apagar reuniões de reservas não aprovadas (que serão excluidas)
+    # Apagar reuniões de reservas não aprovadas/sem sala (que serão excluidas)
     bind.execute(
         sa.text("""
         DELETE FROM meeting m
@@ -387,14 +459,14 @@ def downgrade() -> None:
         {"ids": reservation_ids},
     )
 
-    # Remove a reservation_id das solicitações não aprovadas
+    # Remove a reservation_id das solicitações não aprovadas/sem sala
     bind.execute(
         sa.text(
             "UPDATE solicitation SET reservation_id = NULL WHERE NOT status = 'APPROVED'"
         )
     )
 
-    # Apaga todas reservas que eram de solicitações não aprovadas
+    # Apaga todas reservas que eram de solicitações não aprovadas/ sem sala
     bind.execute(
         sa.text("""
         DELETE FROM reservation
@@ -403,42 +475,19 @@ def downgrade() -> None:
         {"ids": reservation_ids},
     )
 
-    op.add_column("reservation", sa.Column("classroom_id", sa.Integer(), nullable=True))
-    op.create_foreign_key(
-        "reservation_classroom_id_fkey",
-        "reservation",
-        "classroom",
-        ["classroom_id"],
-        ["id"],
-    )
-    bind.execute(
-        sa.text("""
-        UPDATE reservation
-        SET classroom_id = s.classroom_id
-        FROM schedule s
-        WHERE s.reservation_id = reservation.id;
-    """),
-    )
-
-    ids = bind.execute(sa.text("SELECT r.id FROM reservation r WHERE r.classroom_id IS NULL")).scalars().all()
-    # op.alter_column("reservation", "classroom_id", nullable=False)
-
     # tornar colunas not null
+    op.alter_column("reservation", "classroom_id", nullable=False)
     op.alter_column("solicitation", "reservation_title", nullable=False)
     op.alter_column("solicitation", "reservation_type", nullable=False)
 
-    # renomear de volta + renomear fks
+    op.rename_table("solicitation", "classroomsolicitation")
+
+    # --- Event rollback ---
+    # Renomear evento
     op.rename_table("event", "reservationevent")
     op.execute(
         sa.text(
             """ALTER TABLE public."reservationevent" RENAME CONSTRAINT event_reservation_id_fkey TO reservationevent_reservation_id_fkey;"""
-        )
-    )
-
-    op.rename_table("solicitation", "classroomsolicitation")
-    op.execute(
-        sa.text(
-            """ALTER TABLE public."classroomsolicitation" RENAME CONSTRAINT solicitation_building_id_fkey TO classroomsolicitation_building_id_fkey;"""
         )
     )
 

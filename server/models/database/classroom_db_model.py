@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from server.models.database.schedule_db_model import Schedule
     from server.models.database.user_db_model import User
     from server.models.database.group_db_model import Group
+    from server.models.database.solicitation_db_model import Solicitation
 
 
 class ClassroomBase(BaseModel):
@@ -46,6 +47,9 @@ class Classroom(ClassroomBase, table=True):
 
     created_by: "User" = Relationship()
     building: "Building" = Relationship(back_populates="classrooms")
+    solicitations: list["Solicitation"] = Relationship(
+        back_populates="solicited_classroom"
+    )
     occurrences: list["Occurrence"] = Relationship(back_populates="classroom")
     schedules: list["Schedule"] = Relationship(back_populates="classroom")
     groups: list["Group"] = Relationship(
