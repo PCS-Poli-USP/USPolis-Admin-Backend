@@ -1,16 +1,17 @@
 """FastAPI server configuration."""
 
-from decouple import config, RepositoryEnv, Config as DConfig, Csv  # type: ignore [import-untyped]
+from decouple import config, RepositoryEnv, Config as DConfig, Csv  # type: ignore
 from pydantic import BaseModel
 
 # Mapeamento dos arquivos por ambiente
 env_files = {
     "DEVELOPMENT": ".env.dev",
     "PRODUCTION": ".env.prod",
+    "STAGING": ".env.stage",
 }
 
 base_config = DConfig(RepositoryEnv(".env"))
-env = base_config("ENVIRONMENT", default="DEVELOPMENT", cast=str).upper()  # type: ignore
+env = base_config("ENVIRONMENT", default="DEVELOPMENT", cast=str).upper()  # pyright: ignore[reportAttributeAccessIssue]
 env_path = env_files.get(env, ".env.dev")
 config = DConfig(RepositoryEnv(env_path))  # noqa: F811
 
@@ -18,44 +19,44 @@ config = DConfig(RepositoryEnv(env_path))  # noqa: F811
 class Settings(BaseModel):
     """Server config settings."""
 
-    enviroment: str = config("ENVIRONMENT", default="DEVELOPMENT", cast=str)  # type: ignore
+    environment: str = config("ENVIRONMENT", default="DEVELOPMENT", cast=str)  # pyright: ignore[reportAssignmentType]
     # CORS
     allowed_origins: list[str] = config(
         "ALLOWED_ORIGINS",
         default=["http://localhost:3000", "https://uspolis.com.br"],
         cast=Csv(),
-    )  # type: ignore
+    )  # pyright: ignore[reportAssignmentType]
 
-    root_url: str = config("ROOT_URL", default="http://localhost:8000")  # type: ignore
-    port: str = config("PORT", default="8000")  # type: ignore
-    debug: bool = config("DEBUG", default=False, cast=bool)  # type: ignore
+    root_url: str = config("ROOT_URL", default="http://localhost:8000")  # pyright: ignore[reportAssignmentType]
+    port: str = config("PORT", default="8000")  # pyright: ignore[reportAssignmentType]
+    debug: bool = config("DEBUG", default=False, cast=bool)  # pyright: ignore[reportAssignmentType]
 
     # SQLAlchemy settings
-    db_uri: str = config("DATABASE_URI")  # type: ignore
-    db_database: str = config("DATABASE_NAME")  # type: ignore
-    alembic_url: str = config("ALEMBIC_URL")  # type: ignore
+    db_uri: str = config("DATABASE_URI")  # pyright: ignore[reportAssignmentType]
+    db_database: str = config("DATABASE_NAME")  # pyright: ignore[reportAssignmentType]
+    alembic_url: str = config("ALEMBIC_URL")  # pyright: ignore[reportAssignmentType]
 
-    first_superuser_email: str = config("FIRST_SUPERUSER_EMAIL", "amdmin@uspolis.com")  # type: ignore
-    first_superuser_name: str = config("FIRST_SUPERUSER_NAME", "admin")  # type: ignore
+    first_superuser_email: str = config("FIRST_SUPERUSER_EMAIL", "amdmin@uspolis.com")  # pyright: ignore[reportAssignmentType]
+    first_superuser_name: str = config("FIRST_SUPERUSER_NAME", "admin")  # pyright: ignore[reportAssignmentType]
 
     # Email
-    mail_host: str = config("MAIL_HOST", default="smtp.gmail.com")  # type: ignore
-    mail_address: str = config("MAIL_ADDRESS")  # type: ignore
-    mail_password: str = config("MAIL_PASSWORD")  # type: ignore
-    mail_port: int = config("MAIL_PORT", default=465, cast=int)  # type: ignore
+    mail_host: str = config("MAIL_HOST", default="smtp.gmail.com")  # pyright: ignore[reportAssignmentType]
+    mail_address: str = config("MAIL_ADDRESS")  # pyright: ignore[reportAssignmentType]
+    mail_password: str = config("MAIL_PASSWORD")  # pyright: ignore[reportAssignmentType]
+    mail_port: int = config("MAIL_PORT", default=465, cast=int)  # pyright: ignore[reportAssignmentType]
 
     # GOOGLE AUTH
-    google_auth_client_id: str = config("GOOGLE_AUTH_CLIENT_ID")  # type: ignore
-    google_auth_client_secret: str = config("GOOGLE_AUTH_CLIENT_SECRET")  # type: ignore
-    google_auth_redirect_uri: str = config("GOOGLE_AUTH_REDIRECT_URI")  # type: ignore
+    google_auth_client_id: str = config("GOOGLE_AUTH_CLIENT_ID")  # pyright: ignore[reportAssignmentType]
+    google_auth_client_secret: str = config("GOOGLE_AUTH_CLIENT_SECRET")  # pyright: ignore[reportAssignmentType]
+    google_auth_redirect_uri: str = config("GOOGLE_AUTH_REDIRECT_URI")  # pyright: ignore[reportAssignmentType]
 
     # Testing / Development:
-    test_db_uri: str = config("TEST_DATABASE_URI", default="")  # type: ignore
-    test_db_database: str = config("TEST_DATABASE_NAME", default="")  # type: ignore
-    test_alembic_url: str = config("TEST_ALEMBIC_URL", default="")  # type: ignore
+    test_db_uri: str = config("TEST_DATABASE_URI", default="")  # pyright: ignore[reportAssignmentType]
+    test_db_database: str = config("TEST_DATABASE_NAME", default="")  # pyright: ignore[reportAssignmentType]
+    test_alembic_url: str = config("TEST_ALEMBIC_URL", default="")  # pyright: ignore[reportAssignmentType]
     testing: bool = config("TESTING", default=False, cast=bool)
     override_auth: bool = config("OVERRIDE_AUTH", default=False, cast=bool)
-    mock_email: str = config("MOCK_EMAIL", default="uspolis@usp.br")  # type: ignore
+    mock_email: str = config("MOCK_EMAIL", default="uspolis@usp.br")  # pyright: ignore[reportAssignmentType]
 
 
 CONFIG = Settings()

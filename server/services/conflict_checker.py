@@ -433,7 +433,7 @@ class ConflictChecker:
                 groups.remove(other_group)
         else:
             if curr_group is None:
-                curr_group = {occurrence, other_occurrence}  # type: ignore
+                curr_group = {occurrence, other_occurrence}  # pyright: ignore[reportUnhashable]
                 occurrence_group_map[occurrence] = curr_group
                 occurrence_group_map[other_occurrence] = curr_group
                 groups.append(curr_group)
