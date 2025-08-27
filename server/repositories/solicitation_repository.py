@@ -13,6 +13,8 @@ from server.models.http.requests.solicitation_request_models import (
 )
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.classroom_repository import ClassroomRepository
+
+from server.repositories.occurrence_repository import OccurrenceRepository
 from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.solicitation_status import SolicitationStatus
 from server.utils.must_be_int import must_be_int
@@ -89,6 +91,8 @@ class SolicitationRepository:
     def create(
         requester: User, input: SolicitationRegister, session: Session
     ) -> Solicitation:
+        from server.repositories.reservation_repository import ReservationRepository
+
         building = BuildingRepository.get_by_id(id=input.building_id, session=session)
         classroom = None
         classroom = ClassroomRepository.get_by_id(
@@ -96,32 +100,46 @@ class SolicitationRepository:
         )
         if not classroom.reservable:
             raise ClassroomNotReservable(f"A sala {classroom.name} não é reservável.")
-        solicitation = Solicitation(
-            classroom_id=must_be_int(classroom.id) if classroom else None,
+        reservation = ReservationRepository.create(
+            creator=requester,
+            input=input.reservation_data,
             classroom=classroom,
+            session=session,
+            allocate=False,
+        )
+        solicitation = Solicitation(
             required_classroom=input.required_classroom,
             building_id=must_be_int(building.id),
             building=building,
             user_id=must_be_int(requester.id),
             user=requester,
-            dates=input.dates,
-            reason=input.reason,
-            reservation_id=None,
-            reservation_title=input.reservation_title,
-            reservation_type=input.reservation_type,
-            start_time=input.start_time,
-            end_time=input.end_time,
+            reservation=reservation,
             capacity=input.capacity,
             status=SolicitationStatus.PENDING,
-        )
+        )  # pyright: ignore[reportCallIssue]
         session.add(solicitation)
         return solicitation
 
     @staticmethod
-    def approve(id: int, user: User, session: Session) -> Solicitation:
+    def approve(
+        id: int, classroom_id: int, user: User, session: Session
+    ) -> Solicitation:
         solicitation = SolicitationRepository.get_by_id(id=id, session=session)
+        if solicitation.status != SolicitationStatus.PENDING:
+            raise SolicitationAlreadyClosed(
+                SolicitationStatus.get_status_detail(solicitation.status)
+            )
         SolicitationRepository.approve_solicitation_obj(
             solicitation=solicitation, user=user, session=session
+        )
+        classroom = solicitation.reservation.classroom
+        if classroom_id != classroom.id:
+            classroom = ClassroomRepository.get_by_id(id=classroom_id, session=session)
+        OccurrenceRepository.allocate_schedule(
+            user=user,
+            schedule=solicitation.reservation.schedule,
+            classroom=classroom,
+            session=session,
         )
         return solicitation
 
@@ -170,6 +188,14 @@ class SolicitationPermissionDenied(HTTPException):
     def __init__(self, detail: str) -> None:
         super().__init__(
             status_code=status.HTTP_403_FORBIDDEN,
+            detail=detail,
+        )
+
+
+class SolicitationAlreadyClosed(HTTPException):
+    def __init__(self, detail: str) -> None:
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=detail,
         )
 
