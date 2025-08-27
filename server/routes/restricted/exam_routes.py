@@ -2,8 +2,8 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
 from server.deps.authenticate import UserDep
-from server.deps.session_dep import SessionDep
-from server.models.http.requests.exam_request_models import ExamRegister
+from server.deps.repository_adapters.exam_repository_adapter import ExamRepositoryDep
+from server.models.http.requests.exam_request_models import ExamRegister, ExamUpdate
 
 
 router = APIRouter(prefix="/exams", tags=["Exams"])
@@ -11,6 +11,15 @@ router = APIRouter(prefix="/exams", tags=["Exams"])
 
 @router.post("")
 def create_exam(
-    input: ExamRegister, creator: UserDep, session: SessionDep
+    input: ExamRegister, creator: UserDep, repository: ExamRepositoryDep
 ) -> JSONResponse:
-    return JSONResponse(content={"message": "Hello, World!"})
+    repository.create(creator=creator, input=input)
+    return JSONResponse(content={"message": "Prova criada com sucesso!"})
+
+
+@router.put("/{id}")
+def update_exam(
+    id: int, input: ExamUpdate, repository: ExamRepositoryDep
+) -> JSONResponse:
+    repository.update(id=id, input=input)
+    return JSONResponse(content={"message": "Prova atualizada com sucesso!"})

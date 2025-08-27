@@ -10,11 +10,9 @@ from server.models.http.requests.solicitation_request_models import (
 from server.models.http.responses.solicitation_response_models import (
     SolicitationResponse,
 )
-from server.repositories.classroom_repository import ClassroomRepository
 from server.repositories.solicitation_repository import (
     SolicitationRepository,
 )
-from server.repositories.reservation_repository import ReservationRepository
 from server.services.email.email_service import EmailService
 from server.services.security.solicitation_permission_checker import (
     SolicitationPermissionChecker,
@@ -48,21 +46,8 @@ async def approve_reservation_solicitation(
     checker = SolicitationPermissionChecker(user, session)
     checker.check_permission(solicitation_id)
     solicitation = SolicitationRepository.approve(
-        id=solicitation_id, user=user, session=session
+        id=solicitation_id, classroom_id=input.classroom_id, user=user, session=session
     )
-    classroom = ClassroomRepository.get_by_id(
-        id=input.classroom_id,
-        session=session,
-    )
-    reservation = ReservationRepository.create_by_solicitation(
-        creator=user,
-        input=input,
-        solicitation=solicitation,
-        classroom=classroom,
-        session=session,
-    )
-    solicitation.reservation = reservation
-    solicitation.classroom = classroom
     session.refresh(solicitation)
     session.commit()
     await EmailService.send_solicitation_approved_email(input, solicitation)

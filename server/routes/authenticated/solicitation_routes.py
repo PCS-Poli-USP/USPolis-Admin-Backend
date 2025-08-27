@@ -45,7 +45,7 @@ def get_all_solicitations(
 
 
 @router.get("/pending")
-async def get_pending_classroom_solicitations(
+async def get_pending_solicitations(
     building_ids: OwnedBuildingIdsDep, session: SessionDep
 ) -> list[SolicitationResponse]:
     solicitations = SolicitationRepository.get_pending_by_buildings_ids(
@@ -55,7 +55,7 @@ async def get_pending_classroom_solicitations(
 
 
 @router.patch("/cancel/{solicitation_id}")
-async def cancel_classroom_solicitation(
+async def cancel_solicitation(
     solicitation_id: int, user: UserDep, session: SessionDep
 ) -> JSONResponse:
     """Cancel a class reservation solicitation"""
@@ -72,7 +72,7 @@ async def cancel_classroom_solicitation(
 
 
 @router.post("")
-async def create_classroom_solicitation(
+async def create_solicitation(
     input: SolicitationRegister,
     session: SessionDep,
     user: UserDep,

@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Body, Response
+from fastapi import APIRouter, Body
+from fastapi.responses import JSONResponse
 
 from server.deps.repository_adapters.reservation_repository_adapter import (
     ReservationRepositoryDep,
@@ -11,7 +12,6 @@ from server.models.http.requests.reservation_request_models import (
     ReservationRegister,
     ReservationUpdate,
 )
-from server.models.http.responses.generic_responses import NoContent
 from server.models.http.responses.reservation_response_models import (
     ReservationResponse,
 )
@@ -83,7 +83,7 @@ async def update_reservation(
 @router.delete("/{reservation_id}")
 async def delete_reservation(
     reservation_id: int, repository: ReservationRepositoryDep
-) -> Response:
+) -> JSONResponse:
     """Delete a Reservation by ID"""
     reservation = repository.get_by_id(id=reservation_id)
     if reservation.solicitation:
@@ -91,4 +91,4 @@ async def delete_reservation(
             solicitation=reservation.solicitation,
         )
     repository.delete(id=reservation_id)
-    return NoContent
+    return JSONResponse(content={"message": "Reserva removida com sucesso!"})
