@@ -2,7 +2,7 @@ from typing import Self
 from pydantic import BaseModel
 
 from server.models.database.exam_db_model import Exam
-from server.models.http.responses.class_response_models import ClassResponse
+from server.models.http.responses.class_response_models import ClassResponseBase
 from server.models.http.responses.reservation_response_models import ReservationResponse
 from server.utils.must_be_int import must_be_int
 
@@ -15,7 +15,7 @@ class ExamResponse(BaseModel):
     subject_name: str
 
     reservation: ReservationResponse
-    classes: list[ClassResponse]
+    classes: list[ClassResponseBase]
 
     @classmethod
     def from_exam(cls, exam: Exam) -> Self:
@@ -26,7 +26,7 @@ class ExamResponse(BaseModel):
             subject_code=exam.subject.code,
             subject_name=exam.subject.name,
             reservation=ReservationResponse.from_reservation(exam.reservation),
-            classes=[ClassResponse.from_class(c) for c in exam.classes],
+            classes=[ClassResponseBase.from_class(c) for c in exam.classes],
         )
 
     @classmethod
