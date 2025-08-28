@@ -42,11 +42,12 @@ class SolicitationMailBase(BaseModel):
     def from_solicitation(cls, solicitation: Solicitation) -> Self:
         schedule = solicitation.reservation.schedule
         str_dates = [occ.date.strftime("%d/%m/%Y") for occ in schedule.occurrences]
+        classroom = solicitation.solicited_classroom
         return cls(
             title=solicitation.reservation.title,
             type=ReservationType.to_str(solicitation.reservation.type),
             building=solicitation.building.name,
-            classroom=solicitation.reservation.classroom.name,
+            classroom=classroom.name if classroom else "Não especificada",
             capacity=solicitation.capacity,
             recurrence=schedule.recurrence,
             week_day=schedule.week_day,

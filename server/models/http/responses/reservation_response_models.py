@@ -2,7 +2,6 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from server.models.database.reservation_db_model import Reservation
-from server.models.http.exceptions.responses_exceptions import UnfetchDataError
 
 from server.models.http.responses.schedule_response_models import (
     ScheduleResponse,
@@ -23,8 +22,8 @@ class ReservationResponseBase(BaseModel):
     building_id: int
     building_name: str
 
-    classroom_id: int
-    classroom_name: str
+    classroom_id: int | None
+    classroom_name: str | None
 
     schedule_id: int
 
@@ -37,18 +36,18 @@ class ReservationResponseBase(BaseModel):
 
     @classmethod
     def from_reservation(cls, reservation: Reservation) -> "ReservationResponseBase":
-        if reservation.classroom.building is None:
-            raise UnfetchDataError("Classroom", "Building")
+        classroom = reservation.get_classroom()
+        building = reservation.get_building()
         return cls(
             id=must_be_int(reservation.id),
             title=reservation.title,
             type=reservation.type,
             reason=reservation.reason,
             updated_at=reservation.updated_at,
-            building_id=must_be_int(reservation.classroom.building_id),
-            building_name=reservation.classroom.building.name,
-            classroom_id=must_be_int(reservation.classroom_id),
-            classroom_name=reservation.classroom.name,
+            building_id=must_be_int(building.id),
+            building_name=building.name,
+            classroom_id=must_be_int(classroom.id) if classroom else None,
+            classroom_name=classroom.name if classroom else None,
             schedule_id=must_be_int(reservation.schedule.id),
             created_by_id=must_be_int(reservation.created_by_id),
             created_by=reservation.created_by.name,

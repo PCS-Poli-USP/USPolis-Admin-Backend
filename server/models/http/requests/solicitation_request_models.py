@@ -4,14 +4,27 @@ from server.models.http.requests.event_request_models import EventRegister
 from server.models.http.requests.exam_request_models import ExamRegister
 from server.models.http.requests.meeting_request_models import MeetingRegister
 
-ReservatioData = ExamRegister | MeetingRegister | EventRegister
+
+class ExamSolicitation(ExamRegister):
+    classroom_id: int | None  # type: ignore
+
+
+class MeetingSolicitation(MeetingRegister):
+    classroom_id: int | None  # type: ignore
+
+
+class EventSolicitation(EventRegister):
+    classroom_id: int | None  # type: ignore
+
+
+SolicitationData = ExamSolicitation | MeetingSolicitation | EventSolicitation
 
 
 class SolicitationRegister(BaseModel):
     capacity: int
     required_classroom: bool
     building_id: int
-    reservation_data: ReservatioData
+    reservation_data: SolicitationData
 
 
 class SolicitationApprove(BaseModel):

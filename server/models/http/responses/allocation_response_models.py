@@ -62,11 +62,13 @@ class BaseExtendedData(BaseModel):
 
     @classmethod
     def from_reservation(cls, reservation: Reservation) -> "BaseExtendedData":
+        classroom = reservation.get_classroom()
+        building = reservation.get_building()
         return cls(
             schedule_id=must_be_int(reservation.schedule.id),
-            building=reservation.classroom.building.name,
-            classroom=reservation.classroom.name,
-            classroom_capacity=reservation.classroom.capacity,
+            building=building.name,
+            classroom=classroom.name if classroom else AllocationEnum.UNALLOCATED.value,
+            classroom_capacity=classroom.capacity if classroom else None,
             recurrence=reservation.schedule.recurrence,
             week_day=reservation.schedule.week_day,
             month_week=reservation.schedule.month_week,
