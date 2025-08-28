@@ -95,10 +95,15 @@ class SolicitationRepository:
 
         building = BuildingRepository.get_by_id(id=input.building_id, session=session)
         classroom = None
-        classroom = ClassroomRepository.get_by_id(
-            id=input.reservation_data.classroom_id, session=session
-        )
-        if not classroom.reservable:
+        if input.reservation_data.classroom_id:
+            classroom = ClassroomRepository.get_by_id(
+                id=input.reservation_data.classroom_id, session=session
+            )
+        if classroom and classroom.building != building:
+            raise SolicitationInvalidClassroom(
+                f"Solicitação: A sala {classroom.name} não pertence ao prédio {building.name}."
+            )
+        if classroom and not classroom.reservable:
             raise ClassroomNotReservable(f"A sala {classroom.name} não é reservável.")
         reservation = ReservationRepository.create(
             creator=requester,
@@ -132,9 +137,14 @@ class SolicitationRepository:
         SolicitationRepository.approve_solicitation_obj(
             solicitation=solicitation, user=user, session=session
         )
-        classroom = solicitation.reservation.classroom
-        if classroom_id != classroom.id:
+        classroom = solicitation.reservation.get_classroom()
+        if not classroom or classroom.id != classroom_id:
             classroom = ClassroomRepository.get_by_id(id=classroom_id, session=session)
+
+        if classroom.building_id != solicitation.building_id:
+            raise SolicitationInvalidClassroom(
+                f"Solicitação: A sala {classroom.name} não pertence ao prédio {solicitation.building.name}."
+            )
         OccurrenceRepository.allocate_schedule(
             user=user,
             schedule=solicitation.reservation.schedule,
@@ -193,6 +203,14 @@ class SolicitationPermissionDenied(HTTPException):
 
 
 class SolicitationAlreadyClosed(HTTPException):
+    def __init__(self, detail: str) -> None:
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=detail,
+        )
+
+
+class SolicitationInvalidClassroom(HTTPException):
     def __init__(self, detail: str) -> None:
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,

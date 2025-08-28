@@ -69,12 +69,7 @@ class ScheduleRepository:
     def get_by_id_on_buildings(
         *, schedule_id: int, owned_building_ids: list[int], session: Session
     ) -> Schedule:
-        statement = select(Schedule).where(Schedule.id == schedule_id)
-
-        try:
-            schedule = session.exec(statement).one()
-        except NoResultFound:
-            raise ScheduleNotFound()
+        schedule = ScheduleRepository.get_by_id(id=schedule_id, session=session)
 
         if schedule.class_:
             buildings = schedule.class_.subject.buildings
@@ -82,7 +77,7 @@ class ScheduleRepository:
             if len(set(building_ids).intersection(set(owned_building_ids))) == 0:
                 raise ScheduleNotFound()
         elif schedule.reservation:
-            building = schedule.reservation.classroom.building
+            building = schedule.reservation.get_building()
             if building.id not in owned_building_ids:
                 raise ScheduleNotFound()
 
@@ -164,7 +159,7 @@ class ScheduleRepository:
         user: User,
         reservation: Reservation,
         input: ScheduleRegister,
-        classroom: Classroom,
+        classroom: Classroom | None,
         session: Session,
         allocate: bool = True,
     ) -> Schedule:
@@ -182,12 +177,12 @@ class ScheduleRepository:
             class_=None,
             reservation_id=reservation.id,
             reservation=reservation,
-            classroom_id=classroom.id,
+            classroom_id=classroom.id if classroom else None,
         )
 
         if input.dates and input.recurrence == Recurrence.CUSTOM:
             occurences_input = OccurenceManyRegister(
-                classroom_id=classroom.id if allocate else None,
+                classroom_id=classroom.id if allocate and classroom else None,
                 start_time=input.start_time,
                 end_time=input.end_time,
                 dates=input.dates,
@@ -200,7 +195,7 @@ class ScheduleRepository:
                 new_schedule.allocated = True
             session.add(new_schedule)
         else:
-            if allocate:
+            if allocate and classroom:
                 # schedule is add to sesion here
                 OccurrenceRepository.allocate_schedule(
                     user=user,

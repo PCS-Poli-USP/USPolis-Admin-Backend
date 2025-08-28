@@ -26,9 +26,15 @@ class ExamPermissionChecker(PermissionChecker[Exam]):
         self.__exam_obj_permission_checker(exam)
 
     def __exam_obj_permission_checker(self, exam: Exam) -> None:
-        classroom = exam.reservation.classroom
-        if classroom.id not in self.user.classrooms_ids_set():
-            raise ForbiddenExamAccess("You do not have permission to access this exam.")
+        classroom = exam.reservation.get_classroom()
+        if classroom and classroom.id not in self.user.classrooms_ids_set():
+            raise ForbiddenExamAccess("Vocẽ não tem permissão para acessar esta prova.")
+        if not classroom:
+            building = exam.reservation.get_building()
+            if building.id not in self.user.buildings_ids_set():
+                raise ForbiddenExamAccess(
+                    "Vocẽ não tem permissão para acessar esta prova."
+                )
 
     def __exam_list_permission_checker(self, exams: list[int] | list[Exam]) -> None:
         for exam in exams:

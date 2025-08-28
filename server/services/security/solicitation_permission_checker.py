@@ -43,11 +43,19 @@ class SolicitationPermissionChecker(PermissionChecker[Solicitation]):
         self,
         solicitation: Solicitation,
     ) -> None:
+        classroom = solicitation.reservation.get_classroom()
         user_classrooms_ids = self.user.classrooms_ids_set()
-        if solicitation.reservation.classroom_id not in user_classrooms_ids:
+        if classroom and classroom.id not in user_classrooms_ids:
             raise ForbiddenSolicitationAccess(
                 f"Usuário não tem permissão para acessar a solicitação de sala {solicitation.reservation.title}"
             )
+        if not classroom:
+            building = solicitation.building
+            user_buildings_ids = self.user.buildings_ids_set()
+            if building and building.id not in user_buildings_ids:
+                raise ForbiddenSolicitationAccess(
+                    f"Usuário não tem permissão para acessar a solicitação de sala {solicitation.reservation.title}"
+                )
 
     def __solicitation_list_permission_checker(
         self,

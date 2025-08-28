@@ -13,6 +13,9 @@ from server.models.http.requests.reservation_request_models import (
 )
 from server.repositories.classroom_repository import ClassroomRepository
 from server.repositories.reservation_repository import ReservationRepository
+from server.services.security.buildings_permission_checker import (
+    BuildingPermissionChecker,
+)
 from server.services.security.classrooms_permission_checker import (
     ClassroomPermissionChecker,
 )
@@ -32,6 +35,7 @@ class ReservationRespositoryAdapter:
         self.user = user
         self.owned_building_ids = owned_building_ids
         self.checker = ClassroomPermissionChecker(user=user, session=session)
+        self.building_checker = BuildingPermissionChecker(user=user, session=session)
 
     def get_all(self) -> list[Reservation]:
         """Get all reservations for authenticated user on owned buildings"""
@@ -47,10 +51,15 @@ class ReservationRespositoryAdapter:
 
     def get_by_id(self, id: int) -> Reservation:
         """Get a reservation by id, checking if the user has permission to access it.
-        - If the user is not an admin, check if they have permission on the classroom of reservation.
+        - If the reservation has a classroom, check if the user has permission on it.
+        - Otherwise check if the user has permission on the building.
         """
         reservation = ReservationRepository.get_by_id(id=id, session=self.session)
-        self.checker.check_permission(reservation.classroom)
+        classroom = reservation.get_classroom()
+        if classroom:
+            self.checker.check_permission(classroom)
+        if not classroom:
+            self.building_checker.check_permission(reservation.get_building())
         return reservation
 
     def create(

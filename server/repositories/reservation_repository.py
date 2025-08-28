@@ -62,11 +62,11 @@ class ReservationRepository:
         )
         statement = (
             statement.join(
-                Classroom, col(Reservation.classroom_id) == col(Classroom.id)
+                Schedule, col(Schedule.reservation_id) == col(Reservation.id)
             )
+            .join(Classroom, col(Schedule.classroom_id) == col(Classroom.id))
             .join(Building, col(Classroom.building_id) == col(Building.id))
             .where(col(Building.id).in_(building_ids))
-            .distinct()
         )
         reservations = list(session.exec(statement).all())
         return reservations
@@ -75,8 +75,10 @@ class ReservationRepository:
     def get_all_on_classrooms(
         *, classroom_ids: list[int], session: Session, interval: QueryInterval
     ) -> list[Reservation]:
-        statement = select(Reservation).where(
-            col(Reservation.classroom_id).in_(classroom_ids)
+        statement = (
+            select(Reservation)
+            .join(Schedule, col(Schedule.reservation_id) == col(Reservation.id))
+            .join(Classroom, col(Classroom.id).in_(classroom_ids))
         )
         statement = ReservationRepository.__apply_interval_filter(
             statement=statement, interval=interval
@@ -114,8 +116,13 @@ class ReservationRepository:
     def get_by_id_on_classrooms(
         *, id: int, classroom_ids: list[int], session: Session
     ) -> Reservation:
-        statement = select(Reservation).where(
-            col(Reservation.id) == id, col(Reservation.classroom_id).in_(classroom_ids)
+        statement = (
+            select(Reservation)
+            .join(Schedule, col(Schedule.reservation_id) == col(Reservation.id))
+            .join(Classroom, col(Classroom.id) == col(Schedule.classroom_id))
+            .where(
+                col(Classroom.id).in_(classroom_ids),
+            )
         )
         try:
             reservation = session.exec(statement).one()
@@ -128,7 +135,7 @@ class ReservationRepository:
         *,
         creator: User,
         input: ReservationRegister,
-        classroom: Classroom,
+        classroom: Classroom | None,
         session: Session,
         allocate: bool = True,
     ) -> Reservation:
@@ -137,8 +144,6 @@ class ReservationRepository:
             type=input.type,
             reason=input.reason,
             updated_at=BrazilDatetime.now_utc(),
-            classroom_id=must_be_int(classroom.id),
-            classroom=classroom,
             created_by_id=must_be_int(creator.id),
             created_by=creator,
         )
