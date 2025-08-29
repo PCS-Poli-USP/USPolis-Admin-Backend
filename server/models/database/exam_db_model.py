@@ -10,8 +10,10 @@ class Exam(BaseModel, table=True):
     reservation_id: int = Field(foreign_key="reservation.id")
     subject_id: int = Field(foreign_key="subject.id")
 
-    reservation: Reservation = Relationship(back_populates="exam")
-    subject: Subject = Relationship()
+    reservation: Reservation = Relationship(
+        back_populates="exam", sa_relationship_kwargs={"cascade": "delete"}
+    )
+    subject: Subject = Relationship(back_populates="exams")
     classes: list[Class] = Relationship(
         back_populates="exams", link_model=ExamClassLink
     )

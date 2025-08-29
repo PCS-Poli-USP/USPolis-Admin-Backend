@@ -17,6 +17,16 @@ class ExamRepository:
         return list(session.exec(statement).all())
 
     @staticmethod
+    def get_all_by_subject_id(*, subject_id: int, session: Session) -> list[Exam]:
+        subject = SubjectRepository.get_by_id(id=subject_id, session=session)
+        return subject.exams
+
+    @staticmethod
+    def get_all_by_class_id(*, class_id: int, session: Session) -> list[Exam]:
+        class_ = ClassRepository.get_by_id(id=class_id, session=session)
+        return class_.exams
+
+    @staticmethod
     def get_by_id(*, id: int, session: Session) -> Exam:
         statement = select(Exam).where(Exam.id == id)
         exam = session.exec(statement).first()

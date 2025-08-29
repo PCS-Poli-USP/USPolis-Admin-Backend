@@ -42,7 +42,7 @@ class Reservation(BaseModel, table=True):
     )
     created_by: "User" = Relationship(back_populates="reservations")
     solicitation: Optional["Solicitation"] = Relationship(
-        back_populates="reservation",
+        back_populates="reservation", sa_relationship_kwargs={"cascade": "delete"}
     )
     exam: Optional["Exam"] = Relationship(
         back_populates="reservation", sa_relationship_kwargs={"cascade": "delete"}
