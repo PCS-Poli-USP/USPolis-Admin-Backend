@@ -5,6 +5,7 @@ from server.models.database.classroom_db_model import Classroom
 from server.models.database.exam_class_link import ExamClassLink
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.schedule_db_model import Schedule
+from server.models.database.solicitation_db_model import Solicitation
 from server.models.database.subject_db_model import Subject
 
 
@@ -22,7 +23,7 @@ class Exam(BaseModel, table=True):
 
     def get_classroom(self) -> Classroom | None:
         """
-        Get the classroom associated with the exam.
+        Get the classroom associated with the exam if exists.
         """
         return self.reservation.schedule.classroom
 
@@ -31,3 +32,9 @@ class Exam(BaseModel, table=True):
         Get the schedule associated with the exam.
         """
         return self.reservation.schedule
+
+    def get_solicitation(self) -> Solicitation | None:
+        """
+        Get the solicitation associated with the exam if exists.
+        """
+        return self.reservation.solicitation

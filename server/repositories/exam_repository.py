@@ -5,7 +5,6 @@ from server.models.database.user_db_model import User
 from server.models.http.requests.exam_request_models import ExamRegister, ExamUpdate
 from server.repositories.class_repository import ClassRepository
 from server.repositories.classroom_repository import ClassroomRepository
-from server.repositories.occurrence_repository import OccurrenceRepository
 from server.repositories.reservation_repository import ReservationRepository
 from server.repositories.subject_repository import SubjectRepository
 from server.utils.must_be_int import must_be_int
@@ -85,9 +84,15 @@ class ExamRepository:
         return exam
 
     @staticmethod
-    def delete(*, id: int, session: Session) -> None:
+    def delete(*, id: int, user: User, session: Session) -> None:
         exam = ExamRepository.get_by_id(id=id, session=session)
-        session.delete(exam)
+        solicitation = exam.get_solicitation()
+        if solicitation:
+            ReservationRepository.delete(
+                id=exam.reservation_id, user=user, session=session
+            )
+        if not solicitation:
+            session.delete(exam)
 
 
 class ExamInvalidClassAndSubject(HTTPException):
@@ -102,5 +107,5 @@ class ExamNotFound(HTTPException):
     def __init__(self) -> None:
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Exame não encontrado",
+            detail="Prova não encontrada",
         )
