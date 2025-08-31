@@ -4,11 +4,15 @@ from server.models.database.exam_db_model import Exam
 from server.models.database.user_db_model import User
 from server.repositories.exam_repository import ExamRepository
 from server.services.security.base_permission_checker import PermissionChecker
+from server.services.security.reservation_permission_checker import (
+    ReservationPermissionChecker,
+)
 
 
 class ExamPermissionChecker(PermissionChecker[Exam]):
     def __init__(self, user: User, session: Session) -> None:
         super().__init__(user=user, session=session)
+        self.reservation_checker = ReservationPermissionChecker(self.user, self.session)
 
     def check_permission(self, object: int | Exam | list[int] | list[Exam]) -> None:
         if self.user.is_admin:
@@ -23,18 +27,10 @@ class ExamPermissionChecker(PermissionChecker[Exam]):
 
     def __exam_id_permission_checker(self, exam_id: int) -> None:
         exam = ExamRepository.get_by_id(id=exam_id, session=self.session)
-        self.__exam_obj_permission_checker(exam)
+        self.reservation_checker.check_permission(exam.reservation)
 
     def __exam_obj_permission_checker(self, exam: Exam) -> None:
-        classroom = exam.reservation.get_classroom()
-        if classroom and classroom.id not in self.user.classrooms_ids_set():
-            raise ForbiddenExamAccess("Vocẽ não tem permissão para acessar esta prova.")
-        if not classroom:
-            building = exam.reservation.get_building()
-            if building.id not in self.user.buildings_ids_set():
-                raise ForbiddenExamAccess(
-                    "Vocẽ não tem permissão para acessar esta prova."
-                )
+        self.reservation_checker.check_permission(exam.reservation)
 
     def __exam_list_permission_checker(self, exams: list[int] | list[Exam]) -> None:
         for exam in exams:

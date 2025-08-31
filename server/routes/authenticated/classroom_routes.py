@@ -1,4 +1,3 @@
-from datetime import date, time
 from typing import Annotated
 from fastapi import APIRouter, Body, Query
 
@@ -13,6 +12,7 @@ from server.models.http.responses.classroom_response_models import (
     ClassroomFullResponse,
 )
 from server.repositories.classroom_repository import ClassroomRepository
+from server.services.conflict_checker import ConflictParams
 
 embed = Body(..., embed=True)
 
@@ -38,7 +38,7 @@ def get_classroom_full(id: int, session: SessionDep) -> ClassroomFullResponse:
 
 
 @router.get("/with-conflict-count/{building_id}/{schedule_id}")
-def get_classrooms_with_conflicts_count(
+def get_classrooms_with_conflicts_count_for_schedule(
     building_id: int,
     schedule_id: int,
     conflict_checker: ConflictCheckerDep,
@@ -50,19 +50,12 @@ def get_classrooms_with_conflicts_count(
 
 
 @router.get("/with-conflict-count/{building_id}")
-def get_classroom_with_conflicts_count_for_time(
+def get_classroom_with_conflicts_count(
     building_id: int,
-    start_time: time,
-    end_time: time,
-    dates: Annotated[list[date], Query()],
+    params: Annotated[ConflictParams, Query()],
     conflict_checker: ConflictCheckerDep,
 ) -> list[ClassroomWithConflictsIndicator]:
-    classrooms = (
-        conflict_checker.classrooms_with_conflicts_indicator_for_time_and_dates(
-            building_id,
-            start_time,
-            end_time,
-            dates,
-        )
+    classrooms = conflict_checker.classrooms_with_conflicts_indicator(
+        building_id, params
     )
     return classrooms
