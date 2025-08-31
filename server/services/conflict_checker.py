@@ -1,8 +1,10 @@
 from datetime import date, time
 
 from collections import defaultdict
+from typing import Self
 
-from pydantic import BaseModel
+from fastapi import HTTPException, status
+from pydantic import BaseModel, model_validator
 
 from server.deps.authenticate import UserDep
 from server.deps.repository_adapters.building_repository_adapter import (
@@ -29,6 +31,9 @@ from server.repositories.intentional_conflict_repository import (
 )
 from server.repositories.occurrence_repository import OccurrenceRepository
 from server.utils.enums.confict_enum import ConflictType
+from server.utils.enums.month_week import MonthWeek
+from server.utils.enums.recurrence import Recurrence
+from server.utils.enums.week_day import WeekDay
 from server.utils.must_be_int import must_be_int
 from server.utils.occurrence_utils import OccurrenceUtils
 
@@ -85,6 +90,62 @@ class BuildingConflictSpecification(BaseModel):
     conflicts: list
 
 
+class ConflictParams(BaseModel):
+    start_time: time
+    end_time: time
+    recurrence: Recurrence
+    dates: list[date] = []
+    start_date: date | None = None
+    end_date: date | None = None
+    week_day: WeekDay | None = None
+    month_week: MonthWeek | None = None
+
+    @model_validator(mode="after")
+    def validate_body(self) -> Self:
+        if self.recurrence != Recurrence.CUSTOM:
+            if self.dates:
+                raise InvalidConflictParams(
+                    "Datas NÃO devem ser fornecidas para essa recorrência"
+                )
+
+            if not self.start_date or not self.end_date:
+                raise InvalidConflictParams("Data de início e fim DEVEM ser fornecidas")
+
+            if self.recurrence == Recurrence.DAILY and self.week_day:
+                raise InvalidConflictParams(
+                    "Dia da semana NÃO deve ser fornecida para essa recorrência"
+                )
+
+            if not self.week_day:
+                raise InvalidConflictParams(
+                    "Dia da semana DEVE ser fornecida para essa recorrência"
+                )
+
+            if (
+                self.recurrence == Recurrence.WEEKLY
+                or self.recurrence == Recurrence.BIWEEKLY
+            ) and self.month_week:
+                raise InvalidConflictParams(
+                    "Semana do mês NÃO deve ser fornecida para essa recorrência"
+                )
+
+            if self.recurrence == Recurrence.MONTHLY and not self.month_week:
+                raise InvalidConflictParams(
+                    "Semana do mês DEVE ser fornecida para essa recorrência"
+                )
+
+        if self.recurrence == Recurrence.CUSTOM and not self.dates:
+            raise InvalidConflictParams(
+                "Datas DEVEM ser fornecidas para essa recorrência"
+            )
+        return self
+
+
+class InvalidConflictParams(HTTPException):
+    def __init__(self, detail: str) -> None:
+        super().__init__(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)
+
+
 class ConflictChecker:
     def __init__(
         self,
@@ -125,22 +186,28 @@ class ConflictChecker:
 
         return classrooms_with_conflicts
 
-    def classrooms_with_conflicts_indicator_for_time_and_dates(
+    def classrooms_with_conflicts_indicator(
         self,
         building_id: int,
-        start_time: time,
-        end_time: time,
-        dates: list[date],
+        params: ConflictParams,
     ) -> list[ClassroomWithConflictsIndicator]:
         classrooms = ClassroomRepository.get_all_on_buildings(
             building_ids=[building_id], session=self.session
         )
-
+        dates = params.dates
+        if params.recurrence != Recurrence.CUSTOM:
+            dates = OccurrenceUtils._dates_for_recurrence(
+                week_day=params.week_day.value if params.week_day else -1,
+                recurrence=params.recurrence,
+                start_date=params.start_date,  # type: ignore
+                end_date=params.end_date,  # type: ignore
+                month_week=params.month_week.value if params.month_week else None,
+            )
         classrooms_with_conflicts: list[ClassroomWithConflictsIndicator] = []
         for classroom in classrooms:
             count = self.__count_conflicts_time_in_classroom_in_dates(
-                start_time,
-                end_time,
+                params.start_time,
+                params.end_time,
                 dates,
                 classroom,
             )
@@ -435,7 +502,7 @@ class ConflictChecker:
                 groups.remove(other_group)
         else:
             if curr_group is None:
-                curr_group = {occurrence, other_occurrence}  # type: ignore
+                curr_group = {occurrence, other_occurrence}  # pyright: ignore[reportUnhashable]
                 occurrence_group_map[occurrence] = curr_group
                 occurrence_group_map[other_occurrence] = curr_group
                 groups.append(curr_group)
