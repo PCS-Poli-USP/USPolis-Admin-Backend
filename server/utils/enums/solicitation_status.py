@@ -22,9 +22,9 @@ class SolicitationStatus(str, Enum):
     def get_status_detail(status: "SolicitationStatus") -> str:
         status_details = {
             SolicitationStatus.PENDING: "A solicitação está pendente.",
-            SolicitationStatus.APPROVED: "A solicitação foi aprovada.",
-            SolicitationStatus.DENIED: "A solicitação foi negada.",
-            SolicitationStatus.CANCELLED: "A solicitação foi cancelada.",
-            SolicitationStatus.DELETED: "A solicitação foi excluída.",
+            SolicitationStatus.APPROVED: "A solicitação está aprovada.",
+            SolicitationStatus.DENIED: "A solicitação está negada.",
+            SolicitationStatus.CANCELLED: "A solicitação está cancelada.",
+            SolicitationStatus.DELETED: "A solicitação está excluída.",
         }
         return status_details.get(status, "Status desconhecido.")
