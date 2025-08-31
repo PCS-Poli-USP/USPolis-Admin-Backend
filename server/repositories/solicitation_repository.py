@@ -166,6 +166,10 @@ class SolicitationRepository:
     @staticmethod
     def deny(id: int, user: User, session: Session) -> Solicitation:
         solicitation = SolicitationRepository.get_by_id(id=id, session=session)
+        if solicitation.status != SolicitationStatus.PENDING:
+            raise SolicitationAlreadyClosed(
+                SolicitationStatus.get_status_detail(solicitation.status)
+            )
         solicitation.status = SolicitationStatus.DENIED
         solicitation.closed_by = user.name
         solicitation.updated_at = BrazilDatetime.now_utc()
