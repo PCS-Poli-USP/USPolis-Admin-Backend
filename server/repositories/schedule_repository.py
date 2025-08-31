@@ -256,7 +256,15 @@ class ScheduleRepository:
     ) -> Schedule:
         old_schedule = reservation.schedule
 
+        should_reallocate = False
+        if not old_schedule.classroom:
+            should_reallocate = True
+        if old_schedule.classroom and classroom.id != old_schedule.classroom.id:
+            should_reallocate = True
         if ScheduleUtils.has_schedule_diff(old_schedule, input):
+            should_reallocate = True
+
+        if should_reallocate:
             session.delete(old_schedule)
             new_schedule = ScheduleRepository.create_with_reservation(
                 user=user,

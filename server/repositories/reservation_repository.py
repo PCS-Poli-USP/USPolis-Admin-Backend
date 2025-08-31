@@ -160,23 +160,20 @@ class ReservationRepository:
         return reservation
 
     @staticmethod
-    def update_on_classrooms(
+    def update(
         *,
         id: int,
-        classroom_ids: list[int],
         input: ReservationUpdate,
         classroom: Classroom,
         user: User,
         session: Session,
     ) -> Reservation:
-        reservation = ReservationRepository.get_by_id_on_classrooms(
-            id=id, classroom_ids=classroom_ids, session=session
-        )
+        reservation = ReservationRepository.get_by_id(id=id, session=session)
         reservation.title = input.title
         reservation.type = input.type
         reservation.reason = input.reason
         reservation.classroom = classroom
-
+        
         ScheduleRepository.update_reservation_schedule(
             user=user,
             reservation=reservation,
@@ -188,12 +185,8 @@ class ReservationRepository:
         return reservation
 
     @staticmethod
-    def delete_on_buildings(
-        *, id: int, building_ids: list[int], user: User, session: Session
-    ) -> None:
-        reservation = ReservationRepository.get_by_id_on_buildings(
-            id=id, building_ids=building_ids, session=session
-        )
+    def delete(*, id: int, user: User, session: Session) -> None:
+        reservation = ReservationRepository.get_by_id(id=id, session=session)
         if reservation.solicitation:
             solicitation = SolicitationRepository.get_by_id(
                 id=must_be_int(reservation.solicitation.id), session=session

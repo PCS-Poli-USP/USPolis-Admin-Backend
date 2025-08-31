@@ -89,9 +89,8 @@ class ReservationRespositoryAdapter:
             id=input.classroom_id, session=self.session
         )
         self.checker.check_permission(must_be_int(classroom.id))
-        reservation = ReservationRepository.update_on_classrooms(
+        reservation = ReservationRepository.update(
             id=id,
-            classroom_ids=self.user.classrooms_ids(),
             input=input,
             classroom=classroom,
             user=self.user,
@@ -102,9 +101,14 @@ class ReservationRespositoryAdapter:
         return reservation
 
     def delete(self, id: int) -> None:
-        ReservationRepository.delete_on_buildings(
+        reservation = ReservationRepository.get_by_id(id=id, session=self.session)
+        classroom = reservation.get_classroom()
+        if not classroom:
+            self.building_checker.check_permission(reservation.get_building())
+        if classroom:
+            self.checker.check_permission(classroom)
+        ReservationRepository.delete(
             id=id,
-            building_ids=self.owned_building_ids,
             user=self.user,
             session=self.session,
         )
