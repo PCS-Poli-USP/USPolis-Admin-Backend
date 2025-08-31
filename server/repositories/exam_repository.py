@@ -5,6 +5,7 @@ from server.models.database.user_db_model import User
 from server.models.http.requests.exam_request_models import ExamRegister, ExamUpdate
 from server.repositories.class_repository import ClassRepository
 from server.repositories.classroom_repository import ClassroomRepository
+from server.repositories.occurrence_repository import OccurrenceRepository
 from server.repositories.reservation_repository import ReservationRepository
 from server.repositories.subject_repository import SubjectRepository
 from server.utils.must_be_int import must_be_int
@@ -58,8 +59,18 @@ class ExamRepository:
         return exam
 
     @staticmethod
-    def update(*, id: int, input: ExamUpdate, session: Session) -> Exam:
+    def update(*, user: User, id: int, input: ExamUpdate, session: Session) -> Exam:
         exam = ExamRepository.get_by_id(id=id, session=session)
+        classroom = ClassroomRepository.get_by_id(
+            id=input.classroom_id, session=session
+        )
+        ReservationRepository.update(
+            id=exam.reservation_id,
+            input=input,
+            classroom=classroom,
+            user=user,
+            session=session,
+        )  # pyright: ignore[reportArgumentType]
 
         subject = SubjectRepository.get_by_id(id=input.subject_id, session=session)
         classes = ClassRepository.get_by_ids(ids=input.class_ids, session=session)

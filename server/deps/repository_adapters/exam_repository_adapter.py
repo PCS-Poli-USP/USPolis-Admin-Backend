@@ -41,7 +41,9 @@ class ExamRepositoryAdapter:
             id=input.classroom_id, session=self.session
         )
         self.classroom_checker.check_permission(classroom)
-        exam = ExamRepository.update(id=id, input=input, session=self.session)
+        exam = ExamRepository.update(
+            user=self.user, id=id, input=input, session=self.session
+        )
         self.session.commit()
         self.session.refresh(exam)
         return exam
