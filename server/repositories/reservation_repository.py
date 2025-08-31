@@ -173,7 +173,7 @@ class ReservationRepository:
         reservation.type = input.type
         reservation.reason = input.reason
         reservation.classroom = classroom
-        
+
         ScheduleRepository.update_reservation_schedule(
             user=user,
             reservation=reservation,
@@ -181,6 +181,12 @@ class ReservationRepository:
             classroom=classroom,
             session=session,
         )
+
+        solicitation = reservation.solicitation
+        if solicitation:
+            solicitation.updated_at = BrazilDatetime.now_utc()
+            session.add(solicitation)
+
         session.add(reservation)
         return reservation
 
@@ -188,9 +194,11 @@ class ReservationRepository:
     def delete(*, id: int, user: User, session: Session) -> None:
         reservation = ReservationRepository.get_by_id(id=id, session=session)
         if reservation.solicitation:
-            solicitation = SolicitationRepository.get_by_id(
-                id=must_be_int(reservation.solicitation.id), session=session
-            )
+            solicitation = reservation.solicitation
+            if solicitation.status == SolicitationStatus.DELETED:
+                raise ReservationWithDeletedSolicitation()
+            
+            solicitation.updated_at = BrazilDatetime.now_utc()
             solicitation.closed = True
             solicitation.closed_by = user.name
             solicitation.deleted = True
@@ -208,13 +216,21 @@ class ReservationNotFound(HTTPException):
     def __init__(self, id: int):
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Reservation with id {id} not found",
+            detail=f"Reserva com id {id} não encontrada",
         )
 
 
-class ReservationWithInvalidSolicitation(HTTPException):
+class ReservationAlreadyDeleted(HTTPException):
     def __init__(self) -> None:
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="A solicitação vinculada já possui uma reserva diferente da atual",
+            detail="A reserva já está excluída",
+        )
+
+
+class ReservationWithDeletedSolicitation(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A reserva vem de uma solicitação excluída",
         )
