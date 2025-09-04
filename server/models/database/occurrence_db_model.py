@@ -9,6 +9,7 @@ from server.models.database.base_db_model import BaseModel
 if TYPE_CHECKING:
     from server.models.database.classroom_db_model import Classroom
     from server.models.database.schedule_db_model import Schedule
+    from server.models.database.occurrence_label_db_model import OccurrenceLabel
 
 
 class Occurrence(BaseModel, table=True):
@@ -23,6 +24,9 @@ class Occurrence(BaseModel, table=True):
 
     schedule_id: int = Field(default=None, index=True, foreign_key="schedule.id")
     schedule: "Schedule" = Relationship(back_populates="occurrences")
+    label: Optional["OccurrenceLabel"] = Relationship(
+        back_populates="occurrence", sa_relationship_kwargs={"cascade": "all, delete"}
+    )
 
     def conflicts_with(self, other: "Occurrence") -> bool:
         return (
