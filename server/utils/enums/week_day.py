@@ -1,7 +1,7 @@
-from enum import IntEnum
+from enum import Enum
 
 
-class WeekDay(IntEnum):
+class WeekDay(Enum):
     MONDAY = 0
     TUESDAY = 1
     WEDNESDAY = 2

@@ -6,7 +6,7 @@ from server.deps.repository_adapters.exam_repository_adapter import ExamReposito
 from server.models.http.requests.exam_request_models import ExamRegister, ExamUpdate
 
 
-router = APIRouter(prefix="/exams", tags=["Exams"])
+router = APIRouter(prefix="/exams", tags=["Reservations", "Exams"])
 
 
 @router.post("")

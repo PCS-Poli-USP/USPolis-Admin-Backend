@@ -49,11 +49,10 @@ class ExamRepository:
             creator=creator, input=input, classroom=classroom, session=session
         )
         exam = Exam(
-            reservation_id=reservation.id,  # pyright: ignore[reportArgumentType]
             reservation=reservation,
             subject_id=must_be_int(subject.id),
             classes=classes,
-        )
+        ) # pyright: ignore[reportCallIssue]
         session.add(exam)
         return exam
 

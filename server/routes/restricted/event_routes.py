@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
 
-router = APIRouter(prefix="/events", tags=["Events"])
+router = APIRouter(prefix="/events", tags=["Reservations", "Events"])
 
 

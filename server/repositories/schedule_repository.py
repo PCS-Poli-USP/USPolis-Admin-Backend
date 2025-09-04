@@ -179,6 +179,7 @@ class ScheduleRepository:
             reservation=reservation,
             classroom_id=classroom.id if classroom else None,
         )
+        session.add(new_schedule)
 
         if input.dates and input.recurrence == Recurrence.CUSTOM:
             occurences_input = OccurenceManyRegister(
@@ -193,7 +194,6 @@ class ScheduleRepository:
             new_schedule.occurrences = occurences
             if allocate:
                 new_schedule.allocated = True
-            session.add(new_schedule)
         else:
             if allocate and classroom:
                 # schedule is add to sesion here
@@ -203,8 +203,6 @@ class ScheduleRepository:
                     classroom=classroom,
                     session=session,
                 )
-            else:
-                session.add(new_schedule)
         return new_schedule
 
     @staticmethod

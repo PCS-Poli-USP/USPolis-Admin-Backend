@@ -38,6 +38,7 @@ class ReservationResponseBase(BaseModel):
     def from_reservation(cls, reservation: Reservation) -> "ReservationResponseBase":
         classroom = reservation.get_classroom()
         building = reservation.get_building()
+        solicitation = reservation.solicitation
         return cls(
             id=must_be_int(reservation.id),
             title=reservation.title,
@@ -51,12 +52,8 @@ class ReservationResponseBase(BaseModel):
             schedule_id=must_be_int(reservation.schedule.id),
             created_by_id=must_be_int(reservation.created_by_id),
             created_by=reservation.created_by.name,
-            requester=reservation.solicitation.user.name
-            if reservation.solicitation
-            else None,
-            solicitation_id=reservation.solicitation.id
-            if reservation.solicitation
-            else None,
+            requester=solicitation.user.name if solicitation else None,
+            solicitation_id=solicitation.id if solicitation else None,
         )
 
 

@@ -51,7 +51,7 @@ class ExamRepositoryAdapter:
     def delete(self, id: int) -> None:
         exam = ExamRepository.get_by_id(id=id, session=self.session)
         self.checker.check_permission(exam)
-        ExamRepository.delete(id=id, session=self.session)
+        ExamRepository.delete(id=id, user=self.user, session=self.session)
         self.session.commit()
 
 

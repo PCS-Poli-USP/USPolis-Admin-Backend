@@ -2,7 +2,7 @@ from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
 
 
-router = APIRouter(prefix="/meetings", tags=["Meetings"])
+router = APIRouter(prefix="/meetings", tags=["Reservations", "Meetings"])
 
 
 @router.post("")

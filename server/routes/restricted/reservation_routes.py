@@ -24,9 +24,9 @@ async def delete_reservation(
 ) -> JSONResponse:
     """Delete a Reservation by ID"""
     reservation = repository.get_by_id(id=reservation_id)
+    repository.delete(id=reservation_id)
     if reservation.solicitation:
         await EmailService.send_solicitation_deleted_email(
             solicitation=reservation.solicitation,
         )
-    repository.delete(id=reservation_id)
     return JSONResponse(content={"message": "Reserva removida com sucesso!"})

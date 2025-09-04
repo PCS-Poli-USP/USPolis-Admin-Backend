@@ -147,6 +147,7 @@ class ReservationRepository:
             created_by_id=must_be_int(creator.id),
             created_by=creator,
         )
+        session.add(reservation)
         schedule = ScheduleRepository.create_with_reservation(
             user=creator,
             reservation=reservation,
@@ -156,7 +157,6 @@ class ReservationRepository:
             allocate=allocate,
         )
         reservation.schedule = schedule
-        session.add(reservation)
         return reservation
 
     @staticmethod
