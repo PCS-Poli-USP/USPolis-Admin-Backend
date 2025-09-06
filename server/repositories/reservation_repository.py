@@ -15,12 +15,9 @@ from server.models.http.requests.reservation_request_models import (
     ReservationUpdate,
 )
 from server.repositories.occurrence_repository import OccurrenceRepository
-from server.repositories.solicitation_repository import (
-    SolicitationRepository,
-)
 from server.repositories.schedule_repository import ScheduleRepository
 from server.utils.brazil_datetime import BrazilDatetime
-from server.utils.enums.solicitation_status import SolicitationStatus
+from server.utils.enums.reservation_status import ReservationStatus
 from server.utils.must_be_int import must_be_int
 
 
@@ -146,6 +143,9 @@ class ReservationRepository:
             updated_at=BrazilDatetime.now_utc(),
             created_by_id=must_be_int(creator.id),
             created_by=creator,
+            status=ReservationStatus.PENDING
+            if not allocate
+            else ReservationStatus.APPROVED,
         )
         session.add(reservation)
         schedule = ScheduleRepository.create_with_reservation(
@@ -195,15 +195,15 @@ class ReservationRepository:
         reservation = ReservationRepository.get_by_id(id=id, session=session)
         if reservation.solicitation:
             solicitation = reservation.solicitation
-            if solicitation.status == SolicitationStatus.DELETED:
-                raise ReservationWithDeletedSolicitation()
-            
+            if reservation.status == ReservationStatus.DELETED:
+                raise ReservationAlreadyDeleted()
+
             solicitation.updated_at = BrazilDatetime.now_utc()
             solicitation.closed = True
             solicitation.closed_by = user.name
             solicitation.deleted = True
             solicitation.deleted_by = user.name
-            solicitation.status = SolicitationStatus.DELETED
+            solicitation.status = ReservationStatus.DELETED
             OccurrenceRepository.remove_schedule_allocation(
                 user=user, schedule=reservation.schedule, session=session
             )
@@ -225,12 +225,4 @@ class ReservationAlreadyDeleted(HTTPException):
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="A reserva já está excluída",
-        )
-
-
-class ReservationWithDeletedSolicitation(HTTPException):
-    def __init__(self) -> None:
-        super().__init__(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="A reserva vem de uma solicitação excluída",
         )

@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from server.models.database.solicitation_db_model import (
     Solicitation,
 )
-from server.utils.enums.solicitation_status import SolicitationStatus
+from server.utils.enums.reservation_status import ReservationStatus
 from server.utils.must_be_int import must_be_int
 from server.models.http.responses.reservation_response_models import ReservationResponse
 
@@ -13,7 +13,7 @@ class SolicitationResponse(BaseModel):
     id: int
     capacity: int
     required_classroom: bool
-    status: SolicitationStatus
+    status: ReservationStatus
     closed_by: str | None
     deleted_by: str | None
     created_at: datetime
@@ -34,7 +34,7 @@ class SolicitationResponse(BaseModel):
             id=must_be_int(solicitation.id),
             capacity=solicitation.capacity,
             required_classroom=solicitation.required_classroom,
-            status=solicitation.status,
+            status=solicitation.get_status(),
             closed_by=solicitation.closed_by,
             deleted_by=solicitation.deleted_by,
             created_at=solicitation.created_at,

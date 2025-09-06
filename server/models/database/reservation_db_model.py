@@ -9,6 +9,7 @@ from server.models.database.building_db_model import Building
 from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.audiovisual_type_enum import AudiovisualType
 from server.utils.enums.reservation_type import ReservationType
+from server.utils.enums.reservation_status import ReservationStatus
 
 if TYPE_CHECKING:
     from server.models.database.classroom_db_model import Classroom
@@ -36,6 +37,7 @@ class Reservation(BaseModel, table=True):
         ),
     )
     created_by_id: int = Field(index=True, foreign_key="user.id", nullable=False)
+    status: ReservationStatus = Field()
 
     schedule: "Schedule" = Relationship(
         back_populates="reservation", sa_relationship_kwargs={"cascade": "delete"}

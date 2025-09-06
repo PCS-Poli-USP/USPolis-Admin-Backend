@@ -5,7 +5,7 @@ from sqlmodel import Field, Relationship
 
 from server.models.database.base_db_model import BaseModel
 from server.utils.brazil_datetime import BrazilDatetime
-from server.utils.enums.solicitation_status import SolicitationStatus
+from server.utils.enums.reservation_status import ReservationStatus
 
 
 if TYPE_CHECKING:
@@ -25,7 +25,6 @@ class Solicitation(BaseModel, table=True):
 
     capacity: int
     required_classroom: bool = Field(default=False)
-    status: SolicitationStatus = Field()
     closed_by: str | None = Field(nullable=True, default=None)
     deleted_by: str | None = Field(nullable=True, default=None)
 
@@ -43,6 +42,15 @@ class Solicitation(BaseModel, table=True):
     )
     reservation: "Reservation" = Relationship(back_populates="solicitation")
     user: "User" = Relationship(back_populates="solicitations")
+
+    def get_status(self) -> ReservationStatus:
+        """
+        Get the status of the reservation associated with this solicitation.
+
+        Returns:
+            ReservationStatus: The status of the reservation.
+        """
+        return self.reservation.status
 
     def get_administrative_users(self) -> list["User"]:
         """

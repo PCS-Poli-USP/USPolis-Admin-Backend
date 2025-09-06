@@ -12,13 +12,9 @@ from alembic import op
 from pydantic import BaseModel
 import sqlalchemy as sa
 from datetime import time, date, datetime
-
-from server.config import CONFIG
-
-
 from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.reservation_type import ReservationType
-from server.utils.enums.solicitation_status import SolicitationStatus
+from server.utils.enums.reservation_status import ReservationStatus
 
 # revision identifiers, used by Alembic.
 revision: str = "0665bcbe2878"
@@ -36,7 +32,7 @@ class ClassroomSolicitationSchema(BaseModel):
     end_time: time | None
     dates: list[date]
     reason: str
-    status: SolicitationStatus
+    status: ReservationStatus
     closed_by: str | None
     deleted_by: str | None
     created_at: datetime
@@ -122,7 +118,7 @@ def upgrade() -> None:
                 reservation_type=ReservationType(
                     row._mapping["reservation_type"].lower()
                 ),
-                status=SolicitationStatus(row._mapping["status"].lower()),
+                status=ReservationStatus(row._mapping["status"].lower()),
                 **mapping,
             )
         )

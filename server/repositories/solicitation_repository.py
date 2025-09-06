@@ -16,7 +16,7 @@ from server.repositories.classroom_repository import ClassroomRepository
 
 from server.repositories.occurrence_repository import OccurrenceRepository
 from server.utils.brazil_datetime import BrazilDatetime
-from server.utils.enums.solicitation_status import SolicitationStatus
+from server.utils.enums.reservation_status import ReservationStatus
 from server.utils.must_be_int import must_be_int
 
 
@@ -79,7 +79,7 @@ class SolicitationRepository:
             .join(Schedule, col(Reservation.id) == col(Schedule.reservation_id))
             .where(
                 col(Solicitation.building_id).in_(building_ids),
-                col(Solicitation.status) == SolicitationStatus.PENDING,
+                col(Reservation.status) == ReservationStatus.PENDING,
                 col(Schedule.end_date) >= today,
             )
             .order_by(col(Solicitation.updated_at).desc())
@@ -120,7 +120,6 @@ class SolicitationRepository:
             user=requester,
             reservation=reservation,
             capacity=input.capacity,
-            status=SolicitationStatus.PENDING,
         )  # pyright: ignore[reportCallIssue]
         session.add(solicitation)
         return solicitation
@@ -130,10 +129,9 @@ class SolicitationRepository:
         id: int, classroom_id: int, user: User, session: Session
     ) -> Solicitation:
         solicitation = SolicitationRepository.get_by_id(id=id, session=session)
-        if solicitation.status != SolicitationStatus.PENDING:
-            raise SolicitationAlreadyClosed(
-                SolicitationStatus.get_status_detail(solicitation.status)
-            )
+        status = solicitation.get_status()
+        if status != ReservationStatus.PENDING:
+            raise SolicitationAlreadyClosed(ReservationStatus.get_status_detail(status))
         SolicitationRepository.approve_solicitation_obj(
             solicitation=solicitation, user=user, session=session
         )
@@ -157,7 +155,7 @@ class SolicitationRepository:
     def approve_solicitation_obj(
         solicitation: Solicitation, user: User, session: Session
     ) -> Solicitation:
-        solicitation.status = SolicitationStatus.APPROVED
+        solicitation.status = ReservationStatus.APPROVED
         solicitation.closed_by = user.name
         solicitation.updated_at = BrazilDatetime.now_utc()
         session.add(solicitation)
@@ -166,11 +164,10 @@ class SolicitationRepository:
     @staticmethod
     def deny(id: int, user: User, session: Session) -> Solicitation:
         solicitation = SolicitationRepository.get_by_id(id=id, session=session)
-        if solicitation.status != SolicitationStatus.PENDING:
-            raise SolicitationAlreadyClosed(
-                SolicitationStatus.get_status_detail(solicitation.status)
-            )
-        solicitation.status = SolicitationStatus.DENIED
+        status = solicitation.get_status()
+        if status != ReservationStatus.PENDING:
+            raise SolicitationAlreadyClosed(ReservationStatus.get_status_detail(status))
+        solicitation.status = ReservationStatus.DENIED
         solicitation.closed_by = user.name
         solicitation.updated_at = BrazilDatetime.now_utc()
         session.add(solicitation)
@@ -183,7 +180,7 @@ class SolicitationRepository:
             raise SolicitationPermissionDenied(
                 "Não é permitido cancelar a solicitação de outro usuário."
             )
-        solicitation.status = SolicitationStatus.CANCELLED
+        solicitation.status = ReservationStatus.CANCELLED
         solicitation.closed_by = user.name
         solicitation.updated_at = BrazilDatetime.now_utc()
         session.add(solicitation)

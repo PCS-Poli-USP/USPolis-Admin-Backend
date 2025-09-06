@@ -1,6 +1,12 @@
+from typing import Any
 from fastapi import HTTPException, status
-from sqlmodel import Session, select
+from sqlalchemy import Select
+from sqlmodel import Session, col, select
+from server.deps.interval_dep import QueryInterval
+from server.models.database.exam_class_link import ExamClassLink
 from server.models.database.exam_db_model import Exam
+from server.models.database.reservation_db_model import Reservation
+from server.models.database.schedule_db_model import Schedule
 from server.models.database.user_db_model import User
 from server.models.http.requests.exam_request_models import ExamRegister, ExamUpdate
 from server.repositories.class_repository import ClassRepository
@@ -12,19 +18,64 @@ from server.utils.must_be_int import must_be_int
 
 class ExamRepository:
     @staticmethod
-    def get_all(*, session: Session) -> list[Exam]:
+    def __apply_interval_filter(
+        *,
+        statement: Select,
+        interval: QueryInterval,
+    ) -> Any:
+        if interval.today:
+            statement = (
+                statement.join(
+                    Reservation, col(Exam.reservation_id) == col(Reservation.id)
+                )
+                .join(Schedule, col(Schedule.reservation_id) == col(Reservation.id))
+                .where(col(Schedule.end_date) >= interval.today)
+            )
+
+        if interval.start and interval.end:
+            statement = (
+                statement.join(
+                    Reservation, col(Exam.reservation_id) == col(Reservation.id)
+                )
+                .join(Schedule, col(Schedule.reservation_id) == col(Reservation.id))
+                .where(
+                    col(Schedule.start_date) >= interval.start,
+                    col(Schedule.end_date) <= interval.end,
+                )
+            )
+        return statement
+
+    @staticmethod
+    def get_all(*, session: Session, interval: QueryInterval) -> list[Exam]:
         statement = select(Exam)
+        statement = ExamRepository.__apply_interval_filter(
+            statement=statement, interval=interval
+        )
         return list(session.exec(statement).all())
 
     @staticmethod
-    def get_all_by_subject_id(*, subject_id: int, session: Session) -> list[Exam]:
-        subject = SubjectRepository.get_by_id(id=subject_id, session=session)
-        return subject.exams
+    def get_all_by_subject_id(
+        *, subject_id: int, session: Session, interval: QueryInterval
+    ) -> list[Exam]:
+        statement = select(Exam).where(Exam.subject_id == subject_id)
+        statement = ExamRepository.__apply_interval_filter(
+            statement=statement, interval=interval
+        )
+        exams = session.exec(statement).all()
+        return list(exams)
 
     @staticmethod
     def get_all_by_class_id(*, class_id: int, session: Session) -> list[Exam]:
-        class_ = ClassRepository.get_by_id(id=class_id, session=session)
-        return class_.exams
+        statement = (
+            select(Exam)
+            .join(ExamClassLink, col(ExamClassLink.exam_id) == col(Exam.id))
+            .where(ExamClassLink.class_id == class_id)
+        )
+        statement = ExamRepository.__apply_interval_filter(
+            statement=statement, interval=QueryInterval()
+        )
+        exams = session.exec(statement).all()
+        return list(exams)
 
     @staticmethod
     def get_by_id(*, id: int, session: Session) -> Exam:
@@ -52,7 +103,7 @@ class ExamRepository:
             reservation=reservation,
             subject_id=must_be_int(subject.id),
             classes=classes,
-        ) # pyright: ignore[reportCallIssue]
+        )  # pyright: ignore[reportCallIssue]
         session.add(exam)
         return exam
 
