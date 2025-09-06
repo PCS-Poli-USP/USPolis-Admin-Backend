@@ -58,15 +58,6 @@ def upgrade() -> None:
         "event_reservation_id_fkey", "event", "reservation", ["reservation_id"], ["id"]
     )
 
-    admin_id = bind.execute(
-        sa.text("""
-            SELECT id FROM "user" WHERE email = :email LIMIT 1
-        """),
-        {"email": CONFIG.first_superuser_email},
-    ).scalar()
-    if not admin_id:
-        raise Exception(f"No {CONFIG.first_superuser_email} admin user found")
-
     # --- Reservation migration ---
 
     op.drop_constraint(
@@ -170,7 +161,7 @@ def upgrade() -> None:
                     type=str(data.reservation_type.value).upper(),
                     reason=data.reason,
                     updated_at=BrazilDatetime.now_utc(),
-                    created_by_id=int(admin_id),
+                    created_by_id=data.user_id,
                 ),
             ).scalar_one()
 
