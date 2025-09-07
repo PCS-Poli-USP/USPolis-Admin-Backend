@@ -43,6 +43,12 @@ class ClassroomSolicitationSchema(BaseModel):
     reservation_id: int | None
 
 
+old_reservation_type = (
+    sa.Enum("EXAM", "MEETING", "EVENT", "OTHER", name="reservationtype"),
+)
+new_reservation_type = sa.Enum("EXAM", "MEETING", "EVENT", name="reservationtype")
+
+
 def upgrade() -> None:
     bind = op.get_bind()
 
@@ -60,6 +66,7 @@ def upgrade() -> None:
         "reservation_classroom_id_fkey", "reservation", type_="foreignkey"
     )
     op.drop_column("reservation", "classroom_id")
+    op.execute("UPDATE reservation SET type = 'EVENT' WHERE type = 'OTHER'")
 
     # --- Solicitation migration ---
     # Rename FKS
