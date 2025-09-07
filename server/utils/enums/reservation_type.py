@@ -5,14 +5,12 @@ class ReservationType(str, Enum):
     EXAM = "exam"
     MEETING = "meeting"
     EVENT = "event"
-    OTHER = "other"
 
     @classmethod
     def from_str(cls, value: str) -> "ReservationType":
         exam_values = ["Prova"]
         meeting_values = ["Reunião"]
         event_values = ["Evento"]
-        other_values = ["Outro"]
 
         if value in exam_values:
             return cls.EXAM
@@ -20,8 +18,6 @@ class ReservationType(str, Enum):
             return cls.MEETING
         if value in event_values:
             return cls.EVENT
-        if value in other_values:
-            return cls.OTHER
         raise NoSuchReservationType(f"Reservation type {value} is not valid.")
 
     @classmethod
@@ -33,8 +29,6 @@ class ReservationType(str, Enum):
                 return "Reunião"
             case ReservationType.EVENT:
                 return "Evento"
-            case ReservationType.OTHER:
-                return "Outro"
 
     @staticmethod
     def values() -> list["ReservationType"]:
@@ -42,7 +36,6 @@ class ReservationType(str, Enum):
             ReservationType.EXAM,
             ReservationType.MEETING,
             ReservationType.EVENT,
-            ReservationType.OTHER,
         ]
 
 

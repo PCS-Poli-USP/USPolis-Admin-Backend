@@ -11,8 +11,8 @@ from server.utils.enums.reservation_type import ReservationType
 class ExamBase(BaseModel):
     type: ReservationType = ReservationType.EXAM
     subject_id: int
-    class_ids: list[int] = []
     labels: list[str]
+    class_ids: list[int] = []
 
     @model_validator(mode="after")
     def validate_body(self) -> Self:

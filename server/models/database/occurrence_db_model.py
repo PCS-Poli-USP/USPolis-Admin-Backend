@@ -24,7 +24,7 @@ class Occurrence(BaseModel, table=True):
 
     schedule_id: int = Field(default=None, index=True, foreign_key="schedule.id")
     schedule: "Schedule" = Relationship(back_populates="occurrences")
-    label: Optional["OccurrenceLabel"] = Relationship(
+    occurrence_label: Optional["OccurrenceLabel"] = Relationship(
         back_populates="occurrence", sa_relationship_kwargs={"cascade": "all, delete"}
     )
 

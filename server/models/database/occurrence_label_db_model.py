@@ -7,4 +7,4 @@ class OccurrenceLabel(BaseModel, table=True):
     occurrence_id: int = Field(foreign_key="occurrence.id", unique=True)
     label: str = Field(max_length=50)
 
-    occurrence: Occurrence = Relationship(back_populates="label")
+    occurrence: Occurrence = Relationship(back_populates="occurrence_label")
