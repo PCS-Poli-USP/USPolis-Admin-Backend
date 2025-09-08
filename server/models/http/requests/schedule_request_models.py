@@ -33,6 +33,7 @@ class ScheduleRegister(ScheduleBase):
     week_day: WeekDay | None = None
     month_week: MonthWeek | None = None
     dates: list[date] | None = None
+    labels: list[str] | None = None
 
     @model_validator(mode="after")
     def check_class_body(self) -> Self:
@@ -45,6 +46,7 @@ class ScheduleRegister(ScheduleBase):
         allocated = self.allocated
         classroom_id = self.classroom_id
         reservation_id = self.reservation_id
+        labels = self.labels
 
         if class_id is not None and reservation_id is not None:
             raise ScheduleConflictedData("Class Id", "Reservation Id")
@@ -58,6 +60,8 @@ class ScheduleRegister(ScheduleBase):
                 raise ScheduleInvalidData("Month Week", "Recurrence")
 
         if dates is not None:
+            if labels is not None and len(dates) != len(labels):
+                raise ScheduleInvalidData("Dates", "Labels")
             if recurrence != Recurrence.CUSTOM:
                 raise ScheduleInvalidData("Dates", "Recurrence")
 

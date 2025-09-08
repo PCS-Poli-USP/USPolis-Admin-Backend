@@ -11,13 +11,10 @@ from server.utils.enums.reservation_type import ReservationType
 class ExamBase(BaseModel):
     type: ReservationType = ReservationType.EXAM
     subject_id: int
-    labels: list[str]
     class_ids: list[int] = []
 
     @model_validator(mode="after")
     def validate_body(self) -> Self:
-        if not self.labels:
-            raise ValueError("Labels must not be empty")
         return self
 
 
@@ -30,8 +27,6 @@ def validate_exam(self: T) -> T:
         raise ValueError("Exam must have custom recurrence")
     if not data.dates:
         raise ValueError("Exam must have an occurrence")
-    if len(data.dates) != len(self.labels):
-        raise ValueError("Each date must have a corresponding label")
     return self
 
 

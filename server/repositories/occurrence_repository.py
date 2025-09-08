@@ -4,6 +4,7 @@ from sqlmodel import Session, col, select
 from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.occurrence_db_model import Occurrence
+from server.models.database.occurrence_label_db_model import OccurrenceLabel
 from server.models.database.schedule_db_model import Schedule
 from server.models.database.user_db_model import User
 from server.models.http.requests.allocation_log_request_models import AllocationLogInput
@@ -195,7 +196,7 @@ class OccurrenceRepository:
             )
 
         occurrences: list[Occurrence] = []
-        for dt in input.dates:
+        for i, dt in enumerate(input.dates):
             occurrence = Occurrence(
                 schedule=schedule,
                 classroom_id=input.classroom_id,
@@ -204,6 +205,9 @@ class OccurrenceRepository:
                 end_time=input.end_time,
                 date=dt,
             )
+            if input.labels:
+                label = OccurrenceLabel(occurrence=occurrence, label=input.labels[i])  # pyright: ignore[reportCallIssue]
+                session.add(label)
             session.add(occurrence)
             occurrences.append(occurrence)
         return occurrences
