@@ -155,7 +155,7 @@ class SolicitationRepository:
     def approve_solicitation_obj(
         solicitation: Solicitation, user: User, session: Session
     ) -> Solicitation:
-        solicitation.status = ReservationStatus.APPROVED
+        solicitation.set_status(ReservationStatus.APPROVED)
         solicitation.closed_by = user.name
         solicitation.updated_at = BrazilDatetime.now_utc()
         session.add(solicitation)
@@ -167,7 +167,7 @@ class SolicitationRepository:
         status = solicitation.get_status()
         if status != ReservationStatus.PENDING:
             raise SolicitationAlreadyClosed(ReservationStatus.get_status_detail(status))
-        solicitation.status = ReservationStatus.DENIED
+        solicitation.set_status(ReservationStatus.DENIED)
         solicitation.closed_by = user.name
         solicitation.updated_at = BrazilDatetime.now_utc()
         session.add(solicitation)
@@ -180,7 +180,7 @@ class SolicitationRepository:
             raise SolicitationPermissionDenied(
                 "Não é permitido cancelar a solicitação de outro usuário."
             )
-        solicitation.status = ReservationStatus.CANCELLED
+        solicitation.set_status(ReservationStatus.CANCELLED)
         solicitation.closed_by = user.name
         solicitation.updated_at = BrazilDatetime.now_utc()
         session.add(solicitation)
