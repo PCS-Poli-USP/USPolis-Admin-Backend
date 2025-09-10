@@ -1,11 +1,12 @@
 from sqlmodel import Field, Relationship, Column, Enum
 from server.models.database.base_db_model import BaseModel
 from server.models.database.reservation_db_model import Reservation
+from server.models.database.solicitation_db_model import Solicitation
 from server.utils.enums.event_type_enum import EventType
 
 
 class Event(BaseModel, table=True):
-    reservation_id: int = Field(foreign_key="reservation.id")
+    reservation_id: int = Field(foreign_key="reservation.id", unique=True)
     link: str | None = Field(nullable=True, default=None)
     type: EventType = Field(
         sa_column=Column(
@@ -14,3 +15,9 @@ class Event(BaseModel, table=True):
     )
 
     reservation: Reservation = Relationship(back_populates="event")
+
+    def get_solicitation(self) -> Solicitation | None:
+        """
+        Get the solicitation associated with the event if exists.
+        """
+        return self.reservation.solicitation

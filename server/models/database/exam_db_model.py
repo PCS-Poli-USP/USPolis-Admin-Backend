@@ -10,12 +10,10 @@ from server.models.database.subject_db_model import Subject
 
 
 class Exam(BaseModel, table=True):
-    reservation_id: int = Field(foreign_key="reservation.id")
+    reservation_id: int = Field(foreign_key="reservation.id", unique=True)
     subject_id: int = Field(foreign_key="subject.id")
 
-    reservation: Reservation = Relationship(
-        back_populates="exam", sa_relationship_kwargs={"cascade": "delete"}
-    )
+    reservation: Reservation = Relationship(back_populates="exam")
     subject: Subject = Relationship(back_populates="exams")
     classes: list[Class] = Relationship(
         back_populates="exams", link_model=ExamClassLink
