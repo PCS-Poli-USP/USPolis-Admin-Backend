@@ -15,6 +15,7 @@ def authenticate_with_google(idToken: str) -> Any:
     # if idinfo['aud'] not in [CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]:
     #     raise ValueError('Could not verify audience.')
 
+    print(idInfo)
     # If the request specified a Google Workspace domain
     if idInfo["hd"] != os.getenv("G_AUTH_DOMAIN_NAME") and idInfo["email_verified"]:
         raise ValueError("Wrong domain name.")
