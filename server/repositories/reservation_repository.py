@@ -199,11 +199,9 @@ class ReservationRepository:
                 raise ReservationAlreadyDeleted()
 
             solicitation.updated_at = BrazilDatetime.now_utc()
-            solicitation.closed = True
             solicitation.closed_by = user.name
-            solicitation.deleted = True
             solicitation.deleted_by = user.name
-            solicitation.status = ReservationStatus.DELETED
+            solicitation.set_status(ReservationStatus.DELETED)
             OccurrenceRepository.remove_schedule_allocation(
                 user=user, schedule=reservation.schedule, session=session
             )

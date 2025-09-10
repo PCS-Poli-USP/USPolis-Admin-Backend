@@ -65,14 +65,16 @@ class ExamRepository:
         return list(exams)
 
     @staticmethod
-    def get_all_by_class_id(*, class_id: int, session: Session) -> list[Exam]:
+    def get_all_by_class_id(
+        *, class_id: int, session: Session, interval: QueryInterval
+    ) -> list[Exam]:
         statement = (
             select(Exam)
             .join(ExamClassLink, col(ExamClassLink.exam_id) == col(Exam.id))
             .where(ExamClassLink.class_id == class_id)
         )
         statement = ExamRepository.__apply_interval_filter(
-            statement=statement, interval=QueryInterval()
+            statement=statement, interval=interval
         )
         exams = session.exec(statement).all()
         return list(exams)
@@ -132,17 +134,6 @@ class ExamRepository:
         exam.classes = classes
         session.add(exam)
         return exam
-
-    @staticmethod
-    def delete(*, id: int, user: User, session: Session) -> None:
-        exam = ExamRepository.get_by_id(id=id, session=session)
-        solicitation = exam.get_solicitation()
-        if solicitation:
-            ReservationRepository.delete(
-                id=exam.reservation_id, user=user, session=session
-            )
-        if not solicitation:
-            session.delete(exam)
 
 
 class ExamInvalidClassAndSubject(HTTPException):

@@ -52,6 +52,15 @@ class Solicitation(BaseModel, table=True):
         """
         return self.reservation.status
 
+    def set_status(self, status: ReservationStatus) -> None:
+        """
+        Set the status of the reservation associated with this solicitation.
+
+        Args:
+            status (ReservationStatus): The new status to set.
+        """
+        self.reservation.status = status
+
     def get_administrative_users(self) -> list["User"]:
         """
         Get the list of users who have administrative access to this solicitation. That means users who can approve, deny, or update the solicitation.

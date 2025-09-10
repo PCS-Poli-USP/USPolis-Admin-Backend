@@ -48,11 +48,5 @@ class ExamRepositoryAdapter:
         self.session.refresh(exam)
         return exam
 
-    def delete(self, id: int) -> None:
-        exam = ExamRepository.get_by_id(id=id, session=self.session)
-        self.checker.check_permission(exam)
-        ExamRepository.delete(id=id, user=self.user, session=self.session)
-        self.session.commit()
-
 
 ExamRepositoryDep = Annotated[ExamRepositoryAdapter, Depends()]

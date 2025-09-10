@@ -39,6 +39,10 @@ def get_all_subject_exams(
 
 
 @router.get("/classes/{class_id}")
-def get_all_class_exams(class_id: int, session: SessionDep) -> list[ExamResponse]:
-    exams = ExamRepository.get_all_by_class_id(class_id=class_id, session=session)
+def get_all_class_exams(
+    class_id: int, session: SessionDep, interval: QueryIntervalDep
+) -> list[ExamResponse]:
+    exams = ExamRepository.get_all_by_class_id(
+        class_id=class_id, session=session, interval=interval
+    )
     return ExamResponse.from_exams(exams)
