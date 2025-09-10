@@ -16,6 +16,7 @@ def authenticate_with_google(idToken: str) -> Any:
     #     raise ValueError('Could not verify audience.')
 
     print(idInfo)
+    print(os.getenv("G_AUTH_DOMAIN_NAME"))
     # If the request specified a Google Workspace domain
     if idInfo["hd"] != os.getenv("G_AUTH_DOMAIN_NAME") and idInfo["email_verified"]:
         raise ValueError("Wrong domain name.")
