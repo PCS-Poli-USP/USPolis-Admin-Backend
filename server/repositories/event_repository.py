@@ -68,7 +68,7 @@ class EventRepository:
         event = Event(
             reservation=reservation,
             link=input.link,
-            type=input.type,
+            type=input.event_type,
         )  # pyright: ignore[reportCallIssue]
         session.add(event)
         return event
