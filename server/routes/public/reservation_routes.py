@@ -11,8 +11,8 @@ from server.repositories.reservation_repository import ReservationRepository
 from server.utils.must_be_int import must_be_int
 
 from server.routes.public.exam_routes import router as ExamRouter
-# from server.routes.public.event_routes import router as EventRouter
-# from server.routes.public.meeting_routes import router as MeetingRouter
+from server.routes.public.event_routes import router as EventRouter
+from server.routes.public.meeting_routes import router as MeetingRouter
 
 
 embed = Body(..., embed=True)
@@ -20,8 +20,8 @@ embed = Body(..., embed=True)
 router = APIRouter(prefix="/reservations", tags=["Public", "Reservations"])
 
 router.include_router(ExamRouter)
-# router.include_router(EventRouter)
-# router.include_router(MeetingRouter)
+router.include_router(EventRouter)
+router.include_router(MeetingRouter)
 
 
 @router.get("")

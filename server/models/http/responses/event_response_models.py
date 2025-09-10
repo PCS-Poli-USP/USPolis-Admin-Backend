@@ -24,3 +24,7 @@ class EventResponse(BaseModel):
             type=event.type,
             reservation=ReservationResponse.from_reservation(event.reservation),
         )
+
+    @classmethod
+    def from_events(cls, events: list[Event]) -> list[Self]:
+        return [cls.from_event(event) for event in events]
