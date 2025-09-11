@@ -30,13 +30,23 @@ class ReservationType(str, Enum):
             case ReservationType.EVENT:
                 return "Evento"
 
-    @staticmethod
-    def values() -> list["ReservationType"]:
+    @classmethod
+    def values(cls) -> list["ReservationType"]:
         return [
             ReservationType.EXAM,
             ReservationType.MEETING,
             ReservationType.EVENT,
         ]
+
+    @classmethod
+    def get_color(cls, value: "ReservationType") -> str:
+        match value:
+            case ReservationType.EXAM:
+                return "#1b3b3b"
+            case ReservationType.MEETING:
+                return "#15584D"
+            case ReservationType.EVENT:
+                return "#019d94"
 
 
 class NoSuchReservationType(Exception):

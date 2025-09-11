@@ -188,6 +188,7 @@ class AllocationEventResponse(BaseModel):
     classroom_capacity: int | None = None
     rrule: RRule | None = None
     allDay: bool
+    backgroundColor: str | None = "#408080"
 
     resourceId: str
     extendedProps: EventExtendedProps | None = None
@@ -202,10 +203,12 @@ class AllocationEventResponse(BaseModel):
                 f"{occurrence.classroom.building.name}-{occurrence.classroom.name}"
             )
         title = ""
+        background = "#408080"
         if occurrence.schedule.class_:
             title = occurrence.schedule.class_.subject.code
         if occurrence.schedule.reservation:
-            title = f"Reserva - {occurrence.schedule.reservation.title}"
+            background = ReservationType.get_color(occurrence.schedule.reservation.type)
+            title = f"{occurrence.schedule.reservation.title}"
 
         return cls(
             id=str(occurrence.id),
@@ -219,6 +222,7 @@ class AllocationEventResponse(BaseModel):
             else None,
             allDay=occurrence.schedule.all_day,
             resourceId=resource,
+            backgroundColor=background,
             extendedProps=EventExtendedProps.from_occurrence(occurrence),
         )
 
