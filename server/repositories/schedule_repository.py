@@ -42,7 +42,11 @@ class ScheduleRepository:
 
     @staticmethod
     def get_all_unallocated(*, session: Session) -> list[Schedule]:
-        statement = select(Schedule).where(Schedule.allocated == False)  # noqa: E712
+        """Get all unallocated schedules that are not custom recurrence"""
+        statement = select(Schedule).where(
+            Schedule.allocated == False,  # noqa: E712
+            col(Schedule.recurrence) != Recurrence.CUSTOM,
+        )
         schedules = session.exec(statement).all()
         return list(schedules)
 
@@ -187,7 +191,7 @@ class ScheduleRepository:
                 start_time=input.start_time,
                 end_time=input.end_time,
                 dates=input.dates,
-                 labels=input.labels if input.labels else None,
+                labels=input.labels if input.labels else None,
             )
             occurences = OccurrenceRepository.create_many_with_schedule(
                 schedule=new_schedule, input=occurences_input, session=session

@@ -1,5 +1,6 @@
 from datetime import date
 from sqlmodel import Session, col, select
+from sqlalchemy import or_
 
 from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
@@ -73,11 +74,17 @@ class OccurrenceRepository:
     def get_all_on_interval_for_allocation(
         start: date, end: date, session: Session
     ) -> list[Occurrence]:
+        """Get all occurrences on interval [start, end] that are not allocated OR have remote classrooms"""
         statement = (
             select(Occurrence)
-            .join(Classroom)
+            .join(Classroom, col(Occurrence.classroom_id) == Classroom.id, isouter=True)
             .where(Occurrence.date >= start, Occurrence.date <= end)
-            .where(~col(Classroom.remote))
+            .where(
+                or_(
+                    ~col(Classroom.remote),
+                    col(Occurrence.classroom_id) == None,  # noqa: E711
+                )
+            )
         )
         occurrences = session.exec(statement).all()
         return list(occurrences)
