@@ -2,12 +2,14 @@ from pydantic import BaseModel
 from datetime import time, date as datetime_date
 
 from server.models.database.building_db_model import Building
+from server.models.database.class_db_model import Class
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.schedule_db_model import Schedule
 from server.models.http.responses.schedule_response_models import ScheduleResponseBase
 from server.utils.enums.allocation_enum import AllocationEnum
+from server.utils.enums.allocation_event_type_enum import AllocationEventType
 from server.utils.enums.month_week import MonthWeek
 from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.reservation_type import ReservationType
@@ -191,7 +193,50 @@ class AllocationEventResponse(BaseModel):
     backgroundColor: str | None = "#408080"
 
     resourceId: str
+    type: AllocationEventType
     extendedProps: EventExtendedProps | None = None
+
+    @classmethod
+    def get_reservation_title(cls, reservation: Reservation) -> str:
+        if reservation.type == ReservationType.EVENT:
+            return f"📅 {reservation.title}"
+        if reservation.type == ReservationType.MEETING:
+            return f"👥 {reservation.title}"
+        if reservation.type == ReservationType.EXAM:
+            return f"📝 {reservation.title}"
+        return reservation.title
+
+    @classmethod
+    def backgroundColor_from_schedule(cls, schedule: Schedule) -> str:
+        if schedule.reservation:
+            return ReservationType.get_color(schedule.reservation.type)
+        return "#408080"
+
+    @classmethod
+    def backgroundColor_from_occurrence(cls, occurrence: Occurrence) -> str:
+        if occurrence.schedule.reservation:
+            return ReservationType.get_color(occurrence.schedule.reservation.type)
+        return "#408080"
+
+    @classmethod
+    def type_from_schedule(cls, schedule: Schedule) -> AllocationEventType:
+        if schedule.reservation:
+            return AllocationEventType.get_from_reservation_type(
+                schedule.reservation.type
+            )
+        return AllocationEventType.SUBJECT
+
+    @classmethod
+    def type_from_occurrence(cls, occurrence: Occurrence) -> AllocationEventType:
+        if occurrence.schedule.reservation:
+            return AllocationEventType.get_from_reservation_type(
+                occurrence.schedule.reservation.type
+            )
+        return AllocationEventType.SUBJECT
+
+    @classmethod
+    def get_class_title(cls, class_: Class) -> str:
+        return f"📚 {class_.subject.code}"
 
     @classmethod
     def from_occurrence(cls, occurrence: Occurrence) -> "AllocationEventResponse":
@@ -203,12 +248,11 @@ class AllocationEventResponse(BaseModel):
                 f"{occurrence.classroom.building.name}-{occurrence.classroom.name}"
             )
         title = ""
-        background = "#408080"
         if occurrence.schedule.class_:
-            title = occurrence.schedule.class_.subject.code
+            title = cls.get_class_title(occurrence.schedule.class_)
         if occurrence.schedule.reservation:
-            background = ReservationType.get_color(occurrence.schedule.reservation.type)
-            title = f"{occurrence.schedule.reservation.title}"
+            reservation = occurrence.schedule.reservation
+            title = cls.get_reservation_title(reservation)
 
         return cls(
             id=str(occurrence.id),
@@ -222,7 +266,10 @@ class AllocationEventResponse(BaseModel):
             else None,
             allDay=occurrence.schedule.all_day,
             resourceId=resource,
-            backgroundColor=background,
+            type=AllocationEventResponse.type_from_occurrence(occurrence),
+            backgroundColor=AllocationEventResponse.backgroundColor_from_schedule(
+                occurrence.schedule
+            ),
             extendedProps=EventExtendedProps.from_occurrence(occurrence),
         )
 
@@ -235,9 +282,9 @@ class AllocationEventResponse(BaseModel):
             resource = f"{schedule.classroom.building.name}-{schedule.classroom.name}"
         title = ""
         if schedule.class_:
-            title = schedule.class_.subject.code
+            title = cls.get_class_title(schedule.class_)
         if schedule.reservation:
-            title = f"Reserva - {schedule.reservation.title}"
+            title = cls.get_reservation_title(schedule.reservation)
         if schedule.recurrence == Recurrence.CUSTOM:
             return [
                 AllocationEventResponse.from_occurrence(occurrence)
@@ -254,6 +301,10 @@ class AllocationEventResponse(BaseModel):
                 rrule=RRule.from_schedule(schedule),
                 allDay=schedule.all_day,
                 resourceId=resource,
+                type=AllocationEventResponse.type_from_schedule(schedule),
+                backgroundColor=AllocationEventResponse.backgroundColor_from_schedule(
+                    schedule
+                ),
                 extendedProps=EventExtendedProps.from_schedule(schedule),
             )
         ]
