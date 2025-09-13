@@ -37,7 +37,7 @@ async def create_new_user(
 ) -> AuthenticationResponse:
     """Validates the token and creates a new user and store its information in the DB (received from the Google API)"""
     userInfo = id_token.verify_oauth2_token(
-        idToken, requests.Request(), CONFIG.google_auth_client_id
+        idToken, requests.Request(), CONFIG.google_auth_mobile_client_id
     )
 
     newUser = MobileUser(
