@@ -30,7 +30,7 @@ class Settings(BaseModel):
     )  # pyright: ignore[reportAssignmentType]
 
     root_url: str = config("ROOT_URL", default="http://localhost:8000")  # pyright: ignore[reportAssignmentType]
-    port: str = config("PORT", default="8000")  # pyright: ignore[reportAssignmentType]
+    port: str = config("PORT", default="5000")  # pyright: ignore[reportAssignmentType]
     debug: bool = config("DEBUG", default=False, cast=bool)  # pyright: ignore[reportAssignmentType]
 
     # SQLAlchemy settings
