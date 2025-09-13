@@ -33,6 +33,7 @@ class ScheduleRegister(ScheduleBase):
     week_day: WeekDay | None = None
     month_week: MonthWeek | None = None
     dates: list[date] | None = None
+    times: list[time] | None = None
     labels: list[str] | None = None
 
     @model_validator(mode="after")
@@ -47,28 +48,41 @@ class ScheduleRegister(ScheduleBase):
         classroom_id = self.classroom_id
         reservation_id = self.reservation_id
         labels = self.labels
+        times = self.times
 
         if class_id is not None and reservation_id is not None:
             raise ScheduleConflictedData("Class Id", "Reservation Id")
 
         if week_day is None:
             if recurrence != Recurrence.CUSTOM and recurrence != Recurrence.DAILY:
-                raise ScheduleInvalidData("Week Day", "Recurrence")
+                raise ScheduleInvalidData(
+                    "Agenda com recorrência semanal deve ter dia da semana"
+                )
 
         if month_week is not None:
             if recurrence != Recurrence.MONTHLY:
-                raise ScheduleInvalidData("Month Week", "Recurrence")
+                raise ScheduleInvalidData(
+                    "Agenda com recorrência mensal deve ter semana do mês"
+                )
 
         if dates is not None:
-            if labels is not None and len(dates) != len(labels):
-                raise ScheduleInvalidData("Dates", "Labels")
             if recurrence != Recurrence.CUSTOM:
-                raise ScheduleInvalidData("Dates", "Recurrence")
+                raise ScheduleInvalidData(
+                    f"Agenda com recorrência {Recurrence.translated(self.recurrence)} não pode ter datas específicas"
+                )
+            if labels is not None and len(dates) != len(labels):
+                raise ScheduleInvalidData(
+                    "Ao passar rótulos, deve-se passar uma para cada data selecionada"
+                )
+            if times is not None and len(times) != len(dates):
+                raise ScheduleInvalidData(
+                    "Ao passar horários, deve-se passar um para cada data selecionada"
+                )
 
         if allocated:
-            if classroom_id is None and reservation_id is None:
+            if classroom_id:
                 raise ScheduleInvalidData(
-                    "Allocated", "Classroom ID and Reservation ID"
+                    "Uma agenda alocada deve fornecer uma sala de aula"
                 )
 
         return self
@@ -89,10 +103,10 @@ class ScheduleUpdateOccurrences(BaseModel):
 
 
 class ScheduleInvalidData(HTTPException):
-    def __init__(self, schedule_info: str, data_info: str) -> None:
+    def __init__(self, detail: str) -> None:
         super().__init__(
             status.HTTP_400_BAD_REQUEST,
-            f"Schedule with {schedule_info} has invalid {data_info} value",
+            detail,
         )
 
 
