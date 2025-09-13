@@ -49,6 +49,6 @@ class Occurrence(BaseModel, table=True):
             return True
         if self.start_time > start_time and self.end_time < end_time:
             return True
-        if self.start_time == start_time and self.end_time == end_time:
+        if self.start_time == start_time or self.end_time == end_time:
             return True
         return False

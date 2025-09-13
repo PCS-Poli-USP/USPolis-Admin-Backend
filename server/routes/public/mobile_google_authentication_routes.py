@@ -1,5 +1,3 @@
-import os
-from dotenv import load_dotenv
 from typing import Annotated
 from fastapi import APIRouter, Header
 
@@ -13,11 +11,9 @@ from server.models.http.responses.mobile_auth_user_response_models import (
     AuthenticationResponse,
 )
 from server.utils.google_auth_utils import authenticate_with_google
+from server.config import CONFIG
 
 router = APIRouter(prefix="/mobile/authentication", tags=["Mobile", "Authenticate"])
-
-# Carregar variáveis do arquivo .env
-load_dotenv()
 
 
 @router.post("")
@@ -41,7 +37,7 @@ async def create_new_user(
 ) -> AuthenticationResponse:
     """Validates the token and creates a new user and store its information in the DB (received from the Google API)"""
     userInfo = id_token.verify_oauth2_token(
-        idToken, requests.Request(), os.getenv("G_AUTH_CLIENT_ID")
+        idToken, requests.Request(), CONFIG.google_auth_mobile_client_id
     )
 
     newUser = MobileUser(

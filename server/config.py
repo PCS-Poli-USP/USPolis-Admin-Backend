@@ -1,12 +1,13 @@
 """FastAPI server configuration."""
 
-from decouple import config, RepositoryEnv, Config as DConfig, Csv  # type: ignore [import-untyped]
+from decouple import config, RepositoryEnv, Config as DConfig, Csv  # type: ignore
 from pydantic import BaseModel
 
 # Mapeamento dos arquivos por ambiente
 env_files = {
     "DEVELOPMENT": ".env.dev",
     "PRODUCTION": ".env.prod",
+    "STAGING": ".env.stage",
 }
 
 base_config = DConfig(RepositoryEnv(".env"))
@@ -28,7 +29,8 @@ class Settings(BaseModel):
         cast=Csv(),
     )  # pyright: ignore[reportAssignmentType]
 
-    port: str = config("PORT", default="5000")  # pyright: ignore[reportAssignmentType]
+    root_url: str = config("ROOT_URL", default="http://localhost:8000")  # pyright: ignore[reportAssignmentType]
+    port: str = config("PORT", default="8000")  # pyright: ignore[reportAssignmentType]
     debug: bool = config("DEBUG", default=False, cast=bool)  # pyright: ignore[reportAssignmentType]
 
     # SQLAlchemy settings
@@ -49,6 +51,8 @@ class Settings(BaseModel):
     google_auth_client_id: str = config("GOOGLE_AUTH_CLIENT_ID")  # pyright: ignore[reportAssignmentType]
     google_auth_client_secret: str = config("GOOGLE_AUTH_CLIENT_SECRET")  # pyright: ignore[reportAssignmentType]
     google_auth_redirect_uri: str = config("GOOGLE_AUTH_REDIRECT_URI")  # pyright: ignore[reportAssignmentType]
+    google_auth_domain_name: str = config("G_AUTH_DOMAIN_NAME")  # pyright: ignore[reportAssignmentType]
+    google_auth_mobile_client_id: str = config("G_AUTH_CLIENT_ID")  # pyright: ignore[reportAssignmentType]
 
     # Testing / Development:
     test_db_uri: str = config("TEST_DATABASE_URI", default="")  # pyright: ignore[reportAssignmentType]
