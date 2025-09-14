@@ -191,7 +191,8 @@ class ScheduleRepository:
                 start_time=input.start_time,
                 end_time=input.end_time,
                 dates=input.dates,
-                labels=input.labels if input.labels else None,
+                labels=input.labels,
+                times=input.times,
             )
             occurences = OccurrenceRepository.create_many_with_schedule(
                 schedule=new_schedule, input=occurences_input, session=session

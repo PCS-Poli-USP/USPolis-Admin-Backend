@@ -33,7 +33,7 @@ class ScheduleRegister(ScheduleBase):
     week_day: WeekDay | None = None
     month_week: MonthWeek | None = None
     dates: list[date] | None = None
-    times: list[time] | None = None
+    times: list[tuple[time, time]] | None = None
     labels: list[str] | None = None
 
     @model_validator(mode="after")
@@ -74,10 +74,16 @@ class ScheduleRegister(ScheduleBase):
                 raise ScheduleInvalidData(
                     "Ao passar rótulos, deve-se passar uma para cada data selecionada"
                 )
-            if times is not None and len(times) != len(dates):
-                raise ScheduleInvalidData(
-                    "Ao passar horários, deve-se passar um para cada data selecionada"
-                )
+            if times is not None:
+                if len(times) != len(dates):
+                    raise ScheduleInvalidData(
+                        "Ao passar horários, deve-se passar um para cada data selecionada"
+                    )
+                for time_pair in times:
+                    if len(time_pair) != 2:
+                        raise ScheduleInvalidData(
+                            "Cada entrada de horário deve conter um horário de início e fim"
+                        )
 
         if allocated:
             if classroom_id:

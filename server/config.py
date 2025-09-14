@@ -11,7 +11,7 @@ env_files = {
 }
 
 base_config = DConfig(RepositoryEnv(".env"))
-env = base_config("ENVIRONMENT", default="DEVELOPMENT", cast=str).upper()  # pyright: ignore[reportAssignmentType]
+env = base_config("ENVIRONMENT", default="DEVELOPMENT", cast=str).upper()  # pyright: ignore[reportAttributeAccessIssue, reportAssignmentType]
 env_path = env_files.get(env, ".env.dev")
 config = DConfig(RepositoryEnv(env_path))  # noqa: F811
 

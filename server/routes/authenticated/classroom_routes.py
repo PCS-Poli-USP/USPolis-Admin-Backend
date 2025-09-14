@@ -1,5 +1,4 @@
-from typing import Annotated
-from fastapi import APIRouter, Body, Query
+from fastapi import APIRouter, Body
 
 from server.deps.conflict_checker import ConflictCheckerDep
 from server.deps.repository_adapters.classroom_repository_adapter import (
@@ -49,10 +48,10 @@ def get_classrooms_with_conflicts_count_for_schedule(
     return classrooms
 
 
-@router.get("/with-conflict-count/{building_id}")
+@router.post("/with-conflict-count/{building_id}")
 def get_classroom_with_conflicts_count(
     building_id: int,
-    params: Annotated[ConflictParams, Query()],
+    params: ConflictParams,
     conflict_checker: ConflictCheckerDep,
 ) -> list[ClassroomWithConflictsIndicator]:
     classrooms = conflict_checker.classrooms_with_conflicts_indicator(

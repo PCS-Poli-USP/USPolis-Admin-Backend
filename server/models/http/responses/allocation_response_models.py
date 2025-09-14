@@ -61,6 +61,7 @@ class BaseExtendedData(BaseModel):
     end_time: time
     start_date: datetime_date | None = None
     end_date: datetime_date | None = None
+    label: str | None = None
 
     @classmethod
     def from_reservation(cls, reservation: Reservation) -> "BaseExtendedData":
@@ -136,10 +137,16 @@ class ReservationExtendedData(BaseExtendedData):
     type: ReservationType
     reason: str | None = None
     created_by: str
+    subject_id: int | None = None
+    subject_code: str | None = None
+    subject_name: str | None = None
+    class_ids: list[int] | None = None
+    class_codes: list[str] | None = None
 
     @classmethod
     def from_reservation(cls, reservation: Reservation) -> "ReservationExtendedData":
         base = BaseExtendedData.from_reservation(reservation)
+        exam = reservation.exam
         return cls(
             **base.model_dump(),
             reservation_id=must_be_int(reservation.id),
@@ -147,6 +154,11 @@ class ReservationExtendedData(BaseExtendedData):
             type=reservation.type,
             reason=reservation.reason,
             created_by=reservation.created_by.name,
+            subject_id=exam.subject_id if exam else None,
+            subject_code=exam.subject.code if exam else None,
+            subject_name=exam.subject.name if exam else None,
+            class_ids=[must_be_int(c.id) for c in exam.classes] if exam else None,
+            class_codes=[c.code for c in exam.classes] if exam else None,
         )
 
 
@@ -160,11 +172,21 @@ class EventExtendedProps(BaseModel):
         if occurrence.schedule.class_:
             data.class_data = ClassExtendedData.from_schedule(occurrence.schedule)
             data.class_data.occurrence_id = must_be_int(occurrence.id)
+            data.class_data.label = (
+                occurrence.occurrence_label.label
+                if occurrence.occurrence_label
+                else None
+            )
         if occurrence.schedule.reservation:
             data.reservation_data = ReservationExtendedData.from_reservation(
                 occurrence.schedule.reservation
             )
             data.reservation_data.occurrence_id = must_be_int(occurrence.id)
+            data.reservation_data.label = (
+                occurrence.occurrence_label.label
+                if occurrence.occurrence_label
+                else None
+            )
         return data
 
     @classmethod

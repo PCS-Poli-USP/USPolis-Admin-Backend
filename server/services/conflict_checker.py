@@ -94,7 +94,8 @@ class ConflictParams(BaseModel):
     start_time: time
     end_time: time
     recurrence: Recurrence
-    dates: list[date] = []
+    dates: list[date] | None = None
+    times: list[tuple[time, time]] | None = None
     start_date: date | None = None
     end_date: date | None = None
     week_day: WeekDay | None = None
@@ -105,7 +106,11 @@ class ConflictParams(BaseModel):
         if self.recurrence != Recurrence.CUSTOM:
             if self.dates:
                 raise InvalidConflictParams(
-                    "Datas NÃO devem ser fornecidas para essa recorrência"
+                    f"Datas NÃO devem ser fornecidas para recorrência {Recurrence.translated(self.recurrence)}"
+                )
+            if self.times:
+                raise InvalidConflictParams(
+                    f"Horários NÃO devem ser fornecidas para recorrência {Recurrence.translated(self.recurrence)}"
                 )
 
             if not self.start_date or not self.end_date:
@@ -113,12 +118,12 @@ class ConflictParams(BaseModel):
 
             if self.recurrence == Recurrence.DAILY and self.week_day:
                 raise InvalidConflictParams(
-                    "Dia da semana NÃO deve ser fornecida para essa recorrência"
+                    f"Dia da semana NÃO deve ser fornecida para recorrência {Recurrence.translated(self.recurrence)}"
                 )
 
             if not self.week_day:
                 raise InvalidConflictParams(
-                    "Dia da semana DEVE ser fornecida para essa recorrência"
+                    f"Dia da semana DEVE ser fornecida para recorrência {Recurrence.translated(self.recurrence)}"
                 )
 
             if (
@@ -126,19 +131,41 @@ class ConflictParams(BaseModel):
                 or self.recurrence == Recurrence.BIWEEKLY
             ) and self.month_week:
                 raise InvalidConflictParams(
-                    "Semana do mês NÃO deve ser fornecida para essa recorrência"
+                    f"Semana do mês NÃO deve ser fornecida para recorrência {Recurrence.translated(self.recurrence)}"
                 )
 
             if self.recurrence == Recurrence.MONTHLY and not self.month_week:
                 raise InvalidConflictParams(
-                    "Semana do mês DEVE ser fornecida para essa recorrência"
+                    f"Semana do mês DEVE ser fornecida para recorrência {Recurrence.translated(self.recurrence)}"
                 )
 
-        if self.recurrence == Recurrence.CUSTOM and not self.dates:
-            raise InvalidConflictParams(
-                "Datas DEVEM ser fornecidas para essa recorrência"
-            )
+        if self.recurrence == Recurrence.CUSTOM:
+            if not self.dates:
+                raise InvalidConflictParams(
+                    f"Datas DEVEM ser fornecidas para recorrência {Recurrence.translated(self.recurrence)}"
+                )
+            if self.times and len(self.times) != len(self.dates):
+                raise InvalidConflictParams(
+                    "Ao fornecer horários, deve-se fornecer um para cada data selecionada"
+                )
+            if self.times and any(len(time_pair) != 2 for time_pair in self.times):
+                raise InvalidConflictParams(
+                    "Cada entrada de horário deve conter um horário de início e fim"
+                )
+            if self.times and any(
+                time_pair[0] >= time_pair[1] for time_pair in self.times
+            ):
+                raise InvalidConflictParams(
+                    "Cada horário deve ter o horário de início anterior ao horário de fim"
+                )
         return self
+
+
+# Frozen is for making the model hashable, that will be used to create a dict where TimeParam is the key
+class TimeParam(BaseModel, frozen=True):
+    date: date
+    start_time: time
+    end_time: time
 
 
 class InvalidConflictParams(HTTPException):
@@ -194,7 +221,7 @@ class ConflictChecker:
         classrooms = ClassroomRepository.get_all_on_buildings(
             building_ids=[building_id], session=self.session
         )
-        dates = params.dates
+        dates = []
         if params.recurrence != Recurrence.CUSTOM:
             dates = OccurrenceUtils._dates_for_recurrence(
                 week_day=params.week_day.value if params.week_day else -1,
@@ -203,12 +230,27 @@ class ConflictChecker:
                 end_date=params.end_date,  # type: ignore
                 month_week=params.month_week.value if params.month_week else None,
             )
+        if params.recurrence == Recurrence.CUSTOM and params.dates:
+            dates = params.dates
+
         classrooms_with_conflicts: list[ClassroomWithConflictsIndicator] = []
+
+        if params.times:
+            time_params = [
+                TimeParam(date=date, start_time=start, end_time=end)
+                for date, (start, end) in zip(dates, params.times)
+            ]
+        else:
+            time_params = [
+                TimeParam(
+                    date=date, start_time=params.start_time, end_time=params.end_time
+                )
+                for date in dates
+            ]
+
         for classroom in classrooms:
             count = self.__count_conflicts_time_in_classroom_in_dates(
-                params.start_time,
-                params.end_time,
-                dates,
+                time_params,
                 classroom,
             )
             classroom_with_conflicts = ClassroomWithConflictsIndicator.from_classroom(
@@ -444,30 +486,33 @@ class ConflictChecker:
 
         return total_count, infos
 
-    def __get_filtered_occurrences_by_dates(
+    def __get_filtered_occurrences_by_time_params(
         self,
         classroom: Classroom,
-        dates: list[date],
-    ) -> list[Occurrence]:
+        time_params: list[TimeParam],
+    ) -> dict[TimeParam, list[Occurrence]]:
+        dates = [tp.date for tp in time_params]
         filtered_occurrences = list(
             filter(lambda x: x.date in dates, classroom.occurrences)
         )
-        return filtered_occurrences
+        return {
+            tp: [occ for occ in filtered_occurrences if occ.date == tp.date]
+            for tp in time_params
+        }
 
     def __count_conflicts_time_in_classroom_in_dates(
         self,
-        start_time: time,
-        end_time: time,
-        dates: list[date],
+        time_params: list[TimeParam],
         classroom: Classroom,
     ) -> int:
         count = 0
-        filtered_occurrences = self.__get_filtered_occurrences_by_dates(
-            classroom, dates
+        occurrences_map = self.__get_filtered_occurrences_by_time_params(
+            classroom, time_params
         )
-        for occurrence in filtered_occurrences:
-            if occurrence.conflicts_with_time(start_time, end_time):
-                count += 1
+        for tp, filtered_occurrences in occurrences_map.items():
+            for occurrence in filtered_occurrences:
+                if occurrence.conflicts_with_time(tp.start_time, tp.end_time):
+                    count += 1
         return count
 
     def __pair_exists_in_intentional_pairs(

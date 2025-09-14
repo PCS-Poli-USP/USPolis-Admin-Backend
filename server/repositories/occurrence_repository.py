@@ -203,13 +203,14 @@ class OccurrenceRepository:
             )
 
         occurrences: list[Occurrence] = []
+        print(input.times)
         for i, dt in enumerate(input.dates):
             occurrence = Occurrence(
                 schedule=schedule,
                 classroom_id=input.classroom_id,
                 classroom=classroom,
-                start_time=input.start_time,
-                end_time=input.end_time,
+                start_time=input.start_time if not input.times else input.times[i][0],
+                end_time=input.end_time if not input.times else input.times[i][1],
                 date=dt,
             )
             if input.labels:
