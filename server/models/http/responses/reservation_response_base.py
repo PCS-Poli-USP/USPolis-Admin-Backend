@@ -1,10 +1,11 @@
-from datetime import datetime
+from datetime import datetime, time
 from typing import Self
 from pydantic import BaseModel
 
 from server.models.database.event_db_model import Event
 from server.models.database.exam_db_model import Exam
 from server.models.database.meeting_db_model import Meeting
+from server.models.database.occurrence_label_db_model import OccurrenceLabel
 from server.models.database.reservation_db_model import Reservation
 from server.models.http.responses.schedule_response_models import ScheduleResponse
 from server.utils.enums.event_type_enum import EventType
@@ -20,9 +21,18 @@ class ExamResponseBase(BaseModel):
     subject_code: str
     subject_name: str
     class_ids: list[int]
+    times: list[tuple[time, time]]
+    labels: list[str]
 
     @classmethod
     def from_exam(cls, exam: Exam) -> Self:
+        occurrences = exam.get_schedule().occurrences
+        labels: list[OccurrenceLabel] = []
+        for o in occurrences:
+            if o.occurrence_label is None:
+                raise ValueError("Occurrence label is missing for an exam occurrence.")
+            labels.append(o.occurrence_label)
+
         return cls(
             id=must_be_int(exam.id),
             reservation_id=must_be_int(exam.reservation_id),
@@ -30,6 +40,8 @@ class ExamResponseBase(BaseModel):
             subject_code=exam.subject.code,
             subject_name=exam.subject.name,
             class_ids=[must_be_int(c.id) for c in exam.classes],
+            times=[(o.start_time, o.end_time) for o in occurrences],
+            labels=[o.label for o in labels],
         )
 
 
