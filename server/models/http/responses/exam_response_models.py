@@ -5,30 +5,26 @@ from server.models.database.exam_db_model import Exam
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.http.responses.allocation_response_models import RRule
 from server.models.http.responses.class_response_models import ClassResponseBase
-from server.models.http.responses.reservation_response_models import ReservationResponse
+
+
+from server.models.http.responses.reservation_response_base import (
+    ExamResponseBase,
+    ReservationCoreResponse,
+)
 from server.utils.enums.recurrence import Recurrence
 from server.utils.must_be_int import must_be_int
 
 
-class ExamResponse(BaseModel):
-    id: int
-    reservation_id: int
-    subject_id: int
-    subject_code: str
-    subject_name: str
-
-    reservation: ReservationResponse
+class ExamResponse(ExamResponseBase):
+    reservation: ReservationCoreResponse
     classes: list[ClassResponseBase]
 
     @classmethod
     def from_exam(cls, exam: Exam) -> Self:
+        base = super().from_exam(exam)
         return cls(
-            id=must_be_int(exam.id),
-            reservation_id=must_be_int(exam.reservation_id),
-            subject_id=must_be_int(exam.subject_id),
-            subject_code=exam.subject.code,
-            subject_name=exam.subject.name,
-            reservation=ReservationResponse.from_reservation(exam.reservation),
+            **base.model_dump(),
+            reservation=ReservationCoreResponse.from_reservation(exam.reservation),
             classes=[ClassResponseBase.from_class(c) for c in exam.classes],
         )
 

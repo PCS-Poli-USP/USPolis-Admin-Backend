@@ -1,22 +1,22 @@
 from typing import Self
-from pydantic import BaseModel
 
 from server.models.database.meeting_db_model import Meeting
-from server.models.http.responses.reservation_response_models import ReservationResponse
-from server.utils.must_be_int import must_be_int
+
+from server.models.http.responses.reservation_response_base import (
+    MeetingResponseBase,
+    ReservationCoreResponse,
+)
 
 
-class MeetingResponse(BaseModel):
-    id: int
-    link: str | None
-    reservation: ReservationResponse
+class MeetingResponse(MeetingResponseBase):
+    reservation: ReservationCoreResponse
 
     @classmethod
     def from_meeting(cls, meeting: Meeting) -> Self:
+        base = super().from_meeting(meeting)
         return cls(
-            id=must_be_int(meeting.id),
-            link=meeting.link,
-            reservation=ReservationResponse.from_reservation(meeting.reservation),
+            **base.model_dump(),
+            reservation=ReservationCoreResponse.from_reservation(meeting.reservation),
         )
 
     @classmethod
