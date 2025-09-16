@@ -43,12 +43,6 @@ class ClassroomSolicitationSchema(BaseModel):
     reservation_id: int | None
 
 
-old_reservation_type = (
-    sa.Enum("EXAM", "MEETING", "EVENT", "OTHER", name="reservationtype"),
-)
-new_reservation_type = sa.Enum("EXAM", "MEETING", "EVENT", name="reservationtype")
-
-
 def upgrade() -> None:
     bind = op.get_bind()
 
@@ -66,7 +60,6 @@ def upgrade() -> None:
         "reservation_classroom_id_fkey", "reservation", type_="foreignkey"
     )
     op.drop_column("reservation", "classroom_id")
-    op.execute("UPDATE reservation SET type = 'EVENT' WHERE type = 'OTHER'")
 
     # --- Solicitation migration ---
     # Rename FKS
@@ -131,6 +124,7 @@ def upgrade() -> None:
         )
 
     # Para cada solicitação, cria uma reserva (se não tiver), uma agenda e suas ocorrências
+    # Associa a reserva a um evento (valor padrão)
 
     for data in solicitations:
         classroom_id = data.classroom_id
@@ -161,7 +155,7 @@ def upgrade() -> None:
                 """),
                 dict(
                     title=data.reservation_title,
-                    type=str(data.reservation_type.value).upper(),
+                    type="EVENT",
                     reason=data.reason,
                     updated_at=BrazilDatetime.now_utc(),
                     created_by_id=data.user_id,
@@ -210,18 +204,17 @@ def upgrade() -> None:
                             sid=schedule_id,
                         ),
                     )
+            bind.execute(
+                sa.text("""
+                INSERT INTO event (reservation_id, link, type)
+                VALUES (:rid, NULL, :etype)
+            """),
+                {"rid": reservation_id, "etype": "OTHER"},
+            )
 
         bind.execute(
             sa.text("UPDATE solicitation SET reservation_id = :rid WHERE id = :sid"),
             {"rid": reservation_id, "sid": data.id},
-        )
-
-        bind.execute(
-            sa.text("""
-                INSERT INTO event (reservation_id, link, type)
-                VALUES (:rid, NULL, :etype)
-            """),
-            {"rid": reservation_id, "etype": "OTHER"},
         )
 
     # Deleta as colunas antigas
@@ -301,7 +294,7 @@ def downgrade() -> None:
         "solicitation",
         sa.Column(
             "reservation_type",
-            sa.Enum("EXAM", "MEETING", "EVENT", "OTHER", name="reservationtype"),
+            sa.Enum("EXAM", "MEETING", "EVENT", name="reservationtype"),
             nullable=True,
         ),
     )

@@ -21,6 +21,8 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
+    bind = op.get_bind()
+
     op.create_table(
         "exam",
         sa.Column("id", sa.Integer(), nullable=False),
@@ -46,7 +48,7 @@ def upgrade() -> None:
         "meeting",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("reservation_id", sa.Integer(), nullable=False),
-        sa.Column("link", sqlmodel.sql.sqltypes.AutoString(), nullable=True),  # type: ignore
+        sa.Column("link", sqlmodel.sql.sqltypes.AutoString(), nullable=True),  # pyright: ignore[reportAttributeAccessIssue]
         sa.ForeignKeyConstraint(
             ["reservation_id"],
             ["reservation.id"],
@@ -61,7 +63,7 @@ def upgrade() -> None:
         "reservationevent",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("reservation_id", sa.Integer(), nullable=False),
-        sa.Column("link", sqlmodel.sql.sqltypes.AutoString(), nullable=True),  # type: ignore
+        sa.Column("link", sqlmodel.sql.sqltypes.AutoString(), nullable=True),  # pyright: ignore[reportAttributeAccessIssue]
         sa.Column(
             "type",
             type_=event_type,
@@ -93,8 +95,65 @@ def upgrade() -> None:
         ),
     )
 
+    # Deixa tudo por padrão como "EVENT"
+    op.execute("UPDATE reservation SET type = 'EVENT';")
+    op.execute("UPDATE classroomsolicitation SET reservation_type = 'EVENT';")
+    new_reservation_type = sa.Enum(
+        "EXAM", "MEETING", "EVENT", name="newreservationtype"
+    )
+    new_reservation_type.create(bind, checkfirst=True)
+    op.execute("""
+        ALTER TABLE reservation 
+        ALTER COLUMN type 
+        TYPE newreservationtype 
+        USING type::text::newreservationtype;
+    """)
+    op.execute("""
+        ALTER TABLE classroomsolicitation 
+        ALTER COLUMN reservation_type 
+        TYPE newreservationtype 
+        USING reservation_type::text::newreservationtype;
+    """)
+    op.execute("DROP TYPE reservationtype;")
+    op.execute("ALTER TYPE newreservationtype RENAME TO reservationtype;")
+
+    # Seleciona todas as reservas e cria para ela eventos (valor padrão agora)
+    rows = bind.execute(sa.text("""SELECT * FROM reservation;""")).fetchall()
+    # row = (id, title, type, reason, updated_at, created_by_id, classroom_id)
+
+    # Cria um evento para cada reserva
+    for row in rows:
+        bind.execute(
+            sa.text("""
+                INSERT INTO reservationevent (reservation_id, link, type)
+                VALUES (:rid, NULL, :etype)
+            """),
+            {"rid": row[0], "etype": "OTHER"},
+        )
+    print("Reservations updated:", len(rows))
+
 
 def downgrade() -> None:
+    old_reservation_type = sa.Enum(
+        "EXAM", "MEETING", "EVENT", "OTHER", name="oldreservationtype"
+    )
+    old_reservation_type.create(op.get_bind(), checkfirst=True)
+
+    op.execute("""
+        ALTER TABLE reservation 
+        ALTER COLUMN type 
+        TYPE oldreservationtype 
+        USING type::text::oldreservationtype;
+    """)
+    op.execute("""
+        ALTER TABLE classroomsolicitation 
+        ALTER COLUMN reservation_type 
+        TYPE oldreservationtype 
+        USING reservation_type::text::oldreservationtype;
+    """)
+    op.execute("DROP TYPE reservationtype;")
+    op.execute("ALTER TYPE oldreservationtype RENAME TO reservationtype;")
+
     op.drop_column("reservation", "audiovisual")
     op.drop_table("reservationevent")
     op.execute("DROP TYPE public.eventtype")
