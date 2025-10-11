@@ -29,6 +29,7 @@ env = Environment(loader=FileSystemLoader(template_path))
 
 
 RESERVATION_SUBJECT = "Reserva de Sala - USPolis"
+BLACKLIST = ["amazetti@usp.br"]
 
 
 class EmailService:
@@ -60,6 +61,8 @@ class EmailService:
     ) -> None:
         template = env.get_template("/solicitations/solicitation-requested.html")
         for user in users:
+            if user.email in BLACKLIST:
+                continue
             body = template.render(
                 data=SolicitationRequestedMail.from_solicitation(user, solicitation)
             )
