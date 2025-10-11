@@ -21,7 +21,7 @@ class ExamResponse(ExamResponseBase):
 
     @classmethod
     def from_exam(cls, exam: Exam) -> Self:
-        base = super().from_exam(exam)
+        base = ExamResponseBase.from_exam(exam)
         return cls(
             **base.model_dump(),
             reservation=ReservationCoreResponse.from_reservation(exam.reservation),

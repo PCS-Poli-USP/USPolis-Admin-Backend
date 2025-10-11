@@ -100,6 +100,7 @@ class ConflictParams(BaseModel):
     end_date: date | None = None
     week_day: WeekDay | None = None
     month_week: MonthWeek | None = None
+    exclude_ids: list[int] = []
 
     @model_validator(mode="after")
     def validate_body(self) -> Self:
@@ -250,8 +251,7 @@ class ConflictChecker:
 
         for classroom in classrooms:
             count = self.__count_conflicts_time_in_classroom_in_dates(
-                time_params,
-                classroom,
+                time_params, classroom, exclude_ids=set(params.exclude_ids)
             )
             classroom_with_conflicts = ClassroomWithConflictsIndicator.from_classroom(
                 classroom
@@ -490,11 +490,13 @@ class ConflictChecker:
         self,
         classroom: Classroom,
         time_params: list[TimeParam],
+        exclude_ids: set[int] = set(),
     ) -> dict[TimeParam, list[Occurrence]]:
         dates = [tp.date for tp in time_params]
-        filtered_occurrences = list(
-            filter(lambda x: x.date in dates, classroom.occurrences)
-        )
+        occurrences = [
+            occ for occ in classroom.occurrences if occ.id not in exclude_ids
+        ]
+        filtered_occurrences = list(filter(lambda x: x.date in dates, occurrences))
         return {
             tp: [occ for occ in filtered_occurrences if occ.date == tp.date]
             for tp in time_params
@@ -504,10 +506,11 @@ class ConflictChecker:
         self,
         time_params: list[TimeParam],
         classroom: Classroom,
+        exclude_ids: set[int] = set(),
     ) -> int:
         count = 0
         occurrences_map = self.__get_filtered_occurrences_by_time_params(
-            classroom, time_params
+            classroom, time_params, exclude_ids=exclude_ids
         )
         for tp, filtered_occurrences in occurrences_map.items():
             for occurrence in filtered_occurrences:

@@ -16,6 +16,9 @@ from server.config import CONFIG
 app = FastAPI(
     title="USPolis Server",
     version="2.0.0",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json",
 )
 
 app.add_middleware(

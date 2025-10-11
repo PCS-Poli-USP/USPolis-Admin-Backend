@@ -105,7 +105,7 @@ class LoggerMiddleware(BaseHTTPMiddleware):
             return response
 
         body = b""
-        async for chunk in response.body_iterator:  # type: ignore
+        async for chunk in response.body_iterator:  # pyright: ignore[reportAttributeAccessIssue]
             body += chunk
 
         detail = None

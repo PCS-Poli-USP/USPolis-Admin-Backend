@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import date, datetime, time
 from typing import Self
 from pydantic import BaseModel
 
@@ -23,6 +23,7 @@ class ExamResponseBase(BaseModel):
     class_ids: list[int]
     times: list[tuple[time, time]]
     labels: list[str]
+    dates: list[date]
 
     @classmethod
     def from_exam(cls, exam: Exam) -> Self:
@@ -42,6 +43,7 @@ class ExamResponseBase(BaseModel):
             class_ids=[must_be_int(c.id) for c in exam.classes],
             times=[(o.start_time, o.end_time) for o in occurrences],
             labels=[o.label for o in labels],
+            dates=[o.date for o in occurrences],
         )
 
 
