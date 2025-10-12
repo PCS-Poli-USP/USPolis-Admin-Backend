@@ -41,11 +41,12 @@ class ScheduleRepository:
         return schedule
 
     @staticmethod
-    def get_all_unallocated(*, session: Session) -> list[Schedule]:
-        """Get all unallocated schedules that are not custom recurrence"""
+    def get_all_unallocated_for_classes(*, session: Session) -> list[Schedule]:
+        """Get all unallocated classes schedules that are not custom recurrence"""
         statement = select(Schedule).where(
-            Schedule.allocated == False,  # noqa: E712
+            ~col(Schedule.allocated),
             col(Schedule.recurrence) != Recurrence.CUSTOM,
+            col(Schedule.class_id).is_not(None),
         )
         schedules = session.exec(statement).all()
         return list(schedules)

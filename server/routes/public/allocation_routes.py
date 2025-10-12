@@ -24,7 +24,7 @@ def get_all_allocation_events(
     occurrences = OccurrenceRepository.get_all_on_interval_for_allocation(
         start, end, session
     )
-    schedules = ScheduleRepository.get_all_unallocated(session=session)
+    schedules = ScheduleRepository.get_all_unallocated_for_classes(session=session)
     events = AllocationEventResponse.from_occurrence_list(occurrences)
     events.extend(AllocationEventResponse.from_schedule_list(schedules))
     return events

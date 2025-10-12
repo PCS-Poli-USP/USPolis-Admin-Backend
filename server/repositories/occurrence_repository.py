@@ -74,16 +74,22 @@ class OccurrenceRepository:
     def get_all_on_interval_for_allocation(
         start: date, end: date, session: Session
     ) -> list[Occurrence]:
-        """Get all occurrences on interval [start, end] that are not allocated OR have remote classrooms"""
+        """Get all occurrences on interval [start, end], that satisfy one of:\n
+        - It's not remote
+        - It's unallocated and belongs to a schedule from a class
+        """
         statement = (
             select(Occurrence)
+            .join(Schedule)
             .join(Classroom, col(Occurrence.classroom_id) == Classroom.id, isouter=True)
-            .where(Occurrence.date >= start, Occurrence.date <= end)
             .where(
+                Occurrence.date >= start,
+                Occurrence.date <= end,
                 or_(
                     ~col(Classroom.remote),
-                    col(Occurrence.classroom_id) == None,  # noqa: E711
-                )
+                    (col(Occurrence.classroom_id).is_(None))
+                    & (col(Schedule.class_id).is_not(None)),
+                ),
             )
         )
         occurrences = session.exec(statement).all()
@@ -123,20 +129,24 @@ class OccurrenceRepository:
             user=user, schedule=schedule, classroom=classroom
         )
         AllocationLogRepository.create(input=input, schedule=schedule, session=session)
+
         occurrences = OccurrenceUtils.generate_occurrences(schedule)
-        if schedule.allocated:
-            previous_occurrences = schedule.occurrences
-            for occurrence in previous_occurrences:
-                session.delete(occurrence)
+        previous_occurrences = list(schedule.occurrences)
+        schedule.occurrences.clear()
+
+        for occurrence in previous_occurrences:
+            session.delete(occurrence)
 
         for occurrence in occurrences:
             occurrence.classroom_id = classroom.id
             occurrence.classroom = classroom
+            occurrence.schedule_id = must_be_int(schedule.id)
             session.add(occurrence)
 
         schedule.occurrences = occurrences
         schedule.classroom = classroom
         schedule.allocated = True
+
         session.add(schedule)
         session.add(classroom)
         return occurrences
