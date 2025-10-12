@@ -24,6 +24,7 @@ class OccurrenceUtils:
                     start_time=oc.start_time,
                     end_time=oc.end_time,
                     schedule_id=must_be_int(schedule.id),
+                    schedule=schedule,
                 )
                 for oc in schedule.occurrences
             ]
