@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import Depends, Header, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from server.config import CONFIG
 from server.deps.session_dep import SessionDep
 from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
@@ -35,6 +36,9 @@ def authenticate(
     try:
         user: User = UserRepository.get_by_email(email=user_info.email, session=session)
     except NoResultFound:
+        if user_info.domain != CONFIG.google_auth_domain_name:
+            raise InvalidEmailDomain()
+
         user = UserRepository.create(
             input=UserRegister(
                 email=user_info.email,
@@ -93,6 +97,14 @@ class InvalidToken(HTTPException):
             detail="Token inválido",
         )
         self.headers = {"WWW-Authenticate": "Bearer"}
+
+
+class InvalidEmailDomain(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Domínio inválido, deve-se usar domínio USP!",
+        )
 
 
 class AdminAccessRequired(HTTPException):
