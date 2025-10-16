@@ -26,7 +26,7 @@ depends_on: str | Sequence[str] | None = None
 def upgrade() -> None:
     # Not correct, is necessary to make the column unique
     # Maybe delete the most old entry when multiple entries exist
-    
+
     op.create_unique_constraint("event_reservation_id_key", "event", ["reservation_id"])
     op.create_unique_constraint("exam_reservation_id_key", "exam", ["reservation_id"])
     op.create_unique_constraint(

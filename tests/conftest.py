@@ -99,8 +99,9 @@ def mock_session_fixture() -> MagicMock:
 def mock_google_authenticate() -> AuthUserInfo:
     return AuthUserInfo(
         email=CONFIG.mock_email,
-        name="Mock User",
         email_verified=True,
+        domain="usp.br",
+        name="Mock User",
         picture="",
         given_name="Mock",
         family_name="User",

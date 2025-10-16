@@ -59,7 +59,9 @@ class Class(BaseModel, table=True):
     )
     subject: "Subject" = Relationship(back_populates="classes")
     posts: list["ForumPost"] = Relationship(cascade_delete=True)
-    exams: list["Exam"] = Relationship(back_populates="classes", link_model=ExamClassLink)
+    exams: list["Exam"] = Relationship(
+        back_populates="classes", link_model=ExamClassLink
+    )
 
     def classroom_ids(self) -> set[int]:
         """

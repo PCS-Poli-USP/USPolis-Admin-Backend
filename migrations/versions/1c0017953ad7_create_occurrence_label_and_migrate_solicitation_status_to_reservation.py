@@ -88,9 +88,7 @@ def downgrade() -> None:
     op.drop_table("occurrencelabel")
 
     # Status migration from reservation to solicitation
-    op.execute(
-        "ALTER TYPE public.reservationstatus RENAME TO solicitationstatus;"
-    )
+    op.execute("ALTER TYPE public.reservationstatus RENAME TO solicitationstatus;")
     op.add_column(
         "solicitation",
         sa.Column("status", old_status_type, nullable=True),
