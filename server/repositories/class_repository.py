@@ -66,16 +66,17 @@ class ClassRepository:
     ) -> list[Class]:
         statement = (
             select(Class)
-            .join(Schedule)
-            .join(Classroom)
-            .where(col(Classroom.building_id) == (building_id))
-            .distinct()  # avoid duplicates
+            .join(Schedule, col(Schedule.class_id) == Class.id)
+            .join(Classroom, col(Classroom.id) == Schedule.classroom_id)
+            .where(Classroom.building_id == building_id)
+            .distinct()
         )
         statement = ClassRepository.__apply_interval_filter(
             statement=statement,
             interval=interval,
         )
         classes = session.exec(statement).all()
+        print(len(classes))
         return list(classes)
 
     @staticmethod

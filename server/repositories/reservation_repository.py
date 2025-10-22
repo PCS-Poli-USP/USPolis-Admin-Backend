@@ -24,19 +24,28 @@ from server.utils.must_be_int import must_be_int
 class ReservationRepository:
     @staticmethod
     def __apply_interval_filter(
-        *,
-        statement: Select,
-        interval: QueryInterval,
+        *, statement: Select, interval: QueryInterval, use_join: bool = True
     ) -> Any:
         if interval.today:
-            statement = statement.join(Schedule).where(
-                col(Schedule.end_date) >= interval.today,
+            statement = (
+                statement.join(Schedule).where(
+                    col(Schedule.end_date) >= interval.today,
+                )
+                if use_join
+                else statement.where(col(Schedule.end_date) >= interval.today)
             )
 
         if interval.start and interval.end:
-            statement = statement.join(Schedule).where(
-                col(Schedule.start_date) >= interval.start,
-                col(Schedule.end_date) <= interval.end,
+            statement = (
+                statement.join(Schedule).where(
+                    col(Schedule.start_date) >= interval.start,
+                    col(Schedule.end_date) <= interval.end,
+                )
+                if use_join
+                else statement.where(
+                    col(Schedule.start_date) >= interval.start,
+                    col(Schedule.end_date) <= interval.end,
+                )
             )
         return statement
 
@@ -53,15 +62,14 @@ class ReservationRepository:
     def get_all_on_buildings(
         *, building_ids: list[int], session: Session, interval: QueryInterval
     ) -> list[Reservation]:
-        statement = select(Reservation)
+        statement = select(Reservation).join(
+            Schedule, col(Schedule.reservation_id) == col(Reservation.id)
+        )
         statement = ReservationRepository.__apply_interval_filter(
-            statement=statement, interval=interval
+            statement=statement, interval=interval, use_join=False
         )
         statement = (
-            statement.join(
-                Schedule, col(Schedule.reservation_id) == col(Reservation.id)
-            )
-            .join(Classroom, col(Schedule.classroom_id) == col(Classroom.id))
+            statement.join(Classroom, col(Schedule.classroom_id) == col(Classroom.id))
             .join(Building, col(Classroom.building_id) == col(Building.id))
             .where(col(Building.id).in_(building_ids))
         )
