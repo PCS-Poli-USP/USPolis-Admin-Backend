@@ -180,7 +180,6 @@ class ReservationRepository:
         reservation.title = input.title
         reservation.type = input.type
         reservation.reason = input.reason
-        reservation.classroom = classroom
 
         ScheduleRepository.update_reservation_schedule(
             user=user,

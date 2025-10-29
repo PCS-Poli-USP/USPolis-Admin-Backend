@@ -26,6 +26,7 @@ from server.models.database.building_db_model import Building
 from server.models.database.class_db_model import Class
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.group_db_model import Group
+from server.models.database.meeting_db_model import Meeting
 from server.models.database.subject_db_model import Subject
 from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister
@@ -36,6 +37,7 @@ from tests.factories.model.building_model_factory import BuildingModelFactory
 from tests.factories.model.class_model_factory import ClassModelFactory
 from tests.factories.model.classroom_model_factory import ClassroomModelFactory
 from tests.factories.model.group_model_factory import GroupModelFactory
+from tests.factories.model.meeting_model_factory import MeetingModelFactory
 from tests.factories.model.subject_model_factory import SubjectModelFactory
 from tests.factories.model.user_model_factory import UserModelFactory
 
@@ -287,3 +289,11 @@ def subject_fixture(building: Building, session: Session) -> Subject:
 def class_fixture(subject: Subject, session: Session) -> Class:
     """Fixture to create a standard class in the standard subject."""
     return ClassModelFactory(subject=subject, session=session).create_and_refresh()
+
+
+@pytest.fixture(name="meeting")
+def meeting_fixture(user: User, classroom: Classroom, session: Session) -> Meeting:
+    """Fixture to create a standard meeting."""
+    return MeetingModelFactory(
+        classroom=classroom, creator=user, session=session
+    ).create_and_refresh()

@@ -22,8 +22,7 @@ from tests.factories.model.classroom_model_factory import ClassroomModelFactory
 from tests.factories.model.group_model_factory import GroupModelFactory
 from tests.factories.request.classroom_request_factory import ClassroomRequestFactory
 from tests.utils.validators.classroom.classroom_response_validator import (
-    assert_get_classroom_full_response,
-    assert_get_classroom_response,
+    ClassroomResponseAsserts,
 )
 
 
@@ -36,7 +35,7 @@ def test_get_classroom_by_id_with_admin_user(
     response = client.get(f"{URL_PREFIX}/{classroom.id}")
 
     assert response.status_code == status.HTTP_200_OK
-    assert_get_classroom_response(response, classroom)
+    ClassroomResponseAsserts.assert_get_classroom_response(response, classroom)
 
 
 def test_get_classroom_by_id_with_restricted_user(
@@ -45,7 +44,7 @@ def test_get_classroom_by_id_with_restricted_user(
 ) -> None:
     response = restricted_client.get(f"{URL_PREFIX}/{classroom.id}")
     assert response.status_code == status.HTTP_200_OK
-    assert_get_classroom_response(response, classroom)
+    ClassroomResponseAsserts.assert_get_classroom_response(response, classroom)
 
 
 def test_get_classroom_by_id_with_restricted_user_outisder_group(
@@ -98,7 +97,9 @@ def test_get_classroom_full_with_admin_user(
     )
     response = client.get(f"{URL_PREFIX}/full/{classroom.id}")
     assert response.status_code == status.HTTP_200_OK
-    assert_get_classroom_full_response(response, classroom, class_)
+    ClassroomResponseAsserts.assert_get_classroom_full_response(
+        response, classroom, class_
+    )
 
 
 def test_get_classroom_full_with_restricted_user(
@@ -108,7 +109,9 @@ def test_get_classroom_full_with_restricted_user(
 ) -> None:
     response = restricted_client.get(f"{URL_PREFIX}/full/{allocated_classroom.id}")
     assert response.status_code == status.HTTP_200_OK
-    assert_get_classroom_full_response(response, allocated_classroom, class_)
+    ClassroomResponseAsserts.assert_get_classroom_full_response(
+        response, allocated_classroom, class_
+    )
 
 
 def test_get_classroom_full_with_common_user(
@@ -118,7 +121,9 @@ def test_get_classroom_full_with_common_user(
 ) -> None:
     response = common_client.get(f"{URL_PREFIX}/full/{allocated_classroom.id}")
     assert response.status_code == status.HTTP_200_OK
-    assert_get_classroom_full_response(response, allocated_classroom, class_)
+    ClassroomResponseAsserts.assert_get_classroom_full_response(
+        response, allocated_classroom, class_
+    )
 
 
 def test_get_classroom_full_with_public_user(

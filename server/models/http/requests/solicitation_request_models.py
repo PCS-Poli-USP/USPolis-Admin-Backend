@@ -6,15 +6,15 @@ from server.models.http.requests.meeting_request_models import MeetingRegister
 
 
 class ExamSolicitation(ExamRegister):
-    classroom_id: int | None  # type: ignore
+    classroom_id: int | None = None  # type: ignore
 
 
 class MeetingSolicitation(MeetingRegister):
-    classroom_id: int | None  # type: ignore
+    classroom_id: int | None = None  # type: ignore
 
 
 class EventSolicitation(EventRegister):
-    classroom_id: int | None  # type: ignore
+    classroom_id: int | None = None # type: ignore
 
 
 SolicitationData = ExamSolicitation | MeetingSolicitation | EventSolicitation

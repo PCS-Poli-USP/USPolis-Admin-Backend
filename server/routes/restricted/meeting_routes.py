@@ -31,6 +31,6 @@ def update_meeting(
 ) -> JSONResponse:
     repository.update(id=id, input=input)
     return JSONResponse(
-        content={"message": "Reunião criada com sucesso!"},
-        status_code=status.HTTP_201_CREATED,
+        content={"message": "Reunião atualizada com sucesso!"},
+        status_code=status.HTTP_200_OK,
     )

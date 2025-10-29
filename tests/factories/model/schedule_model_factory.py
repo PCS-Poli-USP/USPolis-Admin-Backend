@@ -11,7 +11,10 @@ from tests.factories.model.base_model_factory import BaseModelFactory
 
 class ScheduleModelFactory(BaseModelFactory[Schedule]):
     def __init__(
-        self, class_: Class | None, reservation: Reservation | None, session: Session
+        self,
+        session: Session,
+        class_: Class | None = None,
+        reservation: Reservation | None = None,
     ) -> None:
         super().__init__(session)
         if class_ is None and reservation is None:
@@ -52,3 +55,8 @@ class ScheduleModelFactory(BaseModelFactory[Schedule]):
     ) -> Schedule:
         """Create a schedule instance with default values."""
         return super().update(model_id=schedule_id, **overrides)
+
+    def update_and_refresh(  # type: ignore
+        self, schedule_id: int, **overrides: Unpack[ScheduleModelDict]
+    ) -> Schedule:
+        return super().update_and_refresh(schedule_id, **overrides)

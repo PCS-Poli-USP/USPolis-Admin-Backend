@@ -2,9 +2,8 @@ from fastapi import status
 from fastapi.testclient import TestClient
 from server.models.database.building_db_model import Building
 from tests.utils.validators.building.building_response_validator import (
-    assert_building_response,
+    BuildingResponseAsserts,
 )
-
 
 URL_PREFIX = "/buildings"
 
@@ -14,7 +13,7 @@ def test_get_building_by_id_with_admin_user(
 ) -> None:
     response = client.get(f"{URL_PREFIX}/{building.id}")
     assert response.status_code == status.HTTP_200_OK
-    assert_building_response(response, building)
+    BuildingResponseAsserts.assert_building_response(response, building)
 
 
 def test_get_building_by_id_with_restricted_user(
@@ -22,7 +21,7 @@ def test_get_building_by_id_with_restricted_user(
 ) -> None:
     response = restricted_client.get(f"{URL_PREFIX}/{building.id}")
     assert response.status_code == status.HTTP_200_OK
-    assert_building_response(response, building)
+    BuildingResponseAsserts.assert_building_response(response, building)
 
 
 def test_get_building_by_id_with_common_user(
@@ -30,7 +29,7 @@ def test_get_building_by_id_with_common_user(
 ) -> None:
     response = common_client.get(f"{URL_PREFIX}/{building.id}")
     assert response.status_code == status.HTTP_200_OK
-    assert_building_response(response, building)
+    BuildingResponseAsserts.assert_building_response(response, building)
 
 
 def test_get_building_by_id_with_public_user(
