@@ -33,6 +33,7 @@ env = Environment(loader=FileSystemLoader(template_path))
 
 
 RESERVATION_SUBJECT = "Reserva de Sala - USPolis"
+BLACKLIST = ["amazetti@usp.br"]
 
 
 class EmailService:

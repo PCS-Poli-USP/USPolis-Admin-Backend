@@ -27,7 +27,7 @@ Here we have the tecnologies used on backend:
 
 ## Docs
 
-You can see a complete documentation at [USPolis-Admin Wiki](https://github.com/PCS-Poli-USP/USPolis-Admin/wiki), there you will find diagrams, bussiness rules, descriptions and more.
+You can see a complete documentation at [USPolis-Admin Wiki](https://github.com/PCS-Poli-USP/USPolis-Admin/wiki), there you will find our architecture, diagrams, bussiness rules, descriptions and more.
 
 ## Setup
 
