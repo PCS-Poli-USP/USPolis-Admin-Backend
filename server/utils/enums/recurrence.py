@@ -13,7 +13,7 @@ class Recurrence(str, Enum):
 
     def translated(self) -> str:
         translations = {
-            Recurrence.DAILY: "Diário",
+            Recurrence.DAILY: "Diária",
             Recurrence.WEEKLY: "Semanal",
             Recurrence.BIWEEKLY: "Quinzenal",
             Recurrence.MONTHLY: "Mensal",

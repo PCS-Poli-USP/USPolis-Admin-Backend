@@ -56,11 +56,23 @@ class ScheduleRegister(ScheduleBase):
         if week_day is None:
             if recurrence != Recurrence.CUSTOM and recurrence != Recurrence.DAILY:
                 raise ScheduleInvalidData(
-                    "Agenda com recorrência semanal deve ter dia da semana"
+                    f"Agenda com recorrência {Recurrence.translated(self.recurrence)} deve ter dia da semana"
+                )
+
+        if week_day is not None:
+            if recurrence == Recurrence.CUSTOM or recurrence == Recurrence.DAILY:
+                raise ScheduleInvalidData(
+                    f"Agenda com recorrência {Recurrence.translated(self.recurrence)} não pode ter dia da semana"
                 )
 
         if month_week is not None:
             if recurrence != Recurrence.MONTHLY:
+                raise ScheduleInvalidData(
+                    f"Agenda com recorrência {Recurrence.translated(self.recurrence)} não pode ter semana do mês"
+                )
+
+        if month_week is None:
+            if recurrence == Recurrence.MONTHLY:
                 raise ScheduleInvalidData(
                     "Agenda com recorrência mensal deve ter semana do mês"
                 )
