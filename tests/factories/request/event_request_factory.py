@@ -5,6 +5,7 @@ from server.models.dicts.requests.event_requests_dicts import (
 )
 from server.models.http.requests.event_request_models import EventRegister, EventUpdate
 from server.models.database.classroom_db_model import Classroom
+from server.utils.enums.event_type_enum import EventType
 from server.utils.enums.reservation_type import ReservationType
 from tests.factories.base.event_base_factory import EventBaseFactory
 from tests.factories.request.base_request_factory import BaseRequestFactory
@@ -21,6 +22,7 @@ class EventRequestFactory(BaseRequestFactory):
             reservation_type=ReservationType.EVENT, classroom=classroom
         )
         self.classroom = classroom
+        self.faker = self.core_factory.faker
 
     def get_default_create(self) -> EventRegisterDict:
         """Get default values for creating a EventRegister. The default values are:\n
@@ -31,6 +33,7 @@ class EventRequestFactory(BaseRequestFactory):
         return {
             **core,
             **reservation_data,
+            "event_type": self.faker.random_element(elements=EventType.values()),
         }
 
     def get_default_update(self) -> EventUpdateDict:
@@ -42,6 +45,7 @@ class EventRequestFactory(BaseRequestFactory):
         return {
             **core,
             **reservation_data,
+            "event_type": self.faker.random_element(elements=EventType.values()),
         }
 
     def create_input(self, **overrides: Unpack[EventRegisterDict]) -> EventRegister:

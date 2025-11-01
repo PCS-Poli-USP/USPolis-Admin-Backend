@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Unpack
 from server.models.database.class_db_model import Class
 from server.models.database.classroom_db_model import Classroom
@@ -29,6 +30,17 @@ class ScheduleRequestFactory(BaseRequestFactory):
         self.classroom = classroom
         self.class_ = class_
         self.reservation = reservation
+
+    def get_random_dates(self, start: date, end: date, n: int = 5) -> list[date]:
+        """Get a random list of dates"""
+        max_dates = n
+        if (end - start).days < n:
+            max_dates = (end - start).days + 1
+        dates: set[date] = set()
+        while len(dates) < max_dates:
+            random_date = self.faker.date_between(start_date=start, end_date=end)
+            dates.add(random_date)
+        return sorted(list(dates))
 
     def get_default_create(self) -> ScheduleRegisterDict:
         """Get default values for creating a ScheduleRegister. The default values are:\n

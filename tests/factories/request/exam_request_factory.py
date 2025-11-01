@@ -1,5 +1,7 @@
 from typing import Unpack
 from server.models.http.requests.exam_request_models import ExamRegister, ExamUpdate
+from server.models.http.requests.schedule_request_models import ScheduleRegister
+from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.reservation_type import ReservationType
 from server.utils.must_be_int import must_be_int
 from server.models.database.class_db_model import Class
@@ -18,16 +20,27 @@ from tests.factories.request.reservation_request_factory import (
 
 class ExamRequestFactory(BaseRequestFactory):
     def __init__(
-        self, subject: Subject, classes: list[Class], classroom: Classroom
+        self, subject: Subject, classroom: Classroom, classes: list[Class] = []
     ) -> None:
         super().__init__()
         self.core_factory = ExamBaseFactory(must_be_int(subject.id))
         self.reservation_factory = ReservationRequestFactory(
             reservation_type=ReservationType.EXAM, classroom=classroom
         )
+        self.schedule_factory = self.reservation_factory.schedule_factory
         self.subject = subject
         self.classes = classes
         self.classroom = classroom
+
+    def format_schedule_data(self, schedule_data: ScheduleRegister) -> None:
+        """Format schedule data to have correct recurrence, dates and week_day."""
+        start = schedule_data.start_date
+        end = schedule_data.end_date
+        dates = self.schedule_factory.get_random_dates(start, end, 3)
+
+        schedule_data.recurrence = Recurrence.CUSTOM
+        schedule_data.dates = dates
+        schedule_data.week_day = None
 
     def get_default_create(self) -> ExamRegisterDict:
         """Get default values for creating a ExamRegister. The default values are:\n
@@ -35,6 +48,8 @@ class ExamRequestFactory(BaseRequestFactory):
         """
         core = self.core_factory.get_base_defaults()
         reservation_data = self.reservation_factory.get_default_create()
+        self.format_schedule_data(reservation_data["schedule_data"])  # pyright: ignore[reportTypedDictNotRequiredAccess]
+
         return {
             **core,
             **reservation_data,
@@ -47,6 +62,7 @@ class ExamRequestFactory(BaseRequestFactory):
         """
         core = self.core_factory.get_base_defaults()
         reservation_data = self.reservation_factory.get_default_update()
+        self.format_schedule_data(reservation_data["schedule_data"])  # pyright: ignore[reportTypedDictNotRequiredAccess]
         return {
             **core,
             **reservation_data,

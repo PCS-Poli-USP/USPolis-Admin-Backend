@@ -25,6 +25,8 @@ from server.deps.session_dep import SessionDep
 from server.models.database.building_db_model import Building
 from server.models.database.class_db_model import Class
 from server.models.database.classroom_db_model import Classroom
+from server.models.database.event_db_model import Event
+from server.models.database.exam_db_model import Exam
 from server.models.database.group_db_model import Group
 from server.models.database.meeting_db_model import Meeting
 from server.models.database.subject_db_model import Subject
@@ -36,6 +38,8 @@ from server.services.auth.auth_user_info import AuthUserInfo
 from tests.factories.model.building_model_factory import BuildingModelFactory
 from tests.factories.model.class_model_factory import ClassModelFactory
 from tests.factories.model.classroom_model_factory import ClassroomModelFactory
+from tests.factories.model.event_model_factory import EventModelFactory
+from tests.factories.model.exam_model_factory import ExamModelFactory
 from tests.factories.model.group_model_factory import GroupModelFactory
 from tests.factories.model.meeting_model_factory import MeetingModelFactory
 from tests.factories.model.subject_model_factory import SubjectModelFactory
@@ -295,5 +299,23 @@ def class_fixture(subject: Subject, session: Session) -> Class:
 def meeting_fixture(user: User, classroom: Classroom, session: Session) -> Meeting:
     """Fixture to create a standard meeting."""
     return MeetingModelFactory(
+        classroom=classroom, creator=user, session=session
+    ).create_and_refresh()
+
+
+@pytest.fixture(name="exam")
+def exam_fixture(
+    user: User, classroom: Classroom, subject: Subject, session: Session
+) -> Exam:
+    """Fixture to create a standard exam (without classes)."""
+    return ExamModelFactory(
+        creator=user, classroom=classroom, subject=subject, session=session
+    ).create_and_refresh()
+
+
+@pytest.fixture(name="event")
+def event_fixture(user: User, classroom: Classroom, session: Session) -> Event:
+    """Fixture to create a standard event."""
+    return EventModelFactory(
         classroom=classroom, creator=user, session=session
     ).create_and_refresh()

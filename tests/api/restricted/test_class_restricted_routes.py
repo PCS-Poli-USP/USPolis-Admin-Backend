@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 
 from server.models.database.class_db_model import Class
 
-URL_PREFIX = "/meetings"
+URL_PREFIX = "/classes"
 
 
 def test_get_class_by_id_with_admin_user(class_: Class, client: TestClient) -> None:

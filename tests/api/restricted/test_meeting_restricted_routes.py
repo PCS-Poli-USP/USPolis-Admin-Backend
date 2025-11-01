@@ -97,9 +97,9 @@ def test_update_meeting_with_restricted_user(
     input = request_factory.update_input()
     body = jsonable_encoder(input)
 
-    response = restricted_client.put(f"{URL_PREFIX}", json=body)
+    response = restricted_client.put(f"{URL_PREFIX}/{meeting.id}", json=body)
 
-    assert response.status_code == status.HTTP_201_CREATED
+    assert response.status_code == status.HTTP_200_OK
 
     meetings = list(session.exec(select(Meeting)).all())
     assert len(meetings) == 1
@@ -108,23 +108,11 @@ def test_update_meeting_with_restricted_user(
     MeetingModelAsserts.assert_meeting_after_update(meeting, input)
 
 
-def test_update_meeting_with_common_user(
-    meeting: Meeting, classroom: Classroom, common_client: TestClient
-) -> None:
-    request_factory = MeetingRequestFactory(classroom)
-    input = request_factory.update_input()
-    body = jsonable_encoder(input)
-
-    response = common_client.put(f"{URL_PREFIX}/{meeting.id}", json=body)
+def test_update_meeting_with_common_user(common_client: TestClient) -> None:
+    response = common_client.put(f"{URL_PREFIX}/1", json={})
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
-def test_update_meeting_with_public_user(
-    meeting: Meeting, classroom: Classroom, public_client: TestClient
-) -> None:
-    request_factory = MeetingRequestFactory(classroom)
-    input = request_factory.update_input()
-    body = jsonable_encoder(input)
-
-    response = public_client.put(f"{URL_PREFIX}/{meeting.id}", json=body)
+def test_update_meeting_with_public_user(public_client: TestClient) -> None:
+    response = public_client.put(f"{URL_PREFIX}/1", json={})
     assert response.status_code == status.HTTP_401_UNAUTHORIZED

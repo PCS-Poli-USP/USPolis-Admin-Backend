@@ -3,33 +3,22 @@ from server.models.http.requests.meeting_request_models import (
     MeetingRegister,
     MeetingUpdate,
 )
-from server.utils.enums.reservation_status import ReservationStatus
-from server.utils.enums.reservation_type import ReservationType
+from tests.utils.validators.reservation.reservation_model_validator import (
+    ReservationModelAsserts,
+)
 
 
 class MeetingModelAsserts:
     @staticmethod
     def assert_meeting_after_create(meeting: Meeting, input: MeetingRegister) -> None:
-        reservation = meeting.reservation
-        schedule = reservation.schedule
-
         assert meeting.link == input.link
 
-        assert reservation.title == input.title
-        assert reservation.type == ReservationType.MEETING
-        assert reservation.reason == input.reason
-
-        assert reservation.status == ReservationStatus.APPROVED
+        reservation = meeting.reservation
+        ReservationModelAsserts.assert_reservation_after_create(reservation, input)
 
     @staticmethod
     def assert_meeting_after_update(meeting: Meeting, input: MeetingUpdate) -> None:
-        reservation = meeting.reservation
-        schedule = reservation.schedule
-
         assert meeting.link == input.link
 
-        assert reservation.title == input.title
-        assert reservation.type == ReservationType.MEETING
-        assert reservation.reason == input.reason
-
-        assert reservation.status == ReservationStatus.APPROVED
+        reservation = meeting.reservation
+        ReservationModelAsserts.assert_reservation_after_update(reservation, input)

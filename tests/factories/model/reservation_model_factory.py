@@ -11,6 +11,7 @@ from server.utils.enums.reservation_type import ReservationType
 from server.utils.must_be_int import must_be_int
 from tests.factories.base.reservation_base_factory import ReservationBaseFactory
 from tests.factories.model.base_model_factory import BaseModelFactory
+from tests.factories.model.schedule_model_factory import ScheduleModelFactory
 
 
 class ReservationModelFactory(BaseModelFactory[Reservation]):
@@ -33,7 +34,7 @@ class ReservationModelFactory(BaseModelFactory[Reservation]):
 
     def get_defaults(self) -> ReservationModelDict:
         """Create a default dict values for Reservation, by default the values are:\n
-        - status = Pending
+        - status = Approved
         - schedule = None (must be a reservation before)
         - solicitation = None (same as above)
         - exam = None (same as above)
@@ -46,7 +47,7 @@ class ReservationModelFactory(BaseModelFactory[Reservation]):
             "updated_at": datetime.now(),
             "audiovisual": self.faker.random_element(AudiovisualType.values()),
             "created_by_id": must_be_int(self.creator.id),
-            "status": ReservationStatus.PENDING,
+            "status": ReservationStatus.APPROVED,
             "created_by": self.creator,
             "solicitation": None,
             "exam": None,
@@ -56,7 +57,13 @@ class ReservationModelFactory(BaseModelFactory[Reservation]):
 
     def create(self, **overrides: Unpack[ReservationModelDict]) -> Reservation:  # type: ignore
         """Create a reservation instance with default values."""
-        return super().create(**overrides)
+        reservation = super().create(**overrides)
+        if "schedule" not in overrides:
+            schedule = ScheduleModelFactory(
+                session=self.session, reservation=reservation
+            ).create()
+            reservation.schedule = schedule
+        return reservation
 
     def create_and_refresh(  # type: ignore
         self, **overrides: Unpack[ReservationModelDict]
