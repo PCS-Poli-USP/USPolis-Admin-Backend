@@ -14,9 +14,13 @@ from server.models.http.requests.solicitation_request_models import (
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.classroom_repository import ClassroomRepository
 
+from server.repositories.event_repository import EventRepository
+from server.repositories.exam_repository import ExamRepository
+from server.repositories.meeting_repository import MeetingRepository
 from server.repositories.occurrence_repository import OccurrenceRepository
 from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.reservation_status import ReservationStatus
+from server.utils.enums.reservation_type import ReservationType
 from server.utils.must_be_int import must_be_int
 
 
@@ -91,8 +95,6 @@ class SolicitationRepository:
     def create(
         requester: User, input: SolicitationRegister, session: Session
     ) -> Solicitation:
-        from server.repositories.reservation_repository import ReservationRepository
-
         building = BuildingRepository.get_by_id(id=input.building_id, session=session)
         classroom = None
         if input.reservation_data.classroom_id:
@@ -106,13 +108,41 @@ class SolicitationRepository:
         if classroom and not classroom.reservable:
             raise ClassroomNotReservable(f"A sala {classroom.name} não é reservável.")
 
-        reservation = ReservationRepository.create(
-            creator=requester,
-            input=input.reservation_data,
-            classroom=classroom,
-            session=session,
-            allocate=False,
-        )
+        reservation: Reservation | None = None
+        solicitation_type = input.reservation_data.type
+        if solicitation_type == ReservationType.EXAM:
+            exam = ExamRepository.create(
+                creator=requester,
+                input=input.reservation_data,  # type: ignore
+                session=session,
+                allocate=False,
+            )
+            reservation = exam.reservation
+
+        if solicitation_type == ReservationType.EVENT:
+            event = EventRepository.create(
+                creator=requester,
+                input=input.reservation_data,  # type: ignore
+                session=session,
+                allocate=False,
+            )
+            reservation = event.reservation
+
+        if solicitation_type == ReservationType.MEETING:
+            meeting = MeetingRepository.create(
+                creator=requester,
+                input=input.reservation_data,  # type: ignore
+                session=session,
+                allocate=False,
+            )
+            reservation = meeting.reservation
+
+        if not reservation:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Tipo de solicitação inválido.",
+            )
+
         solicitation = Solicitation(
             required_classroom=input.required_classroom,
             building_id=must_be_int(building.id),

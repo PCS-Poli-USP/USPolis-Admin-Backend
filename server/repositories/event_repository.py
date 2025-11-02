@@ -58,12 +58,18 @@ class EventRepository:
         return event
 
     @staticmethod
-    def create(*, creator: User, input: EventRegister, session: Session) -> Event:
+    def create(
+        *, creator: User, input: EventRegister, session: Session, allocate: bool = True
+    ) -> Event:
         classroom = ClassroomRepository.get_by_id(
             id=input.classroom_id, session=session
         )
         reservation = ReservationRepository.create(
-            creator=creator, input=input, classroom=classroom, session=session
+            creator=creator,
+            input=input,
+            classroom=classroom,
+            session=session,
+            allocate=allocate,
         )
         event = Event(
             reservation=reservation,
