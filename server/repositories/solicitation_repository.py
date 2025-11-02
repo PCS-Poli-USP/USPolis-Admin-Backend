@@ -105,6 +105,7 @@ class SolicitationRepository:
             )
         if classroom and not classroom.reservable:
             raise ClassroomNotReservable(f"A sala {classroom.name} não é reservável.")
+
         reservation = ReservationRepository.create(
             creator=requester,
             input=input.reservation_data,
@@ -116,6 +117,8 @@ class SolicitationRepository:
             required_classroom=input.required_classroom,
             building_id=must_be_int(building.id),
             building=building,
+            solicited_classroom_id=input.reservation_data.classroom_id,
+            solicited_classroom=classroom,
             user_id=must_be_int(requester.id),
             user=requester,
             reservation=reservation,

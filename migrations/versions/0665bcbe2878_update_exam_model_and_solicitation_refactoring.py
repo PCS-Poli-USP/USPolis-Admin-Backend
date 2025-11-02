@@ -86,7 +86,7 @@ def upgrade() -> None:
 
     op.rename_table("classroomsolicitation", "solicitation")
 
-    # Rename Constraints
+    # Rename Constraints and Columns
     op.execute(
         sa.text(
             "ALTER TABLE solicitation RENAME COLUMN classroom_id TO solicited_classroom_id"
@@ -125,9 +125,9 @@ def upgrade() -> None:
             )
         )
 
-    # Para cada solicitação, cria uma reserva (se não tiver), uma agenda e suas ocorrências
+    # Para cada solicitação, cria uma reserva (se não tiver), uma agenda e suas ocorrências, se a solicitação por pendente NAO ALOCAR
     # Associa a reserva a um evento (valor padrão)
-
+    deleted = 0
     for data in solicitations:
         classroom_id = data.classroom_id
         reservation_id = data.reservation_id
@@ -143,6 +143,7 @@ def upgrade() -> None:
                 bind.execute(
                     sa.text("DELETE FROM solicitation WHERE id = :id"), {"id": data.id}
                 )
+                deleted += 1
                 continue
 
         # Se não tiver reserva, cria uma, sua agenda e suas ocorrencias
@@ -202,7 +203,9 @@ def upgrade() -> None:
                             d=d,
                             st=start_time,
                             et=end_time,
-                            cid=classroom_id,
+                            cid=classroom_id
+                            if data.status == ReservationStatus.APPROVED
+                            else None,
                             sid=schedule_id,
                         ),
                     )
@@ -219,6 +222,7 @@ def upgrade() -> None:
             {"rid": reservation_id, "sid": data.id},
         )
 
+    print("Solicitations deleted due to inconsistency:", deleted)
     # Deleta as colunas antigas
     op.drop_column("solicitation", "reservation_title")
     op.drop_column("solicitation", "reservation_type")
