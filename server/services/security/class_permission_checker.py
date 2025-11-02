@@ -5,6 +5,9 @@ from server.models.database.class_db_model import Class
 from server.models.database.user_db_model import User
 from server.repositories.class_repository import ClassRepository
 from server.services.security.base_permission_checker import PermissionChecker
+from server.services.security.schedule_permission_checker import (
+    SchedulePermissionChecker,
+)
 
 
 class ClassPermissionChecker(PermissionChecker[Class]):
@@ -14,10 +17,16 @@ class ClassPermissionChecker(PermissionChecker[Class]):
 
     def __init__(self, user: User, session: Session) -> None:
         super().__init__(user=user, session=session)
+        self.schedule_checker = SchedulePermissionChecker(user=user, session=session)
 
     def check_permission(self, object: int | Class | list[int] | list[Class]) -> None:
         """
-        Checks the permission of a user for a specific class.
+        Checks the permission of a user for a specific class. **A user has access to a class if:**
+        - The user is an admin.
+        - The class has not been allocated at least one of his schedules and the user has access to the building of the class.
+        - The class are full allocated and at least one of his schedules is at one of user classrooms.
+
+        **IMPORTANT:** This method not check a strict permission, so if one of the schedules of the class is allocated in a classroom that the user has access to, the user will be allowed to access the class. For deleting a class you should check if the user has access to all schedules of the class.
 
         Parameters:
         - user (User): The user object for which the permission needs to be checked.
@@ -38,9 +47,9 @@ class ClassPermissionChecker(PermissionChecker[Class]):
         self.__class_obj_permission_checker(class_)
 
     def __class_obj_permission_checker(self, class_: Class) -> None:
-        ids = class_.classroom_ids()
         class_building_ids = class_.building_ids()
         user_buildings = self.user.buildings_ids_set()
+        user_classroom_ids = self.user.classrooms_ids_set()
         if len(class_building_ids.intersection(user_buildings)) == 0:
             raise ForbiddenClassAccess(
                 f"Usuário não tem permissão para acessar a turma {class_.subject.code} - {class_.code}"
@@ -48,9 +57,10 @@ class ClassPermissionChecker(PermissionChecker[Class]):
 
         allowed = False
         for schedule in class_.schedules:
-            if schedule.classroom_id and schedule.classroom_id in ids:
+            if not schedule.classroom_id:
                 allowed = True
-            else:
+                break
+            if schedule.classroom_id and schedule.classroom_id in user_classroom_ids:
                 allowed = True
                 break
 

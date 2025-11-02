@@ -2,11 +2,14 @@ from pydantic import BaseModel
 from datetime import time, date as datetime_date
 
 from server.models.database.building_db_model import Building
+from server.models.database.class_db_model import Class
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.schedule_db_model import Schedule
+from server.models.http.responses.schedule_response_models import ScheduleResponseBase
 from server.utils.enums.allocation_enum import AllocationEnum
+from server.utils.enums.allocation_event_type_enum import AllocationEventType
 from server.utils.enums.month_week import MonthWeek
 from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.reservation_type import ReservationType
@@ -58,14 +61,17 @@ class BaseExtendedData(BaseModel):
     end_time: time
     start_date: datetime_date | None = None
     end_date: datetime_date | None = None
+    label: str | None = None
 
     @classmethod
     def from_reservation(cls, reservation: Reservation) -> "BaseExtendedData":
+        classroom = reservation.get_classroom()
+        building = reservation.get_building()
         return cls(
             schedule_id=must_be_int(reservation.schedule.id),
-            building=reservation.classroom.building.name,
-            classroom=reservation.classroom.name,
-            classroom_capacity=reservation.classroom.capacity,
+            building=building.name,
+            classroom=classroom.name if classroom else AllocationEnum.UNALLOCATED.value,
+            classroom_capacity=classroom.capacity if classroom else None,
             recurrence=reservation.schedule.recurrence,
             week_day=reservation.schedule.week_day,
             month_week=reservation.schedule.month_week,
@@ -131,10 +137,16 @@ class ReservationExtendedData(BaseExtendedData):
     type: ReservationType
     reason: str | None = None
     created_by: str
+    subject_id: int | None = None
+    subject_code: str | None = None
+    subject_name: str | None = None
+    class_ids: list[int] | None = None
+    class_codes: list[str] | None = None
 
     @classmethod
     def from_reservation(cls, reservation: Reservation) -> "ReservationExtendedData":
         base = BaseExtendedData.from_reservation(reservation)
+        exam = reservation.exam
         return cls(
             **base.model_dump(),
             reservation_id=must_be_int(reservation.id),
@@ -142,6 +154,11 @@ class ReservationExtendedData(BaseExtendedData):
             type=reservation.type,
             reason=reservation.reason,
             created_by=reservation.created_by.name,
+            subject_id=exam.subject_id if exam else None,
+            subject_code=exam.subject.code if exam else None,
+            subject_name=exam.subject.name if exam else None,
+            class_ids=[must_be_int(c.id) for c in exam.classes] if exam else None,
+            class_codes=[c.code for c in exam.classes] if exam else None,
         )
 
 
@@ -155,11 +172,21 @@ class EventExtendedProps(BaseModel):
         if occurrence.schedule.class_:
             data.class_data = ClassExtendedData.from_schedule(occurrence.schedule)
             data.class_data.occurrence_id = must_be_int(occurrence.id)
+            data.class_data.label = (
+                occurrence.occurrence_label.label
+                if occurrence.occurrence_label
+                else None
+            )
         if occurrence.schedule.reservation:
             data.reservation_data = ReservationExtendedData.from_reservation(
                 occurrence.schedule.reservation
             )
             data.reservation_data.occurrence_id = must_be_int(occurrence.id)
+            data.reservation_data.label = (
+                occurrence.occurrence_label.label
+                if occurrence.occurrence_label
+                else None
+            )
         return data
 
     @classmethod
@@ -174,7 +201,7 @@ class EventExtendedProps(BaseModel):
         return data
 
 
-class EventResponse(BaseModel):
+class AllocationEventResponse(BaseModel):
     id: str
     title: str
     start: str
@@ -185,12 +212,56 @@ class EventResponse(BaseModel):
     classroom_capacity: int | None = None
     rrule: RRule | None = None
     allDay: bool
+    backgroundColor: str | None = "#408080"
 
     resourceId: str
+    type: AllocationEventType
     extendedProps: EventExtendedProps | None = None
 
     @classmethod
-    def from_occurrence(cls, occurrence: Occurrence) -> "EventResponse":
+    def get_reservation_title(cls, reservation: Reservation) -> str:
+        if reservation.type == ReservationType.EVENT:
+            return f"📅 {reservation.title}"
+        if reservation.type == ReservationType.MEETING:
+            return f"👥 {reservation.title}"
+        if reservation.type == ReservationType.EXAM:
+            return f"📝 {reservation.title}"
+        return reservation.title
+
+    @classmethod
+    def backgroundColor_from_schedule(cls, schedule: Schedule) -> str:
+        if schedule.reservation:
+            return ReservationType.get_color(schedule.reservation.type)
+        return "#408080"
+
+    @classmethod
+    def backgroundColor_from_occurrence(cls, occurrence: Occurrence) -> str:
+        if occurrence.schedule.reservation:
+            return ReservationType.get_color(occurrence.schedule.reservation.type)
+        return "#408080"
+
+    @classmethod
+    def type_from_schedule(cls, schedule: Schedule) -> AllocationEventType:
+        if schedule.reservation:
+            return AllocationEventType.get_from_reservation_type(
+                schedule.reservation.type
+            )
+        return AllocationEventType.SUBJECT
+
+    @classmethod
+    def type_from_occurrence(cls, occurrence: Occurrence) -> AllocationEventType:
+        if occurrence.schedule.reservation:
+            return AllocationEventType.get_from_reservation_type(
+                occurrence.schedule.reservation.type
+            )
+        return AllocationEventType.SUBJECT
+
+    @classmethod
+    def get_class_title(cls, class_: Class) -> str:
+        return f"📚 {class_.subject.code}"
+
+    @classmethod
+    def from_occurrence(cls, occurrence: Occurrence) -> "AllocationEventResponse":
         resource = f"{AllocationEnum.UNALLOCATED_BUILDING_ID.value}-{
             AllocationEnum.UNALLOCATED_CLASSROOM_ID.value
         }"
@@ -200,9 +271,10 @@ class EventResponse(BaseModel):
             )
         title = ""
         if occurrence.schedule.class_:
-            title = occurrence.schedule.class_.subject.code
+            title = cls.get_class_title(occurrence.schedule.class_)
         if occurrence.schedule.reservation:
-            title = f"Reserva - {occurrence.schedule.reservation.title}"
+            reservation = occurrence.schedule.reservation
+            title = cls.get_reservation_title(reservation)
 
         return cls(
             id=str(occurrence.id),
@@ -216,11 +288,15 @@ class EventResponse(BaseModel):
             else None,
             allDay=occurrence.schedule.all_day,
             resourceId=resource,
+            type=AllocationEventResponse.type_from_occurrence(occurrence),
+            backgroundColor=AllocationEventResponse.backgroundColor_from_schedule(
+                occurrence.schedule
+            ),
             extendedProps=EventExtendedProps.from_occurrence(occurrence),
         )
 
     @classmethod
-    def from_schedule(cls, schedule: Schedule) -> list["EventResponse"]:
+    def from_schedule(cls, schedule: Schedule) -> list["AllocationEventResponse"]:
         resource = f"{AllocationEnum.UNALLOCATED_BUILDING_ID.value}-{
             AllocationEnum.UNALLOCATED_CLASSROOM_ID.value
         }"
@@ -228,12 +304,12 @@ class EventResponse(BaseModel):
             resource = f"{schedule.classroom.building.name}-{schedule.classroom.name}"
         title = ""
         if schedule.class_:
-            title = schedule.class_.subject.code
+            title = cls.get_class_title(schedule.class_)
         if schedule.reservation:
-            title = f"Reserva - {schedule.reservation.title}"
+            title = cls.get_reservation_title(schedule.reservation)
         if schedule.recurrence == Recurrence.CUSTOM:
             return [
-                EventResponse.from_occurrence(occurrence)
+                AllocationEventResponse.from_occurrence(occurrence)
                 for occurrence in schedule.occurrences
             ]
         return [
@@ -247,6 +323,10 @@ class EventResponse(BaseModel):
                 rrule=RRule.from_schedule(schedule),
                 allDay=schedule.all_day,
                 resourceId=resource,
+                type=AllocationEventResponse.type_from_schedule(schedule),
+                backgroundColor=AllocationEventResponse.backgroundColor_from_schedule(
+                    schedule
+                ),
                 extendedProps=EventExtendedProps.from_schedule(schedule),
             )
         ]
@@ -254,42 +334,49 @@ class EventResponse(BaseModel):
     @classmethod
     def from_occurrence_list(
         cls, occurrences: list[Occurrence]
-    ) -> list["EventResponse"]:
-        return [EventResponse.from_occurrence(occurrence) for occurrence in occurrences]
+    ) -> list["AllocationEventResponse"]:
+        return [
+            AllocationEventResponse.from_occurrence(occurrence)
+            for occurrence in occurrences
+        ]
 
     @classmethod
-    def from_schedule_list(cls, schedules: list[Schedule]) -> list["EventResponse"]:
+    def from_schedule_list(
+        cls, schedules: list[Schedule]
+    ) -> list["AllocationEventResponse"]:
         events = []
         for schedule in schedules:
-            events.extend(EventResponse.from_schedule(schedule))
+            events.extend(AllocationEventResponse.from_schedule(schedule))
         return events
 
 
-class ResourceResponse(BaseModel):
+class AllocationResourceResponse(BaseModel):
     id: str
     parentId: str | None = None
     title: str
 
     @classmethod
-    def from_building(cls, building: Building) -> list["ResourceResponse"]:
+    def from_building(cls, building: Building) -> list["AllocationResourceResponse"]:
         """Returns a list of resources, the first one is the building and the rest are the classrooms of the building"""
-        resources: list[ResourceResponse] = []
+        resources: list[AllocationResourceResponse] = []
         resources.append(cls(id=building.name, title=building.name))
-        classrooms_resources = ResourceResponse.from_classroom_list(
+        classrooms_resources = AllocationResourceResponse.from_classroom_list(
             building.classrooms if building.classrooms else []
         )
         resources.extend(classrooms_resources)
         return resources
 
     @classmethod
-    def from_building_list(cls, buildings: list[Building]) -> list["ResourceResponse"]:
-        resources: list[ResourceResponse] = []
+    def from_building_list(
+        cls, buildings: list[Building]
+    ) -> list["AllocationResourceResponse"]:
+        resources: list[AllocationResourceResponse] = []
         for building in buildings:
-            resources.extend(ResourceResponse.from_building(building))
+            resources.extend(AllocationResourceResponse.from_building(building))
         return resources
 
     @classmethod
-    def from_classroom(cls, classroom: Classroom) -> "ResourceResponse":
+    def from_classroom(cls, classroom: Classroom) -> "AllocationResourceResponse":
         return cls(
             id=f"{classroom.building.name}-{classroom.name}",
             parentId=str(classroom.building.name),
@@ -299,20 +386,50 @@ class ResourceResponse(BaseModel):
     @classmethod
     def from_classroom_list(
         cls, classrooms: list[Classroom]
-    ) -> list["ResourceResponse"]:
-        return [ResourceResponse.from_classroom(classroom) for classroom in classrooms]
+    ) -> list["AllocationResourceResponse"]:
+        return [
+            AllocationResourceResponse.from_classroom(classroom)
+            for classroom in classrooms
+            if not classroom.remote
+        ]
 
     @classmethod
-    def unnallocated_building(cls) -> "ResourceResponse":
+    def unnallocated_building(cls) -> "AllocationResourceResponse":
         return cls(
             id=AllocationEnum.UNALLOCATED_BUILDING_ID.value,
             title=AllocationEnum.UNALLOCATED.value,
         )
 
     @classmethod
-    def unnallocated_classroom(cls) -> "ResourceResponse":
+    def unnallocated_classroom(cls) -> "AllocationResourceResponse":
         return cls(
             id=f"{AllocationEnum.UNALLOCATED_BUILDING_ID.value}-{AllocationEnum.UNALLOCATED_CLASSROOM_ID.value}",
             parentId=AllocationEnum.UNALLOCATED_BUILDING_ID.value,
             title=AllocationEnum.UNALLOCATED.value,
         )
+
+
+class AllocationScheduleOptions(BaseModel):
+    schedule_target_id: int
+    schedule_target: ScheduleResponseBase
+    options: list[ScheduleResponseBase]
+
+
+class AllocationClassOptions(BaseModel):
+    class_id: int
+    class_code: str
+    schedule_options: list[AllocationScheduleOptions]
+
+
+class AllocationReuseTargetOptions(BaseModel):
+    subject_id: int
+    subject_code: str
+    subject_name: str
+    class_options: list[AllocationClassOptions]
+
+
+class AllocationReuseResponse(BaseModel):
+    building_id: int
+    allocation_year: int
+    target_options: list[AllocationReuseTargetOptions]
+    strict: bool = True

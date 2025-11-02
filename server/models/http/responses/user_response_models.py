@@ -5,8 +5,8 @@ from pydantic import BaseModel
 from server.models.database.group_db_model import Group
 from server.models.database.user_db_model import User
 from server.models.http.responses.building_response_models import BuildingResponse
-from server.models.http.responses.classroom_solicitation_response_models import (
-    ClassroomSolicitationResponse,
+from server.models.http.responses.solicitation_response_models import (
+    SolicitationResponse,
 )
 from server.utils.must_be_int import must_be_int
 
@@ -24,13 +24,14 @@ class UserResponse(BaseModel):
     id: int
     email: str
     is_admin: bool
+    receive_emails: bool
     name: str
     updated_at: datetime
     last_visited: datetime
     user_info: UserInfo | None = None
     created_by: str | None = None
     buildings: list[BuildingResponse] | None = None
-    solicitations: list[ClassroomSolicitationResponse]
+    solicitations: list[SolicitationResponse]
     groups: list["UserGroupResponse"]
 
     @classmethod
@@ -39,6 +40,7 @@ class UserResponse(BaseModel):
             id=must_be_int(user.id),
             email=user.email,
             is_admin=user.is_admin,
+            receive_emails=user.receive_emails,
             name=user.name,
             created_by=user.created_by.name if user.created_by else None,
             buildings=[
@@ -46,7 +48,7 @@ class UserResponse(BaseModel):
             ]
             if user.buildings
             else None,
-            solicitations=ClassroomSolicitationResponse.from_solicitation_list(
+            solicitations=SolicitationResponse.from_solicitation_list(
                 user.solicitations
             ),
             updated_at=user.updated_at,
@@ -71,7 +73,7 @@ class UserGroupResponse(BaseModel):
     @classmethod
     def from_group(cls, group: Group) -> "UserGroupResponse":
         classrooms = group.classrooms
-        main = classrooms == []
+        main = group.building.main_group_id == group.id
         if main:
             classrooms = group.building.classrooms if group.building.classrooms else []
             classrooms.sort(key=lambda c: c.name)

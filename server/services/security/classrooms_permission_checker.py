@@ -1,4 +1,4 @@
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from sqlmodel import Session
 
 from server.models.database.classroom_db_model import Classroom
@@ -66,6 +66,6 @@ class ClassroomPermissionChecker(PermissionChecker[Classroom]):
 class ForbiddenClassroomAccess(HTTPException):
     def __init__(self, detail: str):
         super().__init__(
-            status_code=403,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail=detail,
         )

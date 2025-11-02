@@ -20,11 +20,11 @@ from server.models.database import (  # noqa
     occurrence_db_model,
     reservation_db_model,
     schedule_db_model,
+    solicitation_db_model,
     subject_building_link,
     subject_db_model,
     user_building_link,
     user_db_model,
-    classroom_solicitation_db_model,
 )
 
 engine = create_engine(f"{CONFIG.db_uri}/{CONFIG.db_database}")

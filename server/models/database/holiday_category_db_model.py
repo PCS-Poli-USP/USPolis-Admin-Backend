@@ -21,9 +21,7 @@ class HolidayCategory(BaseModel, table=True):
 
     name: str = Field()
     year: int = Field()
-    created_by_id: int | None = Field(
-        foreign_key="user.id", default=None, nullable=False
-    )
+    created_by_id: int = Field(foreign_key="user.id", default=None)
     created_by: "User" = Relationship(back_populates="holidays_categories")
 
     holidays: list["Holiday"] = Relationship(

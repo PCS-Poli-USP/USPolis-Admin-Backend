@@ -23,7 +23,7 @@ from server.utils.must_be_int import must_be_int
 class SubjectRepository:
     @staticmethod
     def get_all(*, session: Session) -> list[Subject]:
-        statement = select(Subject)
+        statement = select(Subject).where(col(Subject.id) > 0)
         subjects = session.exec(statement).all()
         return list(subjects)
 
@@ -162,19 +162,18 @@ class SubjectRepository:
             old_set = set()
             has_add_to_building = False
             if old is not None:
-                if len(old.classes) != len(subject.classes):
-                    old_set = set([class_.code for class_ in old.classes])
-                    crawled_set = set([class_.code for class_ in subject.classes])
-                    new_classes_set = crawled_set - old_set
-                    new_classes = [
-                        class_
-                        for class_ in subject.classes
-                        if class_.code in new_classes_set
-                    ]
-                    for class_ in new_classes:
-                        class_.subject_id = must_be_int(old.id)
-                        class_.subject = old
-                        session.add(class_)
+                old_set = set([class_.code for class_ in old.classes])
+                crawled_set = set([class_.code for class_ in subject.classes])
+                new_classes_set = crawled_set - old_set
+                new_classes = [
+                    class_
+                    for class_ in subject.classes
+                    if class_.code in new_classes_set
+                ]
+                for class_ in new_classes:
+                    class_.subject_id = must_be_int(old.id)
+                    class_.subject = old
+                    session.add(class_)
 
                 SubjectRepository.__update_crawled_subject_core_data(
                     old, subject, session

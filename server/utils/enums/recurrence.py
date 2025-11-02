@@ -11,6 +11,16 @@ class Recurrence(str, Enum):
     def to_string(self) -> str:
         return self.value
 
+    def translated(self) -> str:
+        translations = {
+            Recurrence.DAILY: "Diária",
+            Recurrence.WEEKLY: "Semanal",
+            Recurrence.BIWEEKLY: "Quinzenal",
+            Recurrence.MONTHLY: "Mensal",
+            Recurrence.CUSTOM: "Personalizado",
+        }
+        return translations.get(self, "Desconhecido")
+
     @staticmethod
     def values() -> list["Recurrence"]:
         return [

@@ -14,24 +14,24 @@ from server.utils.must_be_int import must_be_int
 if TYPE_CHECKING:
     from server.models.database.building_db_model import Building
     from server.models.database.occurrence_db_model import Occurrence
-    from server.models.database.reservation_db_model import Reservation
     from server.models.database.schedule_db_model import Schedule
     from server.models.database.user_db_model import User
-    from server.models.database.classroom_solicitation_db_model import (
-        ClassroomSolicitation,
-    )
     from server.models.database.group_db_model import Group
+    from server.models.database.solicitation_db_model import Solicitation
 
 
 class ClassroomBase(BaseModel):
     name: str
     capacity: int
     floor: int
-    accessibility: bool = False
+    accessibility: bool = Field(default=False)
     audiovisual: AudiovisualType = Field(
         sa_column=Column(Enum(AudiovisualType), nullable=False)
     )
     air_conditioning: bool = False
+    reservable: bool = Field(default=True)
+    remote: bool = Field(default=True)
+    observation: str = Field(default="")
     updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
 
     created_by_id: int = Field(foreign_key="user.id")
@@ -47,17 +47,36 @@ class Classroom(ClassroomBase, table=True):
 
     created_by: "User" = Relationship()
     building: "Building" = Relationship(back_populates="classrooms")
+    solicitations: list["Solicitation"] = Relationship(
+        back_populates="solicited_classroom"
+    )
     occurrences: list["Occurrence"] = Relationship(back_populates="classroom")
-    reservations: list["Reservation"] = Relationship(
-        back_populates="classroom", sa_relationship_kwargs={"cascade": "all, delete"}
-    )
     schedules: list["Schedule"] = Relationship(back_populates="classroom")
-    solicitations: list["ClassroomSolicitation"] = Relationship(
-        back_populates="classroom"
-    )
     groups: list["Group"] = Relationship(
         back_populates="classrooms", link_model=GroupClassroomLink
     )
+
+    def get_groups(self) -> list["Group"]:
+        """Get the groups associated with this classroom.\n
+        This method ensures that the main group of the building is included
+        """
+        groups = self.groups
+        main_group = self.building.main_group
+        if main_group and main_group not in groups:
+            groups.append(main_group)
+        return self.groups
+
+    def get_users(self) -> list["User"]:
+        """
+        Get the list of users who have access to this classroom.
+
+        Returns:
+            List of User objects.
+        """
+        users: set[User] = set()
+        for group in self.get_groups():
+            users.update(group.users)
+        return list(users)
 
 
 class ConflictsInfo(PydanticBaseModel):
@@ -117,4 +136,5 @@ class ClassroomWithConflictsIndicator(ClassroomBase):
             updated_at=classroom.updated_at,
             created_by_id=classroom.created_by_id,
             building_id=classroom.building_id,
+            observation=classroom.observation,
         )

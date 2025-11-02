@@ -18,7 +18,7 @@ class CalendarRegister(BaseModel):
 
 
 class CalendarUpdate(CalendarRegister):
-    categories_ids: list[int] | None = None
+    pass
 
 
 class CalendarInvalidInput(HTTPException):

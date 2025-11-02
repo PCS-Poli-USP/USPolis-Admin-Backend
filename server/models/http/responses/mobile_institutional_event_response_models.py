@@ -9,7 +9,7 @@ from server.models.http.requests.institutional_event_request_models import (
 )
 
 
-class MobileInstitutionalEventResponse(BaseModel):
+class MobileInstitutionalAllocationEventResponse(BaseModel):
     id: int
     title: str
     description: str
@@ -26,7 +26,7 @@ class MobileInstitutionalEventResponse(BaseModel):
     @classmethod
     def from_model(
         cls, event: InstitutionalEvent
-    ) -> "MobileInstitutionalEventResponse":
+    ) -> "MobileInstitutionalAllocationEventResponse":
         if event.id is None:
             raise UnfetchDataError("Institutional Event", "ID")
         return cls(
@@ -47,7 +47,7 @@ class MobileInstitutionalEventResponse(BaseModel):
     @classmethod
     def from_institutional_event_list(
         cls, events: list[InstitutionalEvent]
-    ) -> list["MobileInstitutionalEventResponse"]:
+    ) -> list["MobileInstitutionalAllocationEventResponse"]:
         return [cls.from_model(event) for event in events]
 
 

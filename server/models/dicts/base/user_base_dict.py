@@ -6,3 +6,4 @@ class UserBaseDict(BaseDict, total=False):
     Except for **UserUpdateDict** that is different"""
 
     is_admin: bool
+    receive_emails: bool

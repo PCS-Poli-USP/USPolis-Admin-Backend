@@ -1,4 +1,7 @@
+from datetime import date as datetime_date
 from fastapi import HTTPException, status
+
+# from sqlalchemy import func
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 
@@ -7,6 +10,7 @@ from server.models.database.classroom_db_model import Classroom
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.schedule_db_model import Schedule
+from server.models.database.subject_db_model import Subject
 from server.models.database.user_db_model import User
 from server.models.http.requests.occurrence_request_models import OccurenceManyRegister
 from server.models.http.requests.schedule_request_models import (
@@ -30,12 +34,20 @@ class ScheduleRepository:
     @staticmethod
     def get_by_id(*, id: int, session: Session) -> Schedule:
         statement = select(Schedule).where(col(Schedule.id) == id)
-        schedule = session.exec(statement).one()
+        try:
+            schedule = session.exec(statement).one()
+        except NoResultFound:
+            raise ScheduleNotFound()
         return schedule
 
     @staticmethod
-    def get_all_unallocated(*, session: Session) -> list[Schedule]:
-        statement = select(Schedule).where(Schedule.allocated == False)  # noqa: E712
+    def get_all_unallocated_for_classes(*, session: Session) -> list[Schedule]:
+        """Get all unallocated classes schedules that are not custom recurrence"""
+        statement = select(Schedule).where(
+            ~col(Schedule.allocated),
+            col(Schedule.recurrence) != Recurrence.CUSTOM,
+            col(Schedule.class_id).is_not(None),
+        )
         schedules = session.exec(statement).all()
         return list(schedules)
 
@@ -52,19 +64,17 @@ class ScheduleRepository:
             .where(Schedule.class_id == class_.id)
             .where(Schedule.id == id)
         )
-        schedule = session.exec(statement).one()
+        try:
+            schedule = session.exec(statement).one()
+        except NoResultFound:
+            raise ScheduleNotFound()
         return schedule
 
     @staticmethod
     def get_by_id_on_buildings(
         *, schedule_id: int, owned_building_ids: list[int], session: Session
     ) -> Schedule:
-        statement = select(Schedule).where(Schedule.id == schedule_id)
-
-        try:
-            schedule = session.exec(statement).one()
-        except NoResultFound:
-            raise ScheduleNotFound()
+        schedule = ScheduleRepository.get_by_id(id=schedule_id, session=session)
 
         if schedule.class_:
             buildings = schedule.class_.subject.buildings
@@ -72,15 +82,50 @@ class ScheduleRepository:
             if len(set(building_ids).intersection(set(owned_building_ids))) == 0:
                 raise ScheduleNotFound()
         elif schedule.reservation:
-            building = schedule.reservation.classroom.building
+            building = schedule.reservation.get_building()
             if building.id not in owned_building_ids:
                 raise ScheduleNotFound()
 
         return schedule
 
     @staticmethod
+    def find_old_allocation_options(
+        *, building_id: int, year: int, target: Schedule, session: Session
+    ) -> list[Schedule]:
+        """Get all schedules that can be reused for allocation"""
+        if not target.class_:
+            raise InvalidScheduleAllocationReuseTarget()
+        # class_number = target.class_.code[-2:]
+        start = datetime_date(year, 1, 1)
+        end = datetime_date(year, 12, 31)
+        statement = (
+            select(Schedule)
+            .join(Class)
+            .join(Subject)
+            .where(
+                Schedule.start_date >= start,
+                Schedule.end_date <= end,
+                Schedule.week_day == target.week_day,
+                Schedule.month_week == target.month_week,
+                Schedule.recurrence == target.recurrence,
+                Schedule.start_time == target.start_time,
+                Schedule.end_time == target.end_time,
+                # func.right(Class.code, 2) == class_number,
+                col(Subject.code) == target.class_.subject.code,
+            )
+        )
+
+        schedules = list(session.exec(statement).all())
+        schedules = [
+            schedule
+            for schedule in schedules
+            if (not schedule.classroom or schedule.classroom.building_id == building_id)
+        ]
+        return schedules
+
+    @staticmethod
     def create_with_class(
-        *, class_input: Class, input: ScheduleRegister, session: Session
+        *, class_: Class, input: ScheduleRegister, session: Session
     ) -> Schedule:
         new_schedule = Schedule(
             start_date=input.start_date,
@@ -92,8 +137,8 @@ class ScheduleRepository:
             week_day=input.week_day,
             start_time=input.start_time,
             end_time=input.end_time,
-            class_id=class_input.id,
-            class_=class_input,
+            class_id=class_.id,
+            class_=class_,
             reservation_id=None,
             classroom_id=None,
         )
@@ -119,8 +164,9 @@ class ScheduleRepository:
         user: User,
         reservation: Reservation,
         input: ScheduleRegister,
-        classroom: Classroom,
+        classroom: Classroom | None,
         session: Session,
+        allocate: bool = True,
     ) -> Schedule:
         new_schedule = Schedule(
             start_date=input.start_date,
@@ -128,7 +174,7 @@ class ScheduleRepository:
             recurrence=input.recurrence,
             month_week=input.month_week,
             all_day=input.all_day,
-            allocated=input.allocated if input.allocated else False,
+            allocated=input.allocated,
             week_day=input.week_day,
             start_time=input.start_time,
             end_time=input.end_time,
@@ -136,37 +182,43 @@ class ScheduleRepository:
             class_=None,
             reservation_id=reservation.id,
             reservation=reservation,
-            classroom_id=input.classroom_id,
+            classroom_id=classroom.id if classroom else None,
         )
+        session.add(new_schedule)
 
         if input.dates and input.recurrence == Recurrence.CUSTOM:
             occurences_input = OccurenceManyRegister(
-                classroom_id=classroom.id,
+                classroom_id=classroom.id if allocate and classroom else None,
                 start_time=input.start_time,
                 end_time=input.end_time,
                 dates=input.dates,
+                labels=input.labels,
+                times=input.times,
             )
             occurences = OccurrenceRepository.create_many_with_schedule(
                 schedule=new_schedule, input=occurences_input, session=session
             )
             new_schedule.occurrences = occurences
-            if input.classroom_id:
+            if allocate:
                 new_schedule.allocated = True
-            session.add(new_schedule)
         else:
-            # schedule is add to sesion here
-            OccurrenceRepository.allocate_schedule(
-                user=user, schedule=new_schedule, classroom=classroom, session=session
-            )
+            if allocate and classroom:
+                # schedule is add to sesion here
+                OccurrenceRepository.allocate_schedule(
+                    user=user,
+                    schedule=new_schedule,
+                    classroom=classroom,
+                    session=session,
+                )
         return new_schedule
 
     @staticmethod
     def create_many_with_class(
-        *, university_class: Class, input: list[ScheduleRegister], session: Session
+        *, class_: Class, input: list[ScheduleRegister], session: Session
     ) -> list[Schedule]:
         return [
             ScheduleRepository.create_with_class(
-                class_input=university_class, input=schedule_input, session=session
+                class_=class_, input=schedule_input, session=session
             )
             for schedule_input in input
         ]
@@ -182,7 +234,7 @@ class ScheduleRepository:
         new_schedules = []
         for schedule_input in input:
             new_schedule = ScheduleRepository.create_with_class(
-                class_input=class_, input=schedule_input, session=session
+                class_=class_, input=schedule_input, session=session
             )
             if schedule_input.allocated and schedule_input.classroom_id:
                 classroom = ClassroomRepository.get_by_id(
@@ -209,7 +261,15 @@ class ScheduleRepository:
     ) -> Schedule:
         old_schedule = reservation.schedule
 
+        should_reallocate = False
+        if not old_schedule.classroom:
+            should_reallocate = True
+        if old_schedule.classroom and classroom.id != old_schedule.classroom.id:
+            should_reallocate = True
         if ScheduleUtils.has_schedule_diff(old_schedule, input):
+            should_reallocate = True
+
+        if should_reallocate:
             session.delete(old_schedule)
             new_schedule = ScheduleRepository.create_with_reservation(
                 user=user,
@@ -258,16 +318,16 @@ class ScheduleRepository:
         return
 
 
-class ScheduleInvalidData(HTTPException):
-    def __init__(self, schedule_info: str, data_info: str) -> None:
-        super().__init__(
-            status.HTTP_400_BAD_REQUEST,
-            f"Schedule with {schedule_info} has invalid {data_info} value",
-        )
-
-
 class ScheduleNotFound(HTTPException):
     def __init__(self) -> None:
         super().__init__(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Schedule not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Agenda não encontrada"
+        )
+
+
+class InvalidScheduleAllocationReuseTarget(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Agenda deve ser de uma turma para reutilização de alocação",
         )

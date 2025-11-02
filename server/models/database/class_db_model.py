@@ -7,6 +7,7 @@ from sqlmodel import Field, Relationship, Enum
 from server.models.database.base_db_model import BaseModel
 
 from server.models.database.class_calendar_link import ClassCalendarLink
+from server.models.database.exam_class_link import ExamClassLink
 from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.audiovisual_type_enum import AudiovisualType
 from server.utils.enums.class_type import ClassType
@@ -17,6 +18,7 @@ if TYPE_CHECKING:
     from server.models.database.schedule_db_model import Schedule
     from server.models.database.subject_db_model import Subject
     from server.models.database.forum_db_model import ForumPost
+    from server.models.database.exam_db_model import Exam
 
 
 class Class(BaseModel, table=True):
@@ -26,7 +28,9 @@ class Class(BaseModel, table=True):
     start_date: date = Field()
     end_date: date = Field()
     code: str = Field()
-    professors: list[str] = Field(sa_column=Column(postgresql.ARRAY(String())))
+    professors: list[str] = Field(
+        sa_column=Column(postgresql.ARRAY(String()), nullable=False)
+    )
     type: ClassType = Field()
     vacancies: int = Field()
 
@@ -55,6 +59,9 @@ class Class(BaseModel, table=True):
     )
     subject: "Subject" = Relationship(back_populates="classes")
     posts: list["ForumPost"] = Relationship(cascade_delete=True)
+    exams: list["Exam"] = Relationship(
+        back_populates="classes", link_model=ExamClassLink
+    )
 
     def classroom_ids(self) -> set[int]:
         """

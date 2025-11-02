@@ -20,6 +20,7 @@ class BaseModelFactory(Generic[M], metaclass=ABCMeta):
 
     def __init__(self, session: Session) -> None:
         self.session = session
+        self.instances: list[M] = []
 
     @abstractmethod
     def _get_model_type(self) -> type[M]:
@@ -62,6 +63,7 @@ class BaseModelFactory(Generic[M], metaclass=ABCMeta):
         """Create a model instance without commit the session"""
         model = self._instanciate_model(overrides)
         self.session.add(model)
+        self.instances.append(model)
         return model
 
     def create_and_refresh(self, **overrides: Unpack[InputType]) -> M:  # type: ignore
@@ -131,7 +133,27 @@ class BaseModelFactory(Generic[M], metaclass=ABCMeta):
             self.__update_default_dict(defaults, overrides)  # type: ignore
         model = self.get_by_id(model_id)
         for key, value in defaults.items():
-            if value is not None:
+            if hasattr(model, key):
                 setattr(model, key, value)
-        self.session.refresh(model)
+        self.session.add(model)
+        return model
+
+    def update_and_refresh(
+        self,
+        model_id: int,
+        **overrides: Unpack[InputType],  # type: ignore
+    ) -> M:
+        """Update a model instance by its ID, commit the session and return the instance refreshed."""
+        model = self.update(model_id, **overrides)
+        self.session.commit()
+        self.refresh(model)
+        return model
+
+    def delete_last_instance(self) -> M | None:
+        size = len(self.instances)
+        if size == 0:
+            return None
+        model = self.instances.pop(size - 1)
+        self.session.delete(model)
+        self.session.commit()
         return model

@@ -22,7 +22,11 @@ class AudiovisualType(str, Enum):
 
     @staticmethod
     def values() -> list["AudiovisualType"]:
-        return [AudiovisualType.TV, AudiovisualType.PROJECTOR, AudiovisualType.NONE]
+        return [
+            AudiovisualType.TV,
+            AudiovisualType.PROJECTOR,
+            AudiovisualType.NONE,
+        ]
 
 
 class NoSuchAudiovisualType(Exception):

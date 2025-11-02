@@ -2,7 +2,7 @@ from datetime import time
 from pydantic import BaseModel
 
 
-class EventUpdate(BaseModel):
+class AllocationEventUpdate(BaseModel):
     desalocate: bool
     all_occurrences: bool
     start_time: time
@@ -11,3 +11,15 @@ class EventUpdate(BaseModel):
     classroom: str
     occurrence_id: int | None
     schedule_id: int
+
+
+class AllocationReuseTarget(BaseModel):
+    subject_id: int
+    class_ids: list[int]
+
+
+class AllocationReuseInput(BaseModel):
+    building_id: int
+    allocation_year: int
+    targets: list[AllocationReuseTarget]
+    strict: bool = True

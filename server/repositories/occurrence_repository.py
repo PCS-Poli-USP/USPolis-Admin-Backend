@@ -1,9 +1,11 @@
 from datetime import date
 from sqlmodel import Session, col, select
+from sqlalchemy import or_
 
 from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.occurrence_db_model import Occurrence
+from server.models.database.occurrence_label_db_model import OccurrenceLabel
 from server.models.database.schedule_db_model import Schedule
 from server.models.database.user_db_model import User
 from server.models.http.requests.allocation_log_request_models import AllocationLogInput
@@ -69,6 +71,31 @@ class OccurrenceRepository:
         return list(occurrences)
 
     @staticmethod
+    def get_all_on_interval_for_allocation(
+        start: date, end: date, session: Session
+    ) -> list[Occurrence]:
+        """Get all occurrences on interval [start, end], that satisfy one of:\n
+        - It's not remote
+        - It's unallocated and belongs to a schedule from a class
+        """
+        statement = (
+            select(Occurrence)
+            .join(Schedule)
+            .join(Classroom, col(Occurrence.classroom_id) == Classroom.id, isouter=True)
+            .where(
+                Occurrence.date >= start,
+                Occurrence.date <= end,
+                or_(
+                    ~col(Classroom.remote),
+                    (col(Occurrence.classroom_id).is_(None))
+                    & (col(Schedule.class_id).is_not(None)),
+                ),
+            )
+        )
+        occurrences = session.exec(statement).all()
+        return list(occurrences)
+
+    @staticmethod
     def get_all_on_interval_for_classroom(
         classroom_id: int, start: date, end: date, session: Session
     ) -> list[Occurrence]:
@@ -102,20 +129,24 @@ class OccurrenceRepository:
             user=user, schedule=schedule, classroom=classroom
         )
         AllocationLogRepository.create(input=input, schedule=schedule, session=session)
+
         occurrences = OccurrenceUtils.generate_occurrences(schedule)
-        if schedule.allocated:
-            previous_occurrences = schedule.occurrences
-            for occurrence in previous_occurrences:
-                session.delete(occurrence)
+        previous_occurrences = list(schedule.occurrences)
+        schedule.occurrences.clear()
+
+        for occurrence in previous_occurrences:
+            session.delete(occurrence)
 
         for occurrence in occurrences:
             occurrence.classroom_id = classroom.id
             occurrence.classroom = classroom
+            occurrence.schedule_id = must_be_int(schedule.id)
             session.add(occurrence)
 
         schedule.occurrences = occurrences
         schedule.classroom = classroom
         schedule.allocated = True
+
         session.add(schedule)
         session.add(classroom)
         return occurrences
@@ -182,15 +213,19 @@ class OccurrenceRepository:
             )
 
         occurrences: list[Occurrence] = []
-        for dt in input.dates:
+        print(input.times)
+        for i, dt in enumerate(input.dates):
             occurrence = Occurrence(
                 schedule=schedule,
                 classroom_id=input.classroom_id,
                 classroom=classroom,
-                start_time=input.start_time,
-                end_time=input.end_time,
+                start_time=input.start_time if not input.times else input.times[i][0],
+                end_time=input.end_time if not input.times else input.times[i][1],
                 date=dt,
             )
+            if input.labels:
+                label = OccurrenceLabel(occurrence=occurrence, label=input.labels[i])  # pyright: ignore[reportCallIssue]
+                session.add(label)
             session.add(occurrence)
             occurrences.append(occurrence)
         return occurrences

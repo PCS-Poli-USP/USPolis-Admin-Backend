@@ -11,7 +11,7 @@ env_files = {
 }
 
 base_config = DConfig(RepositoryEnv(".env"))
-env = base_config("ENVIRONMENT", default="DEVELOPMENT", cast=str).upper()  # pyright: ignore[reportAttributeAccessIssue]
+env = base_config("ENVIRONMENT", default="DEVELOPMENT", cast=str).upper()  # pyright: ignore[reportAttributeAccessIssue, reportAssignmentType]
 env_path = env_files.get(env, ".env.dev")
 config = DConfig(RepositoryEnv(env_path))  # noqa: F811
 
@@ -19,7 +19,9 @@ config = DConfig(RepositoryEnv(env_path))  # noqa: F811
 class Settings(BaseModel):
     """Server config settings."""
 
-    environment: str = config("ENVIRONMENT", default="DEVELOPMENT", cast=str)  # pyright: ignore[reportAssignmentType]
+    environment: str = config("ENVIRONMENT", default="development", cast=str)  # pyright: ignore[reportAssignmentType]
+    log_max_size: int = config("LOG_MAX_SIZE", default=1_073_741_824, cast=int)  # pyright: ignore[reportAssignmentType]
+    log_backup_count: int = config("LOG_BACKUP_COUNT", default=2, cast=int)  # pyright: ignore[reportAssignmentType]
     # CORS
     allowed_origins: list[str] = config(
         "ALLOWED_ORIGINS",
@@ -28,7 +30,7 @@ class Settings(BaseModel):
     )  # pyright: ignore[reportAssignmentType]
 
     root_url: str = config("ROOT_URL", default="http://localhost:8000")  # pyright: ignore[reportAssignmentType]
-    port: str = config("PORT", default="8000")  # pyright: ignore[reportAssignmentType]
+    port: str = config("PORT", default="5000")  # pyright: ignore[reportAssignmentType]
     debug: bool = config("DEBUG", default=False, cast=bool)  # pyright: ignore[reportAssignmentType]
 
     # SQLAlchemy settings

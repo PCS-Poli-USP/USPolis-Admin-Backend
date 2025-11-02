@@ -13,6 +13,7 @@ class OccurrenceBase(BaseModel):
     date: datetime_date
     classroom_id: int | None = None
     classroom: str | None = None
+    label: str | None = None
 
 
 class OccurrenceResponse(OccurrenceBase):
@@ -25,6 +26,9 @@ class OccurrenceResponse(OccurrenceBase):
             date=occurrence.date,
             classroom_id=occurrence.classroom_id,
             classroom=occurrence.classroom.name if occurrence.classroom else None,
+            label=occurrence.occurrence_label.label
+            if occurrence.occurrence_label
+            else None,
         )
 
     @classmethod

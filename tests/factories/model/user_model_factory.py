@@ -43,6 +43,14 @@ class UserModelFactory(BaseModelFactory[User]):
         """Create a user instance with default values, commit and refresh it."""
         return super().create_and_refresh(**overrides)
 
+    def create_many_and_refresh(  # type: ignore
+        self,
+        count: int = BaseModelFactory.CREATE_MANY_DEFAULT_COUNT,
+        **overrides: Unpack[UserModelDict],
+    ) -> list[User]:
+        """Create many user instances with default values and refresh them."""
+        return super().create_many_and_refresh(count=count, **overrides)
+
     def update(self, user_id: int, **overrides: Unpack[UserModelDict]) -> User:  # type: ignore
         """Create a user instance with default values."""
         return super().update(model_id=user_id, **overrides)

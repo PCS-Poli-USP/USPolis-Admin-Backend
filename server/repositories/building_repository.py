@@ -98,7 +98,7 @@ class BuildingRepository:
             building=building,
             users=[],
             classrooms=[],
-        )  # type: ignore
+        )  # pyright: ignore[reportCallIssue]
         session.add(group)
         session.flush()
 

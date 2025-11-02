@@ -18,6 +18,14 @@ class CalendarRepository:
         return list(calendars)
 
     @staticmethod
+    def get_all_on_year(*, session: Session, year: int) -> list[Calendar]:
+        statement = (
+            select(Calendar).where(col(Calendar.year) == year).order_by(Calendar.name)
+        )
+        calendars = session.exec(statement).all()
+        return list(calendars)
+
+    @staticmethod
     def get_by_id(*, id: int, session: Session) -> Calendar:
         statement = select(Calendar).where(col(Calendar.id) == id)
         calendar = session.exec(statement).first()
@@ -64,7 +72,7 @@ class CalendarRepository:
         calendar = CalendarRepository.get_by_id(id=id, session=session)
         if not user.is_admin and calendar.created_by_id != user.id:
             raise CalendarOperationNotAllowed("atualizar", input.name)
-        
+
         calendar.name = input.name
         calendar.year = input.year
         if input.categories_ids is not None:

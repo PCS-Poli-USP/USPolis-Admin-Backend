@@ -102,8 +102,11 @@ def test_create_group_with_users(
     assert response.status_code == status.HTTP_201_CREATED
 
     user = UserRepository.get_by_id(user_id=must_be_int(user.id), session=session)
-    assert len(user.groups) == 2
-    assert user.groups[1].name == input.name
+    user_groups = user.groups
+    user_groups_names = [g.name for g in user_groups]
+    assert len(user_groups) == 2
+    assert input.name in user_groups_names
+    assert group.name in user_groups_names
 
 
 def test_create_group_with_classrooms(
@@ -191,12 +194,19 @@ def test_create_group_with_common_user(
 
 
 def test_update_group_with_admin_user(
-    building: Building, session: Session, client: TestClient
+    building: Building, user: User, session: Session, client: TestClient
 ) -> None:
-    group = GroupModelFactory(building=building, session=session).create_and_refresh()
-    input = GroupRequestFactory(building).update_input()
-    response = client.put(f"{URL_PREFIX}/{group.id}", json=input.model_dump())
+    classrooms = ClassroomModelFactory(
+        session=session, creator=user, building=building, group=building.main_group
+    ).create_many_default_and_refresh()
 
+    group = GroupModelFactory(building=building, session=session).create_and_refresh(
+        classrooms=[classrooms[0]]
+    )
+    input = GroupRequestFactory(building).update_input(
+        classroom_ids=[must_be_int(classrooms[0].id)]
+    )
+    response = client.put(f"{URL_PREFIX}/{group.id}", json=input.model_dump())
     updated = GroupRepository.get_by_id(
         id=must_be_int(group.id),
         session=session,
@@ -204,6 +214,8 @@ def test_update_group_with_admin_user(
 
     assert response.status_code == status.HTTP_200_OK
     assert updated.name == input.name
+    assert len(updated.classrooms) == 1
+    assert updated.classrooms[0].id == classrooms[0].id
 
 
 def test_update_group_with_same_name(
@@ -223,11 +235,11 @@ def test_update_group_with_same_name(
 
 
 def test_update_group_add_users_without_buildings(
-    building: Building, session: Session, client: TestClient
+    building: Building, group: Group, session: Session, client: TestClient
 ) -> None:
     users = UserModelFactory(session).create_many_default_and_refresh()
     ids = [must_be_int(created.id) for created in users]
-    group = GroupModelFactory(building=building, session=session).create_and_refresh()
+    ids.extend(group.user_ids_set())
     input = GroupRequestFactory(building).update_input(user_ids=ids)
     response = client.put(f"{URL_PREFIX}/{group.id}", json=input.model_dump())
 
@@ -239,7 +251,7 @@ def test_update_group_add_users_without_buildings(
     )
     assert updated.name == input.name
     assert updated.users is not None
-    assert len(updated.users) == UserModelFactory.CREATE_MANY_DEFAULT_COUNT
+    assert len(updated.users) == UserModelFactory.CREATE_MANY_DEFAULT_COUNT + 1
 
     updated_users = UserRepository.get_by_ids(
         ids=ids,
@@ -253,14 +265,16 @@ def test_update_group_add_users_without_buildings(
 
 
 def test_update_group_add_users_with_buildings(
-    user: User, building: Building, session: Session, client: TestClient
+    user: User, building: Building, group: Group, session: Session, client: TestClient
 ) -> None:
     building_B = BuildingModelFactory(
         creator=user, session=session
     ).create_and_refresh()
     users = UserModelFactory(session).create_many_and_refresh(buildings=[building_B])
     ids = [must_be_int(created.id) for created in users]
-    group = GroupModelFactory(building=building, session=session).create_and_refresh()
+    ids.extend(group.user_ids_set())
+    original_user = group.users[0]
+
     input = GroupRequestFactory(building).update_input(user_ids=ids)
     response = client.put(f"{URL_PREFIX}/{group.id}", json=input.model_dump())
 
@@ -272,13 +286,16 @@ def test_update_group_add_users_with_buildings(
     )
     assert updated.name == input.name
     assert updated.users is not None
-    assert len(updated.users) == UserModelFactory.CREATE_MANY_DEFAULT_COUNT
+    assert len(updated.users) == UserModelFactory.CREATE_MANY_DEFAULT_COUNT + 1
 
     updated_users = UserRepository.get_by_ids(
         ids=ids,
         session=session,
     )
     for user in updated_users:
+        if user == original_user:
+            continue
+
         assert len(user.groups) == 1
         assert user.groups[0].name == input.name
         assert user.buildings is not None
@@ -286,13 +303,13 @@ def test_update_group_add_users_with_buildings(
 
 
 def test_update_group_remove_users_with_one_group_on_same_building(
-    user: User, building: Building, session: Session, client: TestClient
+    user: User, building: Building, group: Group, session: Session, client: TestClient
 ) -> None:
-    users = UserModelFactory(session).create_many_and_refresh(buildings=[building])
-    ids = [must_be_int(created.id) for created in users]
-    group = GroupModelFactory(building=building, session=session).create_and_refresh(
-        users=users
+    users = UserModelFactory(session).create_many_and_refresh(
+        buildings=[building], groups=[group]
     )
+
+    ids = [must_be_int(created.id) for created in users]
     input = GroupRequestFactory(building).update_input(user_ids=[])
     response = client.put(f"{URL_PREFIX}/{group.id}", json=input.model_dump())
 
@@ -424,7 +441,6 @@ def test_delete_group_with_admin_user(
 ) -> None:
     group = GroupModelFactory(building, session=session).create_and_refresh()
     response = client.delete(f"{URL_PREFIX}/{group.id}")
-    print(response.json())
     assert response.status_code == status.HTTP_200_OK
 
     with pytest.raises(GroupNotFound):

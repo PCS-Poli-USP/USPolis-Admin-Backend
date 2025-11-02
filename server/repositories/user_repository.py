@@ -72,6 +72,7 @@ class UserRepository:
             name=input.name,
             email=input.email,
             is_admin=input.is_admin,
+            receive_emails=input.receive_emails,
             created_by=creator,
         )
         UserRepository.__update_user_groups(
@@ -101,9 +102,19 @@ class UserRepository:
             session=session,
         )
         user_to_update.is_admin = input.is_admin
+        user_to_update.receive_emails = input.receive_emails
         user_to_update.updated_at = BrazilDatetime.now_utc()
         session.add(user_to_update)
         return user_to_update
+
+    @staticmethod
+    def update_email_notifications(
+        *, user: User, receive_emails: bool, session: Session
+    ) -> User:
+        user.receive_emails = receive_emails
+        user.updated_at = BrazilDatetime.now_utc()
+        session.add(user)
+        return user
 
     @staticmethod
     def visit_user(

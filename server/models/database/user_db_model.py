@@ -17,8 +17,8 @@ if TYPE_CHECKING:
     from server.models.database.holiday_category_db_model import HolidayCategory
     from server.models.database.holiday_db_model import Holiday
     from server.models.database.reservation_db_model import Reservation
-    from server.models.database.classroom_solicitation_db_model import (
-        ClassroomSolicitation,
+    from server.models.database.solicitation_db_model import (
+        Solicitation,
     )
 
 
@@ -28,6 +28,7 @@ class User(BaseModel, table=True):
     name: str
     updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
     last_visited: datetime = Field(default_factory=BrazilDatetime.now_utc)
+    receive_emails: bool = Field(default=True)
 
     created_by_id: int | None = Field(
         foreign_key="user.id",
@@ -46,7 +47,7 @@ class User(BaseModel, table=True):
     holidays: list["Holiday"] = Relationship(back_populates="created_by")
     calendars: list["Calendar"] = Relationship(back_populates="created_by")
     reservations: list["Reservation"] = Relationship(back_populates="created_by")
-    solicitations: list["ClassroomSolicitation"] = Relationship(back_populates="user")
+    solicitations: list["Solicitation"] = Relationship(back_populates="user")
     groups: list[Group] = Relationship(
         link_model=GroupUserLink,
         back_populates="users",
@@ -67,9 +68,13 @@ class User(BaseModel, table=True):
                     must_be_int(classroom.id) for classroom in group.classrooms
                 )
             if not group.classrooms:
-                classrooms_ids.update(
-                    must_be_int(classroom.id) for classroom in group.building.classrooms
-                )
+                building = group.building
+                main_group = building.get_main_group()
+                if main_group == group:
+                    classrooms_ids.update(
+                        must_be_int(classroom.id)
+                        for classroom in group.building.classrooms
+                    )
         return classrooms_ids
 
     def classrooms_ids(self) -> list[int]:

@@ -8,6 +8,7 @@ from server.models.http.requests.holiday_category_request_models import (
     HolidayCategoryRegister,
     HolidayCategoryUpdate,
 )
+from server.utils.must_be_int import must_be_int
 
 
 class HolidayCategoryRepository:
@@ -46,6 +47,7 @@ class HolidayCategoryRepository:
             name=input.name,
             year=input.year,
             created_by=creator,
+            created_by_id=must_be_int(creator.id),
         )
         session.add(new_holiday_category)
         session.commit()
@@ -59,10 +61,10 @@ class HolidayCategoryRepository:
         holiday_category = HolidayCategoryRepository.get_by_id(id=id, session=session)
         if not user.is_admin and holiday_category.created_by_id != user.id:
             raise HolidayCategoryOperationNotAllowed("atualizar", holiday_category.name)
-        
+
         holiday_category.name = input.name
         holiday_category.year = input.year
-        
+
         session.add(holiday_category)
         session.commit()
         return holiday_category
