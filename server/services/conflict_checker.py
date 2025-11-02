@@ -122,9 +122,14 @@ class ConflictParams(BaseModel):
                     f"Dia da semana NÃO deve ser fornecida para recorrência {Recurrence.translated(self.recurrence)}"
                 )
 
-            if not self.week_day:
+            if not self.week_day and self.recurrence != Recurrence.DAILY:
                 raise InvalidConflictParams(
                     f"Dia da semana DEVE ser fornecida para recorrência {Recurrence.translated(self.recurrence)}"
+                )
+
+            if self.week_day and self.recurrence == Recurrence.DAILY:
+                raise InvalidConflictParams(
+                    f"Dia da semana NÃO DEVE ser fornecida para recorrência {Recurrence.translated(self.recurrence)}"
                 )
 
             if (
