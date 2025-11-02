@@ -112,6 +112,7 @@ def upgrade() -> None:
         mapping = dict(row._mapping)
         mapping.pop("reservation_type", None)
         mapping.pop("status", None)
+        mapping.pop("solicited_classroom_id", None)
 
         solicitations.append(
             ClassroomSolicitationSchema(
@@ -119,6 +120,7 @@ def upgrade() -> None:
                     row._mapping["reservation_type"].lower()
                 ),
                 status=ReservationStatus(row._mapping["status"].lower()),
+                classroom_id=row._mapping["solicited_classroom_id"],
                 **mapping,
             )
         )
