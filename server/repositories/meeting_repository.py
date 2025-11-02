@@ -62,12 +62,22 @@ class MeetingRepository:
         return meeting
 
     @staticmethod
-    def create(*, creator: User, input: MeetingRegister, session: Session) -> Meeting:
+    def create(
+        *,
+        creator: User,
+        input: MeetingRegister,
+        session: Session,
+        allocate: bool = True,
+    ) -> Meeting:
         classroom = ClassroomRepository.get_by_id(
             id=input.classroom_id, session=session
         )
         reservation = ReservationRepository.create(
-            creator=creator, input=input, classroom=classroom, session=session
+            creator=creator,
+            input=input,
+            classroom=classroom,
+            session=session,
+            allocate=allocate,
         )
         meeting = Meeting(
             reservation_id=reservation.id,  # pyright: ignore[reportArgumentType]

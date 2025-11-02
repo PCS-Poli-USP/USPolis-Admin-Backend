@@ -88,7 +88,9 @@ class ExamRepository:
         return exam
 
     @staticmethod
-    def create(*, creator: User, input: ExamRegister, session: Session) -> Exam:
+    def create(
+        *, creator: User, input: ExamRegister, session: Session, allocate: bool = True
+    ) -> Exam:
         classroom = ClassroomRepository.get_by_id(
             id=input.classroom_id, session=session
         )
@@ -99,7 +101,11 @@ class ExamRepository:
             if class_.subject_id != subject.id:
                 raise ExamInvalidClassAndSubject()
         reservation = ReservationRepository.create(
-            creator=creator, input=input, classroom=classroom, session=session
+            creator=creator,
+            input=input,
+            classroom=classroom,
+            session=session,
+            allocate=allocate,
         )
         exam = Exam(
             reservation=reservation,
