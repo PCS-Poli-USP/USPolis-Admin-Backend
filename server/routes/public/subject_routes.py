@@ -7,7 +7,7 @@ from server.repositories.subject_repository import SubjectRepository
 
 embed = Body(..., embed=True)
 
-router = APIRouter(prefix="/subjects", tags=["Subjects", "Public"])
+router = APIRouter(prefix="/subjects", tags=["Subjects"])
 
 
 @router.get("")

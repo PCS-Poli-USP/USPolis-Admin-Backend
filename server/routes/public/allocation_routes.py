@@ -11,7 +11,7 @@ from server.repositories.occurrence_repository import OccurrenceRepository
 from server.repositories.schedule_repository import ScheduleRepository
 
 
-router = APIRouter(prefix="/allocations", tags=["Allocations", "Public"])
+router = APIRouter(prefix="/allocations", tags=["Allocations"])
 
 
 @router.get("/events")

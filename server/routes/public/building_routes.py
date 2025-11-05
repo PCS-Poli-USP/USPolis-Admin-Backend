@@ -7,7 +7,7 @@ from server.deps.session_dep import SessionDep
 
 embed = Body(..., embed=True)
 
-router = APIRouter(prefix="/buildings", tags=["Buildings", "Public"])
+router = APIRouter(prefix="/buildings", tags=["Buildings"])
 
 
 @router.get("")
