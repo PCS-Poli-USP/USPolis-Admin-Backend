@@ -158,15 +158,15 @@ class OccurrenceRepository:
         input = AllocationLogInput.for_deallocation(user=user, schedule=schedule)
         AllocationLogRepository.create(input=input, schedule=schedule, session=session)
         if schedule.recurrence != Recurrence.CUSTOM:
-            for occurrence in schedule.occurrences:
-                session.delete(occurrence)
+            schedule.occurrences.clear()
+            session.flush()
         else:
             for occurrence in schedule.occurrences:
                 occurrence.classroom = None
-                occurrence.classroom_id = None
                 session.add(occurrence)
+
         schedule.allocated = False
-        schedule.classroom_id = None
+        schedule.classroom = None
         session.add(schedule)
 
     @staticmethod
