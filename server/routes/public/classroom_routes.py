@@ -14,7 +14,7 @@ embed = Body(..., embed=True)
 
 router = APIRouter(
     prefix="/classrooms",
-    tags=["Public", "Classrooms"],
+    tags=["Classrooms"],
 )
 
 

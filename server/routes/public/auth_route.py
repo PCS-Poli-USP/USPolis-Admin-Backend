@@ -6,7 +6,7 @@ from server.deps.authenticate import AuthenticationClient
 
 embed = Body(..., embed=True)
 
-router = APIRouter(prefix="/auth", tags=["Auth", "Public"])
+router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 class AuthResponse(BaseModel):

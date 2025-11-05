@@ -17,7 +17,7 @@ from server.routes.public.meeting_routes import router as MeetingRouter
 
 embed = Body(..., embed=True)
 
-router = APIRouter(prefix="/reservations", tags=["Public", "Reservations"])
+router = APIRouter(prefix="/reservations", tags=["Reservations"])
 
 router.include_router(ExamRouter)
 router.include_router(EventRouter)
