@@ -18,7 +18,7 @@ from server.routes.public.allocation_routes import router as AllocationRouter
 from server.routes.public.auth_route import router as AuthRouter
 
 
-router = APIRouter()
+router = APIRouter(tags=["Public"])
 
 router.include_router(ForumRouter)
 router.include_router(MobileClassRouter)

@@ -83,10 +83,10 @@ class ReservationRepository:
         statement = (
             select(Reservation)
             .join(Schedule, col(Schedule.reservation_id) == col(Reservation.id))
-            .join(Classroom, col(Classroom.id).in_(classroom_ids))
+            .where(col(Schedule.classroom_id).in_(classroom_ids))
         )
         statement = ReservationRepository.__apply_interval_filter(
-            statement=statement, interval=interval
+            statement=statement, interval=interval, use_join=False
         )
         reservations = list(session.exec(statement).all())
         return reservations
