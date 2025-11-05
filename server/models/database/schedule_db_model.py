@@ -46,7 +46,8 @@ class Schedule(BaseModel, table=True):
     reservation: Optional["Reservation"] = Relationship(back_populates="schedule")
 
     occurrences: list["Occurrence"] = Relationship(
-        back_populates="schedule", sa_relationship_kwargs={"cascade": "all, delete"}
+        back_populates="schedule",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
     logs: list[AllocationLog] = Relationship(
         sa_relationship_kwargs={

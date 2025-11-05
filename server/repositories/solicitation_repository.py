@@ -168,18 +168,32 @@ class SolicitationRepository:
         SolicitationRepository.approve_solicitation_obj(
             solicitation=solicitation, user=user, session=session
         )
-        classroom = solicitation.reservation.get_classroom()
-        if not classroom or classroom.id != classroom_id:
-            classroom = ClassroomRepository.get_by_id(id=classroom_id, session=session)
 
-        if classroom.building_id != solicitation.building_id:
+        solicited_classroom = solicitation.solicited_classroom
+        if (
+            solicited_classroom
+            and solicitation.required_classroom
+            and solicited_classroom.id != classroom_id
+        ):
             raise SolicitationInvalidClassroom(
-                f"Solicitação: A sala {classroom.name} não pertence ao prédio {solicitation.building.name}."
+                f"Solicitação: A sala aprovada não é compatível com a solicitação, a solicitação requer a sala {solicited_classroom.name}."
             )
+
+        approved_classroom = solicited_classroom
+        if not approved_classroom or approved_classroom.id != classroom_id:
+            approved_classroom = ClassroomRepository.get_by_id(
+                id=classroom_id, session=session
+            )
+
+        if approved_classroom.building_id != solicitation.building_id:
+            raise SolicitationInvalidClassroom(
+                f"Solicitação: A sala {approved_classroom.name} não pertence ao prédio {solicitation.building.name}."
+            )
+
         OccurrenceRepository.allocate_schedule(
             user=user,
             schedule=solicitation.reservation.schedule,
-            classroom=classroom,
+            classroom=approved_classroom,
             session=session,
         )
         return solicitation
