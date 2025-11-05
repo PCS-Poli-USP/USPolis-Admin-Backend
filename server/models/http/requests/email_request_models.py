@@ -12,6 +12,7 @@ from server.utils.enums.month_week import MonthWeek
 from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.reservation_type import ReservationType
 from server.utils.enums.week_day import WeekDay
+from server.utils.occurrence_utils import OccurrenceUtils
 
 
 class MailSend(BaseModel):
@@ -41,7 +42,9 @@ class SolicitationMailBase(BaseModel):
     @classmethod
     def from_solicitation(cls, solicitation: Solicitation) -> Self:
         schedule = solicitation.reservation.schedule
-        str_dates = [occ.date.strftime("%d/%m/%Y") for occ in schedule.occurrences]
+        str_dates = [
+            dt.strftime("%d/%m/%Y") for dt in OccurrenceUtils.generate_dates(schedule)
+        ]
         classroom = solicitation.solicited_classroom
         return cls(
             title=solicitation.reservation.title,

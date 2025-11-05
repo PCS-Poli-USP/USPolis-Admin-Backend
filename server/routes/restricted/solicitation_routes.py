@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, Body, status
+from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 
 from server.deps.authenticate import UserDep
@@ -6,9 +7,6 @@ from server.deps.session_dep import SessionDep
 from server.models.http.requests.solicitation_request_models import (
     SolicitationApprove,
     SolicitationDeny,
-)
-from server.models.http.responses.solicitation_response_models import (
-    SolicitationResponse,
 )
 from server.repositories.solicitation_repository import (
     SolicitationRepository,
@@ -41,7 +39,7 @@ async def approve_reservation_solicitation(
     input: SolicitationApprove,
     session: SessionDep,
     user: UserDep,
-) -> SolicitationResponse:
+) -> JSONResponse:
     """Aprove a class reservation solicitation"""
     checker = SolicitationPermissionChecker(user, session)
     checker.check_permission(solicitation_id)
@@ -51,7 +49,10 @@ async def approve_reservation_solicitation(
     session.refresh(solicitation)
     session.commit()
     await EmailService.send_solicitation_approved_email(input, solicitation)
-    return SolicitationResponse.from_solicitation(solicitation)
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={"message": "Solicitação aprovada com sucesso."},
+    )
 
 
 @router.put("/deny/{solicitation_id}")
@@ -60,7 +61,7 @@ async def deny_classroom_solicitation(
     input: SolicitationDeny,
     session: SessionDep,
     user: UserDep,
-) -> SolicitationResponse:
+) -> JSONResponse:
     """Deny a class reservation solicitation"""
     checker = SolicitationPermissionChecker(user, session)
     checker.check_permission(solicitation_id)
@@ -70,4 +71,7 @@ async def deny_classroom_solicitation(
     )
     session.commit()
     await EmailService.send_solicitation_denied_email(input, solicitation)
-    return SolicitationResponse.from_solicitation(solicitation)
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={"message": "Solicitação negada com sucesso."},
+    )

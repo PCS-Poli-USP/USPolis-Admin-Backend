@@ -129,19 +129,13 @@ class OccurrenceRepository:
             user=user, schedule=schedule, classroom=classroom
         )
         AllocationLogRepository.create(input=input, schedule=schedule, session=session)
-
         occurrences = OccurrenceUtils.generate_occurrences(schedule)
-        previous_occurrences = list(schedule.occurrences)
         schedule.occurrences.clear()
-
-        for occurrence in previous_occurrences:
-            session.delete(occurrence)
+        session.flush()
 
         for occurrence in occurrences:
-            occurrence.classroom_id = classroom.id
             occurrence.classroom = classroom
-            occurrence.schedule_id = must_be_int(schedule.id)
-            session.add(occurrence)
+            occurrence.schedule = schedule
 
         schedule.occurrences = occurrences
         schedule.classroom = classroom

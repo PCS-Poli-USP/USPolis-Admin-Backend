@@ -11,13 +11,30 @@ from server.utils.must_be_int import must_be_int
 class OccurrenceUtils:
     # update/delete schedules
     @staticmethod
+    def generate_dates(schedule: Schedule) -> list[date]:
+        if schedule.recurrence is Recurrence.CUSTOM:
+            return [oc.date for oc in schedule.occurrences]
+        return OccurrenceUtils._dates_for_recurrence(
+            schedule.week_day.value if schedule.week_day else -1,
+            schedule.recurrence,
+            schedule.start_date,
+            schedule.end_date,
+            schedule.month_week.value if schedule.month_week else None,
+        )
+
+    @staticmethod
     def generate_occurrences(schedule: Schedule) -> list[Occurrence]:
         occurrences: list[Occurrence] = []
-        if schedule.week_day is None and schedule.recurrence is not Recurrence.DAILY:
+        if (
+            schedule.recurrence != Recurrence.CUSTOM
+            and schedule.recurrence != Recurrence.DAILY
+            and schedule.week_day is None
+        ):
             raise ValueError(
                 f"Week day is required with {schedule.recurrence} Recurrence"
             )
-        if schedule.recurrence is Recurrence.CUSTOM:
+
+        if schedule.recurrence == Recurrence.CUSTOM:
             return [
                 Occurrence(
                     date=oc.date,
@@ -26,20 +43,23 @@ class OccurrenceUtils:
                     schedule_id=must_be_int(schedule.id),
                     schedule=schedule,
                 )
-                for oc in schedule.occurrences
+                for oc in list(schedule.occurrences)
             ]
+
         dates = OccurrenceUtils._dates_for_recurrence(
-            schedule.week_day.value if schedule.week_day else -1,
+            schedule.week_day.value if schedule.week_day is not None else -1,
             schedule.recurrence,
             schedule.start_date,
             schedule.end_date,
-            schedule.month_week.value if schedule.month_week else None,
+            schedule.month_week.value if schedule.month_week is not None else None,
         )
+
         calendars = []
         if schedule.class_:
             calendars = schedule.class_.calendars
+
         for occ_date in dates:
-            if any(
+            if calendars and any(
                 calendar.dates()
                 for calendar in calendars
                 if occ_date in calendar.dates()

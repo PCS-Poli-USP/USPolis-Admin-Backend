@@ -1,4 +1,4 @@
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from sqlmodel import Session
 
 from server.models.database.solicitation_db_model import (
@@ -71,6 +71,6 @@ class SolicitationPermissionChecker(PermissionChecker[Solicitation]):
 class ForbiddenSolicitationAccess(HTTPException):
     def __init__(self, detail: str):
         super().__init__(
-            status_code=403,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail=detail,
         )
