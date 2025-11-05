@@ -42,7 +42,7 @@ jobs:
             cd /diskb/home/backend
             git pull origin main
             
-            /home/ubuntu/start_uspolis_back.sh >> /home/ubuntu/script_log.log 2>&1
+            /home/ubuntu/start_uspolis_back.sh >> /home/ubuntu/backend_deploy.log 2>&1
 
       - name: Notify Command Success
         run: echo "Command executed on ${{ secrets.HOST }} successfully!"
