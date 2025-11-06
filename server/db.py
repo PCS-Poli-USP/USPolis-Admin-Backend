@@ -35,6 +35,7 @@ from server.models.database import (  # noqa
     exam_db_model,
     meeting_db_model,
     occurrence_label_db_model,
+    api_access_log,
 )
 
 engine = create_engine(f"{CONFIG.db_uri}/{CONFIG.db_database}")

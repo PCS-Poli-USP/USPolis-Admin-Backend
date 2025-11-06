@@ -12,6 +12,7 @@ from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.must_be_int import must_be_int
 
 if TYPE_CHECKING:
+    from server.models.database.api_access_log import APIAccessLog
     from server.models.database.building_db_model import Building
     from server.models.database.calendar_db_model import Calendar
     from server.models.database.holiday_category_db_model import HolidayCategory
@@ -53,6 +54,8 @@ class User(BaseModel, table=True):
         back_populates="users",
         sa_relationship_kwargs={"order_by": "Group.name"},
     )
+
+    api_access_logs: list["APIAccessLog"] = Relationship(back_populates="user")
 
     def classrooms_ids_set(self) -> set[int]:
         """

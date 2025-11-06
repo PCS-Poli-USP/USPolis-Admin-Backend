@@ -3,6 +3,7 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
+from server.db import engine
 from server.deps_overrides import DepsOverrides
 from server.exception_handlers import add_exception_handlers
 from server.middlewares import LoggerMiddleware
@@ -12,6 +13,7 @@ from server.routes.authenticated import router as AuthenticatedRouter
 from server.routes.restricted import router as RestrictedRouter
 
 from server.config import CONFIG
+from sqlmodel import Session
 
 app = FastAPI(
     title="USPolis Server",
@@ -28,12 +30,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(LoggerMiddleware)
 
 app.include_router(PublicRouter)
 app.include_router(AuthenticatedRouter)
 app.include_router(RestrictedRouter)
 app.include_router(AdminRouter)
+
+SessionLocal = Session(engine)
+app.add_middleware(LoggerMiddleware, session=SessionLocal)  # type: ignore
 
 app.dependency_overrides = DepsOverrides
 

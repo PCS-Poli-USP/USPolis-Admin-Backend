@@ -1,13 +1,21 @@
 from collections.abc import Callable
+from enum import Enum
 import json
 from typing import Any
-from fastapi import Request, Response
+from fastapi import APIRouter, Request, Response
+from fastapi.routing import APIRoute
 from pydantic import BaseModel
+from sqlmodel import Session
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
+from time import time
+from datetime import datetime
 
 from server.logger import logger
+from server.models.database.api_access_log import APIAccessLog
+from server.models.database.user_db_model import User
 from server.services.auth.auth_user_info import AuthUserInfo
+from server.utils.enums.api_access_log_enums import APISecurityLevel
 
 
 class RoutesDescription(BaseModel):
@@ -67,9 +75,15 @@ class LoggerMessage(BaseModel):
 
 
 class LoggerMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app: ASGIApp) -> None:
+    def __init__(self, app: ASGIApp, session: Session) -> None:
         super().__init__(app)
+        self.router: APIRouter = getattr(getattr(app, "app"), "app")
+        self.session = session
         self.detail: Any | None = None
+        routes = [route for route in self.router.routes if isinstance(route, APIRoute)]
+        self.route_tags_map = {
+            route.path: route.tags if route.tags else [] for route in routes
+        }
 
     def __get_user_info_from_request(self, request: Request) -> AuthUserInfo | None:
         if hasattr(request.state, "user_info") and isinstance(
@@ -167,9 +181,37 @@ class LoggerMiddleware(BaseHTTPMiddleware):
         # Log the request details
         await self.log_request(request)
 
+        start_time = time()
         # Call the next middleware or endpoint
         response: Response = await call_next(request)
+        end_time = time()
 
+        tags: list[str | Enum] = []
+        route = request.scope.get("route")
+        if route:
+            path_template = route.path
+            tags = self.route_tags_map.get(path_template, [])
+
+        current_user: User | None = (
+            request.state.current_user
+            if hasattr(request.state, "current_user")
+            else None
+        )
+
+        api_access_log = APIAccessLog(
+            security_level=APISecurityLevel.get_from_tags(tags).value,  # type: ignore
+            endpoint=request.url.path,
+            method=request.method,
+            status_code=response.status_code,
+            timestamp=datetime.fromtimestamp(start_time),
+            ip_address=request.client.host if request.client else None,
+            response_time_ms=(end_time - start_time) * 1000,
+            tags=tags,  # type: ignore
+            user_agent=request.headers.get("user-agent", ""),
+            user_id=current_user.id if current_user else None,
+        )
+        self.session.add(api_access_log)
+        self.session.commit()
         # Log the response details
         response = await self.log_response(request, response)
         return response
