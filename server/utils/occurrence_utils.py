@@ -5,7 +5,6 @@ from server.models.database.schedule_db_model import Schedule
 from server.utils.enums.month_week import MonthWeek
 from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.week_day import WeekDay
-from server.utils.must_be_int import must_be_int
 
 
 class OccurrenceUtils:
@@ -40,7 +39,6 @@ class OccurrenceUtils:
                     date=oc.date,
                     start_time=oc.start_time,
                     end_time=oc.end_time,
-                    schedule_id=must_be_int(schedule.id),
                     schedule=schedule,
                 )
                 for oc in list(schedule.occurrences)
@@ -58,18 +56,18 @@ class OccurrenceUtils:
         if schedule.class_:
             calendars = schedule.class_.calendars
 
+        holidays_dates: set[date] = set()
+        for calendar in calendars:
+            holidays_dates.update(calendar.dates())
+
         for occ_date in dates:
-            if calendars and any(
-                calendar.dates()
-                for calendar in calendars
-                if occ_date in calendar.dates()
-            ):
+            if holidays_dates and occ_date in holidays_dates:
                 continue
+
             occurrence = Occurrence(
                 date=occ_date,
                 start_time=schedule.start_time,
                 end_time=schedule.end_time,
-                schedule_id=must_be_int(schedule.id),
             )
             occurrences.append(occurrence)
         return occurrences
