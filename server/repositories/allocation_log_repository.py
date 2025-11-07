@@ -2,7 +2,6 @@ from sqlmodel import Session, desc, select
 from server.models.database.allocation_log_db_model import AllocationLog
 from server.models.database.schedule_db_model import Schedule
 from server.models.http.requests.allocation_log_request_models import AllocationLogInput
-from server.utils.must_be_int import must_be_int
 
 
 class AllocationLogRepository:
@@ -12,7 +11,6 @@ class AllocationLogRepository:
     ) -> AllocationLog:
         allocation_log = AllocationLog(
             schedule=schedule,
-            schedule_id=must_be_int(schedule.id),
             user_email=input.user_email,
             modified_by=input.modified_by,
             modified_at=input.modified_at,
