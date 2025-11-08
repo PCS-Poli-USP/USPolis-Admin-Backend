@@ -11,7 +11,7 @@ class SolicitationApproveDict(BaseRequestDict, total=False):
     classroom_id: int
     classroom_name: str
 
- 
+
 class SolicitationUpdatedDict(SolicitationApproveDict):
     pass
 

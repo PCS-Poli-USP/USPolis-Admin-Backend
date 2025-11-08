@@ -61,8 +61,11 @@ class ClassroomRepositoryAdapter:
 
     def get_by_id(self, id: int) -> Classroom:
         self.classroom_checker.check_permission(object=id)
-        classroom = ClassroomRepository.get_by_id(id=id, session=self.session)
-        return classroom
+        return ClassroomRepository.get_by_id(id=id, session=self.session)
+
+    def get_by_ids(self, ids: list[int]) -> list[Classroom]:
+        self.classroom_checker.check_permission(object=ids)
+        return ClassroomRepository.get_by_ids(ids=ids, session=self.session)
 
     def get_by_name_and_building(self, name: str, building: Building) -> Classroom:
         classroom = ClassroomRepository.get_by_name_and_building(

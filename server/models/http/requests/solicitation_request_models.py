@@ -14,7 +14,7 @@ class MeetingSolicitation(MeetingRegister):
 
 
 class EventSolicitation(EventRegister):
-    classroom_id: int | None = None # type: ignore
+    classroom_id: int | None = None  # type: ignore
 
 
 SolicitationData = ExamSolicitation | MeetingSolicitation | EventSolicitation
