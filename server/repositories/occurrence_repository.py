@@ -136,6 +136,7 @@ class OccurrenceRepository:
         for occurrence in occurrences:
             occurrence.classroom = classroom
             occurrence.schedule = schedule
+            session.add(occurrence)
 
         schedule.occurrences = occurrences
         schedule.classroom = classroom

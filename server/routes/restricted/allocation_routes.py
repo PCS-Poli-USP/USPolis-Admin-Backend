@@ -1,11 +1,13 @@
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
 
+from server.deps.authenticate import UserDep
 from server.deps.repository_adapters.occurrence_repository_adapter import (
     OccurrenceRepositoryDep,
 )
 from server.deps.session_dep import SessionDep
 from server.models.http.requests.allocation_request_models import (
+    AllocationMapInput,
     AllocationReuseInput,
     AllocationEventUpdate,
 )
@@ -130,8 +132,70 @@ def allocation_reuse_options(
     )
 
 
+@router.post("/allocate-allocation-map")
+def allocate_allocation_map(
+    input_map: AllocationMapInput,
+    user: UserDep,
+    repository: OccurrenceRepositoryDep,
+    session: SessionDep,
+) -> JSONResponse:
+    schedule_repo = repository.schedule_repo
+    classroom_repo = repository.classroom_repo
+    for val in input_map.allocation_map:
+        schedule = schedule_repo.get_by_id(val.schedule_id)
+        if schedule.reservation:
+            raise InvalidAllocationMapInputError(
+                "Não é permitido usar agenda de reservas na reutiliazação de alocação!"
+            )
+
+        class_ = schedule.class_
+        if class_ is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Agenda sem turma ou reserva encontrada!",
+            )
+
+        classrooms = classroom_repo.get_by_ids(ids=val.classroom_ids)
+        if len(classrooms) == 0:
+            raise InvalidAllocationMapInputError("As salas fornecidas não existem!")
+
+        first_classroom = classrooms[0]
+        OccurrenceRepository.allocate_schedule(
+            user=user, schedule=schedule, classroom=first_classroom, session=session
+        )
+        if len(classrooms) > 0:
+            for i in range(1, len(classrooms)):
+                classroom = classrooms[i]
+                new_schedule = ScheduleRepository.duplicate(
+                    schedule=schedule, session=session
+                )
+                new_schedule.class_ = class_
+                OccurrenceRepository.allocate_schedule(
+                    user=user,
+                    schedule=new_schedule,
+                    classroom=classroom,
+                    session=session,
+                )
+
+        session.add(class_)
+
+    session.commit()
+    return JSONResponse(
+        content={"message": "Mapeamento de alocação alocado com sucesso!"},
+        status_code=status.HTTP_200_OK,
+    )
+
+
 class InvalidAllocationReuseInputError(HTTPException):
     """Custom exception for invalid allocation reuse input."""
+
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(status.HTTP_400_BAD_REQUEST, detail=message)
+
+
+class InvalidAllocationMapInputError(HTTPException):
+    """Custom exception for invalid allocation map input."""
 
     def __init__(self, message: str):
         self.message = message

@@ -21,6 +21,7 @@ from server.models.http.requests.schedule_request_models import (
 from server.repositories.classroom_repository import ClassroomRepository
 from server.repositories.occurrence_repository import OccurrenceRepository
 from server.utils.enums.recurrence import Recurrence
+from server.utils.occurrence_utils import OccurrenceUtils
 from server.utils.schedule_utils import ScheduleUtils
 
 
@@ -210,6 +211,31 @@ class ScheduleRepository:
                     classroom=classroom,
                     session=session,
                 )
+        return new_schedule
+
+    @staticmethod
+    def duplicate(*, schedule: Schedule, session: Session) -> Schedule:
+        """Duplicate a schedule, making a new copy with the same data, only core data \n
+        Dont copy relantionships (class, reservation, classroom), only occurrences when the original have custom recurrence.\n
+        Is equivalent a "copy" not "deep copy".
+        """
+        new_schedule = Schedule(
+            start_date=schedule.start_date,
+            end_date=schedule.end_date,
+            start_time=schedule.start_time,
+            end_time=schedule.end_time,
+            recurrence=schedule.recurrence,
+            week_day=schedule.week_day,
+            month_week=schedule.month_week,
+            all_day=schedule.all_day,
+            allocated=False,
+        )
+        if schedule.recurrence == Recurrence.CUSTOM:
+            occurrences = OccurrenceUtils.generate_occurrences(schedule)
+            for occ in occurrences:
+                occ.schedule = new_schedule
+                session.add(occ)
+        session.add(new_schedule)
         return new_schedule
 
     @staticmethod

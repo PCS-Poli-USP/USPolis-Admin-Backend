@@ -76,7 +76,6 @@ class ClassRepository:
             interval=interval,
         )
         classes = session.exec(statement).all()
-        print(len(classes))
         return list(classes)
 
     @staticmethod

@@ -98,7 +98,7 @@ class ScheduleRegister(ScheduleBase):
                         )
 
         if allocated:
-            if classroom_id:
+            if not classroom_id:
                 raise ScheduleInvalidData(
                     "Uma agenda alocada deve fornecer uma sala de aula"
                 )
