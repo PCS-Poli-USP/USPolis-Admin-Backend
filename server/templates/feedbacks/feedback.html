@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<head>
+    <title>Um feedback foi enviado </title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+        .email-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .logo {
+            display: flex;
+            max-width: 200px;
+            align-items: center;
+        }
+        .logo-image {
+            max-width: 150px;
+            margin-bottom: 16px;
+        }
+        .logo-text {
+            font-size: 75px;
+            font-weight: bold;
+            margin-left: 0px;
+            color: #408080;
+        }
+        .button {
+            color: #fff;
+            background-color: #007BFF;
+            border-color: #007BFF;
+            border-radius: .25rem;
+            text-decoration: none;
+            padding: .375rem .75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="logo">
+          <!-- <img src="cid:logo" alt="Uspolis-Logo" class="logo-image"> -->
+          <div class="logo-text">USPolis</div>
+        </div>
+        <p>
+            <b>Usuário: </b>{{ data.user_name }}<br>
+            <b>Email: </b>{{ data.user_email }}<br>
+            <b>Título: </b>{{ data.title }}<br>
+            <b>Mensagem: </b><br>
+            {{ data.message }}
+        </p>
+        <br>
+        Atenciosamente, <br>
+        Equipe USPolis
+        </p>
+        <p>ATENÇÃO! Este e-mail é apenas informativo, não é necessário respondê-lo.</p>
+    </div>
+</body>
+</html>
