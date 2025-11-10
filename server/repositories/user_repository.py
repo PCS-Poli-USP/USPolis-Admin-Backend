@@ -44,6 +44,12 @@ class UserRepository:
         return list(users)
 
     @staticmethod
+    def get_admin_users(*, session: Session) -> list[User]:
+        statement = select(User).where(User.is_admin is True)
+        users = session.exec(statement).all()
+        return list(users)
+
+    @staticmethod
     def __update_user_groups(
         *, user: User, group_ids: list[int], session: Session
     ) -> None:
