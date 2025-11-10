@@ -20,6 +20,8 @@ if TYPE_CHECKING:
     from server.models.database.solicitation_db_model import (
         Solicitation,
     )
+    from server.models.database.feedback_db_model import Feedback
+    from server.models.database.bug_report_db_model import BugReport
 
 
 class User(BaseModel, table=True):
@@ -52,6 +54,12 @@ class User(BaseModel, table=True):
         link_model=GroupUserLink,
         back_populates="users",
         sa_relationship_kwargs={"order_by": "Group.name"},
+    )
+    feedbacks: list["Feedback"] = Relationship(
+        back_populates="user", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
+    reports: list["BugReport"] = Relationship(
+        back_populates="user", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
     )
 
     def classrooms_ids_set(self) -> set[int]:
