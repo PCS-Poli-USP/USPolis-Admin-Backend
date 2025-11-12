@@ -12,6 +12,7 @@ from server.models.http.requests.meeting_request_models import (
     MeetingRegister,
     MeetingUpdate,
 )
+from server.models.http.requests.solicitation_request_models import MeetingSolicitation
 from server.repositories.classroom_repository import ClassroomRepository
 from server.repositories.reservation_repository import ReservationRepository
 
@@ -65,13 +66,15 @@ class MeetingRepository:
     def create(
         *,
         creator: User,
-        input: MeetingRegister,
+        input: MeetingRegister | MeetingSolicitation,
         session: Session,
         allocate: bool = True,
     ) -> Meeting:
-        classroom = ClassroomRepository.get_by_id(
-            id=input.classroom_id, session=session
-        )
+        classroom = None
+        if input.classroom_id:
+            classroom = ClassroomRepository.get_by_id(
+                id=input.classroom_id, session=session
+            )
         reservation = ReservationRepository.create(
             creator=creator,
             input=input,
