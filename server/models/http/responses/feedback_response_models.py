@@ -13,6 +13,7 @@ class FeedbackResponse(BaseModel):
     user_id: int
     user_email: str
     user_name: str
+    user_picture_url: str | None = None
 
     @classmethod
     def from_feedback(cls, feedback: Feedback) -> "FeedbackResponse":
@@ -24,6 +25,7 @@ class FeedbackResponse(BaseModel):
             user_id=feedback.user_id,
             user_name=feedback.user.name,
             user_email=feedback.user.email,
+            user_picture_url=feedback.user.picture_url,
         )
 
     @classmethod

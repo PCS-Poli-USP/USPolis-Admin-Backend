@@ -80,6 +80,7 @@ class UserRepository:
             is_admin=input.is_admin,
             receive_emails=input.receive_emails,
             created_by=creator,
+            picture_url=None,
         )
         UserRepository.__update_user_groups(
             user=new_user,

@@ -41,8 +41,7 @@ class ClassroomRepository:
         *, pagination: PaginationInput, session: Session
     ) -> Page[Classroom]:
         statement = select(Classroom)
-        page = Page.paginate(statement, pagination, session)
-        return page
+        return Page.paginate(statement, pagination, session)
 
     @staticmethod
     def get_by_id(*, id: int, session: Session) -> Classroom:

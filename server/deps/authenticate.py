@@ -43,6 +43,7 @@ def authenticate(
             input=UserRegister(
                 email=user_info.email,
                 name=user_info.name,
+                picture_url=user_info.picture,
                 group_ids=[],
                 is_admin=False,
             ),
@@ -51,6 +52,12 @@ def authenticate(
         )
         session.commit()
         session.refresh(user)
+
+    if not user.picture_url:
+        user.picture_url = user_info.picture
+        session.add(user)
+        session.commit()
+        
     request.state.current_user = user
     request.state.user_info = user_info
     return user

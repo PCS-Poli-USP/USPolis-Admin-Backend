@@ -31,6 +31,7 @@ class User(BaseModel, table=True):
     updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
     last_visited: datetime = Field(default_factory=BrazilDatetime.now_utc)
     receive_emails: bool = Field(default=True)
+    picture_url: str | None
 
     created_by_id: int | None = Field(
         foreign_key="user.id",
