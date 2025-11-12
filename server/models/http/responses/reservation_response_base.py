@@ -28,10 +28,8 @@ class ExamResponseBase(BaseModel):
     @classmethod
     def from_exam(cls, exam: Exam) -> Self:
         occurrences = exam.get_schedule().occurrences
-        labels: list[OccurrenceLabel] = []
+        labels: list[OccurrenceLabel | None] = []
         for o in occurrences:
-            if o.occurrence_label is None:
-                raise ValueError("Occurrence label is missing for an exam occurrence.")
             labels.append(o.occurrence_label)
 
         return cls(
@@ -42,7 +40,7 @@ class ExamResponseBase(BaseModel):
             subject_name=exam.subject.name,
             class_ids=[must_be_int(c.id) for c in exam.classes],
             times=[(o.start_time, o.end_time) for o in occurrences],
-            labels=[o.label for o in labels],
+            labels=[o.label if o else "NAO ENCONTRADA" for o in labels],
             dates=[o.date for o in occurrences],
         )
 
