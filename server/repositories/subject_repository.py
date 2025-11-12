@@ -3,6 +3,7 @@ from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 
 from server.deps.authenticate import BuildingDep
+from server.deps.interval_dep import QueryInterval
 from server.models.database.class_db_model import Class
 from server.models.database.subject_building_link import SubjectBuildingLink
 from server.models.database.subject_db_model import Subject
@@ -24,6 +25,26 @@ class SubjectRepository:
     @staticmethod
     def get_all(*, session: Session) -> list[Subject]:
         statement = select(Subject).where(col(Subject.id) > 0)
+        subjects = session.exec(statement).all()
+        return list(subjects)
+
+    @staticmethod
+    def get_all_on_interval(
+        *, interval: QueryInterval, session: Session
+    ) -> list[Subject]:
+        statement = select(Subject).join(
+            Class, col(Class.subject_id) == col(Subject.id)
+        )
+        if interval.today:
+            statement = statement.where(
+                col(Class.end_date) >= interval.today
+            ).distinct()
+
+        if interval.start and interval.end:
+            statement = statement.where(
+                col(Class.start_date) >= interval.start,
+                col(Class.end_date) <= interval.end,
+            ).distinct()
         subjects = session.exec(statement).all()
         return list(subjects)
 
