@@ -8,6 +8,7 @@ from server.models.database.reservation_db_model import Reservation
 from server.models.database.schedule_db_model import Schedule
 from server.models.database.user_db_model import User
 from server.models.http.requests.event_request_models import EventRegister, EventUpdate
+from server.models.http.requests.solicitation_request_models import EventSolicitation
 from server.repositories.classroom_repository import ClassroomRepository
 from server.repositories.reservation_repository import ReservationRepository
 
@@ -59,11 +60,17 @@ class EventRepository:
 
     @staticmethod
     def create(
-        *, creator: User, input: EventRegister, session: Session, allocate: bool = True
+        *,
+        creator: User,
+        input: EventRegister | EventSolicitation,
+        session: Session,
+        allocate: bool = True,
     ) -> Event:
-        classroom = ClassroomRepository.get_by_id(
-            id=input.classroom_id, session=session
-        )
+        classroom = None
+        if input.classroom_id:
+            classroom = ClassroomRepository.get_by_id(
+                id=input.classroom_id, session=session
+            )
         reservation = ReservationRepository.create(
             creator=creator,
             input=input,

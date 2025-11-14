@@ -9,6 +9,7 @@ from server.models.database.reservation_db_model import Reservation
 from server.models.database.schedule_db_model import Schedule
 from server.models.database.user_db_model import User
 from server.models.http.requests.exam_request_models import ExamRegister, ExamUpdate
+from server.models.http.requests.solicitation_request_models import ExamSolicitation
 from server.repositories.class_repository import ClassRepository
 from server.repositories.classroom_repository import ClassroomRepository
 from server.repositories.reservation_repository import ReservationRepository
@@ -89,11 +90,17 @@ class ExamRepository:
 
     @staticmethod
     def create(
-        *, creator: User, input: ExamRegister, session: Session, allocate: bool = True
+        *,
+        creator: User,
+        input: ExamRegister | ExamSolicitation,
+        session: Session,
+        allocate: bool = True,
     ) -> Exam:
-        classroom = ClassroomRepository.get_by_id(
-            id=input.classroom_id, session=session
-        )
+        classroom = None
+        if input.classroom_id:
+            classroom = ClassroomRepository.get_by_id(
+                id=input.classroom_id, session=session
+            )
         subject = SubjectRepository.get_by_id(id=input.subject_id, session=session)
         classes = ClassRepository.get_by_ids(ids=input.class_ids, session=session)
 
