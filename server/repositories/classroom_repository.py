@@ -1,5 +1,6 @@
 from fastapi import HTTPException, status
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy.orm import selectinload
 from sqlmodel import Session, col, select
 
 from server.models.database.building_db_model import Building
@@ -33,8 +34,12 @@ class ClassroomRepository:
 
     @staticmethod
     def get_all(*, session: Session) -> list[Classroom]:
-        classrooms = list(session.exec(select(Classroom)).all())
-        return classrooms
+        statement = select(Classroom).options(
+            selectinload(Classroom.building),  # type: ignore
+            selectinload(Classroom.groups),  # type: ignore
+        )
+        classrooms = session.exec(statement).all()
+        return list(classrooms)
 
     @staticmethod
     def get_all_paginated(

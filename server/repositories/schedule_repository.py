@@ -1,7 +1,7 @@
 from datetime import date as datetime_date
 from fastapi import HTTPException, status
 
-# from sqlalchemy import func
+from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 
@@ -44,10 +44,20 @@ class ScheduleRepository:
     @staticmethod
     def get_all_unallocated_for_classes(*, session: Session) -> list[Schedule]:
         """Get all unallocated classes schedules that are not custom recurrence"""
-        statement = select(Schedule).where(
-            ~col(Schedule.allocated),
-            col(Schedule.recurrence) != Recurrence.CUSTOM,
-            col(Schedule.class_id).is_not(None),
+        statement = (
+            select(Schedule)
+            .where(
+                ~col(Schedule.allocated),
+                col(Schedule.recurrence) != Recurrence.CUSTOM,
+                col(Schedule.class_id).is_not(None),
+            )
+            .options(
+                # Carrega classroom + seu building
+                selectinload(Schedule.classroom).selectinload(Classroom.building),  # type: ignore
+                # Carrega schedule + suas dependências
+                selectinload(Schedule.class_),  # type: ignore
+                selectinload(Schedule.reservation),  # type: ignore
+            )
         )
         schedules = session.exec(statement).all()
         return list(schedules)
