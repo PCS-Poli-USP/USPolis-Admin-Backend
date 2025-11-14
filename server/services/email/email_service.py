@@ -41,7 +41,7 @@ env = Environment(loader=FileSystemLoader(template_path))
 RESERVATION_SUBJECT = "Reserva de Sala - USPolis"
 FEEDBACK_SUBJECT = "Feedback - USPolis"
 BUG_REPORT_SUBJECT = "BUG RELATADO - USPolis"
-SYSTEM_LIST = ["gabriel_camargo@usp.br"]
+SYSTEM_LIST = ["uspolis@usp.br"]
 
 
 class EmailService:
@@ -93,6 +93,8 @@ class EmailService:
     ) -> None:
         template = env.get_template("/solicitations/solicitation-requested.html")
         bcc_list = [user.email for user in users]
+        if CONFIG.development:
+            bcc_list = SYSTEM_LIST
         body = template.render(
             data=SolicitationRequestedMail.from_solicitation(solicitation)
         )
@@ -114,8 +116,11 @@ class EmailService:
         body = template.render(
             data=SolicitationApprovedMail.from_solicitation(input, solicitation)
         )
+        to = [solicitation.user.email]
+        if CONFIG.development:
+            to = SYSTEM_LIST
         subject = RESERVATION_SUBJECT
-        context = MailSend(to=[solicitation.user.email], subject=subject, body=body)
+        context = MailSend(to=to, subject=subject, body=body)
         await EmailService.send_email(context)
 
     @staticmethod
@@ -127,8 +132,11 @@ class EmailService:
         body = template.render(
             data=SolicitationApprovedMail.from_solicitation(input, solicitation)
         )
+        to = [solicitation.user.email]
+        if CONFIG.development:
+            to = SYSTEM_LIST
         subject = RESERVATION_SUBJECT
-        context = MailSend(to=[solicitation.user.email], subject=subject, body=body)
+        context = MailSend(to=to, subject=subject, body=body)
         await EmailService.send_email(context)
 
     @staticmethod
@@ -139,8 +147,11 @@ class EmailService:
         body = template.render(
             data=SolicitationDeletedMail.from_solicitation(solicitation=solicitation)
         )
+        to = [solicitation.user.email]
+        if CONFIG.development:
+            to = SYSTEM_LIST
         subject = RESERVATION_SUBJECT
-        context = MailSend(to=[solicitation.user.email], subject=subject, body=body)
+        context = MailSend(to=to, subject=subject, body=body)
         await EmailService.send_email(context)
 
     @staticmethod
@@ -152,8 +163,11 @@ class EmailService:
         body = template.render(
             data=SolicitationDeniedMail.from_solicitation(input, solicitation)
         )
+        to = [solicitation.user.email]
+        if CONFIG.development:
+            to = SYSTEM_LIST
         subject = RESERVATION_SUBJECT
-        context = MailSend(to=[solicitation.user.email], subject=subject, body=body)
+        context = MailSend(to=to, subject=subject, body=body)
         await EmailService.send_email(context)
 
     @staticmethod
@@ -163,6 +177,8 @@ class EmailService:
     ) -> None:
         template = env.get_template("/solicitations/solicitation-cancelled.html")
         bcc_list = [user.email for user in users]
+        if CONFIG.development:
+            bcc_list = SYSTEM_LIST
         body = template.render(
             data=SolicitationCancelledMail.from_solicitation(solicitation)
         )

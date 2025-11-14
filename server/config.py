@@ -59,6 +59,9 @@ class Settings(BaseModel):
     test_db_database: str = config("TEST_DATABASE_NAME", default="")  # pyright: ignore[reportAssignmentType]
     test_alembic_url: str = config("TEST_ALEMBIC_URL", default="")  # pyright: ignore[reportAssignmentType]
     testing: bool = config("TESTING", default=False, cast=bool)
+    development: bool = (
+        config("ENVIRONMENT", default="development", cast=str) == "development"
+    )
     override_auth: bool = config("OVERRIDE_AUTH", default=False, cast=bool)
     mock_email: str = config("MOCK_EMAIL", default="uspolis@usp.br")  # pyright: ignore[reportAssignmentType]
 
