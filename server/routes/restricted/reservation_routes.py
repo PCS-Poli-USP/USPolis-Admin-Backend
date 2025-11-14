@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import APIRouter, Body
 from fastapi.responses import JSONResponse
 
@@ -25,8 +26,11 @@ async def delete_reservation(
     """Delete a Reservation by ID"""
     reservation = repository.get_by_id(id=reservation_id)
     repository.delete(id=reservation_id)
+
     if reservation.solicitation:
-        await EmailService.send_solicitation_deleted_email(
-            solicitation=reservation.solicitation,
+        asyncio.create_task(
+            EmailService.send_solicitation_deleted_email(
+                solicitation=reservation.solicitation,
+            )
         )
     return JSONResponse(content={"message": "Reserva removida com sucesso!"})

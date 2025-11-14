@@ -19,7 +19,7 @@ async def create_feedback(
 ) -> JSONResponse:
     feedback = FeedbackRepository.create(input=input, user=user, session=session)
     session.commit()
-    # asyncio.create_task(EmailService.send_feedback_email(feedback))
+    asyncio.create_task(EmailService.send_feedback_email(feedback))
     return JSONResponse(
         content={"message": "Feedback criado com sucesso!"},
         status_code=status.HTTP_201_CREATED,
