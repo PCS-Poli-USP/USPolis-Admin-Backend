@@ -25,9 +25,17 @@ class UserSessionRepository:
         return session.get(UserSession, id)
 
     @staticmethod
-    def create_session(*, user_id: int, session: Session) -> UserSession:
+    def create_session(
+        *,
+        user_id: int,
+        user_agent: str | None,
+        ip_address: str | None,
+        session: Session,
+    ) -> UserSession:
         user_session = UserSession(
             user_id=user_id,
+            user_agent=user_agent,
+            ip_address=ip_address,
             expires_at=BrazilDatetime.now_utc() + timedelta(days=SESSION_DURATION_DAYS),
         )
         session.add(user_session)

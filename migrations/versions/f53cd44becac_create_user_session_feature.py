@@ -1,8 +1,8 @@
 """Create user session feature
 
-Revision ID: 37db30674f86
+Revision ID: f53cd44becac
 Revises: eb2a5824dbb3
-Create Date: 2025-11-15 18:47:22.310159
+Create Date: 2025-11-15 19:25:17.750186
 
 """
 
@@ -14,7 +14,7 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision: str = "37db30674f86"
+revision: str = "f53cd44becac"
 down_revision: str | None = "eb2a5824dbb3"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
@@ -26,6 +26,8 @@ def upgrade() -> None:
         "usersession",
         sa.Column("id", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.Column("user_agent", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("ip_address", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("expires_at", sa.DateTime(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.ForeignKeyConstraint(
