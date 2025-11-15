@@ -25,7 +25,7 @@ class Settings(BaseModel):
     # CORS
     allowed_origins: list[str] = config(
         "ALLOWED_ORIGINS",
-        default=["http://localhost:3000", "https://uspolis.com.br"],
+        default=["http://localhost:3000", "https://uspolis.com.br", "https://localhost:3000"],
         cast=Csv(),
     )  # pyright: ignore[reportAssignmentType]
 

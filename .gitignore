@@ -7,6 +7,9 @@ tests/data/results
 # build
 build/
 
+# certs for https on dev
+certs
+
 # aux
 access_token.txt
 
