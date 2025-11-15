@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import APIRouter, Body
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
@@ -64,7 +66,9 @@ async def cancel_solicitation(
     )
     session.commit()
     users = solicitation.get_administrative_users_for_email()
-    await EmailService.send_solicitation_cancelled_email(users, solicitation)
+    asyncio.create_task(
+        EmailService.send_solicitation_cancelled_email(users, solicitation)
+    )
     return JSONResponse(
         status_code=200,
         content={"message": "Solicitaçao cancelada com sucesso."},
@@ -83,5 +87,7 @@ async def create_solicitation(
     )
     users = solicitation.get_administrative_users_for_email()
     session.commit()
-    await EmailService.send_solicitation_request_email(users, solicitation)
+    asyncio.create_task(
+        EmailService.send_solicitation_request_email(users, solicitation)
+    )
     return SolicitationResponse.from_solicitation(solicitation)

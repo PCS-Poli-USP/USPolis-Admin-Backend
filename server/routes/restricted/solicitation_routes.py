@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import APIRouter, Body, status
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
@@ -48,7 +49,9 @@ async def approve_reservation_solicitation(
     )
     session.refresh(solicitation)
     session.commit()
-    await EmailService.send_solicitation_approved_email(input, solicitation)
+    asyncio.create_task(
+        EmailService.send_solicitation_approved_email(input, solicitation)
+    )
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content={"message": "Solicitação aprovada com sucesso."},
@@ -70,7 +73,9 @@ async def deny_classroom_solicitation(
         id=solicitation_id, user=user, session=session
     )
     session.commit()
-    await EmailService.send_solicitation_denied_email(input, solicitation)
+    asyncio.create_task(
+        EmailService.send_solicitation_denied_email(input, solicitation)
+    )
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content={"message": "Solicitação negada com sucesso."},

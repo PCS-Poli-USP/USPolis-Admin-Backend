@@ -67,6 +67,6 @@ class Page(BaseModel, Generic[T]):
             start_index=start_index,
             end_index=end_index,
             total_pages=total_pages,
-            page_size=len(items),  # can differ from the requested page_size
+            page_size=input.page_size,  # can differ from the requested page_size
             page=current_page,  # can differ from the requested page
         )

@@ -25,8 +25,8 @@ class Class(BaseModel, table=True):
     __table_args__ = (
         UniqueConstraint("code", "subject_id", name="unique_class_code_for_subject"),
     )
-    start_date: date = Field()
-    end_date: date = Field()
+    start_date: date = Field(index=True)
+    end_date: date = Field(index=True)
     code: str = Field()
     professors: list[str] = Field(
         sa_column=Column(postgresql.ARRAY(String()), nullable=False)

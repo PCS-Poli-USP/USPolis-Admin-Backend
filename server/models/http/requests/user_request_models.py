@@ -10,3 +10,4 @@ class UserUpdate(BaseModel):
 class UserRegister(UserUpdate):
     name: str
     email: EmailStr
+    picture_url: str | None = None

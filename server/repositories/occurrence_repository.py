@@ -1,5 +1,6 @@
 from datetime import date
 from sqlmodel import Session, col, select
+from sqlalchemy.orm import selectinload
 from sqlalchemy import or_
 
 from server.models.database.building_db_model import Building
@@ -90,6 +91,13 @@ class OccurrenceRepository:
                     (col(Occurrence.classroom_id).is_(None))
                     & (col(Schedule.class_id).is_not(None)),
                 ),
+            )
+            .options(
+                # Carrega classroom + seu building
+                selectinload(Occurrence.classroom).selectinload(Classroom.building),  # type: ignore
+                # Carrega schedule + suas dependências
+                selectinload(Occurrence.schedule).selectinload(Schedule.class_),  # type: ignore
+                selectinload(Occurrence.schedule).selectinload(Schedule.reservation),  # type: ignore
             )
         )
         occurrences = session.exec(statement).all()

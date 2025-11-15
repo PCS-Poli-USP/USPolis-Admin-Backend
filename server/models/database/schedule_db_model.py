@@ -19,8 +19,8 @@ from server.utils.enums.week_day import WeekDay
 
 
 class Schedule(BaseModel, table=True):
-    start_date: date = Field()
-    end_date: date = Field()
+    start_date: date = Field(index=True)
+    end_date: date = Field(index=True)
     start_time: time = Field()
     end_time: time = Field()
     week_day: WeekDay | None = Field(nullable=True, default=None)

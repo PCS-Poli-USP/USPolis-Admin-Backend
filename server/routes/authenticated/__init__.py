@@ -17,6 +17,8 @@ from server.routes.authenticated.user_routes import router as UserRouter
 from server.routes.authenticated.solicitation_routes import (
     router as SolicitationRouter,
 )
+from server.routes.authenticated.feedback_routes import router as FeedbackRouter
+from server.routes.authenticated.bug_report_routes import router as BugReportRouter
 
 
 router = APIRouter(dependencies=[Depends(authenticate)], tags=["Authenticated"])
@@ -31,3 +33,5 @@ router.include_router(CalendarRouter)
 router.include_router(InstitutionalEventRouter)
 router.include_router(ClassRouter)
 router.include_router(SolicitationRouter)
+router.include_router(FeedbackRouter)
+router.include_router(BugReportRouter)

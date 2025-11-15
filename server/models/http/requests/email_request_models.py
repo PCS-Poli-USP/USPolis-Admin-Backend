@@ -1,6 +1,8 @@
 from typing import Self
 from pydantic import BaseModel
 
+from server.models.database.bug_report_db_model import BugReport
+from server.models.database.feedback_db_model import Feedback
 from server.models.database.solicitation_db_model import (
     Solicitation,
 )
@@ -8,6 +10,7 @@ from server.models.http.requests.solicitation_request_models import (
     SolicitationApprove,
     SolicitationDeny,
 )
+from server.utils.enums.bug_enums import BugPriority, BugType
 from server.utils.enums.month_week import MonthWeek
 from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.reservation_type import ReservationType
@@ -129,3 +132,37 @@ class SolicitationDeletedMail(SolicitationMailBase):
 
 class SolicitationCancelledMail(SolicitationRequestedMail):
     pass
+
+
+class FeedbackMail(BaseModel):
+    user_name: str
+    user_email: str
+    title: str
+    message: str
+
+    @classmethod
+    def from_feedback(cls, feedback: Feedback) -> "FeedbackMail":
+        return FeedbackMail(
+            user_name=feedback.user.name,
+            user_email=feedback.user.email,
+            title=feedback.title,
+            message=feedback.message,
+        )
+
+
+class BugReportMail(BaseModel):
+    user_name: str
+    user_email: str
+    type: BugType
+    priority: BugPriority
+    description: str
+
+    @classmethod
+    def from_report(cls, bug_report: BugReport) -> "BugReportMail":
+        return BugReportMail(
+            user_name=bug_report.user.name,
+            user_email=bug_report.user.email,
+            type=bug_report.type,
+            priority=bug_report.priority,
+            description=bug_report.description,
+        )

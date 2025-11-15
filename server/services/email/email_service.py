@@ -6,6 +6,8 @@ from email.mime.text import MIMEText
 from smtplib import SMTP_SSL
 from jinja2 import Environment, FileSystemLoader
 from server.config import CONFIG
+from server.models.database.bug_report_db_model import BugReport
+from server.models.database.feedback_db_model import Feedback
 from server.models.database.solicitation_db_model import (
     Solicitation,
 )
@@ -17,6 +19,8 @@ from server.models.http.requests.solicitation_request_models import (
 )
 from server.models.http.requests.email_request_models import (
     BCCMailSend,
+    BugReportMail,
+    FeedbackMail,
     MailSend,
     SolicitationApprovedMail,
     SolicitationCancelledMail,
@@ -27,13 +31,17 @@ from server.models.http.requests.email_request_models import (
 from server.logger import logger
 from pathlib import Path
 
+from server.utils.enums.bug_enums import BugPriority
+
 template_path = Path(__file__).resolve().parent.parent.parent / "templates"
 image_path = Path(__file__).resolve().parent.parent.parent / "static" / "assets"
 env = Environment(loader=FileSystemLoader(template_path))
 
 
 RESERVATION_SUBJECT = "Reserva de Sala - USPolis"
-BLACKLIST = ["amazetti@usp.br"]
+FEEDBACK_SUBJECT = "Feedback - USPolis"
+BUG_REPORT_SUBJECT = "BUG RELATADO - USPolis"
+SYSTEM_LIST = ["uspolis@usp.br"]
 
 
 class EmailService:
@@ -45,7 +53,7 @@ class EmailService:
             msg["From"] = f"{CONFIG.mail_address}"
             msg["To"] = f"{CONFIG.mail_address}"
             msg["Reply-To"] = f"no-reply-{CONFIG.mail_address}"
-            msg.attach(MIMEText(context.body, "html"))
+            msg.attach(MIMEText(context.body, "html", "utf-8"))
             with SMTP_SSL(CONFIG.mail_host, CONFIG.mail_port) as smtp:
                 smtp.login(CONFIG.mail_address, CONFIG.mail_password)
                 smtp.send_message(msg, to_addrs=context.bcc_list)
@@ -85,6 +93,8 @@ class EmailService:
     ) -> None:
         template = env.get_template("/solicitations/solicitation-requested.html")
         bcc_list = [user.email for user in users]
+        if CONFIG.development:
+            bcc_list = SYSTEM_LIST
         body = template.render(
             data=SolicitationRequestedMail.from_solicitation(solicitation)
         )
@@ -106,8 +116,11 @@ class EmailService:
         body = template.render(
             data=SolicitationApprovedMail.from_solicitation(input, solicitation)
         )
+        to = [solicitation.user.email]
+        if CONFIG.development:
+            to = SYSTEM_LIST
         subject = RESERVATION_SUBJECT
-        context = MailSend(to=[solicitation.user.email], subject=subject, body=body)
+        context = MailSend(to=to, subject=subject, body=body)
         await EmailService.send_email(context)
 
     @staticmethod
@@ -119,8 +132,11 @@ class EmailService:
         body = template.render(
             data=SolicitationApprovedMail.from_solicitation(input, solicitation)
         )
+        to = [solicitation.user.email]
+        if CONFIG.development:
+            to = SYSTEM_LIST
         subject = RESERVATION_SUBJECT
-        context = MailSend(to=[solicitation.user.email], subject=subject, body=body)
+        context = MailSend(to=to, subject=subject, body=body)
         await EmailService.send_email(context)
 
     @staticmethod
@@ -131,8 +147,11 @@ class EmailService:
         body = template.render(
             data=SolicitationDeletedMail.from_solicitation(solicitation=solicitation)
         )
+        to = [solicitation.user.email]
+        if CONFIG.development:
+            to = SYSTEM_LIST
         subject = RESERVATION_SUBJECT
-        context = MailSend(to=[solicitation.user.email], subject=subject, body=body)
+        context = MailSend(to=to, subject=subject, body=body)
         await EmailService.send_email(context)
 
     @staticmethod
@@ -144,8 +163,11 @@ class EmailService:
         body = template.render(
             data=SolicitationDeniedMail.from_solicitation(input, solicitation)
         )
+        to = [solicitation.user.email]
+        if CONFIG.development:
+            to = SYSTEM_LIST
         subject = RESERVATION_SUBJECT
-        context = MailSend(to=[solicitation.user.email], subject=subject, body=body)
+        context = MailSend(to=to, subject=subject, body=body)
         await EmailService.send_email(context)
 
     @staticmethod
@@ -155,10 +177,43 @@ class EmailService:
     ) -> None:
         template = env.get_template("/solicitations/solicitation-cancelled.html")
         bcc_list = [user.email for user in users]
+        if CONFIG.development:
+            bcc_list = SYSTEM_LIST
         body = template.render(
             data=SolicitationCancelledMail.from_solicitation(solicitation)
         )
         subject = RESERVATION_SUBJECT
+
+        context = BCCMailSend(
+            bcc_list=bcc_list,
+            subject=subject,
+            body=body,
+        )
+        await EmailService.send_bcc_email(context)
+
+    @staticmethod
+    async def send_feedback_email(
+        feedback: Feedback,
+    ) -> None:
+        template = env.get_template("/feedbacks/feedback.html")
+        bcc_list = SYSTEM_LIST
+        body = template.render(data=FeedbackMail.from_feedback(feedback))
+        subject = FEEDBACK_SUBJECT
+        context = BCCMailSend(
+            bcc_list=bcc_list,
+            subject=subject,
+            body=body,
+        )
+        await EmailService.send_bcc_email(context)
+
+    @staticmethod
+    async def send_bug_report_email(
+        bug_report: BugReport,
+    ) -> None:
+        template = env.get_template("/reports/bug-report.html")
+        bcc_list = SYSTEM_LIST
+        body = template.render(data=BugReportMail.from_report(bug_report))
+        subject = f"[{BugPriority.to_ptBr(bug_report.priority)}] {BUG_REPORT_SUBJECT}"
 
         context = BCCMailSend(
             bcc_list=bcc_list,

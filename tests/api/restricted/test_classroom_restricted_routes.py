@@ -327,7 +327,6 @@ def test_update_classroom_with_group_in_other_building(
     response = restricted_client.put(
         f"{URL_PREFIX}/{classroom.id}", json=input.model_dump()
     )
-    print(response.json())
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 

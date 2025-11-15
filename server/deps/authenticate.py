@@ -9,6 +9,10 @@ from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.user_repository import UserRepository
+from server.repositories.user_session_repository import (
+    UserSessionNotFound,
+    UserSessionRepository,
+)
 from server.services.auth.auth_user_info import AuthUserInfo
 from server.services.auth.authentication_client import (
     AuthenticationClient,
@@ -34,7 +38,7 @@ def authenticate(
     session: SessionDep,
 ) -> User:
     try:
-        user: User = UserRepository.get_by_email(email=user_info.email, session=session)
+        user = UserRepository.get_by_email(email=user_info.email, session=session)
     except NoResultFound:
         if user_info.domain != CONFIG.google_auth_domain_name:
             raise InvalidEmailDomain()
@@ -43,6 +47,7 @@ def authenticate(
             input=UserRegister(
                 email=user_info.email,
                 name=user_info.name,
+                picture_url=user_info.picture,
                 group_ids=[],
                 is_admin=False,
             ),
@@ -51,6 +56,12 @@ def authenticate(
         )
         session.commit()
         session.refresh(user)
+
+    if not user.picture_url:
+        user.picture_url = user_info.picture
+        session.add(user)
+        session.commit()
+
     request.state.current_user = user
     request.state.user_info = user_info
     return user
@@ -67,6 +78,24 @@ def restricted_authenticate(
 
 
 def admin_authenticate(user: Annotated[User, Depends(authenticate)]) -> None:
+    if not user.is_admin:
+        raise AdminAccessRequired()
+
+
+def authenticate_from_cookie(request: Request, session: SessionDep) -> User:
+    session_id = request.cookies.get("session")
+    if not session_id:
+        raise InvalidSessionCookie()
+    try:
+        user_session = UserSessionRepository.get_session(id=session_id, session=session)
+    except UserSessionNotFound:
+        raise InvalidSessionCookie()
+    return user_session.user
+
+
+def admin_authenticate_from_cookie(
+    user: Annotated[User, Depends(authenticate_from_cookie)],
+) -> None:
     if not user.is_admin:
         raise AdminAccessRequired()
 
@@ -97,6 +126,14 @@ class InvalidToken(HTTPException):
             detail="Token inválido",
         )
         self.headers = {"WWW-Authenticate": "Bearer"}
+
+
+class InvalidSessionCookie(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Cookie de sessão inválido",
+        )
 
 
 class InvalidEmailDomain(HTTPException):

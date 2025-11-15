@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class Occurrence(BaseModel, table=True):
     start_time: time = Field(nullable=False)
     end_time: time = Field(nullable=False)
-    date: datetime_date = Field()
+    date: datetime_date = Field(index=True)
 
     classroom_id: int | None = Field(
         default=None, foreign_key="classroom.id", nullable=True

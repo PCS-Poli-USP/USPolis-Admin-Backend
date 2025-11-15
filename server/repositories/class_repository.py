@@ -1,6 +1,7 @@
 from typing import Any
 from fastapi import HTTPException, status
 from sqlalchemy import Select, exists, and_
+from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 
@@ -53,6 +54,16 @@ class ClassRepository:
         statement = ClassRepository.__apply_interval_filter(
             statement=statement,
             interval=interval,
+        ).options(
+            # Carrega schedules + logs + sala + predio
+            selectinload(Class.schedules)  # type: ignore
+            .selectinload(Schedule.logs)  # type: ignore
+            .selectinload(Schedule.classroom)  # type: ignore
+            .selectinload(Classroom.building),  # type: ignore
+            # Carrega schedule + disciplina + predio
+            selectinload(Class.subject).selectinload(Subject.buildings),  # type: ignore
+            # Carrega as agendas
+            selectinload(Class.calendars),  # type: ignore
         )
         classes = session.exec(statement).all()
         return list(classes)

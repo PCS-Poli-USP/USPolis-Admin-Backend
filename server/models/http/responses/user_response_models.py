@@ -26,6 +26,7 @@ class UserResponse(BaseModel):
     is_admin: bool
     receive_emails: bool
     name: str
+    picture_url: str | None = None
     updated_at: datetime
     last_visited: datetime
     user_info: UserInfo | None = None
