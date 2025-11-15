@@ -38,6 +38,7 @@ from server.models.database import (  # noqa
     feedback_db_model,
     bug_report_db_model,
     bug_report_evidence_db_model,
+    user_session_db_model,
 )
 
 engine = create_engine(f"{CONFIG.db_uri}/{CONFIG.db_database}")
