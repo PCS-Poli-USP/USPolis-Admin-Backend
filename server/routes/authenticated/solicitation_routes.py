@@ -2,14 +2,15 @@ import asyncio
 
 from fastapi import APIRouter, Body
 from fastapi.responses import JSONResponse
-from fastapi.templating import Jinja2Templates
 
 from server.deps.authenticate import UserDep
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
+from server.deps.pagination_dep import PaginationDep
 from server.deps.session_dep import SessionDep
 from server.models.http.requests.solicitation_request_models import (
     SolicitationRegister,
 )
+from server.models.http.responses.paginated_response_models import PaginatedResponse
 from server.models.http.responses.solicitation_response_models import (
     SolicitationResponse,
 )
@@ -17,33 +18,29 @@ from server.repositories.solicitation_repository import (
     SolicitationRepository,
 )
 from server.services.email.email_service import EmailService
-from pathlib import Path
 
 embed = Body(..., embed=True)
 
 router = APIRouter(prefix="/solicitations", tags=["Solicitations"])
-
-template_path = (
-    Path(__file__).resolve().parent.parent.parent / "templates" / "solicitations"
-)
-image_path = (
-    Path(__file__).resolve().parent.parent.parent
-    / "templates"
-    / "assets"
-    / "uspolis.logo.png"
-)
-templates = Jinja2Templates(directory=template_path)
 
 
 @router.get("")
 def get_all_solicitations(
     building_ids: OwnedBuildingIdsDep,
     session: SessionDep,
-) -> list[SolicitationResponse]:
-    solicitations = SolicitationRepository.get_by_buildings_ids(
-        building_ids=building_ids, session=session
+    pagination: PaginationDep,
+) -> PaginatedResponse[SolicitationResponse]:
+    paginated_result = SolicitationRepository.get_by_buildings_ids_paginated(
+        building_ids=building_ids, pagination=pagination, session=session
     )
-    return SolicitationResponse.from_solicitation_list(solicitations)
+    response = PaginatedResponse[SolicitationResponse](
+        page=paginated_result.page,
+        page_size=paginated_result.page_size,
+        total_items=paginated_result.total_items,
+        total_pages=paginated_result.total_pages,
+        data=SolicitationResponse.from_solicitation_list(paginated_result.items),
+    )
+    return response
 
 
 @router.get("/pending")
