@@ -56,8 +56,9 @@ class ClassRepository:
             interval=interval,
         ).options(
             # Carrega schedules + logs + sala + predio
+            selectinload(Class.schedules).selectinload(Schedule.logs),  # type: ignore
+            # Carrega schedules + sala + predio
             selectinload(Class.schedules)  # type: ignore
-            .selectinload(Schedule.logs)  # type: ignore
             .selectinload(Schedule.classroom)  # type: ignore
             .selectinload(Classroom.building),  # type: ignore
             # Carrega schedule + disciplina + predio
