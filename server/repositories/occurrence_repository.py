@@ -216,7 +216,6 @@ class OccurrenceRepository:
             )
 
         occurrences: list[Occurrence] = []
-        print(input.times)
         for i, dt in enumerate(input.dates):
             occurrence = Occurrence(
                 schedule=schedule,
