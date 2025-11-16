@@ -11,6 +11,7 @@ from server.models.database.user_db_model import User
 from server.models.http.requests.solicitation_request_models import (
     SolicitationRegister,
 )
+from server.models.page_models import Page, PaginationInput
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.classroom_repository import ClassroomRepository
 
@@ -55,6 +56,17 @@ class SolicitationRepository:
         )
         solicitations = session.exec(statement).all()
         return list(solicitations)
+
+    @staticmethod
+    def get_by_buildings_ids_paginated(
+        building_ids: list[int], pagination: PaginationInput, session: Session
+    ) -> Page[Solicitation]:
+        statement = (
+            select(Solicitation)
+            .where(col(Solicitation.building_id).in_(building_ids))
+            .order_by(col(Solicitation.updated_at).desc())
+        )
+        return Page.paginate(statement, pagination, session)
 
     @staticmethod
     def get_by_buildings_ids_on_range(
