@@ -77,7 +77,7 @@ def refresh_token(
         session_id = request.cookies.get("session")
         user_session: UserSession | None = None
         if session_id:
-            user_session = UserSessionRepository.get_session(
+            user_session = UserSessionRepository.get_session_by_id(
                 id=session_id, session=session
             )
             session.delete(user_session)
@@ -103,12 +103,20 @@ def refresh_token(
         ip_address = None
         if request.client:
             ip_address = request.client.host
-        user_session = UserSessionRepository.create_session(
+
+        user_session = UserSessionRepository.get_session(
             user_id=must_be_int(user.id),
             user_agent=user_agent,
             ip_address=ip_address,
             session=session,
         )
+        if not user_session:
+            user_session = UserSessionRepository.create_session(
+                user_id=must_be_int(user.id),
+                user_agent=user_agent,
+                ip_address=ip_address,
+                session=session,
+            )
         session.commit()
 
     response.set_cookie(
