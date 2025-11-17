@@ -12,7 +12,7 @@ SESSION_DURATION_DAYS = 30
 
 class UserSessionRepository:
     @staticmethod
-    def get_session(*, id: str, session: Session) -> UserSession:
+    def get_session_by_id(*, id: str, session: Session) -> UserSession:
         statement = select(UserSession).where(col(UserSession.id) == id)
         try:
             user_session = session.exec(statement).one()
@@ -42,8 +42,25 @@ class UserSessionRepository:
         return user_session
 
     @staticmethod
+    def get_session(
+        *,
+        user_id: int,
+        user_agent: str | None,
+        ip_address: str | None,
+        session: Session,
+    ) -> UserSession | None:
+        statement = select(UserSession).where(
+            col(UserSession.user_id) == user_id,
+            col(UserSession.user_agent) == user_agent,
+            col(UserSession.ip_address) == ip_address,
+        )
+        return session.exec(statement).first()
+
+    @staticmethod
     def expires_session(*, session_id: str, session: Session) -> None:
-        user_session = UserSessionRepository.get_session(id=session_id, session=session)
+        user_session = UserSessionRepository.get_session_by_id(
+            id=session_id, session=session
+        )
         session.delete(user_session)
 
     @staticmethod

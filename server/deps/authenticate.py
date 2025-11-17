@@ -87,7 +87,9 @@ def authenticate_from_cookie(request: Request, session: SessionDep) -> User:
     if not session_id:
         raise InvalidSessionCookie()
     try:
-        user_session = UserSessionRepository.get_session(id=session_id, session=session)
+        user_session = UserSessionRepository.get_session_by_id(
+            id=session_id, session=session
+        )
     except UserSessionNotFound:
         raise InvalidSessionCookie()
     return user_session.user
