@@ -113,7 +113,10 @@ class UserRepository:
         try:
             user = UserRepository.get_by_email(email=user_info.email, session=session)
         except NoResultFound:
-            if user_info.domain != CONFIG.google_auth_domain_name:
+            if (
+                user_info.domain != CONFIG.google_auth_domain_name
+                and user_info.email not in CONFIG.allowed_gmails
+            ):
                 raise InvalidEmailDomain()
 
             user = UserRepository.create(
