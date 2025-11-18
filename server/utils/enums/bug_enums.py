@@ -50,6 +50,22 @@ class BugType(StrEnum):
             BugType.OTHER,
         ]
 
+    @classmethod
+    def to_ptBr(cls) -> str:
+        if cls.CRASH_ERROR:
+            return "Erro inesperado"
+        if cls.FUNCTIONALITY:
+            return "Funcionalidade"
+        if cls.PERFORMANCE:
+            return "Desempenho"
+        if cls.SECURITY:
+            return "Segurança"
+        if cls.UI:
+            return "Interface"
+        if cls.OTHER:
+            return "Outro"
+        return "Desconhecido"
+
 
 class BugStatus(StrEnum):
     PENDING = "pending"
