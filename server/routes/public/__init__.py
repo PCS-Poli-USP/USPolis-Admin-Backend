@@ -15,7 +15,7 @@ from server.routes.public.class_routes import router as ClassRouter
 from server.routes.public.reservation_routes import router as ReservationRouter
 from server.routes.public.occurrence_routes import router as OccurrenceRouter
 from server.routes.public.allocation_routes import router as AllocationRouter
-from server.routes.public.auth_route import router as AuthRouter
+from server.routes.public.auth_routes import router as AuthRouter
 
 
 router = APIRouter(tags=["Public"])

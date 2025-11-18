@@ -3,7 +3,6 @@ from typing import Annotated
 from fastapi import Depends, Header, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from server.config import CONFIG
 from server.deps.session_dep import SessionDep
 from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
@@ -17,8 +16,6 @@ from server.services.auth.auth_user_info import AuthUserInfo
 from server.services.auth.authentication_client import (
     AuthenticationClient,
 )
-from server.models.http.requests.user_request_models import UserRegister
-from sqlalchemy.exc import NoResultFound
 
 security = HTTPBearer(auto_error=False)
 
@@ -37,26 +34,7 @@ def authenticate(
     user_info: Annotated[AuthUserInfo, Depends(google_authenticate)],
     session: SessionDep,
 ) -> User:
-    try:
-        user = UserRepository.get_by_email(email=user_info.email, session=session)
-    except NoResultFound:
-        if user_info.domain != CONFIG.google_auth_domain_name:
-            raise InvalidEmailDomain()
-
-        user = UserRepository.create(
-            input=UserRegister(
-                email=user_info.email,
-                name=user_info.name,
-                picture_url=user_info.picture,
-                group_ids=[],
-                is_admin=False,
-            ),
-            creator=None,
-            session=session,
-        )
-        session.commit()
-        session.refresh(user)
-
+    user = UserRepository.get_from_auth(user_info=user_info, session=session)
     if not user.picture_url:
         user.picture_url = user_info.picture
         session.add(user)
@@ -135,14 +113,6 @@ class InvalidSessionCookie(HTTPException):
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Cookie de sessão inválido",
-        )
-
-
-class InvalidEmailDomain(HTTPException):
-    def __init__(self) -> None:
-        super().__init__(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Domínio inválido, deve-se usar domínio USP!",
         )
 
 

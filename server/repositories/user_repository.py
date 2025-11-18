@@ -1,13 +1,16 @@
 from fastapi import HTTPException, status
 from sqlmodel import Session, col, select
 from sqlalchemy.orm import selectinload
+from sqlalchemy.exc import NoResultFound
 
+from server.config import CONFIG
 from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.group_db_model import Group
 from server.models.database.user_building_link import UserBuildingLink
 from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister, UserUpdate
+from server.services.auth.auth_user_info import AuthUserInfo
 from server.utils.brazil_datetime import BrazilDatetime
 
 
@@ -106,6 +109,32 @@ class UserRepository:
         return new_user
 
     @staticmethod
+    def get_from_auth(*, user_info: AuthUserInfo, session: Session) -> User:
+        try:
+            user = UserRepository.get_by_email(email=user_info.email, session=session)
+        except NoResultFound:
+            if (
+                user_info.domain != CONFIG.google_auth_domain_name
+                and user_info.email not in CONFIG.allowed_gmails
+            ):
+                raise InvalidEmailDomain()
+
+            user = UserRepository.create(
+                input=UserRegister(
+                    email=user_info.email,
+                    name=user_info.name,
+                    picture_url=user_info.picture,
+                    group_ids=[],
+                    is_admin=False,
+                ),
+                creator=None,
+                session=session,
+            )
+            session.commit()
+            session.refresh(user)
+        return user
+
+    @staticmethod
     def update(
         *, requester: User, id: int, input: UserUpdate, session: Session
     ) -> User:
@@ -154,6 +183,17 @@ class UserRepository:
         user_id: int,
         session: Session,
     ) -> None:
-        user = UserRepository.get_by_id(user_id=user_id, session=session)
-        session.delete(user)
-        session.commit()
+        try:
+            user = UserRepository.get_by_id(user_id=user_id, session=session)
+            session.delete(user)
+            session.commit()
+        except Exception as e:
+            print(e)
+
+
+class InvalidEmailDomain(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Domínio inválido, deve-se usar domínio USP!",
+        )

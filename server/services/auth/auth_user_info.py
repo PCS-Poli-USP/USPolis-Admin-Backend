@@ -24,5 +24,5 @@ class AuthUserInfo(BaseModel):
             name=info["name"],
             picture=info["picture"],
             given_name=info["given_name"],
-            family_name=info["family_name"],
+            family_name=info.get("family_name", ""),
         )

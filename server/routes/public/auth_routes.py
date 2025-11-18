@@ -40,17 +40,28 @@ def get_tokens(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="null token received"
         )
     user_info = AuthenticationClient.get_user_info(access_token)
-    user = UserRepository.get_by_email(email=user_info.email, session=session)
+    user = UserRepository.get_from_auth(user_info=user_info, session=session)
     user_agent = request.headers.get("user-agent")
     ip_address = None
     if request.client:
         ip_address = request.client.host
-    user_session = UserSessionRepository.create_session(
-        user_id=must_be_int(user.id),
-        user_agent=user_agent,
-        ip_address=ip_address,
-        session=session,
-    )
+
+    user_session = UserSessionRepository.get_session(
+            user_id=must_be_int(user.id),
+            user_agent=user_agent,
+            ip_address=ip_address,
+            session=session,
+        )
+    if user_session:
+        UserSessionRepository.extend_session(user_session=user_session, session=session)
+        
+    if not user_session:
+        user_session = UserSessionRepository.create_session(
+            user_id=must_be_int(user.id),
+            user_agent=user_agent,
+            ip_address=ip_address,
+            session=session,
+        )
 
     response.set_cookie(
         key="session",

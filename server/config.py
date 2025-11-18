@@ -57,6 +57,11 @@ class Settings(BaseModel):
     google_auth_redirect_uri: str = config("GOOGLE_AUTH_REDIRECT_URI")  # pyright: ignore[reportAssignmentType]
     google_auth_domain_name: str = config("G_AUTH_DOMAIN_NAME")  # pyright: ignore[reportAssignmentType]
     google_auth_mobile_client_id: str = config("G_AUTH_CLIENT_ID")  # pyright: ignore[reportAssignmentType]
+    allowed_gmails: list[str] = config(
+        "ALLOWED_GMAILS",
+        default=[],
+        cast=Csv(),
+    )  # pyright: ignore[reportAssignmentType]
 
     # Testing / Development:
     test_db_uri: str = config("TEST_DATABASE_URI", default="")  # pyright: ignore[reportAssignmentType]
