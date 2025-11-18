@@ -40,7 +40,7 @@ def get_tokens(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="null token received"
         )
     user_info = AuthenticationClient.get_user_info(access_token)
-    user = UserRepository.get_by_email(email=user_info.email, session=session)
+    user = UserRepository.get_from_auth(user_info=user_info, session=session)
     user_agent = request.headers.get("user-agent")
     ip_address = None
     if request.client:
