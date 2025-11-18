@@ -112,6 +112,7 @@ class UserRepository:
     def get_from_auth(*, user_info: AuthUserInfo, session: Session) -> User:
         try:
             user = UserRepository.get_by_email(email=user_info.email, session=session)
+            return user
         except NoResultFound:
             if (
                 user_info.domain != CONFIG.google_auth_domain_name
@@ -132,7 +133,7 @@ class UserRepository:
             )
             session.commit()
             session.refresh(user)
-        return user
+            return user
 
     @staticmethod
     def update(
