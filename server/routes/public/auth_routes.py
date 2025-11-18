@@ -45,12 +45,23 @@ def get_tokens(
     ip_address = None
     if request.client:
         ip_address = request.client.host
-    user_session = UserSessionRepository.create_session(
-        user_id=must_be_int(user.id),
-        user_agent=user_agent,
-        ip_address=ip_address,
-        session=session,
-    )
+
+    user_session = UserSessionRepository.get_session(
+            user_id=must_be_int(user.id),
+            user_agent=user_agent,
+            ip_address=ip_address,
+            session=session,
+        )
+    if user_session:
+        UserSessionRepository.extend_session(user_session=user_session, session=session)
+        
+    if not user_session:
+        user_session = UserSessionRepository.create_session(
+            user_id=must_be_int(user.id),
+            user_agent=user_agent,
+            ip_address=ip_address,
+            session=session,
+        )
 
     response.set_cookie(
         key="session",
