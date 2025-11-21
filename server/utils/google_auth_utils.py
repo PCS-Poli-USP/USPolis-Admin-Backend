@@ -16,7 +16,7 @@ def authenticate_with_google(idToken: str) -> Any:
     #     raise ValueError('Could not verify audience.')
 
     # If the request specified a Google Workspace domain
-    if idInfo["hd"] != CONFIG.google_auth_domain_name and idInfo["email_verified"]:
+    if idInfo["hd"] not in CONFIG.allowed_gmails_domains and idInfo["email_verified"]:
         raise ValueError("Wrong domain name.")
 
     # ID token is valid. Get the user's Google Account ID from the decoded token.

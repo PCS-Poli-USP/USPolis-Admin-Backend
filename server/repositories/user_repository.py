@@ -115,7 +115,7 @@ class UserRepository:
             return user
         except NoResultFound:
             if (
-                user_info.domain != CONFIG.google_auth_domain_name
+                user_info.domain not in CONFIG.allowed_gmails_domains
                 and user_info.email not in CONFIG.allowed_gmails
             ):
                 raise InvalidEmailDomain()
