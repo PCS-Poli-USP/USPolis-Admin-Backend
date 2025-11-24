@@ -8,6 +8,7 @@ from server.utils.brazil_datetime import BrazilDatetime
 
 
 class QueryInterval(BaseModel):
+    """If start and end date are not given, it will consider everything active today. (everything that already started but not ended)"""
     today: date | None = None
     start: date | None = None
     end: date | None = None
