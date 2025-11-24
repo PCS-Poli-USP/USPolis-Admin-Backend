@@ -41,8 +41,8 @@ jobs:
           script: |
             cd /diskb/home/backend
             git pull origin main
-            
-            /home/ubuntu/start_uspolis_back.sh >> /home/ubuntu/script_log.log 2>&1
+            sudo systemctl restart uspolis-backend.service
+            echo "Backend reloaded com sucesso."
 
       - name: Notify Command Success
         run: echo "Command executed on ${{ secrets.HOST }} successfully!"

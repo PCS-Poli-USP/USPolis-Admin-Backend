@@ -1,13 +1,28 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
 
+from server.deps.authenticate import UserDep
 from server.deps.repository_adapters.occurrence_repository_adapter import (
     OccurrenceRepositoryDep,
 )
-from server.models.http.requests.allocation_request_models import EventUpdate
+from server.deps.session_dep import SessionDep
+from server.models.http.requests.allocation_request_models import (
+    AllocationMapInput,
+    AllocationReuseInput,
+    AllocationEventUpdate,
+)
+from server.models.http.responses.allocation_response_models import (
+    AllocationClassOptions,
+    AllocationReuseResponse,
+    AllocationReuseTargetOptions,
+    AllocationScheduleOptions,
+)
+from server.models.http.responses.schedule_response_models import ScheduleResponseBase
 from server.repositories.building_repository import BuildingRepository
+from server.repositories.class_repository import ClassRepository
 from server.repositories.occurrence_repository import OccurrenceRepository
 from server.repositories.schedule_repository import ScheduleRepository
+from server.repositories.subject_repository import SubjectRepository
 from server.utils.must_be_int import must_be_int
 
 
@@ -16,7 +31,7 @@ router = APIRouter(prefix="/allocations", tags=["Allocations"])
 
 @router.patch("/events")
 def update_event(
-    input: EventUpdate,
+    input: AllocationEventUpdate,
     occurrence_repo: OccurrenceRepositoryDep,
 ) -> JSONResponse:
     """Update an event with the provided data"""
@@ -60,3 +75,128 @@ def update_event(
 
     occurrence_repo.session.commit()
     return JSONResponse(content={"message": "Evento atualizado com sucesso!"})
+
+
+@router.post("/reuse-options")
+def allocation_reuse_options(
+    input: AllocationReuseInput,
+    session: SessionDep,
+) -> AllocationReuseResponse:
+    target_options: list[AllocationReuseTargetOptions] = []
+    for target in input.targets:
+        subject = SubjectRepository.get_by_id(id=target.subject_id, session=session)
+        classes = ClassRepository.get_by_ids(ids=target.class_ids, session=session)
+        class_options: list[AllocationClassOptions] = []
+        for cls in classes:
+            if cls.subject_id != target.subject_id:
+                raise InvalidAllocationReuseInputError(
+                    "A classe não pertence à disciplina especificada."
+                )
+
+            schedule_options: list[AllocationScheduleOptions] = []
+            for schedule in cls.schedules:
+                options = ScheduleRepository.find_old_allocation_options(
+                    building_id=input.building_id,
+                    year=input.allocation_year,
+                    target=schedule,
+                    session=session,
+                )
+                schedule_options.append(
+                    AllocationScheduleOptions(
+                        schedule_target_id=must_be_int(schedule.id),
+                        schedule_target=ScheduleResponseBase.from_schedule(schedule),
+                        options=ScheduleResponseBase.from_schedule_list(options),
+                    )
+                )
+            class_options.append(
+                AllocationClassOptions(
+                    class_id=must_be_int(cls.id),
+                    class_code=cls.code,
+                    schedule_options=schedule_options,
+                )
+            )
+        target_options.append(
+            AllocationReuseTargetOptions(
+                subject_id=target.subject_id,
+                subject_name=subject.name,
+                subject_code=subject.code,
+                class_options=class_options,
+            )
+        )
+
+    return AllocationReuseResponse(
+        building_id=input.building_id,
+        allocation_year=input.allocation_year,
+        target_options=target_options,
+        strict=input.strict,
+    )
+
+
+@router.post("/allocate-allocation-map")
+def allocate_allocation_map(
+    input_map: AllocationMapInput,
+    user: UserDep,
+    repository: OccurrenceRepositoryDep,
+    session: SessionDep,
+) -> JSONResponse:
+    schedule_repo = repository.schedule_repo
+    classroom_repo = repository.classroom_repo
+    for val in input_map.allocation_map:
+        schedule = schedule_repo.get_by_id(val.schedule_id)
+        if schedule.reservation:
+            raise InvalidAllocationMapInputError(
+                "Não é permitido usar agenda de reservas na reutiliazação de alocação!"
+            )
+
+        class_ = schedule.class_
+        if class_ is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Agenda sem turma ou reserva encontrada!",
+            )
+
+        classrooms = classroom_repo.get_by_ids(ids=val.classroom_ids)
+        if len(classrooms) == 0:
+            raise InvalidAllocationMapInputError("As salas fornecidas não existem!")
+
+        first_classroom = classrooms[0]
+        OccurrenceRepository.allocate_schedule(
+            user=user, schedule=schedule, classroom=first_classroom, session=session
+        )
+        if len(classrooms) > 0:
+            for i in range(1, len(classrooms)):
+                classroom = classrooms[i]
+                new_schedule = ScheduleRepository.duplicate(
+                    schedule=schedule, session=session
+                )
+                new_schedule.class_ = class_
+                OccurrenceRepository.allocate_schedule(
+                    user=user,
+                    schedule=new_schedule,
+                    classroom=classroom,
+                    session=session,
+                )
+
+        session.add(class_)
+
+    session.commit()
+    return JSONResponse(
+        content={"message": "Mapeamento de alocação alocado com sucesso!"},
+        status_code=status.HTTP_200_OK,
+    )
+
+
+class InvalidAllocationReuseInputError(HTTPException):
+    """Custom exception for invalid allocation reuse input."""
+
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(status.HTTP_400_BAD_REQUEST, detail=message)
+
+
+class InvalidAllocationMapInputError(HTTPException):
+    """Custom exception for invalid allocation map input."""
+
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(status.HTTP_400_BAD_REQUEST, detail=message)

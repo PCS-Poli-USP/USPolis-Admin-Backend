@@ -10,6 +10,7 @@ from server.utils.enums.action_type_enum import ActionType
 
 
 class AllocationLog(BaseModel, table=True):
+    user_email: str = Field()
     modified_by: str = Field()
     modified_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
     action: ActionType = Field()
@@ -19,7 +20,5 @@ class AllocationLog(BaseModel, table=True):
     new_classroom: str = Field()
     new_building: str = Field()
 
-    schedule_id: int | None = Field(
-        default=None, nullable=False, foreign_key="schedule.id"
-    )
+    schedule_id: int = Field(default=None, nullable=False, foreign_key="schedule.id")
     schedule: "Schedule" = Relationship(back_populates="logs")

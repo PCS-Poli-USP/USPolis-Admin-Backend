@@ -15,20 +15,6 @@ embed = Body(..., embed=True)
 router = APIRouter(prefix="/calendars", tags=["Calendars"])
 
 
-@router.get("")
-def get_all_calendars(session: SessionDep) -> list[CalendarResponse]:
-    """Get all calendars"""
-    calendars = CalendarRepository.get_all(session=session)
-    return CalendarResponse.from_calendar_list(calendars)
-
-
-@router.get("/{calendar_id}")
-def get_calendar(calendar_id: int, session: SessionDep) -> CalendarResponse:
-    """Get a calendar by id"""
-    calendar = CalendarRepository.get_by_id(id=calendar_id, session=session)
-    return CalendarResponse.from_calendar(calendar)
-
-
 @router.post("")
 def create_calendar(
     input: CalendarRegister, user: UserDep, session: SessionDep

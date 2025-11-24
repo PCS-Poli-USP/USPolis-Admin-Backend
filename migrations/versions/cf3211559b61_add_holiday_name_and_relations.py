@@ -31,7 +31,7 @@ def upgrade() -> None:
         "holiday",
         sa.Column(
             "name",
-            sqlmodel.sql.sqltypes.AutoString(),
+            sqlmodel.sql.sqltypes.AutoString(),  # pyright: ignore[reportAttributeAccessIssue]
             nullable=False,
             server_default="Sem nome",
         ),
@@ -42,7 +42,7 @@ def upgrade() -> None:
     op.execute("UPDATE holiday SET name = 'Sem nome' WHERE name IS NULL")
 
     # Removendo o valor padrão da coluna
-    op.alter_column("holiday", "name", server_default=None)
+    op.alter_column("holiday", "name", server_default=None)  # type: ignore
 
 
 def downgrade() -> None:

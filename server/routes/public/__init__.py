@@ -8,7 +8,6 @@ from server.routes.public.mobile_comments_routes import router as MobileComments
 from server.routes.public.mobile_google_authentication_routes import (
     router as MobileGAuth,
 )
-from server.routes.public.mobile_programs_routes import router as ProgramsRouter
 from server.routes.public.building_routes import router as BuildingRouter
 from server.routes.public.classroom_routes import router as ClassroomRouter
 from server.routes.public.subject_routes import router as SubjectRouter
@@ -16,17 +15,16 @@ from server.routes.public.class_routes import router as ClassRouter
 from server.routes.public.reservation_routes import router as ReservationRouter
 from server.routes.public.occurrence_routes import router as OccurrenceRouter
 from server.routes.public.allocation_routes import router as AllocationRouter
-from server.routes.public.auth_route import router as AuthRouter
+from server.routes.public.auth_routes import router as AuthRouter
 
 
-router = APIRouter()
+router = APIRouter(tags=["Public"])
 
 router.include_router(ForumRouter)
 router.include_router(MobileClassRouter)
 router.include_router(MobileInstitutionalEventsRouter)
 router.include_router(MobileCommentsRouter)
 router.include_router(MobileGAuth)
-router.include_router(ProgramsRouter)
 router.include_router(BuildingRouter)
 router.include_router(ClassroomRouter)
 router.include_router(SubjectRouter)

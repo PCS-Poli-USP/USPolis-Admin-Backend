@@ -25,16 +25,23 @@ from server.deps.session_dep import SessionDep
 from server.models.database.building_db_model import Building
 from server.models.database.class_db_model import Class
 from server.models.database.classroom_db_model import Classroom
+from server.models.database.event_db_model import Event
+from server.models.database.exam_db_model import Exam
 from server.models.database.group_db_model import Group
+from server.models.database.meeting_db_model import Meeting
 from server.models.database.subject_db_model import Subject
 from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister
+from server.repositories.occurrence_repository import OccurrenceRepository
 from server.repositories.user_repository import UserRepository
 from server.services.auth.auth_user_info import AuthUserInfo
 from tests.factories.model.building_model_factory import BuildingModelFactory
 from tests.factories.model.class_model_factory import ClassModelFactory
 from tests.factories.model.classroom_model_factory import ClassroomModelFactory
+from tests.factories.model.event_model_factory import EventModelFactory
+from tests.factories.model.exam_model_factory import ExamModelFactory
 from tests.factories.model.group_model_factory import GroupModelFactory
+from tests.factories.model.meeting_model_factory import MeetingModelFactory
 from tests.factories.model.subject_model_factory import SubjectModelFactory
 from tests.factories.model.user_model_factory import UserModelFactory
 
@@ -98,48 +105,32 @@ def mock_session_fixture() -> MagicMock:
 def mock_google_authenticate() -> AuthUserInfo:
     return AuthUserInfo(
         email=CONFIG.mock_email,
-        name="Mock User",
         email_verified=True,
+        domain="usp.br",
+        name="Mock User",
         picture="",
         given_name="Mock",
         family_name="User",
     )
 
 
-def mock_authenticate(request: Request, session: SessionDep) -> User:
-    user = session.exec(
-        select(User).where(User.email == CONFIG.first_superuser_email)
-    ).first()
-    if not user:
-        raise Exception("Mocked user not found")
+def mock_authenticate(user: User, request: Request, session: SessionDep) -> User:
     request.state.current_user = user
     return user
 
 
-def mock_restricted_authenticate(
-    restricted_user: User, request: Request, session: SessionDep
-) -> User:
-    request.state.current_user = restricted_user
-    return restricted_user
-
-
-def mock_common_authenticate(
-    common: User, request: Request, session: SessionDep
-) -> User:
-    request.state.current_user = common
-    return common
-
-
-# This user call user fixture that creates the mocked user
 @pytest.fixture(name="client")
 def client_fixture(user: User, session: Session) -> Generator[TestClient, None, None]:
     """
-    Admin client fixture, wich is a TestClient with the mocked authentication (admin user)
-    and the mocked google authentication.
+    Admin client fixture, which is a TestClient with the mocked authentication and the mocked google authentication.
     """
     app.dependency_overrides[get_db] = lambda: session
     app.dependency_overrides[google_authenticate] = mock_google_authenticate
-    app.dependency_overrides[authenticate] = mock_authenticate
+
+    def _mock_authenticate(request: Request, session: SessionDep) -> User:
+        return mock_authenticate(user, request, session)
+
+    app.dependency_overrides[authenticate] = _mock_authenticate
     with TestClient(app) as c:
         yield c
 
@@ -151,14 +142,15 @@ def restricted_client_fixture(
     restricted_user: User, session: Session
 ) -> Generator[TestClient, None, None]:
     """
-    Admin client fixture, wich is a TestClient with the mocked authentication (admin user)
-    and the mocked google authentication.
+    Restricted client fixture, which is a TestClient with a mocked restricted authentication and mocked google authentication.
+
+    - The restricted user is a user that have the default admin and only have the default group of this building if you call the 'group' fixture.
     """
     app.dependency_overrides[get_db] = lambda: session
     app.dependency_overrides[google_authenticate] = mock_google_authenticate
 
     def _mock_authenticate(request: Request, session: SessionDep) -> User:
-        return mock_restricted_authenticate(restricted_user, request, session)
+        return mock_authenticate(restricted_user, request, session)
 
     app.dependency_overrides[authenticate] = _mock_authenticate
     with TestClient(app) as c:
@@ -172,14 +164,15 @@ def common_client_fixture(
     common_user: User, session: Session
 ) -> Generator[TestClient, None, None]:
     """
-    Admin client fixture, wich is a TestClient with the mocked authentication (admin user)
-    and the mocked google authentication.
+    Common client fixture, wich is a TestClient with the mocked common authentication and the mocked google authentication.
+
+    - A common user is a user that not has a building and groups
     """
     app.dependency_overrides[get_db] = lambda: session
     app.dependency_overrides[google_authenticate] = mock_google_authenticate
 
     def _mock_authenticate(request: Request, session: SessionDep) -> User:
-        return mock_common_authenticate(common_user, request, session)
+        return mock_authenticate(common_user, request, session)
 
     app.dependency_overrides[authenticate] = _mock_authenticate
     with TestClient(app) as c:
@@ -273,6 +266,23 @@ def classroom_fixture(
     ).create_and_refresh()
 
 
+@pytest.fixture(name="allocated_classroom")
+def allocated_classroom_fixture(
+    user: User, building: Building, group: Group, class_: Class, session: Session
+) -> Classroom:
+    """Fixture to **create a classroom** in the default group of default building and **allocate the standard class in**.
+
+    Keep in mind that this fixture will allocate the standard class, so make sure that you not use it at class allocation tests that uses the standard class.
+    """
+    classroom = ClassroomModelFactory(
+        creator=user, building=building, group=group, session=session
+    ).create_and_refresh()
+    OccurrenceRepository.allocate_schedule(
+        user=user, classroom=classroom, schedule=class_.schedules[0], session=session
+    )
+    return classroom
+
+
 @pytest.fixture(name="subject")
 def subject_fixture(building: Building, session: Session) -> Subject:
     """Fixture to create a standard subject in the standard building."""
@@ -283,3 +293,29 @@ def subject_fixture(building: Building, session: Session) -> Subject:
 def class_fixture(subject: Subject, session: Session) -> Class:
     """Fixture to create a standard class in the standard subject."""
     return ClassModelFactory(subject=subject, session=session).create_and_refresh()
+
+
+@pytest.fixture(name="meeting")
+def meeting_fixture(user: User, classroom: Classroom, session: Session) -> Meeting:
+    """Fixture to create a standard meeting."""
+    return MeetingModelFactory(
+        classroom=classroom, creator=user, session=session
+    ).create_and_refresh()
+
+
+@pytest.fixture(name="exam")
+def exam_fixture(
+    user: User, classroom: Classroom, subject: Subject, session: Session
+) -> Exam:
+    """Fixture to create a standard exam (without classes)."""
+    return ExamModelFactory(
+        creator=user, classroom=classroom, subject=subject, session=session
+    ).create_and_refresh()
+
+
+@pytest.fixture(name="event")
+def event_fixture(user: User, classroom: Classroom, session: Session) -> Event:
+    """Fixture to create a standard event."""
+    return EventModelFactory(
+        classroom=classroom, creator=user, session=session
+    ).create_and_refresh()

@@ -8,6 +8,7 @@ from server.utils.must_be_int import must_be_int
 
 class AllocationLogResponse(BaseModel):
     id: int
+    user_email: str
     modified_by: str
     modified_at: datetime
     action: ActionType
@@ -23,6 +24,7 @@ class AllocationLogResponse(BaseModel):
     def from_allocation_log(cls, log: AllocationLog) -> "AllocationLogResponse":
         return cls(
             id=must_be_int(log.id),
+            user_email=log.user_email,
             modified_by=log.modified_by,
             modified_at=log.modified_at,
             action=log.action,

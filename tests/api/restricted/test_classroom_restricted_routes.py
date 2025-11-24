@@ -8,17 +8,22 @@ from server.models.database.user_db_model import User
 from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.group_db_model import Group
+from server.models.database.class_db_model import Class
 
 from server.repositories.classroom_repository import (
     ClassroomNotFound,
     ClassroomRepository,
 )
 from server.repositories.group_repository import GroupRepository
+from server.repositories.occurrence_repository import OccurrenceRepository
 from server.utils.must_be_int import must_be_int
 from tests.factories.model.building_model_factory import BuildingModelFactory
 from tests.factories.model.classroom_model_factory import ClassroomModelFactory
 from tests.factories.model.group_model_factory import GroupModelFactory
 from tests.factories.request.classroom_request_factory import ClassroomRequestFactory
+from tests.utils.validators.classroom.classroom_response_validator import (
+    ClassroomResponseAsserts,
+)
 
 
 URL_PREFIX = "/classrooms"
@@ -28,14 +33,9 @@ def test_get_classroom_by_id_with_admin_user(
     classroom: Classroom, client: TestClient
 ) -> None:
     response = client.get(f"{URL_PREFIX}/{classroom.id}")
-    data = response.json()
 
     assert response.status_code == status.HTTP_200_OK
-    assert data["id"] == classroom.id
-    assert data["name"] == classroom.name
-    assert data["floor"] == classroom.floor
-    assert data["capacity"] == classroom.capacity
-    assert data["audiovisual"] == classroom.audiovisual
+    ClassroomResponseAsserts.assert_get_classroom_response(response, classroom)
 
 
 def test_get_classroom_by_id_with_restricted_user(
@@ -43,14 +43,8 @@ def test_get_classroom_by_id_with_restricted_user(
     restricted_client: TestClient,
 ) -> None:
     response = restricted_client.get(f"{URL_PREFIX}/{classroom.id}")
-    data = response.json()
-
     assert response.status_code == status.HTTP_200_OK
-    assert data["id"] == classroom.id
-    assert data["name"] == classroom.name
-    assert data["floor"] == classroom.floor
-    assert data["capacity"] == classroom.capacity
-    assert data["audiovisual"] == classroom.audiovisual
+    ClassroomResponseAsserts.assert_get_classroom_response(response, classroom)
 
 
 def test_get_classroom_by_id_with_restricted_user_outisder_group(
@@ -62,6 +56,7 @@ def test_get_classroom_by_id_with_restricted_user_outisder_group(
     insider_group = GroupModelFactory(
         building=building, session=session
     ).create_and_refresh()
+
     outsider_group = GroupModelFactory(
         building=building, session=session
     ).create_and_refresh(users=[restricted_user])
@@ -81,6 +76,61 @@ def test_get_classroom_by_id_with_common_user(
 ) -> None:
     response = common_client.get(f"{URL_PREFIX}/{classroom.id}")
     assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_get_classroom_by_id_with_public_user(
+    classroom: Classroom, public_client: TestClient
+) -> None:
+    response = public_client.get(f"{URL_PREFIX}/{classroom.id}")
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+def test_get_classroom_full_with_admin_user(
+    user: User,
+    classroom: Classroom,
+    class_: Class,
+    client: TestClient,
+    session: Session,
+) -> None:
+    OccurrenceRepository.allocate_schedule(
+        user=user, classroom=classroom, schedule=class_.schedules[0], session=session
+    )
+    response = client.get(f"{URL_PREFIX}/full/{classroom.id}")
+    assert response.status_code == status.HTTP_200_OK
+    ClassroomResponseAsserts.assert_get_classroom_full_response(
+        response, classroom, class_
+    )
+
+
+def test_get_classroom_full_with_restricted_user(
+    allocated_classroom: Classroom,
+    class_: Class,
+    restricted_client: TestClient,
+) -> None:
+    response = restricted_client.get(f"{URL_PREFIX}/full/{allocated_classroom.id}")
+    assert response.status_code == status.HTTP_200_OK
+    ClassroomResponseAsserts.assert_get_classroom_full_response(
+        response, allocated_classroom, class_
+    )
+
+
+def test_get_classroom_full_with_common_user(
+    allocated_classroom: Classroom,
+    class_: Class,
+    common_client: TestClient,
+) -> None:
+    response = common_client.get(f"{URL_PREFIX}/full/{allocated_classroom.id}")
+    assert response.status_code == status.HTTP_200_OK
+    ClassroomResponseAsserts.assert_get_classroom_full_response(
+        response, allocated_classroom, class_
+    )
+
+
+def test_get_classroom_full_with_public_user(
+    classroom: Classroom, public_client: TestClient
+) -> None:
+    response = public_client.get(f"{URL_PREFIX}/full/{classroom.id}")
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 def test_create_classroom_with_admin_user(
@@ -110,7 +160,7 @@ def test_create_classroom_with_restricted_user(
     created = response.json()
 
     main_group = GroupRepository.get_by_id(id=must_be_int(group.id), session=session)
-    assert len(main_group.classrooms) == 0
+    assert len(main_group.classrooms) == 1
 
     assert response.status_code == status.HTTP_200_OK
     assert created["name"] == input.name
@@ -187,6 +237,15 @@ def test_create_classroom_with_common_user(
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
+def test_create_classroom_with_public_user(
+    group: Group, public_client: TestClient
+) -> None:
+    input = ClassroomRequestFactory(group=group).create_input()
+    body = input.model_dump()
+    response = public_client.post(URL_PREFIX, json=body)
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
 def test_update_classroom_with_admin_user(
     group: Group, classroom: Classroom, session: Session, client: TestClient
 ) -> None:
@@ -248,13 +307,20 @@ def test_update_classroom_with_group_in_other_building(
     session: Session,
     restricted_client: TestClient,
 ) -> None:
-    building_B = BuildingModelFactory(creator=user, session=session).create_and_refresh(
-        users=[restricted_user]
-    )
+    factory = BuildingModelFactory(creator=user, session=session)
+    building_B = factory.create_and_refresh(users=[restricted_user])
     outsider_group = GroupModelFactory(
         building=building_B, session=session
     ).create_and_refresh(users=[restricted_user])
 
+    data = building_B.model_dump()
+    data["main_group_id"] = must_be_int(outsider_group.id)
+    data["main_group"] = outsider_group
+    data["groups"] = [outsider_group]
+    building_B = factory.update_and_refresh(
+        building_id=must_be_int(building_B.id),
+        **data,
+    )
     input = ClassroomRequestFactory(group=outsider_group).update_input(
         building_id=must_be_int(building.id)
     )
@@ -297,6 +363,18 @@ def test_update_classroom_with_common_user(
     response = common_client.put(f"{URL_PREFIX}/{classroom.id}", json=update_body)
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_update_classroom_with_public_user(
+    classroom: Classroom,
+    group: Group,
+    public_client: TestClient,
+) -> None:
+    updated_input = ClassroomRequestFactory(group=group).update_input()
+    update_body = updated_input.model_dump()
+    response = public_client.put(f"{URL_PREFIX}/{classroom.id}", json=update_body)
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 def test_delete_classroom_with_admin_user(
@@ -383,3 +461,9 @@ def test_delete_classroom_with_common_user(
     response = common_client.delete(f"{URL_PREFIX}/{created.id}")
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_delete_classroom_with_public_user(public_client: TestClient) -> None:
+    response = public_client.delete(f"{URL_PREFIX}/{1}")
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED

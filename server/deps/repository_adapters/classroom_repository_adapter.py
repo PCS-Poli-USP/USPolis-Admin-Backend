@@ -39,7 +39,7 @@ class ClassroomRepositoryAdapter:
         self.group_checker = GroupPermissionChecker(user=user, session=session)
 
     def get_all(self) -> list[Classroom]:
-        """Get all classrooms on buildings that the user has access to."""
+        """Get all classrooms that the user has access to."""
         if self.user.is_admin:
             return ClassroomRepository.get_all(session=self.session)
 
@@ -61,8 +61,11 @@ class ClassroomRepositoryAdapter:
 
     def get_by_id(self, id: int) -> Classroom:
         self.classroom_checker.check_permission(object=id)
-        classroom = ClassroomRepository.get_by_id(id=id, session=self.session)
-        return classroom
+        return ClassroomRepository.get_by_id(id=id, session=self.session)
+
+    def get_by_ids(self, ids: list[int]) -> list[Classroom]:
+        self.classroom_checker.check_permission(object=ids)
+        return ClassroomRepository.get_by_ids(ids=ids, session=self.session)
 
     def get_by_name_and_building(self, name: str, building: Building) -> Classroom:
         classroom = ClassroomRepository.get_by_name_and_building(
@@ -147,7 +150,7 @@ class ClassroomInsertionOnInvalidGroup(HTTPException):
     def __init__(self, group: str, classroom: str) -> None:
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Sala {classroom} não pode ser inserida no grupo {group}",
+            detail=f"Sala {classroom} não pode ser inserida no grupo {group}, pois pertence a outro prédio",
         )
 
 

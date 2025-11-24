@@ -4,6 +4,7 @@ from sqlmodel import Session
 
 from server.models.database.building_db_model import Building
 from server.models.database.subject_db_model import Subject
+from server.models.database.group_db_model import Group
 from server.utils.must_be_int import must_be_int
 from tests.factories.model.subject_model_factory import SubjectModelFactory
 from tests.factories.request.subject_request_factory import SubjectRequestFactory
@@ -76,7 +77,7 @@ def test_create_subject_with_admin_user(building: Building, client: TestClient) 
 
 
 def test_create_subject_with_restricted_user(
-    building: Building, restricted_client: TestClient
+    building: Building, group: Group, restricted_client: TestClient
 ) -> None:
     factory = SubjectRequestFactory(building_ids=[must_be_int(building.id)])
     input = factory.create_input()
@@ -89,7 +90,7 @@ def test_create_subject_with_restricted_user(
 
 
 def test_create_subject_with_used_code(
-    subject: Subject, building: Building, restricted_client: TestClient
+    subject: Subject, building: Building, group: Group, restricted_client: TestClient
 ) -> None:
     factory = SubjectRequestFactory(building_ids=[must_be_int(building.id)])
     input = factory.create_input(code=subject.code)
@@ -136,7 +137,7 @@ def test_update_subject_with_admin_user(
 
 
 def test_update_subject_with_restricted_user(
-    building: Building, session: Session, restricted_client: TestClient
+    building: Building, session: Session, group: Group, restricted_client: TestClient
 ) -> None:
     factory = SubjectModelFactory(building=building, session=session)
     subject = factory.create_and_refresh()
@@ -158,6 +159,7 @@ def test_update_subject_with_used_code(
     subject: Subject,
     building: Building,
     session: Session,
+    group: Group,
     restricted_client: TestClient,
 ) -> None:
     factory = SubjectModelFactory(building=building, session=session)
@@ -214,7 +216,7 @@ def test_delete_subject_with_admin_user(
 
 
 def test_delete_subject_with_restricted_user(
-    building: Building, session: Session, restricted_client: TestClient
+    building: Building, session: Session, group: Group, restricted_client: TestClient
 ) -> None:
     factory = SubjectModelFactory(building=building, session=session)
     subject = factory.create_and_refresh()

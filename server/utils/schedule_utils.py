@@ -41,9 +41,16 @@ class ScheduleUtils:
 
     @staticmethod
     def has_schedule_diff(schedule: Schedule, schedule_input: ScheduleUpdate) -> bool:
+        """Check if a schedule has differences by comparing his update input.
+        A schedule is considered different when:
+        - Any of his fields change (start and end time/date, recurrence, week day, month week)
+        - If the recurrence is custom and any of his dates change
+        """
         if schedule.recurrence != schedule_input.recurrence:
             return True
         if schedule.week_day != schedule_input.week_day:
+            return True
+        if schedule.month_week != schedule_input.month_week:
             return True
         if schedule.start_date != schedule_input.start_date:
             return True

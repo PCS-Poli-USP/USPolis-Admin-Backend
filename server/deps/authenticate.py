@@ -8,12 +8,14 @@ from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.user_repository import UserRepository
+from server.repositories.user_session_repository import (
+    UserSessionNotFound,
+    UserSessionRepository,
+)
 from server.services.auth.auth_user_info import AuthUserInfo
 from server.services.auth.authentication_client import (
     AuthenticationClient,
 )
-from server.models.http.requests.user_request_models import UserRegister
-from sqlalchemy.exc import NoResultFound
 
 security = HTTPBearer(auto_error=False)
 
@@ -32,29 +34,50 @@ def authenticate(
     user_info: Annotated[AuthUserInfo, Depends(google_authenticate)],
     session: SessionDep,
 ) -> User:
-    try:
-        user: User = UserRepository.get_by_email(email=user_info.email, session=session)
-    except NoResultFound:
-        user = UserRepository.create(
-            input=UserRegister(
-                email=user_info.email,
-                name=user_info.name,
-                group_ids=[],
-                is_admin=False,
-            ),
-            creator=None,
-            session=session,
-        )
+    user = UserRepository.get_from_auth(user_info=user_info, session=session)
+    if not user.picture_url:
+        user.picture_url = user_info.picture
+        session.add(user)
         session.commit()
-        session.refresh(user)
+
     request.state.current_user = user
     request.state.user_info = user_info
     return user
 
 
+def restricted_authenticate(
+    user: Annotated[User, Depends(authenticate)],
+) -> User:
+    if user.is_admin:
+        return user
+    if not user.groups:
+        raise RestrictedAccessRequired()
+    return user
+
+
 def admin_authenticate(user: Annotated[User, Depends(authenticate)]) -> None:
     if not user.is_admin:
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "Usuário deve ser administrador")
+        raise AdminAccessRequired()
+
+
+def authenticate_from_cookie(request: Request, session: SessionDep) -> User:
+    session_id = request.cookies.get("session")
+    if not session_id:
+        raise InvalidSessionCookie()
+    try:
+        user_session = UserSessionRepository.get_session_by_id(
+            id=session_id, session=session
+        )
+    except UserSessionNotFound:
+        raise InvalidSessionCookie()
+    return user_session.user
+
+
+def admin_authenticate_from_cookie(
+    user: Annotated[User, Depends(authenticate_from_cookie)],
+) -> None:
+    if not user.is_admin:
+        raise AdminAccessRequired()
 
 
 # -- permission authentications :
@@ -83,6 +106,30 @@ class InvalidToken(HTTPException):
             detail="Token inválido",
         )
         self.headers = {"WWW-Authenticate": "Bearer"}
+
+
+class InvalidSessionCookie(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Cookie de sessão inválido",
+        )
+
+
+class AdminAccessRequired(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Usuário deve ser administrador",
+        )
+
+
+class RestrictedAccessRequired(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Usuário deve ter acesso restrito a algum grupo",
+        )
 
 
 # exports:

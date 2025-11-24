@@ -1,14 +1,21 @@
 from typing import Self
 from pydantic import BaseModel
 
-from server.models.database.classroom_solicitation_db_model import ClassroomSolicitation
-from server.models.database.reservation_db_model import Reservation
-from server.models.database.user_db_model import User
-from server.models.http.requests.classroom_solicitation_request_models import (
-    ClassroomSolicitationApprove,
-    ClassroomSolicitationDeny,
+from server.models.database.bug_report_db_model import BugReport
+from server.models.database.feedback_db_model import Feedback
+from server.models.database.solicitation_db_model import (
+    Solicitation,
 )
+from server.models.http.requests.solicitation_request_models import (
+    SolicitationApprove,
+    SolicitationDeny,
+)
+from server.utils.enums.bug_enums import BugPriority
+from server.utils.enums.month_week import MonthWeek
+from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.reservation_type import ReservationType
+from server.utils.enums.week_day import WeekDay
+from server.utils.occurrence_utils import OccurrenceUtils
 
 
 class MailSend(BaseModel):
@@ -17,72 +24,76 @@ class MailSend(BaseModel):
     body: str
 
 
+class BCCMailSend(BaseModel):
+    bcc_list: list[str]
+    subject: str
+    body: str
+
+
 class SolicitationMailBase(BaseModel):
-    username: str
     title: str
     type: str
     building: str
     classroom: str
     time: str
-    dates: str
     capacity: int
+    recurrence: Recurrence
+    week_day: WeekDay | None
+    month_week: MonthWeek | None
+    dates: str
+
+    @classmethod
+    def from_solicitation(cls, solicitation: Solicitation) -> Self:
+        schedule = solicitation.reservation.schedule
+        str_dates = [
+            dt.strftime("%d/%m/%Y") for dt in OccurrenceUtils.generate_dates(schedule)
+        ]
+        classroom = solicitation.solicited_classroom
+        return cls(
+            title=solicitation.reservation.title,
+            type=ReservationType.to_str(solicitation.reservation.type),
+            building=solicitation.building.name,
+            classroom=classroom.name if classroom else "Não especificada",
+            capacity=solicitation.capacity,
+            recurrence=schedule.recurrence,
+            week_day=schedule.week_day,
+            month_week=schedule.month_week,
+            time=f"{schedule.start_time.strftime('%H:%M')} ~ {schedule.end_time.strftime('%H:%M')}",
+            dates=", ".join(str_dates),
+        )
 
 
 class SolicitationDeniedMail(SolicitationMailBase):
+    username: str
     justification: str
 
     @classmethod
-    def from_solicitation(
-        cls, input: ClassroomSolicitationDeny, solicitation: ClassroomSolicitation
-    ) -> Self:
-        str_dates = [date.strftime("%d/%m/%Y") for date in solicitation.dates]
+    def from_solicitation(  # type: ignore
+        cls, input: SolicitationDeny, solicitation: Solicitation
+    ) -> "SolicitationDeniedMail":
+        base = SolicitationMailBase.from_solicitation(solicitation)
         return cls(
+            **base.model_dump(),
             username=solicitation.user.name,
-            title=solicitation.reservation_title,
-            type=ReservationType.to_str(solicitation.reservation_type),
-            building=solicitation.building.name,
-            classroom=solicitation.classroom.name
-            if solicitation.classroom
-            else "Não informada",
-            time=f"{solicitation.start_time.strftime('%H:%M')} ~ {
-                solicitation.end_time.strftime('%H:%M')
-            }"
-            if (solicitation.start_time and solicitation.end_time)
-            else "Não informado",
-            dates=", ".join(str_dates),
-            capacity=solicitation.capacity,
             justification=input.justification,
         )
 
 
 class SolicitationApprovedMail(SolicitationMailBase):
+    username: str
     approved_classroom: str
-    approved_time: str
 
     @classmethod
-    def from_solicitation(
-        cls, input: ClassroomSolicitationApprove, solicitation: ClassroomSolicitation
+    def from_solicitation(  # type: ignore
+        cls,
+        input: SolicitationApprove,
+        solicitation: Solicitation,
     ) -> Self:
-        str_dates = [date.strftime("%d/%m/%Y") for date in solicitation.dates]
+        base = SolicitationMailBase.from_solicitation(solicitation)
         return cls(
+            **base.model_dump(),
             username=solicitation.user.name,
-            title=solicitation.reservation_title,
-            type=ReservationType.to_str(solicitation.reservation_type),
-            building=solicitation.building.name,
-            classroom=solicitation.classroom.name
-            if solicitation.classroom
-            else "Não informada",
-            time=f"{solicitation.start_time.strftime('%H:%M')} ~ {
-                solicitation.end_time.strftime('%H:%M')
-            }"
-            if (solicitation.start_time and solicitation.end_time)
-            else "Não informado",
-            dates=", ".join(str_dates),
-            capacity=solicitation.capacity,
             approved_classroom=input.classroom_name,
-            approved_time=f"{input.start_time.strftime('%H:%M')} ~ {
-                input.end_time.strftime('%H:%M')
-            }",
         )
 
 
@@ -92,58 +103,66 @@ class SolicitationRequestedMail(SolicitationMailBase):
     reason: str
 
     @classmethod
-    def from_solicitation(cls, user: User, solicitation: ClassroomSolicitation) -> Self:
-        str_dates = [date.strftime("%d/%m/%Y") for date in solicitation.dates]
+    def from_solicitation(cls, solicitation: Solicitation) -> Self:
+        base = SolicitationMailBase.from_solicitation(solicitation)
+        reason = (
+            solicitation.reservation.reason
+            if solicitation.reservation.reason
+            else "Não informado"
+        )
         return cls(
-            username=user.name,
+            **base.model_dump(),
             requester=solicitation.user.name,
             requester_email=solicitation.user.email,
-            title=solicitation.reservation_title,
-            type=ReservationType.to_str(solicitation.reservation_type),
-            building=solicitation.building.name,
-            classroom=solicitation.classroom.name
-            if solicitation.classroom
-            else "Não informada",
-            time=f"{solicitation.start_time.strftime('%H:%M')} ~ {
-                solicitation.end_time.strftime('%H:%M')
-            }"
-            if (solicitation.start_time and solicitation.end_time)
-            else "Não informado",
-            dates=", ".join(str_dates),
-            capacity=solicitation.capacity,
-            reason=solicitation.reason if solicitation.reason else "Não informado",
+            reason=reason,
         )
 
 
 class SolicitationDeletedMail(SolicitationMailBase):
-    requester: str
-    requester_email: str
-    reason: str
+    username: str
 
     @classmethod
-    def from_reservation_and_solicitation(
-        cls, solicitation: ClassroomSolicitation, reservation: Reservation
-    ) -> Self:
-        str_dates = [
-            occur.date.strftime("%d/%m/%Y")
-            for occur in reservation.schedule.occurrences
-        ]
+    def from_solicitation(cls, solicitation: Solicitation) -> "SolicitationDeletedMail":
+        base = SolicitationMailBase.from_solicitation(solicitation)
         return cls(
+            **base.model_dump(),
             username=solicitation.user.name,
-            requester=reservation.solicitation.user.name
-            if reservation.solicitation
-            else "Não informado",
-            requester_email=reservation.solicitation.user.email
-            if reservation.solicitation
-            else "Não informado",
-            title=reservation.title,
-            type=ReservationType.to_str(reservation.type),
-            building=reservation.classroom.building.name,
-            classroom=reservation.classroom.name,
-            time=f"{reservation.schedule.start_time.strftime('%H:%M')} ~ {
-                reservation.schedule.end_time.strftime('%H:%M')
-            }",
-            dates=", ".join(str_dates),
-            capacity=0,
-            reason="Não informado",
+        )
+
+
+class SolicitationCancelledMail(SolicitationRequestedMail):
+    pass
+
+
+class FeedbackMail(BaseModel):
+    user_name: str
+    user_email: str
+    title: str
+    message: str
+
+    @classmethod
+    def from_feedback(cls, feedback: Feedback) -> "FeedbackMail":
+        return FeedbackMail(
+            user_name=feedback.user.name,
+            user_email=feedback.user.email,
+            title=feedback.title,
+            message=feedback.message,
+        )
+
+
+class BugReportMail(BaseModel):
+    user_name: str
+    user_email: str
+    type: str
+    priority: str
+    description: str
+
+    @classmethod
+    def from_report(cls, bug_report: BugReport) -> "BugReportMail":
+        return BugReportMail(
+            user_name=bug_report.user.name,
+            user_email=bug_report.user.email,
+            type=bug_report.type.to_ptBr(),
+            priority=BugPriority.to_ptBr(bug_report.priority),
+            description=bug_report.description,
         )

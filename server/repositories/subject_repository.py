@@ -3,6 +3,7 @@ from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 
 from server.deps.authenticate import BuildingDep
+from server.deps.interval_dep import QueryInterval
 from server.models.database.class_db_model import Class
 from server.models.database.subject_building_link import SubjectBuildingLink
 from server.models.database.subject_db_model import Subject
@@ -23,7 +24,27 @@ from server.utils.must_be_int import must_be_int
 class SubjectRepository:
     @staticmethod
     def get_all(*, session: Session) -> list[Subject]:
-        statement = select(Subject)
+        statement = select(Subject).where(col(Subject.id) > 0)
+        subjects = session.exec(statement).all()
+        return list(subjects)
+
+    @staticmethod
+    def get_all_on_interval(
+        *, interval: QueryInterval, session: Session
+    ) -> list[Subject]:
+        statement = select(Subject).join(
+            Class, col(Class.subject_id) == col(Subject.id)
+        )
+        if interval.today:
+            statement = statement.where(
+                col(Class.end_date) >= interval.today
+            ).distinct()
+
+        if interval.start and interval.end:
+            statement = statement.where(
+                col(Class.start_date) >= interval.start,
+                col(Class.end_date) <= interval.end,
+            ).distinct()
         subjects = session.exec(statement).all()
         return list(subjects)
 
@@ -162,19 +183,18 @@ class SubjectRepository:
             old_set = set()
             has_add_to_building = False
             if old is not None:
-                if len(old.classes) != len(subject.classes):
-                    old_set = set([class_.code for class_ in old.classes])
-                    crawled_set = set([class_.code for class_ in subject.classes])
-                    new_classes_set = crawled_set - old_set
-                    new_classes = [
-                        class_
-                        for class_ in subject.classes
-                        if class_.code in new_classes_set
-                    ]
-                    for class_ in new_classes:
-                        class_.subject_id = must_be_int(old.id)
-                        class_.subject = old
-                        session.add(class_)
+                old_set = set([class_.code for class_ in old.classes])
+                crawled_set = set([class_.code for class_ in subject.classes])
+                new_classes_set = crawled_set - old_set
+                new_classes = [
+                    class_
+                    for class_ in subject.classes
+                    if class_.code in new_classes_set
+                ]
+                for class_ in new_classes:
+                    class_.subject_id = must_be_int(old.id)
+                    class_.subject = old
+                    session.add(class_)
 
                 SubjectRepository.__update_crawled_subject_core_data(
                     old, subject, session

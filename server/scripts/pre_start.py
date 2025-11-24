@@ -1,7 +1,7 @@
 import logging
 
 from sqlalchemy import Engine
-from sqlmodel import Session, select
+from sqlmodel import SQLModel, Session, select
 from tenacity import after_log, before_log, retry, stop_after_attempt, wait_fixed
 
 from server.db import engine
@@ -33,6 +33,8 @@ def main() -> None:
     logger.info("Initializing service")
     init(engine)
     logger.info("Service finished initializing")
+    SQLModel.metadata.create_all(engine)
+    logger.info("Tables created successfully")
 
 
 if __name__ == "__main__":

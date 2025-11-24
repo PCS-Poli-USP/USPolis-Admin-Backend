@@ -45,12 +45,11 @@ class JupiterCrawlerTestUtils:
         contents_dict = cls.retrieve_html_contents()
 
         for subject_code, content in contents_dict.items():
-            print(subject_code)
             try:
                 results[subject_code] = await JupiterCrawler.crawl_subject_static(
                     subject_code=subject_code,
                     calendars=[],
-                    page_content=content,  # type: ignore
+                    page_content=content,
                 )
             except Exception as e:
                 print(f"Error processing {subject_code}: {e}")

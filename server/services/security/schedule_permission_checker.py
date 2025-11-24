@@ -58,10 +58,6 @@ class SchedulePermissionChecker(PermissionChecker[Schedule]):
                     f"Usuário não tem permissão para acessar a agenda da sala {schedule.classroom_id}"
                 )
         else:
-            if self.user.buildings is None:
-                raise ForbiddenScheduleAccess(
-                    f"Usuário não tem permissão para acessar a agenda de ID {schedule.id}"
-                )
             user_buildings_ids = self.user.buildings_ids_set()
             if schedule.class_:
                 buildings_ids = [
@@ -72,7 +68,8 @@ class SchedulePermissionChecker(PermissionChecker[Schedule]):
                         f"Usuário não tem permissão para acessar a agenda de ID {schedule.id}"
                     )
             if schedule.reservation:
-                buildings_ids = [schedule.reservation.classroom.building_id]
+                building = schedule.reservation.get_building()
+                buildings_ids = [building.id] if building else []
                 if len(set(buildings_ids).intersection(user_buildings_ids)) == 0:
                     raise ForbiddenScheduleAccess(
                         f"Usuário não tem permissão para acessar a agenda da reserva {schedule.reservation.title}"

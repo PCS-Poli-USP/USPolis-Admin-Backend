@@ -35,6 +35,20 @@ class MobileClassResponse(BaseModel):
                 schedules = [
                     schedule
                     for schedule in _class.schedules
+                    if schedule.start_date >= interval.today
+                ]
+            if interval.start and interval.end:
+                schedules = [
+                    schedule
+                    for schedule in schedules
+                    if interval.start <= schedule.start_date <= interval.end
+                ]
+        schedules = _class.schedules
+        if interval:
+            if interval.today:
+                schedules = [
+                    schedule
+                    for schedule in _class.schedules
                     if schedule.end_date >= interval.today
                 ]
             if interval.start and interval.end:

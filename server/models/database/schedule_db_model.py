@@ -19,8 +19,8 @@ from server.utils.enums.week_day import WeekDay
 
 
 class Schedule(BaseModel, table=True):
-    start_date: date = Field()
-    end_date: date = Field()
+    start_date: date = Field(index=True)
+    end_date: date = Field(index=True)
     start_time: time = Field()
     end_time: time = Field()
     week_day: WeekDay | None = Field(nullable=True, default=None)
@@ -29,7 +29,6 @@ class Schedule(BaseModel, table=True):
     month_week: MonthWeek | None = Field(default=None, nullable=True)
     all_day: bool = Field(default=False)
 
-    # class_id: int | None = Field(foreign_key="class.id", nullable=True, default=None)
     class_id: int | None = Field(
         sa_column=Column(Integer, ForeignKey("class.id", ondelete="CASCADE")),
         default=None,
@@ -47,7 +46,8 @@ class Schedule(BaseModel, table=True):
     reservation: Optional["Reservation"] = Relationship(back_populates="schedule")
 
     occurrences: list["Occurrence"] = Relationship(
-        back_populates="schedule", sa_relationship_kwargs={"cascade": "all, delete"}
+        back_populates="schedule",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
     logs: list[AllocationLog] = Relationship(
         sa_relationship_kwargs={

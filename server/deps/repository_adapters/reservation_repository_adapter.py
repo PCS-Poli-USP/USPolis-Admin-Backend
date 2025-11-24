@@ -13,6 +13,9 @@ from server.models.http.requests.reservation_request_models import (
 )
 from server.repositories.classroom_repository import ClassroomRepository
 from server.repositories.reservation_repository import ReservationRepository
+from server.services.security.buildings_permission_checker import (
+    BuildingPermissionChecker,
+)
 from server.services.security.classrooms_permission_checker import (
     ClassroomPermissionChecker,
 )
@@ -32,6 +35,7 @@ class ReservationRespositoryAdapter:
         self.user = user
         self.owned_building_ids = owned_building_ids
         self.checker = ClassroomPermissionChecker(user=user, session=session)
+        self.building_checker = BuildingPermissionChecker(user=user, session=session)
 
     def get_all(self) -> list[Reservation]:
         """Get all reservations for authenticated user on owned buildings"""
@@ -46,9 +50,16 @@ class ReservationRespositoryAdapter:
         )
 
     def get_by_id(self, id: int) -> Reservation:
-        reservation = ReservationRepository.get_by_id_on_buildings(
-            id=id, building_ids=self.owned_building_ids, session=self.session
-        )
+        """Get a reservation by id, checking if the user has permission to access it.
+        - If the reservation has a classroom, check if the user has permission on it.
+        - Otherwise check if the user has permission on the building.
+        """
+        reservation = ReservationRepository.get_by_id(id=id, session=self.session)
+        classroom = reservation.get_classroom()
+        if classroom:
+            self.checker.check_permission(classroom)
+        if not classroom:
+            self.building_checker.check_permission(reservation.get_building())
         return reservation
 
     def create(
@@ -78,9 +89,8 @@ class ReservationRespositoryAdapter:
             id=input.classroom_id, session=self.session
         )
         self.checker.check_permission(must_be_int(classroom.id))
-        reservation = ReservationRepository.update_on_classrooms(
+        reservation = ReservationRepository.update(
             id=id,
-            classroom_ids=self.user.classrooms_ids(),
             input=input,
             classroom=classroom,
             user=self.user,
@@ -91,9 +101,14 @@ class ReservationRespositoryAdapter:
         return reservation
 
     def delete(self, id: int) -> None:
-        ReservationRepository.delete_on_buildings(
+        reservation = ReservationRepository.get_by_id(id=id, session=self.session)
+        classroom = reservation.get_classroom()
+        if not classroom:
+            self.building_checker.check_permission(reservation.get_building())
+        if classroom:
+            self.checker.check_permission(classroom)
+        ReservationRepository.delete(
             id=id,
-            building_ids=self.owned_building_ids,
             user=self.user,
             session=self.session,
         )

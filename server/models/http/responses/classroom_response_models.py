@@ -18,15 +18,21 @@ class ClassroomResponseBase(BaseModel):
     accessibility: bool
     audiovisual: AudiovisualType
     air_conditioning: bool
+    remote: bool
+    reservable: bool
+    observation: str
     updated_at: datetime
 
     created_by_id: int
     created_by: str
     building_id: int
     building: str
+    group_ids: list[int]
+    groups: list[str]
 
     @classmethod
     def from_classroom(cls, classroom: Classroom) -> "ClassroomResponseBase":
+        classroom_groups = classroom.get_groups()
         return cls(
             id=must_be_int(classroom.id),
             name=classroom.name,
@@ -35,11 +41,16 @@ class ClassroomResponseBase(BaseModel):
             accessibility=classroom.accessibility,
             audiovisual=classroom.audiovisual,
             air_conditioning=classroom.air_conditioning,
+            observation=classroom.observation,
+            reservable=classroom.reservable,
+            remote=classroom.remote,
             updated_at=classroom.updated_at,
             created_by_id=must_be_int(classroom.created_by_id),
             created_by=classroom.created_by.name,
             building_id=must_be_int(classroom.building_id),
             building=classroom.building.name,
+            group_ids=[must_be_int(group.id) for group in classroom_groups],
+            groups=[group.name for group in classroom_groups],
         )
 
 

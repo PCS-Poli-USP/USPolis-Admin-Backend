@@ -27,6 +27,7 @@ class UserBaseFactory(BaseFactory):
         return {
             "is_admin": False,
             "group_ids": [],
+            "receive_emails": True,
         }
 
     def get_register_defaults(self) -> UserRegisterDict:
@@ -35,4 +36,5 @@ class UserBaseFactory(BaseFactory):
             "email": self.faker.email(domain="usp.br"),
             "is_admin": False,
             "group_ids": [],
+            "receive_emails": True,
         }

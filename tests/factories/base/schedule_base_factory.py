@@ -8,10 +8,18 @@ from tests.factories.base.base_factory import BaseFactory
 class ScheduleBaseFactory(BaseFactory):
     def __init__(self) -> None:
         super().__init__()
-        self.start_times = [time(i, 0) for i in range(8, 22, 2)]
-        self.end_times = [time(i, 0) for i in range(10, 24, 2)]
+        self.start_times = [time(i, 0) for i in range(8, 20, 2)]
+        self.end_times = [time(i, 0) for i in range(10, 22, 2)]
 
     def get_base_defaults(self) -> ScheduleBaseDict:
+        """
+        A default ScheduleBase is a schedule that:\n
+        - Starts and ends on the current semester
+        - The start time and end time is a random two multiple between (08:00, 10:00) - (20:00, 22:00)
+        - WEEKLY recurrence
+        - all_day False
+        - allocated False
+        """
         index = self.faker.random_int(0, len(self.start_times) - 1)
         semester = BrazilDatetime.current_semester()
         return {

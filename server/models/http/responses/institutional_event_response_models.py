@@ -6,7 +6,7 @@ from server.models.database.institutional_event_db_model import InstitutionalEve
 from server.utils.must_be_int import must_be_int
 
 
-class InstitutionalEventResponse(BaseModel):
+class InstitutionalAllocationEventResponse(BaseModel):
     id: int
     title: str
     description: str
@@ -23,7 +23,7 @@ class InstitutionalEventResponse(BaseModel):
     @classmethod
     def from_institutional_event(
         cls, event: InstitutionalEvent
-    ) -> "InstitutionalEventResponse":
+    ) -> "InstitutionalAllocationEventResponse":
         return cls(
             id=must_be_int(event.id),
             title=event.title,
@@ -42,5 +42,5 @@ class InstitutionalEventResponse(BaseModel):
     @classmethod
     def from_institutional_event_list(
         cls, events: list[InstitutionalEvent]
-    ) -> list["InstitutionalEventResponse"]:
+    ) -> list["InstitutionalAllocationEventResponse"]:
         return [cls.from_institutional_event(event) for event in events]

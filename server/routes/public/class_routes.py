@@ -12,7 +12,7 @@ from server.utils.must_be_int import must_be_int
 
 embed = Body(..., embed=True)
 
-router = APIRouter(prefix="/classes", tags=["Public", "Classes"])
+router = APIRouter(prefix="/classes", tags=["Classes"])
 
 
 @router.get("")

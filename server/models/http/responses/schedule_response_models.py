@@ -63,6 +63,12 @@ class ScheduleResponseBase(BaseModel):
             reservation=schedule.reservation.title if schedule.reservation else None,
         )
 
+    @classmethod
+    def from_schedule_list(
+        cls, schedules: list[Schedule]
+    ) -> list["ScheduleResponseBase"]:
+        return [cls.from_schedule(schedule) for schedule in schedules]
+
 
 class ScheduleResponse(ScheduleResponseBase):
     occurrence_ids: list[int] | None = None
@@ -87,7 +93,7 @@ class ScheduleResponse(ScheduleResponseBase):
         )
 
     @classmethod
-    def from_schedule_list(cls, schedules: list[Schedule]) -> list["ScheduleResponse"]:
+    def from_schedule_list(cls, schedules: list[Schedule]) -> list["ScheduleResponse"]:  # type: ignore
         schedules = sorted(
             schedules,
             key=lambda x: (x.week_day is None, x.week_day.value if x.week_day else 0),
@@ -122,7 +128,7 @@ class ScheduleFullResponse(ScheduleResponseBase):
         )
 
     @classmethod
-    def from_schedule_list(
+    def from_schedule_list(  # type: ignore
         cls, schedules: list[Schedule]
     ) -> list["ScheduleFullResponse"]:
         return [cls.from_schedule(schedule) for schedule in schedules]
