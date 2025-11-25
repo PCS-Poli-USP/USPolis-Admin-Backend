@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 
 from server.deps.authenticate import restricted_authenticate
+from server.routes.restricted.building_routes import router as BuildingRouter
 from server.routes.restricted.calendar_routes import router as CalendarRouter
 from server.routes.restricted.class_routes import router as ClassRouter
 from server.routes.restricted.reservation_routes import router as ReservationRouter
@@ -28,6 +29,7 @@ from server.routes.restricted.allocation_log_routes import (
 
 router = APIRouter(dependencies=[Depends(restricted_authenticate)], tags=["Restricted"])
 
+router.include_router(BuildingRouter)
 router.include_router(ClassroomRouter)
 router.include_router(SubjectRouter)
 router.include_router(HolidayCateryRouter)
