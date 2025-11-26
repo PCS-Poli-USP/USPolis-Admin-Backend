@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from server.utils.enums.week_day import WeekDay
 
 class OccupanceReportsResponse(BaseModel):
-    week_day: WeekDay
+    week_day: WeekDay | None
     classroom: str
     capacity: int
     classes: list[str]
