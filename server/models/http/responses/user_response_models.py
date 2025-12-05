@@ -20,48 +20,6 @@ class UserInfo(BaseModel):
     email_verified: bool
 
 
-class UserResponse(BaseModel):
-    id: int
-    email: str
-    is_admin: bool
-    receive_emails: bool
-    name: str
-    picture_url: str | None = None
-    updated_at: datetime
-    last_visited: datetime
-    user_info: UserInfo | None = None
-    created_by: str | None = None
-    buildings: list[BuildingResponse] | None = None
-    solicitations: list[SolicitationResponse]
-    groups: list["UserGroupResponse"]
-
-    @classmethod
-    def from_user(cls, user: User) -> "UserResponse":
-        return cls(
-            id=must_be_int(user.id),
-            email=user.email,
-            is_admin=user.is_admin,
-            receive_emails=user.receive_emails,
-            name=user.name,
-            created_by=user.created_by.name if user.created_by else None,
-            buildings=[
-                BuildingResponse.from_building(building) for building in user.buildings
-            ]
-            if user.buildings
-            else None,
-            solicitations=SolicitationResponse.from_solicitation_list(
-                user.solicitations
-            ),
-            updated_at=user.updated_at,
-            last_visited=user.last_visited,
-            groups=UserGroupResponse.from_group_list(user.groups),
-        )
-
-    @classmethod
-    def from_user_list(cls, users: list[User]) -> list["UserResponse"]:
-        return [cls.from_user(user) for user in users]
-
-
 class UserGroupResponse(BaseModel):
     id: int
     name: str
@@ -95,3 +53,77 @@ class UserGroupResponse(BaseModel):
     @classmethod
     def from_group_list(cls, groups: list[Group]) -> list["UserGroupResponse"]:
         return [cls.from_group(group) for group in groups]
+
+
+class UseCoreResponse(BaseModel):
+    id: int
+    email: str
+    is_admin: bool
+    receive_emails: bool
+    name: str
+    picture_url: str | None = None
+    updated_at: datetime
+    last_visited: datetime
+    user_info: UserInfo | None = None
+    created_by: str | None = None
+
+    building_names: list[str] = []
+    building_ids: list[int] = []
+
+    group_names: list[str] = []
+    group_ids: list[int] = []
+
+    @classmethod
+    def core_from_user(cls, user: User) -> "UseCoreResponse":
+        return cls(
+            id=must_be_int(user.id),
+            email=user.email,
+            is_admin=user.is_admin,
+            receive_emails=user.receive_emails,
+            name=user.name,
+            picture_url=user.picture_url,
+            updated_at=user.updated_at,
+            last_visited=user.last_visited,
+            created_by=user.created_by.name if user.created_by else None,
+            building_ids=[must_be_int(building.id) for building in user.buildings]
+            if user.buildings
+            else [],
+            building_names=[building.name for building in user.buildings]
+            if user.buildings
+            else [],
+            group_ids=[must_be_int(group.id) for group in user.groups]
+            if user.groups
+            else [],
+            group_names=[group.name for group in user.groups] if user.groups else [],
+        )
+
+    @classmethod
+    def core_from_user_list(cls, users: list[User]) -> list["UseCoreResponse"]:
+        return [cls.core_from_user(user) for user in users]
+
+
+class UserResponse(UseCoreResponse):
+    buildings: list[BuildingResponse] | None = None
+    solicitations: list[SolicitationResponse]
+    groups: list["UserGroupResponse"]
+
+    @classmethod
+    def from_user(cls, user: User) -> "UserResponse":
+        core = UseCoreResponse.core_from_user(user)
+
+        return cls(
+            **core.model_dump(),
+            buildings=[
+                BuildingResponse.from_building(building) for building in user.buildings
+            ]
+            if user.buildings
+            else None,
+            solicitations=SolicitationResponse.from_solicitation_list(
+                user.solicitations
+            ),
+            groups=UserGroupResponse.from_group_list(user.groups),
+        )
+
+    @classmethod
+    def from_user_list(cls, users: list[User]) -> list["UserResponse"]:
+        return [cls.from_user(user) for user in users]
