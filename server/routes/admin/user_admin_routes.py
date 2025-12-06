@@ -4,7 +4,10 @@ from fastapi.responses import JSONResponse
 from server.deps.authenticate import UserDep
 from server.deps.session_dep import SessionDep
 from server.models.http.requests.user_request_models import UserRegister, UserUpdate
-from server.models.http.responses.user_response_models import UserResponse
+from server.models.http.responses.user_response_models import (
+    UseCoreResponse,
+    UserResponse,
+)
 from server.repositories.user_repository import UserRepository
 
 embed = Body(..., embed=True)
@@ -13,10 +16,10 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @router.get("", response_model_by_alias=False)
-def get_users(session: SessionDep) -> list[UserResponse]:
+def get_users(session: SessionDep) -> list[UseCoreResponse]:
     """Get all users"""
     users = UserRepository.get_all(session=session)
-    return UserResponse.from_user_list(users)
+    return UseCoreResponse.core_from_user_list(users)
 
 
 @router.post("")
@@ -61,7 +64,7 @@ def delete_user(
     """Delete a user by id"""
     if current_user.id == user_id:
         raise HTTPException(400, "Não pode remover seu próprio usuário")
-    
+
     UserRepository.delete(user_id=user_id, session=session)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
