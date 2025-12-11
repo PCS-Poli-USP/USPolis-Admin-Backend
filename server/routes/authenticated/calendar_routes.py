@@ -11,6 +11,12 @@ router = APIRouter(prefix="/calendars", tags=["Calendars"])
 
 
 @router.get("")
+def get_all_calendars_from_now(session: SessionDep) -> list[CalendarResponse]:
+    """Get all calendars from now, that is, the current year and the next ones"""
+    calendars = CalendarRepository.get_all_from_now(session=session)
+    return CalendarResponse.from_calendar_list(calendars)
+
+@router.get("/year/{year}")
 def get_all_calendars_on_year(
     session: SessionDep, year: int = date.today().year
 ) -> list[CalendarResponse]:
