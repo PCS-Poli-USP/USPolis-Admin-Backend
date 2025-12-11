@@ -26,3 +26,15 @@ class AuthUserInfo(BaseModel):
             given_name=info["given_name"],
             family_name=info.get("family_name", ""),
         )
+
+    @staticmethod
+    def monitor_auth_info() -> "AuthUserInfo":
+        return AuthUserInfo(
+            email="uspolis@usp.br",
+            email_verified=True,
+            picture="https://lh3.googleusercontent.com/a/ACg8ocJqVUye4OtOD_elvMw-AqIsLsAjiCbluauxKF2Hk2zxvAwKsA=s288-c-mo-no",
+            domain="usp.br",
+            name="USPolis Monitor",
+            given_name="USPolis",
+            family_name="Monitor",
+        )

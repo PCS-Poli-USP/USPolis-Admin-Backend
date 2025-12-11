@@ -2,6 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from server.deps.interval_dep import QueryInterval
 from server.models.database.classroom_db_model import (
     Classroom,
 )
@@ -77,17 +78,25 @@ class ClassroomFullResponse(ClassroomResponseBase):
     schedules: list[ScheduleFullResponse]
 
     @classmethod
-    def from_classroom(cls, classroom: Classroom) -> "ClassroomFullResponse":
+    def from_classroom(
+        cls, classroom: Classroom, interval: QueryInterval = QueryInterval()
+    ) -> "ClassroomFullResponse":
         base = ClassroomResponseBase.from_classroom(classroom)
+        schedules = [
+            schedule
+            for schedule in classroom.schedules
+            if schedule.is_in_interval(interval)
+        ]
         return cls(
             **base.model_dump(),
-            schedules=ScheduleFullResponse.from_schedule_list(classroom.schedules),
+            schedules=ScheduleFullResponse.from_schedule_list(schedules),
         )
 
     @classmethod
     def from_classroom_list(
-        cls, classrooms: list[Classroom]
+        cls, classrooms: list[Classroom], interval: QueryInterval = QueryInterval()
     ) -> list["ClassroomFullResponse"]:
         return [
-            ClassroomFullResponse.from_classroom(classroom) for classroom in classrooms
+            ClassroomFullResponse.from_classroom(classroom, interval=interval)
+            for classroom in classrooms
         ]
