@@ -28,7 +28,7 @@ router.include_router(MeetingRouter)
 async def get_all_reservations(
     session: SessionDep, interval: QueryIntervalDep
 ) -> list[ReservationResponse]:
-    """Get all reservations on user buildings"""
+    """Get all reservations"""
     reservations = ReservationRepository.get_all(session=session, interval=interval)
     return ReservationResponse.from_reservation_list(reservations)
 

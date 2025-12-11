@@ -1,5 +1,7 @@
 from fastapi import HTTPException, status
-from sqlmodel import Session, col, select
+from sqlmodel import Session, col, select, desc
+from datetime import date
+
 from server.models.database.calendar_db_model import Calendar
 from server.models.database.holiday_category_db_model import HolidayCategory
 from server.models.database.user_db_model import User
@@ -21,6 +23,17 @@ class CalendarRepository:
     def get_all_on_year(*, session: Session, year: int) -> list[Calendar]:
         statement = (
             select(Calendar).where(col(Calendar.year) == year).order_by(Calendar.name)
+        )
+        calendars = session.exec(statement).all()
+        return list(calendars)
+
+    @staticmethod
+    def get_all_from_now(*, session: Session) -> list[Calendar]:
+        current_year = date.today().year
+        statement = (
+            select(Calendar)
+            .where(col(Calendar.year) >= current_year)
+            .order_by(desc(Calendar.year), Calendar.name)
         )
         calendars = session.exec(statement).all()
         return list(calendars)
