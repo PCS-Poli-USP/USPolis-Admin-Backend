@@ -20,7 +20,7 @@ class BugReportRegister(BaseModel):
         priority: BugPriority = Form(...),
         type: BugType = Form(...),
         description: str = Form(...),
-        evidences: list[UploadFile] = File(None),
+        evidences: list[UploadFile] = File(default_factory=list),
     ) -> "BugReportRegister":
         for img in evidences:
             if img.content_type not in VALID_IMG_MIME_TYPE:
