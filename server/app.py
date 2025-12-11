@@ -29,6 +29,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_api_route("/health", lambda: {"status": "ok"}, methods=["GET"])
+
 app.add_middleware(LoggerMiddleware)
 
 app.include_router(PublicRouter)
