@@ -117,6 +117,19 @@ class OccurrenceRepository:
         return list(occurrences)
 
     @staticmethod
+    def get_all_on_interval_for_now(
+        classroom_id: int, session: Session
+    ) -> list[Occurrence]:
+        """Get all occurrences from now for specified classroom"""
+        today = date.today()
+        statement = select(Occurrence).where(
+            Occurrence.date >= today,
+            Occurrence.classroom_id == classroom_id,
+        )
+        occurrences = session.exec(statement).all()
+        return list(occurrences)
+
+    @staticmethod
     def allocate_occurrence(
         occurrence: Occurrence, classroom: Classroom, session: Session
     ) -> None:

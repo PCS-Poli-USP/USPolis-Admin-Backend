@@ -81,13 +81,15 @@ class OccurrenceConflictSpecification(BaseModel):
 class ClassroomConflictsSpecification(BaseModel):
     id: int
     name: str
-    conflicts: dict[str, list]
+    total_classroom_conflicts: int
+    conflicts: dict[str, list[list[OccurrenceConflictSpecification]]]
 
 
 class BuildingConflictSpecification(BaseModel):
     id: int
     name: str
-    conflicts: list
+    total_conflicts: int
+    conflicts: list[ClassroomConflictsSpecification]
 
 
 class ConflictParams(BaseModel):
@@ -266,66 +268,89 @@ class ConflictChecker:
 
         return classrooms_with_conflicts
 
-    def specificate_conflicts_for_allowed_classrooms(
-        self, start: date, end: date, type: ConflictType
-    ) -> list[BuildingConflictSpecification]:
-        classrooms_by_building = self.user.classrooms_by_buildings(session=self.session)
-        result: list[BuildingConflictSpecification] = []
-        for building, classrooms in classrooms_by_building.items():
-            if not classrooms:
-                continue
-            on_building_result = BuildingConflictSpecification(
-                id=must_be_int(building.id), name=building.name, conflicts=[]
-            )
-            for classroom in classrooms:
-                if classroom.remote:
-                    continue
-                conflicts = self.calculate_conflicts_for_allowed_classroom(
-                    classroom=classroom,
-                    start=start,
-                    end=end,
-                    type=type,
-                )
-                classroom_conflicts: dict[str, list] = defaultdict(list)
-                for conflict in conflicts:
-                    conflict_specs: list[OccurrenceConflictSpecification] = []
-                    for occurrence in conflict:
-                        conflict_specification = (
-                            OccurrenceConflictSpecification.from_occurrence(occurrence)
-                        )
-                        conflict_specs.append(conflict_specification)
-                    for conflict_spec in conflict_specs:
-                        identifier = "N/A"
-                        if (
-                            conflict_spec.subject_code is not None
-                            and conflict_spec.class_code is not None
-                        ):
-                            identifier = (
-                                conflict_spec.subject_code
-                                + " - "
-                                + conflict_spec.class_code
-                            )
-                        if conflict_spec.reservation_title is not None:
-                            identifier = conflict_spec.reservation_title
-                        classroom_conflicts[identifier].append(conflict_specs)
+    def specificate_conflicts_for_allowed_classrooms_in_building(
+        self,
+        building_id: int,
+        type: ConflictType,
+        start: date | None,
+        end: date | None,
+    ) -> BuildingConflictSpecification:
+        building = self.building_repository.get_by_id(building_id)
+        classrooms = self.user.classrooms_by_building(building, self.session)
 
-                if classroom_conflicts:
-                    on_building_result.conflicts.append(
-                        ClassroomConflictsSpecification(
-                            id=must_be_int(classroom.id),
-                            name=classroom.name,
-                            conflicts=classroom_conflicts,
-                        )
+        if not classrooms:
+            return BuildingConflictSpecification(
+                id=must_be_int(building.id),
+                name=building.name,
+                conflicts=[],
+                total_conflicts=0,
+            )
+
+        on_building_result = BuildingConflictSpecification(
+            id=must_be_int(building.id),
+            name=building.name,
+            conflicts=[],
+            total_conflicts=0,
+        )
+
+        for classroom in classrooms:
+            if classroom.remote:
+                continue
+            conflicts = self.calculate_conflicts_for_allowed_classroom(
+                classroom=classroom,
+                type=type,
+                start=start,
+                end=end,
+            )
+            classroom_conflicts: dict[
+                str, list[list[OccurrenceConflictSpecification]]
+            ] = defaultdict(list)
+            for conflict in conflicts:
+                on_building_result.total_conflicts += len(conflict)
+                conflict_specs: list[OccurrenceConflictSpecification] = []
+                for occurrence in conflict:
+                    conflict_specification = (
+                        OccurrenceConflictSpecification.from_occurrence(occurrence)
                     )
-            result.append(on_building_result)
-        return result
+                    conflict_specs.append(conflict_specification)
+                for conflict_spec in conflict_specs:
+                    identifier = "N/A"
+                    if (
+                        conflict_spec.subject_code is not None
+                        and conflict_spec.class_code is not None
+                    ):
+                        identifier = (
+                            conflict_spec.subject_code
+                            + " - "
+                            + conflict_spec.class_code
+                        )
+                    if conflict_spec.reservation_title is not None:
+                        identifier = conflict_spec.reservation_title
+                    classroom_conflicts[identifier].append(conflict_specs)
+
+            if classroom_conflicts:
+                on_building_result.conflicts.append(
+                    ClassroomConflictsSpecification(
+                        id=must_be_int(classroom.id),
+                        name=classroom.name,
+                        conflicts=classroom_conflicts,
+                        total_classroom_conflicts=sum(
+                            len(v) for v in classroom_conflicts.values()
+                        ),
+                    )
+                )
+
+        on_building_result.conflicts.sort(
+            key=lambda x: x.total_classroom_conflicts, reverse=True
+        )
+        return on_building_result
 
     def calculate_conflicts_for_allowed_classroom(
         self,
         classroom: Classroom,
-        start: date,
-        end: date,
         type: ConflictType,
+        start: date | None,
+        end: date | None,
     ) -> list[Group]:
         if type == ConflictType.INTENTIONAL:
             return self.__intentional_conflicts_for_classroom(classroom, start, end)
@@ -334,40 +359,57 @@ class ConflictChecker:
     def __get_classroom_occurrences_by_range(
         self,
         classroom_id: int,
-        start_date: date,
-        end_date: date,
+        start_date: date | None,
+        end_date: date | None,
     ) -> list[Occurrence]:
-        occurrences = OccurrenceRepository.get_all_on_interval_for_classroom(
+        if not start_date or not end_date:
+            return OccurrenceRepository.get_all_on_interval_for_now(
+                classroom_id=classroom_id,
+                session=self.session,
+            )
+        return OccurrenceRepository.get_all_on_interval_for_classroom(
             classroom_id=classroom_id,
             start=start_date,
             end=end_date,
             session=self.session,
         )
-        return occurrences
 
     def __get_intentional_conflicts_for_classroom(
         self,
         classroom: Classroom,
-        start: date,
-        end: date,
+        start: date | None,
+        end: date | None,
     ) -> list[IntentionalConflict]:
-        intentional = IntentionalConflictRepository.get_all_on_classroom_by_range(
+        if not start or not end:
+            return IntentionalConflictRepository.get_all_on_classroom_from_now(
+                classroom_id=must_be_int(classroom.id),
+                session=self.session,
+            )
+        return IntentionalConflictRepository.get_all_on_classroom_by_range(
             classroom_id=must_be_int(classroom.id),
             start=start,
             end=end,
             session=self.session,
         )
-        return intentional
 
     def __get_intentional_pairs_for_classroom(
-        self, classroom: Classroom, start: date, end: date
+        self, classroom: Classroom, start: date | None, end: date | None
     ) -> set[tuple[Occurrence, Occurrence]]:
-        intentional = IntentionalConflictRepository.get_all_on_classroom_by_range(
-            classroom_id=must_be_int(classroom.id),
-            start=start,
-            end=end,
-            session=self.session,
-        )
+        intentional: list[IntentionalConflict] = []
+        if not start or not end:
+            intentional = IntentionalConflictRepository.get_all_on_classroom_from_now(
+                classroom_id=must_be_int(classroom.id),
+                session=self.session,
+            )
+
+        if start and end:
+            intentional = IntentionalConflictRepository.get_all_on_classroom_by_range(
+                classroom_id=must_be_int(classroom.id),
+                start=start,
+                end=end,
+                session=self.session,
+            )
+
         intentional_pairs = set(
             [(i.first_occurrence, i.second_occurrence) for i in intentional]
         )
@@ -376,8 +418,8 @@ class ConflictChecker:
     def __unintentional_conflicts_for_classroom(
         self,
         classroom: Classroom,
-        start: date,
-        end: date,
+        start: date | None,
+        end: date | None,
     ) -> list[Group]:
         occurrences = self.__get_classroom_occurrences_by_range(
             must_be_int(classroom.id), start, end
@@ -394,8 +436,8 @@ class ConflictChecker:
     def __intentional_conflicts_for_classroom(
         self,
         classroom: Classroom,
-        start: date,
-        end: date,
+        start: date | None,
+        end: date | None,
     ) -> list[Group]:
         intentional = self.__get_intentional_conflicts_for_classroom(
             classroom, start, end
