@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from server.deps.authenticate import public_authenticate
 from server.routes.public.forum_routes import router as ForumRouter
 from server.routes.public.mobile_classes_routes import router as MobileClassRouter
 from server.routes.public.mobile_institutional_events_routes import (
@@ -18,7 +19,7 @@ from server.routes.public.allocation_routes import router as AllocationRouter
 from server.routes.public.auth_routes import router as AuthRouter
 
 
-router = APIRouter(tags=["Public"])
+router = APIRouter(tags=["Public"], dependencies=[Depends(public_authenticate)])
 
 router.include_router(ForumRouter)
 router.include_router(MobileClassRouter)

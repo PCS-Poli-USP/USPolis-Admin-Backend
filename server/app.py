@@ -11,6 +11,8 @@ from server.routes.admin import cookie_router as AdminCookieRouter
 from server.routes.public import router as PublicRouter
 from server.routes.authenticated import router as AuthenticatedRouter
 from server.routes.restricted import router as RestrictedRouter
+from server.routes.health import router as HealthRouter
+
 
 from server.config import CONFIG
 
@@ -30,10 +32,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_api_route("/health", lambda: {"status": "ok"}, methods=["GET"])
 
 app.add_middleware(LoggerMiddleware)
 
+app.include_router(HealthRouter)
 app.include_router(PublicRouter)
 app.include_router(AuthenticatedRouter)
 app.include_router(RestrictedRouter)
