@@ -19,8 +19,8 @@ from server.config import CONFIG
 app = FastAPI(
     title="USPolis Server",
     version="2.0.0",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
+    docs_url="/docs",
+    redoc_url="/redoc",
     openapi_url="/api/openapi.json",
 )
 
