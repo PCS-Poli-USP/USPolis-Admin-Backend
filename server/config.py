@@ -63,6 +63,9 @@ class Settings(BaseModel):
         cast=Csv(),
     )  # pyright: ignore[reportAssignmentType]
 
+    # Monitoring and Analytics Services
+    health_api_key: str = config("HEALTH_API_KEY")  # pyright: ignore[reportAssignmentType]
+
     # Testing / Development:
     test_db_uri: str = config("TEST_DATABASE_URI", default="")  # pyright: ignore[reportAssignmentType]
     test_db_database: str = config("TEST_DATABASE_NAME", default="")  # pyright: ignore[reportAssignmentType]
