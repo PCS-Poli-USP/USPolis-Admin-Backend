@@ -65,7 +65,6 @@ class Settings(BaseModel):
 
     # Monitoring and Analytics Services
     health_api_key: str = config("HEALTH_API_KEY")  # pyright: ignore[reportAssignmentType]
-    loki_endpoint: str = config("LOKI_ENDPOINT", default="")  # pyright: ignore[reportAssignmentType]
 
     # Testing / Development:
     test_db_uri: str = config("TEST_DATABASE_URI", default="")  # pyright: ignore[reportAssignmentType]
