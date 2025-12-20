@@ -1,8 +1,11 @@
+import secrets
+
 from typing import Annotated
 
 from fastapi import Depends, Header, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from server.config import CONFIG
 from server.deps.session_dep import SessionDep
 from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
@@ -20,6 +23,14 @@ from server.services.auth.authentication_client import (
 security = HTTPBearer(auto_error=False)
 
 
+def health_authenticate(x_api_key: str = Header(...)) -> None:
+    if not secrets.compare_digest(x_api_key, CONFIG.health_api_key):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid API Key",
+        )
+
+
 def google_authenticate(
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> AuthUserInfo:
@@ -27,6 +38,20 @@ def google_authenticate(
         raise InvalidToken()
     access_token = credentials.credentials
     return AuthenticationClient.get_user_info(access_token)
+
+
+def public_authenticate(
+    request: Request,
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+) -> None:
+    """Authenticate public routes, but do not raise if no credentials are provided."""
+    if credentials is not None and credentials.credentials:
+        access_token = credentials.credentials
+        try:
+            user_info = AuthenticationClient.get_user_info(access_token)
+            request.state.user_info = user_info
+        except Exception:
+            pass
 
 
 def authenticate(
