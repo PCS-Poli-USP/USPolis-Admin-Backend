@@ -61,7 +61,6 @@ class LoggerMessage(BaseModel):
     host: str | None = None
     type: str = "Request"
     user_email: str | None = None
-    user_name: str | None = None
     status_code: int | None = None
     duration: float | None = None
     detail: str | None = None
@@ -81,7 +80,6 @@ class LoggerMessage(BaseModel):
             f'path="{short_url}" '
             f'status="{self.status_code if self.status_code is not None else "N/A"}" '
             f'duration="{duration_str}" '  # Usa a string pré-formatada
-            f'user="{self.user_name if self.user_name is not None else "N/A"}" '
             f'email="{self.user_email if self.user_email is not None else "N/A"}" '
             f'detail="{self.detail if self.detail is not None else "N/A"}" '
             f'body="{self.body if self.body is not None else "N/A"}"'
@@ -151,7 +149,6 @@ class LoggerMiddleware(BaseHTTPMiddleware):
         if not user_info:
             return
         message.user_email = user_info.email
-        message.user_name = user_info.name
 
     def write_log(self, message: LoggerMessage) -> None:
         logger.info(str(message))
@@ -216,7 +213,6 @@ class LoggerMiddleware(BaseHTTPMiddleware):
                     "path": path,
                     "status_code": response.status_code,
                     "duration": process_time * 1000,  # ms
-                    "user": user_info.name if user_info else "N/A",
                     "email": user_info.email if user_info else "N/A",
                 },
             )
