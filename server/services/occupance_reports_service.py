@@ -5,14 +5,17 @@ from server.deps.interval_dep import QueryInterval
 from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.week_day import WeekDay
 
-from datetime import time
+from datetime import time, date
 
 class OccupanceReportsService:
     @staticmethod
-    def get_occupance_reports(session, building_id: int):
+    def get_occupance_reports(session, building_id: int, start_date: date | None, end_date: date | None):
         occupance_reports = []
 
-        interval = QueryInterval()
+        interval = QueryInterval(
+            start=start_date,
+            end=end_date,
+        )
 
         classrooms = ClassroomRepository.get_all_on_buildings(building_ids = [building_id], session = session)
         classroom_ids = [c.id for c in classrooms if isinstance(c.id, int)] #excluir caso do Unknown (if c.id is not None deixa de lado o Unknown)
@@ -47,7 +50,8 @@ class OccupanceReportsService:
                     "start_time": start,
                     "end_time": end,
                     "students": total_students,
-                    "percentage": percentage_occupance
+                    "percentage": percentage_occupance,
+                    "class_id": [c.id for c in class_list],
                     })
 
         return occupance_reports

@@ -12,3 +12,4 @@ class OccupanceReportsResponse(BaseModel):
     end_time: time
     students: int
     percentage: float
+    class_id: list[int]
