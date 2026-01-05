@@ -20,6 +20,7 @@ class OccuppanceReportDict(TypedDict):
     end_time: time
     students: int
     percentage: float
+    class_id: list[int | None]
 
 
 class OccupanceReportsService:
