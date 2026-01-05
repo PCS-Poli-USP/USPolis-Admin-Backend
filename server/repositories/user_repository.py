@@ -46,7 +46,7 @@ class UserRepository:
     def get_all(*, session: Session) -> list[User]:
         statement = select(User).options(
             selectinload(User.buildings),  # type: ignore
-            selectinload(User.groups).selectinload(Group.building),  # type: ignore
+            selectinload(User.groups),  # type: ignore
         )
         users = session.exec(statement).all()
         return list(users)

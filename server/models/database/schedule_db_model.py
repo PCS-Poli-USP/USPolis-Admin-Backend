@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Optional
 from sqlalchemy import Column, ForeignKey, Integer
 from sqlmodel import Field, Relationship, desc
 
+from server.deps.interval_dep import QueryInterval
 from server.models.database.base_db_model import BaseModel
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.allocation_log_db_model import AllocationLog
@@ -55,3 +56,11 @@ class Schedule(BaseModel, table=True):
             "order_by": lambda: desc(AllocationLog.modified_at),
         },
     )
+
+    def is_in_interval(self, interval: QueryInterval) -> bool:
+        """Check if the schedule is in the given date interval"""
+        if interval.start and interval.end:
+            return self.start_date <= interval.end and self.end_date >= interval.start
+        if interval.today:
+            return interval.today <= self.end_date
+        return False

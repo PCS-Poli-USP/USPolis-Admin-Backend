@@ -2,13 +2,14 @@ from fastapi import APIRouter, Body
 
 from server.deps.pagination_dep import PaginationDep
 from server.deps.session_dep import SessionDep
-from server.deps.interval_dep import QueryIntervalDep
+from server.deps.interval_dep import QueryInterval, QueryIntervalDep
 from server.models.http.responses.classroom_response_models import (
     ClassroomResponse,
     ClassroomFullResponse,
 )
 from server.models.http.responses.paginated_response_models import PaginatedResponse
 from server.repositories.classroom_repository import ClassroomRepository
+from server.utils.brazil_datetime import BrazilDatetime
 
 embed = Body(..., embed=True)
 
@@ -45,8 +46,11 @@ async def get_all_classrooms_paginated(
 @router.get("/full/")
 async def get_all_classrooms_full(
     session: SessionDep,
-    interval: QueryIntervalDep,
+    interval: QueryIntervalDep = QueryInterval(
+        start=BrazilDatetime.current_semester()[0],
+        end=BrazilDatetime.current_semester()[1],
+    ),
 ) -> list[ClassroomFullResponse]:
     """Get all classrooms with schedules and occurrences"""
     classrooms = ClassroomRepository.get_all(session=session)
-    return ClassroomFullResponse.from_classroom_list(classrooms)
+    return ClassroomFullResponse.from_classroom_list(classrooms, interval=interval)

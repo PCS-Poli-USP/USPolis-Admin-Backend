@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status
-from sqlmodel import Session, col, select
+from sqlmodel import Session, col, select, desc
 from sqlalchemy.exc import NoResultFound
 
 from server.models.database.holiday_category_db_model import HolidayCategory
@@ -14,7 +14,9 @@ from server.utils.must_be_int import must_be_int
 class HolidayCategoryRepository:
     @staticmethod
     def get_all(*, session: Session) -> list[HolidayCategory]:
-        statement = select(HolidayCategory)
+        statement = select(HolidayCategory).order_by(
+            desc(HolidayCategory.year), HolidayCategory.name
+        )
         holidays_categories = session.exec(statement).all()
         return list(holidays_categories)
 

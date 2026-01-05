@@ -8,10 +8,10 @@ log_dir = current_dir.parent.parent.parent / "logs"
 log_dir.mkdir(parents=True, exist_ok=True)
 log_file = log_dir / "api.log"
 
-logger = logging.getLogger()
+logger = logging.getLogger("app_logger")
 logger.setLevel(logging.INFO)
 formatter = logging.Formatter(
-    fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    fmt="[%(asctime)s] %(levelname)s %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
@@ -29,3 +29,21 @@ if not logger.hasHandlers():
     if CONFIG.debug:
         logger.addHandler(stream_handler)
     logger.addHandler(size_handler)
+
+# LOKI LOGGER
+loki_log_file = log_dir / "loki-access-api.log"
+loki_access_logger = logging.getLogger("loki_access")
+loki_access_logger.setLevel(logging.INFO)
+loki_access_logger.propagate = False 
+
+# Handler que envia para o arquivo (rotaciona a cada 10MB)
+loki_file_handler = RotatingFileHandler(loki_log_file, maxBytes=10485760, backupCount=5)
+
+# Formato do log: [Data] [Nível] [IP] [Método] [Path] [Status]
+loki_formatter = logging.Formatter(
+    '[%(asctime)s] %(levelname)s client_ip="%(client_ip)s" method="%(method)s" path="%(path)s" status="%(status_code)s" duration="%(duration).3f" email="%(email)s"',
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+loki_file_handler.setFormatter(loki_formatter)
+if not loki_access_logger.hasHandlers():
+    loki_access_logger.addHandler(loki_file_handler)

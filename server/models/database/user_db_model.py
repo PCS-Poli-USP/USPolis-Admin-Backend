@@ -123,6 +123,26 @@ class User(BaseModel, table=True):
         """
         return list(self.group_ids_set())
 
+    def classrooms_by_building(
+        self, building: "Building", session: Session
+    ) -> list["Classroom"]:
+        """
+        Get a list of classrooms that the user has access to at given building.
+
+        Returns:
+            list[Classroom]: A list of classrooms.
+        """
+
+        if self.is_admin:
+            return building.classrooms
+
+        classrooms_ids = self.classrooms_ids_set()
+        return [
+            classroom
+            for classroom in building.classrooms
+            if classroom.id in classrooms_ids
+        ]
+
     def classrooms_by_buildings(
         self, session: Session
     ) -> dict["Building", list["Classroom"]]:

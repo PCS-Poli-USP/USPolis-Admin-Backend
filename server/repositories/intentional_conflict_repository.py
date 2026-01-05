@@ -99,6 +99,34 @@ class IntentionalConflictRepository:
         conflicts = session.exec(statement).all()
         return list(conflicts)
 
+    @staticmethod
+    def get_all_on_classroom_from_now(
+        classroom_id: int,
+        session: Session,
+    ) -> list[IntentionalConflict]:
+        Occurrence1 = aliased(Occurrence)
+        Occurrence2 = aliased(Occurrence)
+        today = date.today()
+        statement = (
+            select(IntentionalConflict)
+            .join(
+                Occurrence1,
+                col(IntentionalConflict.first_occurrence_id) == Occurrence1.id,
+            )
+            .join(
+                Occurrence2,
+                col(IntentionalConflict.second_occurrence_id) == Occurrence2.id,
+            )
+            .where(
+                Occurrence1.classroom_id == Occurrence2.classroom_id,
+                Occurrence1.classroom_id == classroom_id,
+                Occurrence1.date == Occurrence2.date,
+                Occurrence1.date >= today,
+            )
+        )
+        conflicts = session.exec(statement).all()
+        return list(conflicts)
+
 
 class IntentionalConflictSameOccurrence(HTTPException):
     """Exception raised when trying to create an intentional conflict with the same occurrence."""
