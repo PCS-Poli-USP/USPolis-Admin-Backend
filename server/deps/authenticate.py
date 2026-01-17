@@ -43,15 +43,21 @@ def google_authenticate(
 def public_authenticate(
     request: Request,
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-) -> None:
-    """Authenticate public routes, but do not raise if no credentials are provided."""
+    session: SessionDep,
+) -> User | None:
+    """Authenticate public routes, but do not raise if no credentials are provided, just return None."""
     if credentials is not None and credentials.credentials:
         access_token = credentials.credentials
         try:
             user_info = AuthenticationClient.get_user_info(access_token)
             request.state.user_info = user_info
+            user = UserRepository.get_from_auth(user_info=user_info, session=session)
+            request.state.current_user = user
+            return user
         except Exception:
             pass
+
+    return None
 
 
 def authenticate(
@@ -160,4 +166,5 @@ class RestrictedAccessRequired(HTTPException):
 # exports:
 GoogleAuthenticate = Annotated[AuthUserInfo, Depends(google_authenticate)]
 UserDep = Annotated[User, Depends(authenticate)]
+OptionalUserDep = Annotated[User | None, Depends(public_authenticate)]
 BuildingDep = Annotated[Building, Depends(building_authenticate)]
