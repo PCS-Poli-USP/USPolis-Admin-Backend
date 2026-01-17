@@ -8,7 +8,9 @@ from server.deps.interval_dep import QueryInterval
 from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.week_day import WeekDay
 
-from datetime import time
+from datetime import time, date
+
+from server.utils.must_be_int import must_be_int
 
 
 class OccuppanceReportDict(TypedDict):
@@ -20,23 +22,22 @@ class OccuppanceReportDict(TypedDict):
     end_time: time
     students: int
     percentage: float
+    class_id: list[int | None]
 
 
 class OccupanceReportsService:
     @staticmethod
     def get_occupance_reports(
-        session: Session, building_id: int
+        session: Session, building_id: int, interval: QueryInterval
     ) -> list[OccuppanceReportDict]:
         occupance_reports: list[OccuppanceReportDict] = []
-
-        interval = QueryInterval()
 
         classrooms = ClassroomRepository.get_all_on_buildings(
             building_ids=[building_id], session=session
         )
         classroom_ids = [
-            c.id for c in classrooms if isinstance(c.id, int)
-        ]  # excluir caso do Unknown (if c.id is not None deixa de lado o Unknown)
+            must_be_int(c.id) for c in classrooms
+        ]# excluir caso do Unknown (if c.id is not None deixa de lado o Unknown)
         classes = ClassRepository.get_all_on_classrooms(
             classroom_ids=classroom_ids, session=session, interval=interval
         )
@@ -89,6 +90,7 @@ class OccupanceReportsService:
                         "end_time": end,
                         "students": total_students,
                         "percentage": percentage_occupance,
+                        "class_id": [c.id for c in class_list],
                     }
                 )
 

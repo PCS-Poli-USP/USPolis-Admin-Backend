@@ -14,6 +14,7 @@ class OccupanceReportsResponse(BaseModel):
     end_time: time
     students: int
     percentage: float
+    class_id: list[int | None]
 
     @classmethod
     def from_dict(cls, value: OccuppanceReportDict) -> "OccupanceReportsResponse":
