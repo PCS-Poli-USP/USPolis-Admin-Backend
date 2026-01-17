@@ -28,7 +28,7 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("class_id", sa.Integer(), nullable=False),
         sa.Column("subject_id", sa.Integer(), nullable=False),
-        sa.Column("content", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("content", sqlmodel.sql.sqltypes.AutoString(), nullable=True),  # pyright: ignore[reportAttributeAccessIssue]
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("report_count", sa.Integer(), nullable=False),
