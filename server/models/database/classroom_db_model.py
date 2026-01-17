@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from server.models.database.user_db_model import User
     from server.models.database.group_db_model import Group
     from server.models.database.solicitation_db_model import Solicitation
+    from server.models.database.classroom_permission_db_model import ClassroomPermission
 
 
 class ClassroomBase(BaseModel):
@@ -29,8 +30,12 @@ class ClassroomBase(BaseModel):
         sa_column=Column(Enum(AudiovisualType), nullable=False)
     )
     air_conditioning: bool = False
+
     reservable: bool = Field(default=True)
-    remote: bool = Field(default=True)
+    remote: bool = Field(default=False)
+    restricted: bool = Field(default=False)
+    laboratory: bool = Field(default=False)
+
     observation: str = Field(default="")
     updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
 
@@ -55,6 +60,8 @@ class Classroom(ClassroomBase, table=True):
     groups: list["Group"] = Relationship(
         back_populates="classrooms", link_model=GroupClassroomLink
     )
+
+    permissions: list["ClassroomPermission"] = Relationship(back_populates="classroom")
 
     def get_groups(self) -> list["Group"]:
         """Get the groups associated with this classroom.\n
