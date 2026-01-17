@@ -12,7 +12,7 @@ from server.models.http.requests.classroom_request_models import (
     ClassroomRegister,
     ClassroomUpdate,
 )
-from server.repositories.classroom_repository import ClassroomRepository
+from server.repositories.classroom_repository import ClassroomLoad, ClassroomRepository
 from server.repositories.group_repository import GroupRepository
 from server.services.security.buildings_permission_checker import (
     BuildingPermissionChecker,
@@ -30,7 +30,7 @@ class ClassroomRepositoryAdapter:
         owned_building_ids: OwnedBuildingIdsDep,
         session: SessionDep,
         user: UserDep,
-    ):
+    ) -> None:
         self.session = session
         self.user = user
         self.owned_building_ids = owned_building_ids
@@ -38,13 +38,27 @@ class ClassroomRepositoryAdapter:
         self.classroom_checker = ClassroomPermissionChecker(user=user, session=session)
         self.group_checker = GroupPermissionChecker(user=user, session=session)
 
-    def get_all(self) -> list[Classroom]:
+    def get_all(
+        self, load: list[ClassroomLoad] = ["building", "groups"]
+    ) -> list[Classroom]:
         """Get all classrooms that the user has access to."""
         if self.user.is_admin:
-            return ClassroomRepository.get_all(session=self.session)
-
+            return ClassroomRepository.get_all(session=self.session, load=load)
         ids = self.user.classrooms_ids_set()
         return ClassroomRepository.get_by_ids(ids=list(ids), session=self.session)
+
+    def get_all_restricted(
+        self, load: list[ClassroomLoad] = ["building", "permissions"]
+    ) -> list[Classroom]:
+        """Get all restricted classrooms that the user has access to."""
+        if self.user.is_admin:
+            return ClassroomRepository.get_all_restricted(
+                session=self.session, load=load
+            )
+        ids = self.user.classrooms_ids_set()
+        return ClassroomRepository.get_restricted_by_ids(
+            ids=list(ids), session=self.session, load=load
+        )
 
     def get_all_on_building(self, building_id: int) -> list[Classroom]:
         """Get all classrooms on a building that the user has access to."""

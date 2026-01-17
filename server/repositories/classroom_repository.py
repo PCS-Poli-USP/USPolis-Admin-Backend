@@ -1,22 +1,65 @@
+from typing import Any, Literal
 from fastapi import HTTPException, status
+from sqlalchemy import or_
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import selectinload
+from sqlmodel.sql.expression import SelectOfScalar
 from sqlmodel import Session, col, select
 
 from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
+from server.models.database.classroom_permission_db_model import ClassroomPermission
 from server.models.database.user_db_model import User
 from server.models.http.requests.classroom_request_models import (
     ClassroomRegister,
     ClassroomUpdate,
 )
 from server.models.page_models import Page, PaginationInput
+from server.utils.enums.classroom_permission_type_enum import ClassroomPermissionType
 from server.utils.must_be_int import must_be_int
 
 from server.repositories.occurrence_repository import OccurrenceRepository
 
 
+ClassroomLoad = Literal[
+    "building",
+    "groups",
+    "schedules",
+    "occurrences",
+    "solicitations",
+    "permissions",
+    "permissions.user",
+    "permissions.given_by",
+]
+
+CLASSROOM_LOAD_MAP: dict[ClassroomLoad, list[Any]] = {
+    "building": [selectinload(Classroom.building)],  # type: ignore
+    "groups": [selectinload(Classroom.groups)],  # type: ignore
+    "schedules": [selectinload(Classroom.schedules)],  # type: ignore
+    "occurrences": [selectinload(Classroom.occurrences)],  # type: ignore
+    "solicitations": [selectinload(Classroom.solicitations)],  # type: ignore
+    "permissions": [selectinload(Classroom.permissions)],  # type: ignore
+    "permissions.user": [
+        selectinload(Classroom.permissions).selectinload(ClassroomPermission.user)  # type: ignore
+    ],
+    "permissions.given_by": [
+        selectinload(Classroom.permissions).selectinload(ClassroomPermission.given_by)  # type: ignore
+    ],
+}
+
+
 class ClassroomRepository:
+    @staticmethod
+    def __apply_load(
+        *,
+        statement: Any,
+        load: list[ClassroomLoad],
+    ) -> Any:
+        load_options = []
+        for load_item in load:
+            load_options.extend(CLASSROOM_LOAD_MAP.get(load_item, []))
+        return statement.options(*load_options)
+
     @staticmethod
     def __set_classroom_core_data(
         *, classroom: Classroom, input: ClassroomRegister | ClassroomUpdate
@@ -30,14 +73,68 @@ class ClassroomRepository:
         classroom.building_id = input.building_id
         classroom.reservable = input.reservable
         classroom.remote = input.remote
+        classroom.restricted = input.restricted
+        classroom.laboratory = input.laboratory
         classroom.observation = input.observation
 
     @staticmethod
-    def get_all(*, session: Session) -> list[Classroom]:
-        statement = select(Classroom).options(
-            selectinload(Classroom.building),  # type: ignore
-            selectinload(Classroom.groups),  # type: ignore
+    def get_all(
+        *, session: Session, load: list[ClassroomLoad] = ["building", "groups"]
+    ) -> list[Classroom]:
+        statement = select(Classroom)
+        statement = ClassroomRepository.__apply_load(statement=statement, load=load)
+        classrooms = session.exec(statement).all()
+        return list(classrooms)
+
+    @staticmethod
+    def get_all_public(
+        *, session: Session, load: list[ClassroomLoad] = ["building", "groups"]
+    ) -> list[Classroom]:
+        statement: SelectOfScalar[Classroom] = select(Classroom).where(
+            col(Classroom.restricted).is_(False)
         )
+        statement = ClassroomRepository.__apply_load(statement=statement, load=load)
+        classrooms = session.exec(statement).all()
+        return list(classrooms)
+
+    @staticmethod
+    def get_all_user_allowed(
+        *,
+        user_id: int,
+        session: Session,
+        permission: ClassroomPermissionType,
+        allowed_classroom_ids: list[int],
+        load: list[ClassroomLoad] = ["building", "groups"],
+    ) -> list[Classroom]:
+        permission_exists = (
+            select(ClassroomPermission.id)
+            .where(
+                ClassroomPermission.classroom_id == Classroom.id,
+                ClassroomPermission.user_id == user_id,
+                col(ClassroomPermission.permissions).contains([permission]),
+            )
+            .exists()
+        )
+
+        stmt: SelectOfScalar[Classroom] = select(Classroom).where(
+            or_(
+                col(Classroom.restricted).is_(False),  # Classrooms is public
+                permission_exists,  # User has permission
+                col(Classroom.id).in_(allowed_classroom_ids),  # User is classroom admin
+            )
+        )
+        stmt = ClassroomRepository.__apply_load(statement=stmt, load=load)
+        classrooms = session.exec(stmt).all()
+        return list(classrooms)
+
+    @staticmethod
+    def get_all_restricted(
+        *, session: Session, load: list[ClassroomLoad] = ["building", "permissions"]
+    ) -> list[Classroom]:
+        statement: SelectOfScalar[Classroom] = select(Classroom).where(
+            col(Classroom.restricted)
+        )
+        statement = ClassroomRepository.__apply_load(statement=statement, load=load)
         classrooms = session.exec(statement).all()
         return list(classrooms)
 
@@ -60,6 +157,20 @@ class ClassroomRepository:
     @staticmethod
     def get_by_ids(*, ids: list[int], session: Session) -> list[Classroom]:
         statement = select(Classroom).where(col(Classroom.id).in_(ids))
+        classrooms = list(session.exec(statement).all())
+        return classrooms
+
+    @staticmethod
+    def get_restricted_by_ids(
+        *,
+        ids: list[int],
+        session: Session,
+        load: list[ClassroomLoad] = ["building", "permissions"],
+    ) -> list[Classroom]:
+        statement = select(Classroom).where(
+            col(Classroom.id).in_(ids), Classroom.restricted is True
+        )
+        statement = ClassroomRepository.__apply_load(statement=statement, load=load)
         classrooms = list(session.exec(statement).all())
         return classrooms
 
