@@ -9,6 +9,7 @@ from server.models.database.group_db_model import Group
 from server.models.database.group_user_link import GroupUserLink
 from server.models.database.user_building_link import UserBuildingLink
 from server.utils.brazil_datetime import BrazilDatetime
+from server.utils.enums.classroom_permission_type_enum import ClassroomPermissionType
 from server.utils.must_be_int import must_be_int
 
 if TYPE_CHECKING:
@@ -22,6 +23,7 @@ if TYPE_CHECKING:
     )
     from server.models.database.feedback_db_model import Feedback
     from server.models.database.bug_report_db_model import BugReport
+    from server.models.database.classroom_permission_db_model import ClassroomPermission
 
 
 class User(BaseModel, table=True):
@@ -63,12 +65,30 @@ class User(BaseModel, table=True):
         back_populates="user", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
     )
 
+    # Permissions
+    classroom_permissions: list["ClassroomPermission"] = Relationship(
+        back_populates="user",
+        sa_relationship_kwargs={
+            "cascade": "all, delete-orphan",
+            "foreign_keys": "[ClassroomPermission.user_id]",
+        },
+    )
+    given_classroom_permissions: list["ClassroomPermission"] = Relationship(
+        back_populates="user",
+        sa_relationship_kwargs={
+            "cascade": "all, delete-orphan",
+            "foreign_keys": "[ClassroomPermission.given_by_id]",
+        },
+    )
+
     def classrooms_ids_set(self) -> set[int]:
         """
         Get the set of classroom IDs that the user has access to.
 
         Returns:
             set[int]: A set of classroom IDs.
+
+        Warning: for admin users dont use this method, as it will return an empty set.
         """
         classrooms_ids: set[int] = set()
         for group in self.groups:
@@ -85,6 +105,29 @@ class User(BaseModel, table=True):
                         for classroom in group.building.classrooms
                     )
         return classrooms_ids
+
+    def get_permissioned_classrooms_ids_set(
+        self, permission_type: ClassroomPermissionType
+    ) -> set[int]:
+        """
+        Get the set of classroom IDs that the user has access to with given permission.
+        This includes users classrooms (if user has a group) and permissioned classrooms
+        given by other user.
+
+        Args:
+            permission_type (ClassroomPermissionType): The type of permission.
+
+        Returns:
+            set[int]: A set of classroom IDs.
+        """
+
+        permissioned_classrooms_ids: set[int] = set()
+        for cls_permission in self.classroom_permissions:
+            if permission_type in cls_permission.permissions:
+                permissioned_classrooms_ids.add(
+                    must_be_int(cls_permission.classroom_id)
+                )
+        return permissioned_classrooms_ids
 
     def classrooms_ids(self) -> list[int]:
         """
