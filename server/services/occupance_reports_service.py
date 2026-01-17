@@ -10,6 +10,8 @@ from server.utils.enums.week_day import WeekDay
 
 from datetime import time, date
 
+from server.utils.must_be_int import must_be_int
+
 
 class OccuppanceReportDict(TypedDict):
     week_day: WeekDay | None
@@ -26,21 +28,16 @@ class OccuppanceReportDict(TypedDict):
 class OccupanceReportsService:
     @staticmethod
     def get_occupance_reports(
-        session: Session, building_id: int, start_date: date | None, end_date: date | None
+        session: Session, building_id: int, interval: QueryInterval
     ) -> list[OccuppanceReportDict]:
         occupance_reports: list[OccuppanceReportDict] = []
-
-        interval = QueryInterval(
-            start=start_date,
-            end=end_date,
-        )
 
         classrooms = ClassroomRepository.get_all_on_buildings(
             building_ids=[building_id], session=session
         )
         classroom_ids = [
-            c.id for c in classrooms if isinstance(c.id, int)
-        ]  # excluir caso do Unknown (if c.id is not None deixa de lado o Unknown)
+            must_be_int(c.id) for c in classrooms
+        ]# excluir caso do Unknown (if c.id is not None deixa de lado o Unknown)
         classes = ClassRepository.get_all_on_classrooms(
             classroom_ids=classroom_ids, session=session, interval=interval
         )
