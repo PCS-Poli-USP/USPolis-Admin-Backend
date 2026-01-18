@@ -16,7 +16,7 @@ router = APIRouter(prefix="/classes", tags=["Classes"])
 
 
 @router.post("")
-async def create_class(
+def create_class(
     class_input: ClassRegister, repository: ClassRepositoryDep
 ) -> ClassResponse:
     """Create a class"""

@@ -26,6 +26,9 @@ from server.routes.restricted.allocation_routes import (
 from server.routes.restricted.allocation_log_routes import (
     router as AllocationLogRouter,
 )
+from server.routes.restricted.classroom_permission_routes import (
+    router as ClassroomPermissionsRouter,
+)
 
 router = APIRouter(dependencies=[Depends(restricted_authenticate)], tags=["Restricted"])
 
@@ -44,3 +47,4 @@ router.include_router(ConflictRouter)
 router.include_router(SolicitationRouter)
 router.include_router(AllocationRouter)
 router.include_router(AllocationLogRouter)
+router.include_router(ClassroomPermissionsRouter)
