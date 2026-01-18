@@ -2,6 +2,8 @@ from datetime import date
 from fastapi import HTTPException, status
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
+from server.models.database.building_db_model import Building
+from server.models.database.classroom_db_model import Classroom
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.schedule_db_model import Schedule
 from server.models.database.solicitation_db_model import (
@@ -13,19 +15,52 @@ from server.models.http.requests.solicitation_request_models import (
 )
 from server.models.page_models import Page, PaginationInput
 from server.repositories.building_repository import BuildingRepository
-from server.repositories.classroom_repository import ClassroomRepository
+from server.repositories.classroom_repository import (
+    ClassroomNotReservable,
+    ClassroomRepository,
+)
 
 from server.repositories.event_repository import EventRepository
 from server.repositories.exam_repository import ExamRepository
 from server.repositories.meeting_repository import MeetingRepository
 from server.repositories.occurrence_repository import OccurrenceRepository
 from server.utils.brazil_datetime import BrazilDatetime
+from server.utils.enums.classroom_permission_type_enum import ClassroomPermissionType
 from server.utils.enums.reservation_status import ReservationStatus
 from server.utils.enums.reservation_type import ReservationType
 from server.utils.must_be_int import must_be_int
 
 
 class SolicitationRepository:
+    @staticmethod
+    def __check_solicitation_validation(
+        requester: User, classroom: Classroom, building: Building
+    ) -> None:
+        """Validates if the solicitation can be made for the given classroom and building.\n
+        Solicitation can be made when:
+        - The classroom is reservable.
+        - The classroom belongs to the building.
+        - If the classroom is restricted, the requester has permission to reserve it.
+        """
+        if not classroom.reservable:
+            raise ClassroomNotReservable(classroom.name)
+
+        if classroom.building != building:
+            raise SolicitationInvalidClassroom(
+                f"Solicitação: A sala {classroom.name} não pertence ao prédio {building.name}."
+            )
+
+        if classroom.restricted:
+            requester_allowed_classrooms_ids = (
+                requester.get_permissioned_classrooms_ids_set(
+                    permission_type=ClassroomPermissionType.RESERVE
+                )
+            )
+            if classroom.id not in requester_allowed_classrooms_ids:
+                raise SolicitationPermissionDenied(
+                    f"Usuário não possui permissão para solicitar a sala {classroom.name}."
+                )
+
     @staticmethod
     def get_by_id(id: int, session: Session) -> Solicitation:
         statement = select(Solicitation).where(col(Solicitation.id) == id)
@@ -113,12 +148,10 @@ class SolicitationRepository:
             classroom = ClassroomRepository.get_by_id(
                 id=input.reservation_data.classroom_id, session=session
             )
-        if classroom and classroom.building != building:
-            raise SolicitationInvalidClassroom(
-                f"Solicitação: A sala {classroom.name} não pertence ao prédio {building.name}."
+        if classroom:
+            SolicitationRepository.__check_solicitation_validation(
+                requester, classroom, building
             )
-        if classroom and not classroom.reservable:
-            raise ClassroomNotReservable(f"A sala {classroom.name} não é reservável.")
 
         reservation: Reservation | None = None
         solicitation_type = input.reservation_data.type
@@ -276,8 +309,3 @@ class SolicitationInvalidClassroom(HTTPException):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=detail,
         )
-
-
-class ClassroomNotReservable(HTTPException):
-    def __init__(self, message: str) -> None:
-        super().__init__(status_code=status.HTTP_400_BAD_REQUEST, detail=message)

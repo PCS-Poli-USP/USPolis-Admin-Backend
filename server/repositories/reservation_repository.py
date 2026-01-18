@@ -14,6 +14,7 @@ from server.models.http.requests.reservation_request_models import (
     ReservationRegister,
     ReservationUpdate,
 )
+from server.repositories.classroom_repository import ClassroomNotReservable
 from server.repositories.occurrence_repository import OccurrenceRepository
 from server.repositories.schedule_repository import ScheduleRepository
 from server.utils.brazil_datetime import BrazilDatetime
@@ -48,6 +49,15 @@ class ReservationRepository:
                 )
             )
         return statement
+
+    @staticmethod
+    def __check_reservation_validation(classroom: Classroom) -> None:
+        """Validates if the reservation can be made for the given classroom and building.\n
+        Reservation can be made when:
+        - The classroom is reservable.
+        """
+        if not classroom.reservable:
+            raise ClassroomNotReservable(classroom.name)
 
     @staticmethod
     def get_all(*, session: Session, interval: QueryInterval) -> list[Reservation]:
@@ -144,6 +154,9 @@ class ReservationRepository:
         session: Session,
         allocate: bool = True,
     ) -> Reservation:
+        if classroom:
+            ReservationRepository.__check_reservation_validation(classroom=classroom)
+
         reservation = Reservation(
             title=input.title,
             type=input.type,
