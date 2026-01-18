@@ -21,6 +21,8 @@ class ClassroomResponseBase(BaseModel):
     air_conditioning: bool
     remote: bool
     reservable: bool
+    restricted: bool
+    laboratory: bool
     observation: str
     updated_at: datetime
 
@@ -45,6 +47,8 @@ class ClassroomResponseBase(BaseModel):
             observation=classroom.observation,
             reservable=classroom.reservable,
             remote=classroom.remote,
+            restricted=classroom.restricted,
+            laboratory=classroom.laboratory,
             updated_at=classroom.updated_at,
             created_by_id=must_be_int(classroom.created_by_id),
             created_by=classroom.created_by.name,

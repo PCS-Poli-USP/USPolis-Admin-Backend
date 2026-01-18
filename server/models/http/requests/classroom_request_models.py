@@ -18,6 +18,8 @@ class ClassroomRegister(BaseModel):
     air_conditioning: bool
     remote: bool = False
     reservable: bool = True
+    restricted: bool = False
+    laboratory: bool = False
     observation: str = ""
 
     @model_validator(mode="after")

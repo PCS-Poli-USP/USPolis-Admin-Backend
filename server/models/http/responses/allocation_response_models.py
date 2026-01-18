@@ -356,23 +356,52 @@ class AllocationResourceResponse(BaseModel):
     title: str
 
     @classmethod
-    def from_building(cls, building: Building) -> list["AllocationResourceResponse"]:
-        """Returns a list of resources, the first one is the building and the rest are the classrooms of the building"""
+    def from_building(
+        cls,
+        building: Building,
+        allowed_classroom_ids: set[int],
+        skip_restricted_check: bool = False,
+    ) -> list["AllocationResourceResponse"]:
+        """Returns a list of resources for a building, the first one is the building and the rest are the classrooms of the building.
+            For restricted classrooms, only include them if they are in the allowed_classroom_ids set.
+        Args:
+            building (Building): The building to create the resources from.
+            allowed_classroom_ids (set[int]): The set of classroom IDs that the user has permission to view.
+        Returns:
+            list[AllocationResourceResponse]: The list of resources for the building.
+        """
         resources: list[AllocationResourceResponse] = []
         resources.append(cls(id=building.name, title=building.name))
+        allowed_classsrooms = []
+        if building.classrooms:
+            for classroom in building.classrooms:
+                if (
+                    skip_restricted_check
+                    or not classroom.restricted
+                    or classroom.id in allowed_classroom_ids
+                ):
+                    allowed_classsrooms.append(classroom)
+
         classrooms_resources = AllocationResourceResponse.from_classroom_list(
-            building.classrooms if building.classrooms else []
+            allowed_classsrooms
         )
         resources.extend(classrooms_resources)
         return resources
 
     @classmethod
     def from_building_list(
-        cls, buildings: list[Building]
+        cls,
+        buildings: list[Building],
+        allowed_classroom_ids: set[int],
+        skip_restricted_check: bool = False,
     ) -> list["AllocationResourceResponse"]:
         resources: list[AllocationResourceResponse] = []
         for building in buildings:
-            resources.extend(AllocationResourceResponse.from_building(building))
+            resources.extend(
+                AllocationResourceResponse.from_building(
+                    building, allowed_classroom_ids, skip_restricted_check
+                )
+            )
         return resources
 
     @classmethod
