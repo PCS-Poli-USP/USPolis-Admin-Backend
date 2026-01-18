@@ -26,12 +26,14 @@ class GroupRepository:
         The function will assume that the users are already in the group.\n
         """
         for user in users:
-            user.groups.remove(group)
+            user_groups = user.groups
+            if group in user_groups:
+                user_groups.remove(group)
             remaining_groups_on_building = [
-                g for g in user.groups if g.building_id == group.building_id
+                g for g in user_groups if g.building_id == group.building_id
             ]
             if len(remaining_groups_on_building) == 0:
-                if user.buildings is not None:
+                if user.buildings is not None and group.building in user.buildings:
                     user.buildings.remove(group.building)
             session.add(user)
 
