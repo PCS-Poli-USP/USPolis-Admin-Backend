@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from sqlmodel import Field, Enum, Relationship
 from server.models.database.base_db_model import BaseModel
 from sqlalchemy import UniqueConstraint, Column
-from server.utils.enums.curriculum_subject_type import CurriculumSubjectType
+from server.utils.enums.curriculum_subject_type_enum import CurriculumSubjectType
 
 if TYPE_CHECKING: 
     from server.models.database.curriculum_db_model import Curriculum
