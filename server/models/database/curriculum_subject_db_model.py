@@ -16,7 +16,7 @@ class CurriculumSubject(BaseModel, table=True):
     curriculum_id: int = Field(foreign_key="curriculum.id")
     subject_id: int = Field(foreign_key="subject.id")
     type: CurriculumSubjectType = Field(
-        sa_column=Column(Enum(CurriculumSubjectType), nullable=False),
+        sa_column=Column(Enum(CurriculumSubjectType, name="curriculum_subject_type"), nullable=False),
     )
     period: int = Field() # Ideal period to take the subject
     curriculum: "Curriculum" = Relationship(back_populates="subjects")

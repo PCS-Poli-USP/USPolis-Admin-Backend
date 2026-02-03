@@ -21,7 +21,7 @@ class Course(BaseModel, table=True):
     created_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
     created_by_id: int = Field(foreign_key="user.id")
     period: CoursePeriodType = Field(
-        sa_column=Column(Enum(CoursePeriodType), nullable=False),
+        sa_column=Column(Enum(CoursePeriodType, name="course_period_type"), nullable=False),
     )
     curriculums: list["Curriculum"] = Relationship(
         back_populates="course", sa_relationship_kwargs={"cascade": "all, delete"}
