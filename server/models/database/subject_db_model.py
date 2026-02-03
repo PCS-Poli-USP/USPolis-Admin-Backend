@@ -5,6 +5,7 @@ from sqlalchemy.dialects import postgresql
 from sqlmodel import Column, Enum, Field, Relationship
 
 from server.models.database.base_db_model import BaseModel
+from server.models.database.curriculum_subject_db_model import CurriculumSubject
 from server.models.database.subject_building_link import SubjectBuildingLink
 from server.utils.enums.subject_type import SubjectType
 
@@ -34,4 +35,7 @@ class Subject(BaseModel, table=True):
     forum: "ForumPost" = Relationship(sa_relationship_kwargs={"cascade": "delete"})
     exams: list["Exam"] = Relationship(
         back_populates="subject", sa_relationship_kwargs={"cascade": "all, delete"}
+    )
+    curriculum_subjects: list["CurriculumSubject"] = Relationship(
+        back_populates="subject", sa_relationship_kwargs={"cascade": "delete"}
     )
