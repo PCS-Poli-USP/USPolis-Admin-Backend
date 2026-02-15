@@ -9,7 +9,6 @@ from server.utils.enums.course_period_type_enum import CoursePeriodType
 
 if TYPE_CHECKING:
     from server.models.database.curriculum_db_model import Curriculum
-    from server.models.database.emphasis_db_model import Emphasis
 
 class Course(BaseModel, table=True):
     name: str = Field(unique=True)
@@ -26,6 +25,3 @@ class Course(BaseModel, table=True):
     curriculums: list["Curriculum"] = Relationship(
         back_populates="course", sa_relationship_kwargs={"cascade": "all, delete"}
     )
-    emphases: list["Emphasis"] = Relationship(
-        back_populates="course", sa_relationship_kwargs={"cascade": "all, delete"}
-        )
