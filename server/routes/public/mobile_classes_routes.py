@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from server.cache import simple_cache
 from server.deps.interval_dep import QueryIntervalDep
 from server.deps.session_dep import SessionDep
 from server.models.database.class_db_model import Class
@@ -12,6 +13,7 @@ router = APIRouter(prefix="/mobile/classes", tags=["Mobile", "Classes"])
 
 
 @router.get("")
+@simple_cache(expire_seconds=10)
 async def get_all_classes(
     session: SessionDep, interval: QueryIntervalDep
 ) -> list[MobileClassResponse]:

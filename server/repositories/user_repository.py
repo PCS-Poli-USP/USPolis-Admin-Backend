@@ -107,7 +107,7 @@ class UserRepository:
         )
         session.add(new_user)
         return new_user
-    
+
     @staticmethod
     def get_from_auth(*, user_info: AuthUserInfo, session: Session) -> User:
         try:
