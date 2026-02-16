@@ -33,7 +33,13 @@ class AuthenticationClient:
         response = requests.get(userinfo_url, headers=headers)
         if response.status_code == 200:
             user_info = response.json()
-            return AuthUserInfo.from_dict(user_info)
+            auth_info = AuthUserInfo.from_dict(user_info)
+            if auth_info.domain not in CONFIG.allowed_gmails_domains and auth_info.email not in CONFIG.allowed_gmails:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="É necessário usar um email institucional para acessar o sistema",
+                )
+            return auth_info
         else:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

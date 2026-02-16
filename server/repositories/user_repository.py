@@ -107,19 +107,13 @@ class UserRepository:
         )
         session.add(new_user)
         return new_user
-
+    
     @staticmethod
     def get_from_auth(*, user_info: AuthUserInfo, session: Session) -> User:
         try:
             user = UserRepository.get_by_email(email=user_info.email, session=session)
             return user
         except NoResultFound:
-            if (
-                user_info.domain != CONFIG.google_auth_domain_name
-                and user_info.email not in CONFIG.allowed_gmails
-            ):
-                raise InvalidEmailDomain()
-
             user = UserRepository.create(
                 input=UserRegister(
                     email=user_info.email,
