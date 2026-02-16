@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import text
 
-from server.deps.authenticate import health_authenticate
+from server.deps.authenticate import health_token_authenticate
 from server.deps.session_dep import SessionDep
 
 router = APIRouter(
-    prefix="/health", tags=["Health"], dependencies=[Depends(health_authenticate)]
+    prefix="/health", tags=["Health"], dependencies=[Depends(health_token_authenticate)]
 )
 
 

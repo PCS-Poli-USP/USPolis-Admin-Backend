@@ -19,11 +19,14 @@ from server.services.auth.auth_user_info import AuthUserInfo
 from server.services.auth.authentication_client import (
     AuthenticationClient,
 )
+from server.deps.session_dep import SessionDep
 
 security = HTTPBearer(auto_error=False)
 
 
-def health_authenticate(x_api_key: str = Header(...)) -> None:
+# -- token authentications :
+
+def health_token_authenticate(x_api_key: str = Header(...)) -> None:
     if not secrets.compare_digest(x_api_key, CONFIG.health_api_key):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -31,7 +34,7 @@ def health_authenticate(x_api_key: str = Header(...)) -> None:
         )
 
 
-def google_authenticate(
+def google_token_authenticate(
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> AuthUserInfo:
     if credentials is None or not credentials.credentials:
@@ -40,7 +43,7 @@ def google_authenticate(
     return AuthenticationClient.get_user_info(access_token)
 
 
-def public_authenticate(
+def public_token_authenticate(
     request: Request,
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> None:
@@ -54,9 +57,9 @@ def public_authenticate(
             pass
 
 
-def authenticate(
+def token_authenticate(
     request: Request,
-    user_info: Annotated[AuthUserInfo, Depends(google_authenticate)],
+    user_info: Annotated[AuthUserInfo, Depends(google_token_authenticate)],
     session: SessionDep,
 ) -> User:
     user = UserRepository.get_from_auth(user_info=user_info, session=session)
@@ -70,8 +73,8 @@ def authenticate(
     return user
 
 
-def restricted_authenticate(
-    user: Annotated[User, Depends(authenticate)],
+def restricted_token_authenticate(
+    user: Annotated[User, Depends(token_authenticate)],
 ) -> User:
     if user.is_admin:
         return user
@@ -80,10 +83,24 @@ def restricted_authenticate(
     return user
 
 
-def admin_authenticate(user: Annotated[User, Depends(authenticate)]) -> None:
+def admin_token_authenticate(user: Annotated[User, Depends(token_authenticate)]) -> None:
     if not user.is_admin:
         raise AdminAccessRequired()
 
+
+# -- cookie authentications :
+def public_authenticate_from_cookie(
+    request: Request, session: SessionDep
+) -> None:
+    session_id = request.cookies.get("session")
+    if session_id:
+        try:
+            user_session = UserSessionRepository.get_session_by_id(
+                id=session_id, session=session
+            )
+            request.state.current_user = user_session.user
+        except UserSessionNotFound:
+            pass
 
 def authenticate_from_cookie(request: Request, session: SessionDep) -> User:
     session_id = request.cookies.get("session")
@@ -97,6 +114,14 @@ def authenticate_from_cookie(request: Request, session: SessionDep) -> User:
         raise InvalidSessionCookie()
     return user_session.user
 
+def restricted_authenticate_from_cookie(
+    user: Annotated[User, Depends(authenticate_from_cookie)],
+) -> User:
+    if user.is_admin:
+        return user
+    if not user.groups:
+        raise RestrictedAccessRequired()
+    return user
 
 def admin_authenticate_from_cookie(
     user: Annotated[User, Depends(authenticate_from_cookie)],
@@ -104,6 +129,59 @@ def admin_authenticate_from_cookie(
     if not user.is_admin:
         raise AdminAccessRequired()
 
+
+# -- general authentications :
+def public_authenticate(
+    request: Request,
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    session: SessionDep,
+) -> None:
+    """Authenticate the user using either a token or a session cookie, but do not raise if no credentials are provided."""
+    try:
+        user_info = google_token_authenticate(
+            credentials=credentials,
+        )
+        token_authenticate(request=request, user_info=user_info, session=session)
+    except HTTPException:
+        public_authenticate_from_cookie(request=request, session=session)
+
+def authenticate(request: Request, session: SessionDep, credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)]) -> User:
+    """Authenticate the user using either a token or a session cookie."""
+    try:
+        user_info = google_token_authenticate(
+            credentials=credentials,
+        )
+        return token_authenticate(request=request, user_info=user_info, session=session)
+    except HTTPException:
+        return authenticate_from_cookie(request=request, session=session)
+
+def restricted_authenticate(request: Request, session: SessionDep, credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)]) -> User:
+    """Authenticate the user using either a token or a session cookie, and check if they have restricted access."""
+    try:
+        user_info = google_token_authenticate(
+            credentials=credentials,
+        )
+        return restricted_token_authenticate(
+            token_authenticate(request=request, user_info=user_info, session=session)
+        )
+    except HTTPException:
+        return restricted_authenticate_from_cookie(
+            authenticate_from_cookie(request=request, session=session)
+        )
+
+def admin_authenticate(request: Request, session: SessionDep, credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)]) -> None:
+    """Authenticate the user using either a token or a session cookie, and check if they are an admin."""
+    try:
+        user_info = google_token_authenticate(
+            credentials=credentials,
+        )
+        admin_token_authenticate(
+            token_authenticate(request=request, user_info=user_info, session=session)
+        )
+    except HTTPException:
+        admin_authenticate_from_cookie(
+            authenticate_from_cookie(request=request, session=session)
+        )
 
 # -- permission authentications :
 
@@ -158,6 +236,6 @@ class RestrictedAccessRequired(HTTPException):
 
 
 # exports:
-GoogleAuthenticate = Annotated[AuthUserInfo, Depends(google_authenticate)]
+GoogleAuthenticate = Annotated[AuthUserInfo, Depends(google_token_authenticate)]
 UserDep = Annotated[User, Depends(authenticate)]
 BuildingDep = Annotated[Building, Depends(building_authenticate)]

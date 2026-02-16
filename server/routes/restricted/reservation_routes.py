@@ -14,6 +14,7 @@ from server.routes.restricted.meeting_routes import router as MeetingRouter
 embed = Body(..., embed=True)
 
 router = APIRouter(prefix="/reservations", tags=["Reservations"])
+
 router.include_router(ExamRouter)
 router.include_router(EventRouter)
 router.include_router(MeetingRouter)

@@ -9,8 +9,8 @@ from server.utils.brazil_datetime import BrazilDatetime
 class UserSession(SQLModel, table=True):
     id: str = Field(default_factory=lambda: uuid.uuid4().hex, primary_key=True)
     user_id: int = Field(foreign_key="user.id")
-    user_agent: str | None = None
-    ip_address: str | None = None
+    user_agent: str
+    ip_address: str
     expires_at: datetime
     created_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
 
