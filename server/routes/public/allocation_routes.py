@@ -16,7 +16,7 @@ router = APIRouter(prefix="/allocations", tags=["Allocations"])
 
 
 @router.get("/events")
-@date_range_cache(expire_seconds=10)
+@date_range_cache(expire_seconds=60)
 def get_all_allocation_events(
     session: SessionDep,
     start: date = date.today(),

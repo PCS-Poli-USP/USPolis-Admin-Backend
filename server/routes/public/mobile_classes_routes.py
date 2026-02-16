@@ -13,7 +13,7 @@ router = APIRouter(prefix="/mobile/classes", tags=["Mobile", "Classes"])
 
 
 @router.get("")
-@simple_cache(expire_seconds=10)
+@simple_cache(expire_seconds=60)
 async def get_all_classes(
     session: SessionDep, interval: QueryIntervalDep
 ) -> list[MobileClassResponse]:
