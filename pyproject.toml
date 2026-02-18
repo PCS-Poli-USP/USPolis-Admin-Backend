@@ -36,6 +36,7 @@ dependencies = [
     "html5lib (>=1.1,<2.0)",
     "python-multipart (>=0.0.20,<0.0.21)",
     "python-logging-loki (>=0.3.1,<0.4.0)",
+    "user-agents (>=2.2.0,<3.0.0)",
 ]
 
 

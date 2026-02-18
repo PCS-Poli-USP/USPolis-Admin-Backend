@@ -46,7 +46,9 @@ def get_tokens(
     if request.client:
         ip_address = request.client.host
 
-    user_session = UserSessionRepository.get_session(
+    user_session: UserSession | None = None
+    if user_agent is not None and ip_address is not None:
+        user_session = UserSessionRepository.get_session(
             user_id=must_be_int(user.id),
             user_agent=user_agent,
             ip_address=ip_address,
@@ -54,8 +56,8 @@ def get_tokens(
         )
     if user_session:
         UserSessionRepository.extend_session(user_session=user_session, session=session)
-        
-    if not user_session:
+
+    if not user_session and user_agent is not None and ip_address is not None:
         user_session = UserSessionRepository.create_session(
             user_id=must_be_int(user.id),
             user_agent=user_agent,
@@ -63,15 +65,20 @@ def get_tokens(
             session=session,
         )
 
-    response.set_cookie(
-        key="session",
-        value=user_session.id,
-        httponly=True,
-        secure=True,
-        samesite="none" if CONFIG.development else "lax",
-        max_age=SESSION_COOKIE_AGE,
-        path="/",
-    )
+    if user_session is not None:
+        response.set_cookie(
+            key="session",
+            value=user_session.id,
+            httponly=True,
+            secure=True,
+            samesite="none" if CONFIG.development else "lax",
+            max_age=SESSION_COOKIE_AGE,
+            path="/",
+        )
+
+    if user_session is None:
+        response.delete_cookie("session")
+
     session.commit()
     return AuthResponse(access_token=access_token, refresh_token=refresh_token)
 
@@ -115,13 +122,15 @@ def refresh_token(
         if request.client:
             ip_address = request.client.host
 
-        user_session = UserSessionRepository.get_session(
-            user_id=must_be_int(user.id),
-            user_agent=user_agent,
-            ip_address=ip_address,
-            session=session,
-        )
-        if not user_session:
+        if user_agent is not None and ip_address is not None:
+            user_session = UserSessionRepository.get_session(
+                user_id=must_be_int(user.id),
+                user_agent=user_agent,
+                ip_address=ip_address,
+                session=session,
+            )
+
+        if not user_session and user_agent is not None and ip_address is not None:
             user_session = UserSessionRepository.create_session(
                 user_id=must_be_int(user.id),
                 user_agent=user_agent,
@@ -130,15 +139,20 @@ def refresh_token(
             )
         session.commit()
 
-    response.set_cookie(
-        key="session",
-        value=user_session.id,
-        httponly=True,
-        secure=True,
-        samesite="none" if CONFIG.development else "lax",
-        max_age=SESSION_COOKIE_AGE,
-        path="/",
-    )
+    if user_session is not None:
+        response.set_cookie(
+            key="session",
+            value=user_session.id,
+            httponly=True,
+            secure=True,
+            samesite="none" if CONFIG.development else "lax",
+            max_age=SESSION_COOKIE_AGE,
+            path="/",
+        )
+        
+    if user_session is None:
+        response.delete_cookie("session")
+
     return RefreshTokenResponse(access_token=new_access_token)
 
 
