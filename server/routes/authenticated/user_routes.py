@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 
 from server.deps.authenticate import UserDep
@@ -22,6 +22,8 @@ from server.deps.repository_adapters.classroom_repository_adapter import (
 from server.models.database.user_db_model import User
 from server.models.http.responses.class_response_models import ClassResponse
 from server.models.http.responses.classroom_response_models import ClassroomResponse
+from server.models.http.responses.course_response_models import CourseResponse
+from server.models.http.responses.curriculum_response_models import CurriculumResponse
 from server.models.http.responses.solicitation_response_models import (
     SolicitationResponse,
 )
@@ -30,6 +32,8 @@ from server.models.http.responses.reservation_response_models import Reservation
 from server.models.http.responses.subject_response_models import SubjectResponse
 from server.models.http.responses.user_response_models import UserResponse
 from server.models.http.responses.building_response_models import BuildingResponse
+from server.repositories.course_repository import CourseRepository
+from server.repositories.curriculum_repository import CurriculumRepository
 from server.repositories.solicitation_repository import (
     SolicitationRepository,
 )
@@ -149,3 +153,41 @@ def get_users_on_building(building_id: int, session: SessionDep) -> list[User]:
     """Get users on building"""
     users = UserRepository.get_all_on_building(building_id=building_id, session=session)
     return users
+
+@router.get("/my-course")
+def get_my_course(
+    session: SessionDep,
+    user: UserDep,
+) -> CourseResponse:
+    """Get course for authenticated user if they have one defined"""
+
+    if user.curriculum is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Usuário não possui curso definido"
+        )
+    
+    course = user.curriculum.course
+
+    if course is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Curso não encontrado"
+        )
+    
+    return CourseResponse.from_course(course)
+
+@router.get("/my-curriculum")
+def get_my_curriculum(
+    session: SessionDep,
+    user: UserDep,
+) -> CurriculumResponse:
+    """Get curriculum for authenticated user if they have one defined"""
+
+    if user.curriculum is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Usuário não possui currículo definido"
+        )
+
+    return CurriculumResponse.from_curriculum(user.curriculum)
