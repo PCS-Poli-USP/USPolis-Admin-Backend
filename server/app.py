@@ -1,6 +1,7 @@
 """Server app config."""
+
 import asyncio
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
@@ -21,6 +22,7 @@ from server.cache import clear_expired_cache
 
 _cleanup_task: asyncio.Task[None] | None = None  # Declaração explícita
 
+
 async def periodic_cache_cleanup() -> None:
     """Task que roda a cada 60 minutos limpando cache expirado"""
     while True:
@@ -28,15 +30,16 @@ async def periodic_cache_cleanup() -> None:
         count = clear_expired_cache()
         print(f"Cache cleanup: removed {count} expired entries")
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Gerencia o ciclo de vida da aplicação"""
     global _cleanup_task
     _cleanup_task = asyncio.create_task(periodic_cache_cleanup())
     print("Cache cleanup started")
-    
+
     yield
-    
+
     # Shutdown
     if _cleanup_task:
         _cleanup_task.cancel()
@@ -45,6 +48,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         except asyncio.CancelledError:
             pass
     print("Cache cleanup stoped")
+
 
 app = FastAPI(
     title="USPolis Server",
