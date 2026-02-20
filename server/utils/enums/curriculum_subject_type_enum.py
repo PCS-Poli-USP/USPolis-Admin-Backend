@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class CurriculumSubjectType(str, Enum):
     SEMESTRAL = "semestral"
     QUADRIMESTER = "quadrimester"
@@ -13,7 +14,9 @@ class CurriculumSubjectType(str, Enum):
             return cls.SEMESTRAL
         if value in quarter_values:
             return cls.QUADRIMESTER
-        raise NoSuchCurriculumSubjectType(f"Curriculum Subject Type {value} is not valid.")
+        raise NoSuchCurriculumSubjectType(
+            f"Curriculum Subject Type {value} is not valid."
+        )
 
     @staticmethod
     def values() -> list["CurriculumSubjectType"]:
@@ -21,6 +24,7 @@ class CurriculumSubjectType(str, Enum):
             CurriculumSubjectType.SEMESTRAL,
             CurriculumSubjectType.QUADRIMESTER,
         ]
-    
+
+
 class NoSuchCurriculumSubjectType(Exception):
     pass

@@ -149,7 +149,7 @@ def refresh_token(
             max_age=SESSION_COOKIE_AGE,
             path="/",
         )
-        
+
     if user_session is None:
         response.delete_cookie("session")
 

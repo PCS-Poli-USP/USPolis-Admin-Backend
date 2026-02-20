@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class CoursePeriodType(str, Enum):
     MORNING = "morning"
     AFTERNOON = "afternoon"
@@ -31,6 +32,7 @@ class CoursePeriodType(str, Enum):
             CoursePeriodType.EVENING,
             CoursePeriodType.INTEGRAL,
         ]
-    
+
+
 class NoSuchCoursePeriodType(Exception):
     pass
