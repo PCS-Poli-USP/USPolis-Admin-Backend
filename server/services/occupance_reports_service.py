@@ -37,7 +37,7 @@ class OccupanceReportsService:
         )
         classroom_ids = [
             must_be_int(c.id) for c in classrooms
-        ]# excluir caso do Unknown (if c.id is not None deixa de lado o Unknown)
+        ]  # excluir caso do Unknown (if c.id is not None deixa de lado o Unknown)
         classes = ClassRepository.get_all_on_classrooms(
             classroom_ids=classroom_ids, session=session, interval=interval
         )

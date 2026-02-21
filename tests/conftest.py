@@ -20,7 +20,7 @@ from server.db import (
     get_db,  # noqa: F401
 )
 from server.app import app
-from server.deps.authenticate import authenticate, google_authenticate
+from server.deps.authenticate import authenticate, google_token_authenticate
 from server.deps.session_dep import SessionDep
 from server.models.database.building_db_model import Building
 from server.models.database.class_db_model import Class
@@ -125,7 +125,7 @@ def client_fixture(user: User, session: Session) -> Generator[TestClient, None, 
     Admin client fixture, which is a TestClient with the mocked authentication and the mocked google authentication.
     """
     app.dependency_overrides[get_db] = lambda: session
-    app.dependency_overrides[google_authenticate] = mock_google_authenticate
+    app.dependency_overrides[google_token_authenticate] = mock_google_authenticate
 
     def _mock_authenticate(request: Request, session: SessionDep) -> User:
         return mock_authenticate(user, request, session)
@@ -147,7 +147,7 @@ def restricted_client_fixture(
     - The restricted user is a user that have the default admin and only have the default group of this building if you call the 'group' fixture.
     """
     app.dependency_overrides[get_db] = lambda: session
-    app.dependency_overrides[google_authenticate] = mock_google_authenticate
+    app.dependency_overrides[google_token_authenticate] = mock_google_authenticate
 
     def _mock_authenticate(request: Request, session: SessionDep) -> User:
         return mock_authenticate(restricted_user, request, session)
@@ -169,7 +169,7 @@ def common_client_fixture(
     - A common user is a user that not has a building and groups
     """
     app.dependency_overrides[get_db] = lambda: session
-    app.dependency_overrides[google_authenticate] = mock_google_authenticate
+    app.dependency_overrides[google_token_authenticate] = mock_google_authenticate
 
     def _mock_authenticate(request: Request, session: SessionDep) -> User:
         return mock_authenticate(common_user, request, session)

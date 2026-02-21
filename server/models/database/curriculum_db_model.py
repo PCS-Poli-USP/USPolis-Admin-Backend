@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from server.models.database.course_db_model import Course
     from server.models.database.curriculum_subject_db_model import CurriculumSubject
 
+
 class Curriculum(BaseModel, table=True):
     course_id: int = Field(foreign_key="course.id")
     AAC: int = Field()

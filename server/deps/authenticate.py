@@ -26,6 +26,7 @@ security = HTTPBearer(auto_error=False)
 
 # -- token authentications :
 
+
 def health_token_authenticate(x_api_key: str = Header(...)) -> None:
     if not secrets.compare_digest(x_api_key, CONFIG.health_api_key):
         raise HTTPException(
@@ -83,15 +84,15 @@ def restricted_token_authenticate(
     return user
 
 
-def admin_token_authenticate(user: Annotated[User, Depends(token_authenticate)]) -> None:
+def admin_token_authenticate(
+    user: Annotated[User, Depends(token_authenticate)],
+) -> None:
     if not user.is_admin:
         raise AdminAccessRequired()
 
 
 # -- cookie authentications :
-def public_authenticate_from_cookie(
-    request: Request, session: SessionDep
-) -> None:
+def public_authenticate_from_cookie(request: Request, session: SessionDep) -> None:
     session_id = request.cookies.get("session")
     if session_id:
         try:
@@ -101,6 +102,7 @@ def public_authenticate_from_cookie(
             request.state.current_user = user_session.user
         except UserSessionNotFound:
             pass
+
 
 def authenticate_from_cookie(request: Request, session: SessionDep) -> User:
     session_id = request.cookies.get("session")
@@ -114,6 +116,7 @@ def authenticate_from_cookie(request: Request, session: SessionDep) -> User:
         raise InvalidSessionCookie()
     return user_session.user
 
+
 def restricted_authenticate_from_cookie(
     user: Annotated[User, Depends(authenticate_from_cookie)],
 ) -> User:
@@ -122,6 +125,7 @@ def restricted_authenticate_from_cookie(
     if not user.groups:
         raise RestrictedAccessRequired()
     return user
+
 
 def admin_authenticate_from_cookie(
     user: Annotated[User, Depends(authenticate_from_cookie)],
@@ -145,7 +149,12 @@ def public_authenticate(
     except HTTPException:
         public_authenticate_from_cookie(request=request, session=session)
 
-def authenticate(request: Request, session: SessionDep, credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)]) -> User:
+
+def authenticate(
+    request: Request,
+    session: SessionDep,
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+) -> User:
     """Authenticate the user using either a token or a session cookie."""
     try:
         user_info = google_token_authenticate(
@@ -155,7 +164,12 @@ def authenticate(request: Request, session: SessionDep, credentials: Annotated[H
     except HTTPException:
         return authenticate_from_cookie(request=request, session=session)
 
-def restricted_authenticate(request: Request, session: SessionDep, credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)]) -> User:
+
+def restricted_authenticate(
+    request: Request,
+    session: SessionDep,
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+) -> User:
     """Authenticate the user using either a token or a session cookie, and check if they have restricted access."""
     try:
         user_info = google_token_authenticate(
@@ -169,7 +183,12 @@ def restricted_authenticate(request: Request, session: SessionDep, credentials: 
             authenticate_from_cookie(request=request, session=session)
         )
 
-def admin_authenticate(request: Request, session: SessionDep, credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)]) -> None:
+
+def admin_authenticate(
+    request: Request,
+    session: SessionDep,
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+) -> None:
     """Authenticate the user using either a token or a session cookie, and check if they are an admin."""
     try:
         user_info = google_token_authenticate(
@@ -182,6 +201,7 @@ def admin_authenticate(request: Request, session: SessionDep, credentials: Annot
         admin_authenticate_from_cookie(
             authenticate_from_cookie(request=request, session=session)
         )
+
 
 # -- permission authentications :
 

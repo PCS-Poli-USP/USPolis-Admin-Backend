@@ -34,7 +34,7 @@ if not logger.hasHandlers():
 loki_log_file = log_dir / "loki-access-api.log"
 loki_access_logger = logging.getLogger("loki_access")
 loki_access_logger.setLevel(logging.INFO)
-loki_access_logger.propagate = False 
+loki_access_logger.propagate = False
 
 # Handler que envia para o arquivo (rotaciona a cada 10MB)
 loki_file_handler = RotatingFileHandler(loki_log_file, maxBytes=10485760, backupCount=5)

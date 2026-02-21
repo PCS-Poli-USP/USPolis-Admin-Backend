@@ -21,11 +21,12 @@ def get_reports(
     user: UserDep,
     session: SessionDep,
     interval: QueryIntervalDep,
-)-> list[OccupanceReportsResponse]:
+) -> list[OccupanceReportsResponse]:
     authorization = BuildingPermissionChecker(user=user, session=session)
     authorization.check_permission(building_id)
     reports = OccupanceReportsService.get_occupance_reports(
-        session=session, building_id=building_id, interval=interval,
+        session=session,
+        building_id=building_id,
+        interval=interval,
     )
     return OccupanceReportsResponse.from_dicts(reports)
-    
