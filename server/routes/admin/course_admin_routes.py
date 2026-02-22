@@ -70,5 +70,5 @@ class CourseAlreadyExists(HTTPException):
     def __init__(self, name: str) -> None:
         super().__init__(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"Curso com o nome {name} já existe.",
+            detail=f"Curso com o nome {name} já existe",
         )

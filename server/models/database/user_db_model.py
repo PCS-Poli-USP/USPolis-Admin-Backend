@@ -66,7 +66,9 @@ class User(BaseModel, table=True):
     reports: list["BugReport"] = Relationship(
         back_populates="user", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
     )
-    curriculum: Curriculum | None = Relationship(back_populates="users")
+    curriculum: Curriculum | None = Relationship(
+        back_populates="users", sa_relationship_kwargs={"foreign_keys": "[User.curriculum_id]"}
+    )
 
     def classrooms_ids_set(self) -> set[int]:
         """

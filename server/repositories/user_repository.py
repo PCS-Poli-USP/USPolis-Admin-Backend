@@ -185,6 +185,29 @@ class UserRepository:
         except Exception as e:
             print(e)
 
+    @staticmethod
+    def update_curriculum(
+        *,
+        user: User,
+        curriculum_id: int,
+        session: Session,
+    ) -> User:
+
+        from server.models.database.curriculum_db_model import Curriculum
+
+        curriculum = session.get(Curriculum, curriculum_id)
+        if not curriculum:
+            raise HTTPException(
+                status_code=404,
+                detail="Currículo não encontrado"
+            )
+
+        user.curriculum_id = curriculum_id
+        user.updated_at = BrazilDatetime.now_utc()
+        session.add(user)
+
+        return user
+
 
 class InvalidEmailDomain(HTTPException):
     def __init__(self) -> None:

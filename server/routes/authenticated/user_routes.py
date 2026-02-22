@@ -32,8 +32,6 @@ from server.models.http.responses.reservation_response_models import Reservation
 from server.models.http.responses.subject_response_models import SubjectResponse
 from server.models.http.responses.user_response_models import UserResponse
 from server.models.http.responses.building_response_models import BuildingResponse
-from server.repositories.course_repository import CourseRepository
-from server.repositories.curriculum_repository import CurriculumRepository
 from server.repositories.solicitation_repository import (
     SolicitationRepository,
 )
@@ -147,13 +145,6 @@ def get_my_solicitaions(
     solicitations = SolicitationRepository.get_by_user(user, session)
     return SolicitationResponse.from_solicitation_list(solicitations)
 
-
-@router.get("/{building_id}")
-def get_users_on_building(building_id: int, session: SessionDep) -> list[User]:
-    """Get users on building"""
-    users = UserRepository.get_all_on_building(building_id=building_id, session=session)
-    return users
-
 @router.get("/my-course")
 def get_my_course(
     session: SessionDep,
@@ -191,3 +182,27 @@ def get_my_curriculum(
         )
 
     return CurriculumResponse.from_curriculum(user.curriculum)
+
+@router.post("/my-curriculum")
+def set_my_curriculum(
+    curriculum_id: int,
+    session: SessionDep,
+    user: UserDep,
+) -> JSONResponse:
+    """Define curriculum for authenticated user"""
+
+    UserRepository.update_curriculum(user=user, curriculum_id=curriculum_id, session=session)
+    session.commit()
+
+    return JSONResponse(
+        status_code=200,
+        content={
+            "message": "Currículo definido com sucesso"
+        }
+    )
+
+@router.get("/{building_id}")
+def get_users_on_building(building_id: int, session: SessionDep) -> list[User]:
+    """Get users on building"""
+    users = UserRepository.get_all_on_building(building_id=building_id, session=session)
+    return users

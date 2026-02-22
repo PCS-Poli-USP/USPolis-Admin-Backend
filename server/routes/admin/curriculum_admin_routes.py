@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, status
+from fastapi import APIRouter, Body, HTTPException, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 
@@ -21,14 +21,18 @@ def create_curriculum(
     try:
         CurriculumRepository.create(input=input, user=user, session=session)
         session.commit()
+        return JSONResponse(
+            status_code=status.HTTP_201_CREATED,
+            content={
+                "message": "Currículo criado com sucesso",
+            },
+        )
     except IntegrityError:
         session.rollback()
-    return JSONResponse(
-        status_code=status.HTTP_201_CREATED,
-        content={
-            "message": "Currículo criado com sucesso",
-        },
-    )
+        raise HTTPException(
+            status_code=400,
+            detail="Não foi possível criar o currículo",
+        )
 
 @router.put("/{curriculum_id}")
 def update_curriculum(
@@ -39,14 +43,18 @@ def update_curriculum(
     try:
         CurriculumRepository.update(id=curriculum_id, input=input, user=user, session=session)
         session.commit()
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "message": "Currículo atualizado com sucesso",
+            },
+        )
     except IntegrityError:
         session.rollback()
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content={
-            "message": "Currículo atualizado com sucesso",
-        },
-    )
+        raise HTTPException(
+            status_code=400,
+            detail="Não foi possível atualizar o currículo",
+        )
 
 @router.delete("/{curriculum_id}")
 def delete_curriculum(

@@ -21,15 +21,18 @@ def create_curriculum_subject(
     try:
         CurriculumSubjectRepository.create(input=input, user=user, session=session)
         session.commit()
+        return JSONResponse(
+            status_code=status.HTTP_201_CREATED,
+            content={
+                "message": "Disciplina do currículo criada com sucesso",
+            },
+        )
     except IntegrityError:
         session.rollback()
-        raise CurriculumSubjectAlreadyExists()
-    return JSONResponse(
-        status_code=status.HTTP_201_CREATED,
-        content={
-            "message": "Disciplina do currículo criada com sucesso",
-        },
-    )
+        raise HTTPException(
+            status_code=400,
+            detail="Não foi possível criar a disciplina do currículo",
+        )
 
 @router.put("/{curriculum_subject_id}")
 def update_curriculum_subject(
@@ -39,15 +42,18 @@ def update_curriculum_subject(
     try:
         CurriculumSubjectRepository.update(id=curriculum_subject_id, input=input, user=user, session=session)
         session.commit()
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "message": "Disciplina do currículo atualizada com sucesso",
+            },
+        )
     except IntegrityError:
         session.rollback()
-        raise CurriculumSubjectAlreadyExists()
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content={
-            "message": "Disciplina do currículo atualizada com sucesso",
-        },
-    )
+        raise HTTPException(
+            status_code=400,
+            detail="Não foi possível atualizar a disciplina do currículo",
+        )
 
 @router.delete("/{curriculum_subject_id}")
 def delete_curriculum_subject(
@@ -62,10 +68,3 @@ def delete_curriculum_subject(
             "message": "Disciplina do currículo removida com sucesso",
         },
     )
-
-class CurriculumSubjectAlreadyExists(HTTPException):
-    def __init__(self) -> None:
-        super().__init__(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Disciplina já existe no currículo informado.",
-        )

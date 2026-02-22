@@ -25,5 +25,5 @@ class Curriculum(BaseModel, table=True):
         back_populates="curriculum", sa_relationship_kwargs={"cascade": "all, delete"}
         )
     users: list["User"] = Relationship(
-        back_populates="curriculum"
+        back_populates="curriculum", sa_relationship_kwargs={"foreign_keys": "[User.curriculum_id]"}
         )

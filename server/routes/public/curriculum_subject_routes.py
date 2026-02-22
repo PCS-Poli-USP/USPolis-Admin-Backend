@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, Body
 
 from server.deps.session_dep import SessionDep
 from server.models.http.responses.curriculum_subject_response_models import CurriculumSubjectResponse
@@ -13,9 +13,4 @@ async def get_subjects_by_curriculum(curriculum_id: int, session: SessionDep
     ) -> list[CurriculumSubjectResponse]:
     """Get all subjects by curriculum"""
     curriculum_subjects = CurriculumSubjectRepository.get_by_curriculum_id(curriculum_id=curriculum_id, session=session)
-    if not curriculum_subjects:
-        raise HTTPException(
-            status_code=404,
-            detail="Disciplinas do currículo não encontradas"
-        )
     return CurriculumSubjectResponse.from_curriculum_subject_list(curriculum_subjects)

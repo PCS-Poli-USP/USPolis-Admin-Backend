@@ -14,6 +14,9 @@ from server.routes.admin.bug_report_evidence_admin_routes import (
 from server.routes.admin.user_session_admin_routes import (
     router as AdminUserSessionRouter,
 )
+from server.routes.admin.course_admin_routes import router as AdminCourseRouter
+from server.routes.admin.curriculum_admin_routes import router as AdminCurriculumRouter
+from server.routes.admin.curriculum_subject_admin_routes import router as AdminCurriculumSubjectRouter
 
 router = APIRouter(
     prefix="/admin", tags=["Admin"], dependencies=[Depends(admin_authenticate)]
@@ -27,6 +30,9 @@ router.include_router(AdminFeedbackRouter)
 router.include_router(AdminBugReportRouter)
 router.include_router(AdminBugReportEvidenceRouter)
 router.include_router(AdminUserSessionRouter)
+router.include_router(AdminCourseRouter)
+router.include_router(AdminCurriculumRouter)
+router.include_router(AdminCurriculumSubjectRouter)
 
 cookie_router = APIRouter(
     prefix="/images/admin",
