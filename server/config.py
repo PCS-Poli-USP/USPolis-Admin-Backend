@@ -19,7 +19,7 @@ config = DConfig(RepositoryEnv(env_path))  # noqa: F811
 class Settings(BaseModel):
     """Server config settings."""
 
-    environment: str = config("ENVIRONMENT", default="development", cast=str)  # pyright: ignore[reportAssignmentType]
+    environment: str = config("ENVIRONMENT", default="DEVELOPMENT", cast=str)  # pyright: ignore[reportAssignmentType]
     log_max_size: int = config("LOG_MAX_SIZE", default=1_073_741_824, cast=int)  # pyright: ignore[reportAssignmentType]
     log_backup_count: int = config("LOG_BACKUP_COUNT", default=2, cast=int)  # pyright: ignore[reportAssignmentType]
     # CORS
