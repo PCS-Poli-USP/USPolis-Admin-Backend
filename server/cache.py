@@ -118,9 +118,12 @@ def date_range_cache(
                             else:
                                 del _cache_store[cache_key]
 
-                        kwargs[start_param] = cache_start
-                        kwargs[end_param] = cache_end
-                        print(**kwargs)
+                        kwargs[start_param] = datetime.combine(
+                            cache_start.date(), datetime.min.time()
+                        )
+                        kwargs[end_param] = datetime.combine(
+                            cache_end.date(), datetime.max.time()
+                        )
                         result = await func(*args, **kwargs)
                         _cache_store[cache_key] = (result, BrazilDatetime.now_utc())
                         return result  # type: ignore
@@ -181,11 +184,6 @@ def date_range_cache(
                         )
                         kwargs[end_param] = datetime.combine(
                             cache_end.date(), datetime.max.time()
-                        )
-                        print(
-                            "Cache hit for date range:",
-                            cache_start.date(),
-                            cache_end.date(),
                         )
                         result = func(*args, **kwargs)
                         _cache_store[cache_key] = (result, BrazilDatetime.now_utc())
