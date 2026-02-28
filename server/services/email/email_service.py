@@ -42,6 +42,7 @@ RESERVATION_SUBJECT = "Reserva de Sala - USPolis"
 FEEDBACK_SUBJECT = "Feedback - USPolis"
 BUG_REPORT_SUBJECT = "BUG RELATADO - USPolis"
 SYSTEM_LIST = ["uspolis@usp.br"]
+DEVELOPMENT = CONFIG.environment != "PRODUCTION"
 
 
 class EmailService:
@@ -93,7 +94,7 @@ class EmailService:
     ) -> None:
         template = env.get_template("/solicitations/solicitation-requested.html")
         bcc_list = [user.email for user in users]
-        if CONFIG.development:
+        if DEVELOPMENT:
             bcc_list = SYSTEM_LIST
         body = template.render(
             data=SolicitationRequestedMail.from_solicitation(solicitation)
@@ -117,7 +118,7 @@ class EmailService:
             data=SolicitationApprovedMail.from_solicitation(input, solicitation)
         )
         to = [solicitation.user.email]
-        if CONFIG.development:
+        if DEVELOPMENT:
             to = SYSTEM_LIST
         subject = RESERVATION_SUBJECT
         context = MailSend(to=to, subject=subject, body=body)
@@ -133,7 +134,7 @@ class EmailService:
             data=SolicitationApprovedMail.from_solicitation(input, solicitation)
         )
         to = [solicitation.user.email]
-        if CONFIG.development:
+        if DEVELOPMENT:
             to = SYSTEM_LIST
         subject = RESERVATION_SUBJECT
         context = MailSend(to=to, subject=subject, body=body)
@@ -148,7 +149,7 @@ class EmailService:
             data=SolicitationDeletedMail.from_solicitation(solicitation=solicitation)
         )
         to = [solicitation.user.email]
-        if CONFIG.development:
+        if DEVELOPMENT:
             to = SYSTEM_LIST
         subject = RESERVATION_SUBJECT
         context = MailSend(to=to, subject=subject, body=body)
@@ -164,7 +165,7 @@ class EmailService:
             data=SolicitationDeniedMail.from_solicitation(input, solicitation)
         )
         to = [solicitation.user.email]
-        if CONFIG.development:
+        if DEVELOPMENT:
             to = SYSTEM_LIST
         subject = RESERVATION_SUBJECT
         context = MailSend(to=to, subject=subject, body=body)
@@ -177,7 +178,7 @@ class EmailService:
     ) -> None:
         template = env.get_template("/solicitations/solicitation-cancelled.html")
         bcc_list = [user.email for user in users]
-        if CONFIG.development:
+        if DEVELOPMENT:
             bcc_list = SYSTEM_LIST
         body = template.render(
             data=SolicitationCancelledMail.from_solicitation(solicitation)
