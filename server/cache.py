@@ -118,6 +118,9 @@ def date_range_cache(
                             else:
                                 del _cache_store[cache_key]
 
+                        kwargs[start_param] = cache_start
+                        kwargs[end_param] = cache_end
+                        print(**kwargs)
                         result = await func(*args, **kwargs)
                         _cache_store[cache_key] = (result, BrazilDatetime.now_utc())
                         return result  # type: ignore
@@ -155,9 +158,12 @@ def date_range_cache(
 
                 if start_date and end_date:
                     today = BrazilDatetime.now_utc()
-                    cache_start = today - timedelta(days=15)
-                    cache_end = today + timedelta(days=15)
-
+                    cache_start = today - timedelta(
+                        days=today.weekday()
+                    )  # Cache começa no início da semana atual
+                    cache_end = today + timedelta(
+                        days=6 - today.weekday() + 7
+                    )  # Cache termina no final da próxima semana
                     if start_date >= cache_start and end_date <= cache_end:
                         cache_key = f"cache:{func.__name__}:{cache_start.date()}:{cache_end.date()}"
                         _expired_map[cache_key] = expire_seconds
@@ -170,6 +176,17 @@ def date_range_cache(
                             else:
                                 del _cache_store[cache_key]
 
+                        kwargs[start_param] = datetime.combine(
+                            cache_start.date(), datetime.min.time()
+                        )
+                        kwargs[end_param] = datetime.combine(
+                            cache_end.date(), datetime.max.time()
+                        )
+                        print(
+                            "Cache hit for date range:",
+                            cache_start.date(),
+                            cache_end.date(),
+                        )
                         result = func(*args, **kwargs)
                         _cache_store[cache_key] = (result, BrazilDatetime.now_utc())
                         return result
