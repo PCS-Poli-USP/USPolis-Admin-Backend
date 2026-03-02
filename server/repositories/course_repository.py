@@ -7,6 +7,7 @@ from server.models.http.requests.course_request_models import (
     CourseUpdate,
 )
 from server.models.database.user_db_model import User
+from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.must_be_int import must_be_int
 
 class CourseRepository:
@@ -62,6 +63,7 @@ class CourseRepository:
         course.maximal_duration = input.maximal_duration
         course.updated_by_id = must_be_int(user.id)
         course.period = input.period
+        course.updated_at = BrazilDatetime.now_utc()
 
         session.add(course)
         session.flush()

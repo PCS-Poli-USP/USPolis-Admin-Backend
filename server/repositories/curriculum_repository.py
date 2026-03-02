@@ -4,6 +4,7 @@ from sqlmodel import Session, select
 from server.models.database.curriculum_db_model import Curriculum
 from server.models.database.user_db_model import User
 from server.models.http.requests.curriculum_request_models import CurriculumRegister, CurriculumUpdate
+from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.must_be_int import must_be_int
 
 class CurriculumRepository:
@@ -54,6 +55,7 @@ class CurriculumRepository:
         curriculum.AEX = input.AEX
         curriculum.updated_by_id = must_be_int(user.id)
         curriculum.description = input.description
+        curriculum.updated_at = BrazilDatetime.now_utc()
 
         session.add(curriculum)
         session.flush()

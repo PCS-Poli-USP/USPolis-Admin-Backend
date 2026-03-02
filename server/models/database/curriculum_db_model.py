@@ -15,10 +15,10 @@ class Curriculum(BaseModel, table=True):
     course_id: int = Field(foreign_key="course.id")
     AAC: int = Field()
     AEX: int = Field()
-    updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
-    updated_by_id: int = Field(foreign_key="user.id")
     created_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
     created_by_id: int = Field(foreign_key="user.id")
+    updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
+    updated_by_id: int = Field(foreign_key="user.id")
     description: str = Field()
     course: "Course" = Relationship(back_populates="curriculums")
     subjects: list["CurriculumSubject"] = Relationship(
