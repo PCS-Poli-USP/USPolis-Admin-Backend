@@ -7,7 +7,7 @@ from server.config import CONFIG
 
 if __name__ == "__main__":
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    dev = CONFIG.environment == "development"
+    dev = CONFIG.environment == "development" or CONFIG.environment == "staging"
     logger.info("Starting server...")
     uvicorn.run(
         "server.app:app",
