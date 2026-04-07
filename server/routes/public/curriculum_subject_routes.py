@@ -14,3 +14,8 @@ async def get_subjects_by_curriculum(curriculum_id: int, session: SessionDep
     """Get all subjects by curriculum"""
     curriculum_subjects = CurriculumSubjectRepository.get_by_curriculum_id(curriculum_id=curriculum_id, session=session)
     return CurriculumSubjectResponse.from_curriculum_subject_list(curriculum_subjects)
+
+@router.get("")
+def get_all(session: SessionDep) -> list[CurriculumSubjectResponse]:
+    curriculum_subjects = CurriculumSubjectRepository.get_all(session=session)
+    return CurriculumSubjectResponse.from_curriculum_subject_list(curriculum_subjects)

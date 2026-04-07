@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from sqlmodel import Field, Enum, Relationship
 from server.models.database.base_db_model import BaseModel
 from sqlalchemy import UniqueConstraint, Column
+from server.utils.enums.curriculum_subject_category_enum import CurriculumSubjectCategory
 from server.utils.enums.curriculum_subject_type_enum import CurriculumSubjectType
 
 if TYPE_CHECKING:
@@ -21,6 +22,11 @@ class CurriculumSubject(BaseModel, table=True):
     type: CurriculumSubjectType = Field(
         sa_column=Column(
             Enum(CurriculumSubjectType, name="curriculum_subject_type"), nullable=False
+        ),
+    )
+    category: CurriculumSubjectCategory = Field(
+        sa_column=Column(
+            Enum(CurriculumSubjectCategory, name="curriculum_subject_category"), nullable=False
         ),
     )
     period: int = Field()  # Ideal period to take the subject

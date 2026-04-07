@@ -6,6 +6,7 @@ from server.deps.authenticate import UserDep
 from server.deps.session_dep import SessionDep
 from server.models.http.requests.curriculum_subject_request_models import CurriculumSubjectRegister, CurriculumSubjectUpdate
 from server.repositories.curriculum_subject_repository import CurriculumSubjectRepository
+from server.repositories.subject_repository import SubjectRepository
 
 embed = Body(..., embed=True)
 
@@ -18,14 +19,29 @@ def create_curriculum_subject(
 ) -> JSONResponse:
     """Create new curriculum subject"""
 
+    already_exists = CurriculumSubjectRepository.get_by_curriculum_and_subject(
+        curriculum_id=input.curriculum_id,
+        subject_id=input.subject_id,
+        session=session,
+    )
+
+    if already_exists:
+        subject = SubjectRepository.get_by_id(
+            id=input.subject_id,
+            session=session,
+        )
+
+        raise HTTPException(
+            status_code=409,
+            detail=f"{subject.code} já está cadastrada no {already_exists.period}° período.",
+        )
+
     try:
         CurriculumSubjectRepository.create(input=input, user=user, session=session)
         session.commit()
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,
-            content={
-                "message": "Disciplina do currículo criada com sucesso",
-            },
+            content={"message": "Disciplina do currículo criada com sucesso"},
         )
     except IntegrityError:
         session.rollback()

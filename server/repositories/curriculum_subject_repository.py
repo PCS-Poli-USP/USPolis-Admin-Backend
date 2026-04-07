@@ -36,7 +36,19 @@ class CurriculumSubjectRepository:
         session.add(curriculum_subject)
         session.flush()
         return curriculum_subject
+    
+    @staticmethod
+    def get_by_curriculum_and_subject(
+        curriculum_id: int,
+        subject_id: int,
+        session: Session
+    ) -> CurriculumSubject | None:
+        statement = select(CurriculumSubject).where(
+            CurriculumSubject.curriculum_id == curriculum_id,
+            CurriculumSubject.subject_id == subject_id,
+        )
 
+        return session.exec(statement).first()
 
     @staticmethod
     def update(
