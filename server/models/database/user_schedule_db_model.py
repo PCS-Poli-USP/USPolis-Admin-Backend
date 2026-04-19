@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import TYPE_CHECKING
 from sqlalchemy import CheckConstraint, Index
 from sqlmodel import Field, Relationship
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 from server.utils.brazil_datetime import BrazilDatetime
 
 
-class UserSchedule(BaseModel):
+class UserSchedule(BaseModel, table=True):
     __table_args__ = (
         CheckConstraint(
             "end_date >= start_date",
@@ -28,8 +28,8 @@ class UserSchedule(BaseModel):
     user_id: int = Field(foreign_key="user.id")
     start_date: date
     end_date: date
-    updated_at: BrazilDatetime = Field(default_factory=BrazilDatetime.now_utc)
-    created_at: BrazilDatetime = Field(default_factory=BrazilDatetime.now_utc)
+    updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
+    created_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
 
     entries: list["UserScheduleEntry"] = Relationship(
         back_populates="user_schedule",

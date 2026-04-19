@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import CheckConstraint
@@ -18,11 +19,15 @@ class UserScheduleEntry(SQLModel, table=True):
         ),
     )
 
-    user_schedule_id: int = Field(foreign_key="user_schedule.id", index=True)
-    schedule_id: int = Field(foreign_key="schedule.id", index=True)
+    user_schedule_id: int = Field(
+        foreign_key="userschedule.id", index=True, primary_key=True
+    )
+    schedule_id: int = Field(foreign_key="schedule.id", index=True, primary_key=True)
 
     absence_count: int = Field(default=0)
-    updated_at: BrazilDatetime = Field(default_factory=BrazilDatetime.now_utc)
-    created_at: BrazilDatetime = Field(default_factory=BrazilDatetime.now_utc)
+    updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
+    created_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
 
-    absences: list["UserAbsence"] = Relationship(back_populates="entries")
+    absences: list["UserAbsence"] = Relationship(
+        back_populates="entry", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )

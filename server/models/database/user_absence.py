@@ -1,7 +1,7 @@
-from datetime import date
+from datetime import date, datetime
 from typing import TYPE_CHECKING
 from sqlalchemy import Index, UniqueConstraint
-from sqlmodel import Field
+from sqlmodel import Field, Relationship
 
 from server.models.database.base_db_model import BaseModel
 
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 from server.utils.brazil_datetime import BrazilDatetime
 
 
-class UserAbsence(BaseModel):
+class UserAbsence(BaseModel, table=True):
     __table_args__ = (
         UniqueConstraint(
             "user_schedule_id",
@@ -26,13 +26,13 @@ class UserAbsence(BaseModel):
         ),
     )
 
-    user_schedule_id: int = Field(foreign_key="user_schedule.id")
-    schedule_id: int = Field(foreign_key="schedule.id")
+    user_schedule_id: int = Field(index=True)
+    schedule_id: int = Field(index=True)
 
     absence_date: date = Field(index=True)
     note: str = Field(default="")
 
-    updated_at: BrazilDatetime = Field(default_factory=BrazilDatetime.now_utc)
-    created_at: BrazilDatetime = Field(default_factory=BrazilDatetime.now_utc)
+    updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
+    created_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
 
-    entry: "UserScheduleEntry" = Field(foreign_key="user_schedule_entry.id")
+    entry: "UserScheduleEntry" = Relationship(back_populates="absences")

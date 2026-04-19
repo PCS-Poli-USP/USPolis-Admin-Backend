@@ -41,7 +41,7 @@ class User(BaseModel, table=True):
     )
 
     current_schedule_id: int | None = Field(
-        foreign_key="user_schedule.id",
+        foreign_key="userschedule.id",
         default=None,
         nullable=True,
     )
