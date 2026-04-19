@@ -32,12 +32,20 @@ class User(BaseModel, table=True):
     last_visited: datetime = Field(default_factory=BrazilDatetime.now_utc)
     receive_emails: bool = Field(default=True)
     picture_url: str | None
+    active: bool = Field(default=True)
 
     created_by_id: int | None = Field(
         foreign_key="user.id",
         default=None,
         nullable=True,
     )
+
+    current_schedule_id: int | None = Field(
+        foreign_key="user_schedule.id",
+        default=None,
+        nullable=True,
+    )
+
     created_by: Optional["User"] = Relationship(
         sa_relationship_kwargs=dict(remote_side="User.id"),
     )
