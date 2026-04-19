@@ -1,6 +1,9 @@
 # vscode
 .vscode/
 
+#playwright
+.playwright-browsers/
+
 # tests data
 tests/data/results
 

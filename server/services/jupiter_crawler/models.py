@@ -26,3 +26,25 @@ class StudentNumbersInfo(BaseModel):
     subscribers: int
     pendings: int
     enrolled: int
+
+
+class JupiterScheduleSlot(BaseModel):
+    week_day: WeekDay
+    start_time: time
+    end_time: time
+
+
+class JupiterStudentSubject(BaseModel):
+    code: str
+    name: str
+    available_days: list[JupiterScheduleSlot]
+    observations: str = ""
+
+
+class JupiterStudentSchedule(BaseModel):
+    n_usp: str
+    name: str
+    email: str
+    course: str
+    institute: str
+    subjects: list[JupiterStudentSubject]

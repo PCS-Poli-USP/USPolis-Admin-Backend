@@ -16,6 +16,7 @@ from server.routes.public import router as PublicRouter
 from server.routes.authenticated import router as AuthenticatedRouter
 from server.routes.restricted import router as RestrictedRouter
 from server.routes.health import router as HealthRouter
+from server.routes.dev import router as DevRouter
 
 from server.config import CONFIG
 from server.cache import clear_expired_cache
@@ -72,6 +73,7 @@ app.add_middleware(
 app.add_middleware(LoggerMiddleware)
 
 app.include_router(HealthRouter)
+app.include_router(DevRouter)
 app.include_router(PublicRouter)
 app.include_router(AuthenticatedRouter)
 app.include_router(RestrictedRouter)

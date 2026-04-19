@@ -37,6 +37,7 @@ dependencies = [
     "python-multipart (>=0.0.20,<0.0.21)",
     "python-logging-loki (>=0.3.1,<0.4.0)",
     "user-agents (>=2.2.0,<3.0.0)",
+    "playwright (>=1.53.0,<2.0.0)",
 ]
 
 
