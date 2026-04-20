@@ -31,6 +31,7 @@ class CurriculumSubjectRepository:
             curriculum_id=input.curriculum_id,
             subject_id=input.subject_id,
             type=input.type,
+            category=input.category,
             period=input.period 
         )
         session.add(curriculum_subject)
@@ -66,6 +67,7 @@ class CurriculumSubjectRepository:
         curriculum_subject.curriculum_id = input.curriculum_id
         curriculum_subject.subject_id = input.subject_id
         curriculum_subject.type = input.type
+        curriculum_subject.category=input.category
         curriculum_subject.period = input.period
 
         session.add(curriculum_subject)

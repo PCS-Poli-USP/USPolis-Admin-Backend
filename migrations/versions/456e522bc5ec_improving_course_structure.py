@@ -21,9 +21,9 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     category_enum = sa.Enum(
-        "MANDATORY",
-        "FREE_ELECTIVE",
-        "TRACK_ELECTIVE",
+        "mandatory",
+        "free_elective",
+        "track_elective",
         name="curriculum_subject_category"
     )
     category_enum.create(op.get_bind(), checkfirst=True)
@@ -32,16 +32,16 @@ def upgrade() -> None:
         sa.Column("category", category_enum, nullable=True)
     )
     # Define valor padrão para registros existentes
-    op.execute("UPDATE curriculumsubject SET category = 'MANDATORY' WHERE category IS NULL")
+    op.execute("UPDATE curriculumsubject SET category = 'mandatory' WHERE category IS NULL")
     op.alter_column("curriculumsubject", "category", nullable=False)
 
 def downgrade() -> None:
     op.drop_column("curriculumsubject", "category")
 
     category_enum = sa.Enum(
-        "MANDATORY",
-        "FREE_ELECTIVE",
-        "TRACK_ELECTIVE",
+        "mandatory",
+        "free_elective",
+        "track_elective",
         name="curriculum_subject_category"
     )
 
