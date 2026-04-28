@@ -64,3 +64,8 @@ class Schedule(BaseModel, table=True):
         if interval.today:
             return interval.today <= self.end_date
         return False
+
+    def is_active(self) -> bool:
+        """Check if the schedule is active (end date is in the future)"""
+        today = date.today()
+        return self.end_date >= today

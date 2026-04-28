@@ -42,6 +42,12 @@ class ScheduleRepository:
         return schedule
 
     @staticmethod
+    def get_by_ids(*, ids: list[int], session: Session) -> list[Schedule]:
+        statement = select(Schedule).where(col(Schedule.id).in_(ids))
+        schedules = session.exec(statement).all()
+        return list(schedules)
+
+    @staticmethod
     def get_all_unallocated_for_classes(*, session: Session) -> list[Schedule]:
         """Get all unallocated classes schedules that are not custom recurrence"""
         statement = (

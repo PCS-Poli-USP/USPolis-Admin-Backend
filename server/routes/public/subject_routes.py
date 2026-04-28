@@ -1,7 +1,10 @@
 from fastapi import APIRouter, Body
 
 from server.deps.interval_dep import QueryIntervalDep
-from server.models.http.responses.subject_response_models import SubjectResponse
+from server.models.http.responses.subject_response_models import (
+    SubjectResponse,
+    SubjectResponseBase,
+)
 
 from server.deps.session_dep import SessionDep
 from server.repositories.subject_repository import SubjectRepository
@@ -16,6 +19,13 @@ async def get_all_subjects(session: SessionDep) -> list[SubjectResponse]:
     """Get all subjects"""
     subjects = SubjectRepository.get_all(session=session)
     return SubjectResponse.from_subject_list(subjects)
+
+
+@router.get("/core")
+async def get_all_subjects_core(session: SessionDep) -> list[SubjectResponseBase]:
+    """Get all subjects without buildings associeted and other relationships."""
+    subjects = SubjectRepository.get_all(session=session)
+    return SubjectResponseBase.core_from_subject_list(subjects)
 
 
 @router.get("/actives")

@@ -7,6 +7,7 @@ from server.models.database.base_db_model import BaseModel
 
 if TYPE_CHECKING:
     from server.models.database.user_schedule_entry_db_model import UserScheduleEntry
+    from server.models.database.user_db_model import User
 
 from server.utils.brazil_datetime import BrazilDatetime
 
@@ -31,6 +32,9 @@ class UserSchedule(BaseModel, table=True):
     updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
     created_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
 
+    user: "User" = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "[UserSchedule.user_id]"}
+    )
     entries: list["UserScheduleEntry"] = Relationship(
         back_populates="user_schedule",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},

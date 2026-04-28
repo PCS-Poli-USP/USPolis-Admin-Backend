@@ -35,6 +35,7 @@ class JupiterAuthenticationError(Exception):
 @dataclass
 class _SubjectAccumulator:
     name: str
+    class_code: str
     observations: str
     slots: list[JupiterScheduleSlot]
 
@@ -85,7 +86,7 @@ class AuthenticatedJupiterCrawler:
                     )
                 except PlaywrightTimeoutError as exc:
                     raise JupiterAuthenticationError(
-                        "Could not login in JupiterWeb. Check credentials or access."
+                        "Erro ao acessar o JupiterWeb. Cheque suas credenciais."
                     ) from exc
 
                 await page.click("a[href='gradeHoraria?codmnu=4759']")
@@ -93,7 +94,7 @@ class AuthenticatedJupiterCrawler:
 
                 options = await self._get_program_options(page)
                 if not options:
-                    raise RuntimeError("Could not find JupiterWeb term options")
+                    raise RuntimeError("Nenhum programa disponível para seleção no JupiterWeb")
 
                 selected_option = sorted(options, key=int)[-1]
                 await page.select_option("#codpgm", value=selected_option)
@@ -141,6 +142,7 @@ class AuthenticatedJupiterCrawler:
                     JupiterStudentSubject(
                         code=code,
                         name=acc.name,
+                        class_code=acc.class_code,
                         available_days=acc.slots,
                         observations=acc.observations,
                     )
@@ -200,7 +202,11 @@ class AuthenticatedJupiterCrawler:
                 if not cell_text:
                     continue
 
-                code_from_cell = cell_text.split("-")[0].strip()
+                splited_text = cell_text.split("-")
+                code_from_cell = splited_text[0].strip()
+                class_code_from_cell = (
+                    splited_text[1].strip() if len(splited_text) > 1 else ""
+                )
                 if not code_from_cell:
                     continue
 
@@ -214,6 +220,7 @@ class AuthenticatedJupiterCrawler:
 
                 subject_code = details["code"] or code_from_cell
                 subject_name = details["name"] or subject_code
+                class_code = class_code_from_cell or ""
                 observations = details["observations"]
 
                 slot = JupiterScheduleSlot(
@@ -225,6 +232,7 @@ class AuthenticatedJupiterCrawler:
                 if subject_code not in subjects:
                     subjects[subject_code] = _SubjectAccumulator(
                         name=subject_name,
+                        class_code=class_code,
                         observations=observations,
                         slots=[slot],
                     )

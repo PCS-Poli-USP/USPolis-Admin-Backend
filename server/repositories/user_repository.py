@@ -3,7 +3,6 @@ from sqlmodel import Session, col, select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import NoResultFound
 
-from server.config import CONFIG
 from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.group_db_model import Group

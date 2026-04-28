@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from typing import TYPE_CHECKING
-from sqlalchemy import Index, UniqueConstraint
+from sqlalchemy import ForeignKeyConstraint, Index, UniqueConstraint
 from sqlmodel import Field, Relationship
 
 from server.models.database.base_db_model import BaseModel
@@ -13,6 +13,12 @@ from server.utils.brazil_datetime import BrazilDatetime
 
 class UserAbsence(BaseModel, table=True):
     __table_args__ = (
+        ForeignKeyConstraint(
+            ["user_schedule_id", "schedule_id"],
+            ["userscheduleentry.user_schedule_id", "userscheduleentry.schedule_id"],
+            name="fk_userabsence_entry",
+            ondelete="CASCADE",
+        ),
         UniqueConstraint(
             "user_schedule_id",
             "schedule_id",

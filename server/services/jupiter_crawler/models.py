@@ -37,6 +37,7 @@ class JupiterScheduleSlot(BaseModel):
 class JupiterStudentSubject(BaseModel):
     code: str
     name: str
+    class_code: str
     available_days: list[JupiterScheduleSlot]
     observations: str = ""
 

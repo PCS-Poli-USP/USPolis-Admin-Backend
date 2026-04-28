@@ -8,6 +8,7 @@ from server.models.database.classroom_db_model import Classroom
 from server.models.database.group_db_model import Group
 from server.models.database.group_user_link import GroupUserLink
 from server.models.database.user_building_link import UserBuildingLink
+from server.models.database.user_schedule_db_model import UserSchedule
 from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.must_be_int import must_be_int
 
@@ -46,6 +47,9 @@ class User(BaseModel, table=True):
         nullable=True,
     )
 
+    current_schedule: UserSchedule | None = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "[User.current_schedule_id]"}
+    )
     created_by: Optional["User"] = Relationship(
         sa_relationship_kwargs=dict(remote_side="User.id"),
     )

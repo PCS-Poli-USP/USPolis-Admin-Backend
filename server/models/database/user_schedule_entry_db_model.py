@@ -6,6 +6,8 @@ from sqlmodel import Field, Relationship, SQLModel
 
 
 if TYPE_CHECKING:
+    from server.models.database.schedule_db_model import Schedule
+    from server.models.database.user_schedule_db_model import UserSchedule
     from server.models.database.user_absence import UserAbsence
 
 from server.utils.brazil_datetime import BrazilDatetime
@@ -28,6 +30,8 @@ class UserScheduleEntry(SQLModel, table=True):
     updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
     created_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
 
+    user_schedule: "UserSchedule" = Relationship(back_populates="entries")
+    schedule: "Schedule" = Relationship()
     absences: list["UserAbsence"] = Relationship(
         back_populates="entry", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
     )

@@ -30,6 +30,8 @@ from server.models.http.responses.reservation_response_models import Reservation
 from server.models.http.responses.subject_response_models import SubjectResponse
 from server.models.http.responses.user_response_models import UserResponse
 from server.models.http.responses.building_response_models import BuildingResponse
+from server.models.http.responses.user_schedule_response import UserScheduleResponse
+from server.repositories.user_schedule_repository import UserScheduleRepository
 from server.repositories.solicitation_repository import (
     SolicitationRepository,
 )
@@ -142,6 +144,20 @@ def get_my_solicitaions(
     """Get all solicitations for authenticated user"""
     solicitations = SolicitationRepository.get_by_user(user, session)
     return SolicitationResponse.from_solicitation_list(solicitations)
+
+
+@router.get("/my-schedule")
+def get_my_schedule(
+    user: UserDep,
+    session: SessionDep,
+) -> UserScheduleResponse:
+    """Get the schedule for the authenticated user"""
+    current_schedule, changed = UserScheduleRepository.get_active_current_schedule(
+        user=user, session=session
+    )
+    if changed:
+        session.commit()
+    return UserScheduleResponse.from_user_schedule(user, current_schedule)
 
 
 @router.get("/{building_id}")

@@ -19,7 +19,6 @@ from server.services.auth.auth_user_info import AuthUserInfo
 from server.services.auth.authentication_client import (
     AuthenticationClient,
 )
-from server.deps.session_dep import SessionDep
 
 security = HTTPBearer(auto_error=False)
 
