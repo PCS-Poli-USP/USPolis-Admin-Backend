@@ -11,7 +11,6 @@ from server.deps_overrides import DepsOverrides
 from server.exception_handlers import add_exception_handlers
 from server.middlewares import LoggerMiddleware
 from server.routes.admin import router as AdminRouter
-from server.routes.admin import cookie_router as AdminCookieRouter
 from server.routes.public import router as PublicRouter
 from server.routes.authenticated import router as AuthenticatedRouter
 from server.routes.restricted import router as RestrictedRouter
@@ -76,7 +75,6 @@ app.include_router(PublicRouter)
 app.include_router(AuthenticatedRouter)
 app.include_router(RestrictedRouter)
 app.include_router(AdminRouter)
-app.include_router(AdminCookieRouter)
 
 app.dependency_overrides = DepsOverrides
 
