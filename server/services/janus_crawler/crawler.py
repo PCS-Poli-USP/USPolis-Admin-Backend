@@ -80,8 +80,14 @@ class JanusCrawler:
 
         start_date_str = df[0].iloc[13].split(":")[1].strip()
         end_date_str = df[0].iloc[13].split(":")[2].strip()
+
+        parsed_date = datetime.strptime(start_date_str, "%d/%m/%Y")
+        year = parsed_date.year
+        semester = 1 if parsed_date.month < 7 else 2
+        class_number = df[0].iloc[0].split("-")[1].strip().zfill(2)
+
         info = SubjectInfo(
-            class_code=df[0].iloc[0].split("-")[1].strip(),
+            class_code=f"{year}{semester}{class_number}",
             subject_name=df[0].iloc[1],
             subject_code=df[0].iloc[1],
             total_students=int(df[2].iloc[9]),
