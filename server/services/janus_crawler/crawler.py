@@ -1,4 +1,5 @@
 from datetime import datetime
+from io import StringIO
 from bs4 import BeautifulSoup
 from httpx import AsyncClient
 import pandas as pd
@@ -63,7 +64,7 @@ class JanusCrawler:
 
     def __get_subject_info(self) -> SubjectInfo:
         tables = self.__soup.find_all("table")
-        df = pd.read_html(str(tables), flavor="bs4")[0]
+        df = pd.read_html(StringIO(str(tables)), flavor="bs4")[0]
         clean_df = df.dropna()
 
         professors_raw = df[0].iloc[17]
