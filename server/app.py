@@ -73,7 +73,6 @@ app.add_middleware(
 app.add_middleware(LoggerMiddleware)
 
 app.include_router(HealthRouter)
-app.include_router(DevRouter)
 app.include_router(PublicRouter)
 app.include_router(AuthenticatedRouter)
 app.include_router(RestrictedRouter)
@@ -83,3 +82,6 @@ app.include_router(AdminCookieRouter)
 app.dependency_overrides = DepsOverrides
 
 add_exception_handlers(app)
+
+if CONFIG.environment == "development":
+    app.include_router(DevRouter)
