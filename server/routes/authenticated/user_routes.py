@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 
 from server.deps.authenticate import UserDep
@@ -22,6 +22,8 @@ from server.deps.repository_adapters.classroom_repository_adapter import (
 from server.models.database.user_db_model import User
 from server.models.http.responses.class_response_models import ClassResponse
 from server.models.http.responses.classroom_response_models import ClassroomResponse
+from server.models.http.responses.course_response_models import CourseResponse
+from server.models.http.responses.curriculum_response_models import CurriculumResponse
 from server.models.http.responses.solicitation_response_models import (
     SolicitationResponse,
 )
@@ -145,6 +147,61 @@ def get_my_solicitaions(
     solicitations = SolicitationRepository.get_by_user(user, session)
     return SolicitationResponse.from_solicitation_list(solicitations)
 
+@router.get("/my-course")
+def get_my_course(
+    session: SessionDep,
+    user: UserDep,
+) -> CourseResponse:
+    """Get course for authenticated user if they have one defined"""
+
+    if user.curriculum is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Usuário não possui curso definido"
+        )
+    
+    course = user.curriculum.course
+
+    if course is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Curso não encontrado"
+        )
+    
+    return CourseResponse.from_course(course)
+
+@router.get("/my-curriculum")
+def get_my_curriculum(
+    session: SessionDep,
+    user: UserDep,
+) -> CurriculumResponse:
+    """Get curriculum for authenticated user if they have one defined"""
+
+    if user.curriculum is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Usuário não possui currículo definido"
+        )
+
+    return CurriculumResponse.from_curriculum(user.curriculum)
+
+@router.post("/my-curriculum")
+def set_my_curriculum(
+    curriculum_id: int,
+    session: SessionDep,
+    user: UserDep,
+) -> JSONResponse:
+    """Define curriculum for authenticated user"""
+
+    UserRepository.update_curriculum(user=user, curriculum_id=curriculum_id, session=session)
+    session.commit()
+
+    return JSONResponse(
+        status_code=200,
+        content={
+            "message": "Currículo definido com sucesso"
+        }
+    )
 
 @router.get("/my-schedule")
 def get_my_schedule(

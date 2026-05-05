@@ -17,6 +17,10 @@ from server.routes.public.reservation_routes import router as ReservationRouter
 from server.routes.public.occurrence_routes import router as OccurrenceRouter
 from server.routes.public.allocation_routes import router as AllocationRouter
 from server.routes.public.auth_routes import router as AuthRouter
+from server.routes.public.course_routes import router as CourseRouter
+from server.routes.public.curriculum_routes import router as CurriculumRouter
+from server.routes.public.curriculum_subject_routes import router as CurriculumSubjectRouter
+
 
 
 router = APIRouter(tags=["Public"], dependencies=[Depends(public_authenticate)])
@@ -34,3 +38,6 @@ router.include_router(ReservationRouter)
 router.include_router(OccurrenceRouter)
 router.include_router(AllocationRouter)
 router.include_router(AuthRouter)
+router.include_router(CourseRouter)
+router.include_router(CurriculumRouter)
+router.include_router(CurriculumSubjectRouter)
