@@ -11,3 +11,9 @@ class CurriculumUpdate(BaseModel):
     AAC: int
     AEX: int
     description: str
+
+class CreateCurriculumByJupiterRequest(BaseModel):
+    course_id: int
+    codcur: int
+    codhab: int
+    description: str
