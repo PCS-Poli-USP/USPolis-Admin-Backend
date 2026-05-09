@@ -188,10 +188,7 @@ def update_user_schedule(
         id=user_schedule_id, session=session
     )
     if not user_schedule:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User schedule not found",
-        )
+        raise UserScheduleNotFoundError()
 
     schedules = ScheduleRepository.get_by_ids(ids=input.schedule_ids, session=session)
     updated = UserScheduleRepository.update_from_schedules(
@@ -204,3 +201,39 @@ def update_user_schedule(
         status_code=status.HTTP_200_OK,
         content={"message": "Grade horária atualizada com sucesso!"},
     )
+
+
+@router.delete("/{user_schedule_id}")
+def delete_user_schedule(
+    user_schedule_id: int,
+    user: UserDep,
+    session: SessionDep,
+) -> JSONResponse:
+    user_schedule = UserScheduleRepository.get_by_id(
+        id=user_schedule_id, session=session
+    )
+    if not user_schedule:
+        raise UserScheduleNotFoundError()
+
+    if user.id != user_schedule.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Você não tem permissão para excluir esta grade horária",
+        )
+
+    UserScheduleRepository.delete(user_schedule, session=session)
+    user.current_schedule = None
+    session.add(user)
+    session.commit()
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={"message": "Grade horária excluída com sucesso!"},
+    )
+
+
+class UserScheduleNotFoundError(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Grade horária do usuário não encontrada",
+        )

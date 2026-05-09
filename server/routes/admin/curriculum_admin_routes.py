@@ -129,7 +129,6 @@ async def preview_curriculum_by_jupiter(
 ) -> dict[str, Any]:
     crawler = JupiterCurriculumCrawler(input.codcur, input.codhab)
     general_info, mandatory, free, elective = await crawler.crawl_curriculum()
-
     return {
         "description": input.description,
         "AAC": general_info.AAC,

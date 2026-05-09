@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from server.models.database.group_db_model import Group
 from server.models.database.user_db_model import User
 from server.models.http.responses.building_response_models import BuildingResponse
+from server.models.http.responses.curriculum_response_models import CurriculumResponse
 from server.models.http.responses.solicitation_response_models import (
     SolicitationResponse,
 )
@@ -106,6 +107,8 @@ class UserResponse(UseCoreResponse):
     buildings: list[BuildingResponse] | None = None
     solicitations: list[SolicitationResponse]
     groups: list["UserGroupResponse"]
+    curriculum: CurriculumResponse | None = None
+    current_schedule_id: int | None = None
 
     @classmethod
     def from_user(cls, user: User) -> "UserResponse":
@@ -122,6 +125,10 @@ class UserResponse(UseCoreResponse):
                 user.solicitations
             ),
             groups=UserGroupResponse.from_group_list(user.groups),
+            curriculum=CurriculumResponse.from_curriculum(user.curriculum)
+            if user.curriculum
+            else None,
+            current_schedule_id=user.current_schedule_id,
         )
 
     @classmethod

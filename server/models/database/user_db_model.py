@@ -35,7 +35,8 @@ class User(BaseModel, table=True):
     receive_emails: bool = Field(default=True)
     picture_url: str | None
     curriculum_id: int | None = Field(
-        default=None, foreign_key="curriculum.id",
+        default=None,
+        foreign_key="curriculum.id",
     )
     active: bool = Field(default=True)
 
@@ -79,7 +80,8 @@ class User(BaseModel, table=True):
         back_populates="user", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
     )
     curriculum: Curriculum | None = Relationship(
-        back_populates="users", sa_relationship_kwargs={"foreign_keys": "[User.curriculum_id]"}
+        back_populates="users",
+        sa_relationship_kwargs={"foreign_keys": "[User.curriculum_id]"},
     )
 
     def classrooms_ids_set(self) -> set[int]:

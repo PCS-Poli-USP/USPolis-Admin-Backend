@@ -133,7 +133,7 @@ class UserScheduleRepository:
         return user_schedule
 
     @staticmethod
-    def delete_user_schedule(user_schedule: UserSchedule, session: Session) -> None:
-        for entry in user_schedule.entries:
-            session.delete(entry)
+    def delete(user_schedule: UserSchedule, session: Session) -> None:
+        # for entry in user_schedule.entries:
+        #     session.delete(entry)
         session.delete(user_schedule)
