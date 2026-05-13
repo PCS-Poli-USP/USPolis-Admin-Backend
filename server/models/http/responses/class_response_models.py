@@ -6,10 +6,54 @@ from server.models.database.class_db_model import Class
 from server.models.http.responses.schedule_response_models import (
     ScheduleResponse,
     ScheduleFullResponse,
+    ScheduleResponseBase,
 )
 from server.utils.enums.audiovisual_type_enum import AudiovisualType
 from server.utils.enums.class_type import ClassType
 from server.utils.must_be_int import must_be_int
+
+
+class ClassCoreResponse(BaseModel):
+    id: int
+    start_date: date
+    end_date: date
+    code: str
+    professors: list[str]
+    type: ClassType
+    vacancies: int
+
+    air_conditionating: bool
+    accessibility: bool
+    audiovisual: AudiovisualType
+
+    ignore_to_allocate: bool
+    full_allocated: bool
+    updated_at: datetime
+
+    subject_id: int
+    subject_code: str
+    subject_name: str
+
+    @classmethod
+    def from_class(cls, _class: Class) -> "ClassCoreResponse":
+        return cls(
+            id=must_be_int(_class.id),
+            start_date=_class.start_date,
+            end_date=_class.end_date,
+            code=_class.code,
+            professors=_class.professors,
+            type=_class.type,
+            vacancies=_class.vacancies,
+            air_conditionating=_class.air_conditionating,
+            accessibility=_class.accessibility,
+            audiovisual=_class.audiovisual,
+            ignore_to_allocate=_class.ignore_to_allocate,
+            full_allocated=_class.full_allocated,
+            updated_at=_class.updated_at,
+            subject_id=must_be_int(_class.subject.id),
+            subject_code=_class.subject.code,
+            subject_name=_class.subject.name,
+        )
 
 
 class ClassResponseBase(BaseModel):
@@ -63,6 +107,24 @@ class ClassResponseBase(BaseModel):
             ],
             calendar_names=[calendar.name for calendar in _class.calendars],
         )
+
+
+class ClassSchedulingResponse(ClassCoreResponse):
+    """Class core response with schedules"""
+
+    schedules: list[ScheduleResponseBase]
+
+    @classmethod
+    def from_class(cls, _class: Class) -> "ClassSchedulingResponse":
+        base = ClassCoreResponse.from_class(_class)
+        return cls(
+            **base.model_dump(),
+            schedules=ScheduleResponseBase.from_schedule_list(_class.schedules),
+        )
+
+    @classmethod
+    def from_class_list(cls, classes: list[Class]) -> list["ClassSchedulingResponse"]:
+        return [cls.from_class(u_class) for u_class in classes]
 
 
 class ClassResponse(ClassResponseBase):

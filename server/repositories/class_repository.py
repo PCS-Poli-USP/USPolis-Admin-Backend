@@ -294,6 +294,16 @@ class ClassRepository:
         return list(classes)
 
     @staticmethod
+    def get_comming(*, session: Session, limit: int = 5) -> list[Class]:
+        schedules = ScheduleRepository.get_comming_class_schedules(
+            session=session, limit=limit * 2
+        )
+        classes = [
+            schedule.class_ for schedule in schedules if schedule.class_ is not None
+        ]
+        return classes
+
+    @staticmethod
     def create(*, input: ClassRegister, session: Session) -> Class:
         subject = SubjectRepository.get_by_id(id=input.subject_id, session=session)
         calendars = (

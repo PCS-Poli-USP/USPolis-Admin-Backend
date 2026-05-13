@@ -1,4 +1,4 @@
-from datetime import date as datetime_date
+from datetime import date as datetime_date, timedelta
 from fastapi import HTTPException, status
 
 from sqlalchemy.orm import selectinload
@@ -20,6 +20,7 @@ from server.models.http.requests.schedule_request_models import (
 )
 from server.repositories.classroom_repository import ClassroomRepository
 from server.repositories.occurrence_repository import OccurrenceRepository
+from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.recurrence import Recurrence
 from server.utils.occurrence_utils import OccurrenceUtils
 from server.utils.schedule_utils import ScheduleUtils
@@ -104,6 +105,30 @@ class ScheduleRepository:
                 raise ScheduleNotFound()
 
         return schedule
+
+    @staticmethod
+    def get_comming_class_schedules(
+        *, session: Session, limit: int = 10
+    ) -> list[Schedule]:
+        now = BrazilDatetime.now_utc()
+        end = now + timedelta(days=2)
+        statement = (
+            select(Schedule)
+            .join(Occurrence, col(Occurrence.schedule_id) == Schedule.id)
+            .where(
+                col(Occurrence.date) >= now.date(),
+                col(Occurrence.date) <= end.date(),
+                col(Occurrence.end_time) >= now.time(),
+                col(Schedule.class_id).is_not(None),
+            )
+            .options(
+                selectinload(Schedule.classroom).selectinload(Classroom.building),  # type: ignore
+                selectinload(Schedule.class_).selectinload(Class.subject),  # type: ignore
+            )
+            .limit(limit)
+        )
+        schedules = session.exec(statement).all()
+        return list(schedules)
 
     @staticmethod
     def find_old_allocation_options(
