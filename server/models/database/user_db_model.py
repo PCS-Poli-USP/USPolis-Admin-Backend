@@ -8,9 +8,12 @@ from server.models.database.classroom_db_model import Classroom
 from server.models.database.curriculum_db_model import Curriculum
 from server.models.database.group_db_model import Group
 from server.models.database.group_user_link import GroupUserLink
+from server.models.database.role_db_model import UnifiedPermissions
 from server.models.database.user_building_link import UserBuildingLink
+from server.models.database.user_role_db_model import UserRole
 from server.models.database.user_schedule_db_model import UserSchedule
 from server.utils.brazil_datetime import BrazilDatetime
+from server.utils.enums.resources_enums import Resource
 from server.utils.must_be_int import must_be_int
 
 if TYPE_CHECKING:
@@ -24,6 +27,7 @@ if TYPE_CHECKING:
     )
     from server.models.database.feedback_db_model import Feedback
     from server.models.database.bug_report_db_model import BugReport
+    from server.models.database.role_db_model import Role
 
 
 class User(BaseModel, table=True):
@@ -83,6 +87,26 @@ class User(BaseModel, table=True):
         back_populates="users",
         sa_relationship_kwargs={"foreign_keys": "[User.curriculum_id]"},
     )
+
+    # Permissions and roles
+    roles: list["Role"] = Relationship(back_populates="users", link_model=UserRole)
+
+    def get_user_permissions_map(self) -> dict[Resource, list[UnifiedPermissions]]:
+        """
+        Get a map of resources to permissions that the user has.
+
+        Returns:
+            dict[Resource, list[UnifiedPermissions]]: A map of resources to each resource permissions.
+        """
+        permissions_map: dict[Resource, list[UnifiedPermissions]] = {}
+        for role in self.roles:
+            for resource in role.resources:
+                if resource not in permissions_map:
+                    permissions_map[resource] = []
+                permissions_map[resource].extend(
+                    role.get_resource_permissions(resource)
+                )
+        return permissions_map
 
     def classrooms_ids_set(self) -> set[int]:
         """
