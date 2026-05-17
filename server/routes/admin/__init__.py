@@ -14,9 +14,13 @@ from server.routes.admin.user_session_admin_routes import (
     router as AdminUserSessionRouter,
 )
 from server.routes.admin.course_admin_routes import router as AdminCourseRouter
+
 from server.routes.admin.curriculum_admin_routes import router as AdminCurriculumRouter
 from server.routes.admin.curriculum_subject_admin_routes import (
     router as AdminCurriculumSubjectRouter,
+)
+from server.routes.admin.permissions_admin_routes import (
+    router as AdminPermissionRouter,
 )
 
 router = APIRouter(
@@ -25,6 +29,7 @@ router = APIRouter(
 
 router.include_router(AdminUserRouter)
 router.include_router(AdminBuildingRouter)
+router.include_router(AdminPermissionRouter)
 router.include_router(AdminMobileRouter)
 router.include_router(AdminGroupRouter)
 router.include_router(AdminFeedbackRouter)

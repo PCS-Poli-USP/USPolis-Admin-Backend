@@ -22,3 +22,6 @@ class CourseAction(StrEnum):
     READ = BaseAction.READ
     UPDATE = BaseAction.UPDATE
     DELETE = BaseAction.DELETE
+
+
+PermissionAction = ClassroomAction | CourseAction

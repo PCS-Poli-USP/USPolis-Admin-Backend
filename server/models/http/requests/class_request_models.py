@@ -68,7 +68,7 @@ class ClassInvalidData(HTTPException):
     def __init__(self, data_info: str) -> None:
         super().__init__(
             status.HTTP_400_BAD_REQUEST,
-            f"Class has invalid {data_info} value",
+            f"Turma tem valor inválido para {data_info}",
         )
 
 
