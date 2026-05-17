@@ -100,9 +100,13 @@ class User(BaseModel, table=True):
         },
     )
     classroom_permissions: list["ClassroomPermission"] = Relationship(
-        back_populates="user"
+        back_populates="user",
+        sa_relationship_kwargs={"foreign_keys": "[ClassroomPermission.user_id]"},
     )
-    course_permissions: list["CoursePermission"] = Relationship(back_populates="user")
+    course_permissions: list["CoursePermission"] = Relationship(
+        back_populates="user",
+        sa_relationship_kwargs={"foreign_keys": "[CoursePermission.user_id]"},
+    )
 
     def get_user_permissions_map(self) -> dict[Resource, list[UnifiedPermissions]]:
         """

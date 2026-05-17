@@ -43,10 +43,14 @@ class ClassroomPermission(BasePermission, table=True):
     )
 
     role: Optional["Role"] | None = Relationship(back_populates="classroom_permissions")
-    user: Optional["User"] | None = Relationship(back_populates="classroom_permissions")
+    user: Optional["User"] | None = Relationship(
+        back_populates="classroom_permissions",
+        sa_relationship_kwargs={"foreign_keys": "[ClassroomPermission.user_id]"},
+    )
 
     granted_by_user: "User" = Relationship(
         sa_relationship_kwargs={
-            "primaryjoin": "ClassroomPermission.granted_by_id == User.id",
+            "foreign_keys": "[ClassroomPermission.granted_by]",
+            "primaryjoin": "ClassroomPermission.granted_by == User.id",
         },
     )

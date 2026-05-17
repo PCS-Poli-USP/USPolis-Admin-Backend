@@ -40,10 +40,14 @@ class CoursePermission(BasePermission, table=True):
     action: CourseAction = Field(sa_column=Column(Enum(CourseAction), nullable=False))
 
     role: Optional["Role"] | None = Relationship(back_populates="course_permissions")
-    user: Optional["User"] | None = Relationship(back_populates="course_permissions")
+    user: Optional["User"] | None = Relationship(
+        back_populates="course_permissions",
+        sa_relationship_kwargs={"foreign_keys": "[CoursePermission.user_id]"},
+    )
 
     granted_by_user: "User" = Relationship(
         sa_relationship_kwargs={
-            "primaryjoin": "CoursePermission.granted_by_id == User.id",
+            "foreign_keys": "[CoursePermission.granted_by]",
+            "primaryjoin": "CoursePermission.granted_by == User.id",
         },
     )
