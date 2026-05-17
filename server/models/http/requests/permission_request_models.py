@@ -17,7 +17,7 @@ class PermissionRegister(BaseModel):
     action: PermissionAction
     user_id: int | None
     role_id: int | None
-    granted_by: int
+    granted_by_id: int
 
     @model_validator(mode="after")
     def check_permission_body(self) -> Self:

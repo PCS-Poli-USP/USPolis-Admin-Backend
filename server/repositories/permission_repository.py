@@ -58,7 +58,7 @@ class PermissionRepository(Generic[P, A]):
             "action": input.action,
             "user_id": input.user_id,
             "role_id": input.role_id,
-            "granted_by": input.granted_by,
+            "granted_by": input.granted_by_id,
         }
         permission = model(**payload)
         session.add(permission)
@@ -82,7 +82,7 @@ class PermissionRepository(Generic[P, A]):
         permission.action = input.action
         permission.user_id = input.user_id
         permission.role_id = input.role_id
-        permission.granted_by = input.granted_by
+        permission.granted_by = input.granted_by_id
         session.add(permission)
         return permission
 
