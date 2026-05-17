@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 from server.models.database.classroom_permission_db_model import ClassroomPermission
@@ -20,6 +22,7 @@ class PermissionResponse(BaseModel):
 
     granted_by_id: int
     granted_by: str
+    granted_at: datetime
 
     @classmethod
     def from_permission(
@@ -56,6 +59,7 @@ class PermissionResponse(BaseModel):
             role_id=classroom_permission.role_id,
             granted_by_id=TypeGuard.must_be_int(classroom_permission.granted_by),
             granted_by=classroom_permission.granted_by_user.name,
+            granted_at=classroom_permission.granted_at,
         )
 
     @classmethod
@@ -77,6 +81,7 @@ class PermissionResponse(BaseModel):
             role_id=course_permission.role_id,
             granted_by_id=TypeGuard.must_be_int(course_permission.granted_by),
             granted_by=course_permission.granted_by_user.name,
+            granted_at=course_permission.granted_at,
         )
 
     @classmethod
