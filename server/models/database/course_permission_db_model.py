@@ -1,9 +1,14 @@
+from typing import TYPE_CHECKING, Optional
+
 from sqlalchemy import Index, UniqueConstraint, text
-from sqlmodel import Column, Enum, Field
+from sqlmodel import Column, Enum, Field, Relationship
 
 from server.models.database.base_permission_db_model import BasePermission
 from server.utils.enums.actions_enums import CourseAction
 
+if TYPE_CHECKING:
+    from server.models.database.role_db_model import Role
+    from server.models.database.user_db_model import User
 
 class CoursePermission(BasePermission, table=True):
     __table_args__ = (
@@ -33,3 +38,12 @@ class CoursePermission(BasePermission, table=True):
     )
     course_id: int | None = Field(default=None, foreign_key="course.id")
     action: CourseAction = Field(sa_column=Column(Enum(CourseAction), nullable=False))
+
+    role: Optional["Role"] | None = Relationship(back_populates="course_permissions")
+    user: Optional["User"] | None = Relationship(back_populates="course_permissions")
+
+    granted_by_user: "User" = Relationship(
+        sa_relationship_kwargs={
+            "primaryjoin": "CoursePermission.granted_by_id == User.id",
+        },
+    )

@@ -28,6 +28,8 @@ if TYPE_CHECKING:
     from server.models.database.feedback_db_model import Feedback
     from server.models.database.bug_report_db_model import BugReport
     from server.models.database.role_db_model import Role
+    from server.models.database.classroom_permission_db_model import ClassroomPermission
+    from server.models.database.course_permission_db_model import CoursePermission
 
 
 class User(BaseModel, table=True):
@@ -89,7 +91,18 @@ class User(BaseModel, table=True):
     )
 
     # Permissions and roles
-    roles: list["Role"] = Relationship(back_populates="users", link_model=UserRole)
+    roles: list["Role"] = Relationship(
+        back_populates="users",
+        link_model=UserRole,
+        sa_relationship_kwargs={
+            "primaryjoin": "User.id == UserRole.user_id",
+            "secondaryjoin": "Role.id == UserRole.role_id",
+        },
+    )
+    classroom_permissions: list["ClassroomPermission"] = Relationship(
+        back_populates="user"
+    )
+    course_permissions: list["CoursePermission"] = Relationship(back_populates="user")
 
     def get_user_permissions_map(self) -> dict[Resource, list[UnifiedPermissions]]:
         """

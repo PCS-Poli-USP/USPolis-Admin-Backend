@@ -1,6 +1,5 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
-from collections.abc import Sequence
 
 from sqlmodel import Field, Relationship, Column
 
@@ -22,7 +21,7 @@ from server.utils.brazil_datetime import BrazilDatetime
 UnifiedPermissions = BasePermission | ClassroomPermission | CoursePermission
 
 
-class Role(BaseModel):
+class Role(BaseModel, table=True):
     name: str
     description: str = Field(default="")
     resources: list[Resource] = Field(
@@ -40,7 +39,14 @@ class Role(BaseModel):
     created_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
     updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
 
-    users: list["User"] = Relationship(back_populates="roles", link_model=UserRole)
+    users: list["User"] = Relationship(
+        back_populates="roles",
+        link_model=UserRole,
+        sa_relationship_kwargs={
+            "primaryjoin": "Role.id == UserRole.role_id",
+            "secondaryjoin": "User.id == UserRole.user_id",
+        },
+    )
 
     # Permissions relationships
     classroom_permissions: list[ClassroomPermission] = Relationship(
@@ -48,13 +54,26 @@ class Role(BaseModel):
     )
     course_permissions: list[CoursePermission] = Relationship(back_populates="role")
 
-    def get_resource_permissions(
-        self, resource: Resource
-    ) -> Sequence[UnifiedPermissions]:
+    def get_permissions(self) -> list[UnifiedPermissions]:
+        """Get all permissions of the role"""
+        permissions: list[UnifiedPermissions] = []
+        permissions.extend(self.classroom_permissions)
+        permissions.extend(self.course_permissions)
+        return permissions
+
+    def get_resource_permissions(self, resource: Resource) -> list[UnifiedPermissions]:
         """Get the permissions of the role for a given resource"""
         if resource not in self.resources:
             return []
         if resource == Resource.CLASSROOM:
-            return self.classroom_permissions
+            return list(self.classroom_permissions)
         if resource == Resource.COURSE:
-            return self.course_permissions
+            return list(self.course_permissions)
+        return []
+
+    def get_resource_permissions_map(self) -> dict[Resource, list[UnifiedPermissions]]:
+        """Get a map of resource to permissions for the role"""
+        permissions_map: dict[Resource, list[UnifiedPermissions]] = {}
+        for resource in self.resources:
+            permissions_map[resource] = self.get_resource_permissions(resource)
+        return permissions_map
