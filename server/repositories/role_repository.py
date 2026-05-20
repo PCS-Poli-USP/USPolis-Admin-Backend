@@ -92,43 +92,50 @@ class RoleRepository:
     ) -> Role:
         role = cls.get_by_id(id=id, session=session)
         role_id = cls.__ensure_role_id(role)
-        resources_to_consider = cls.__merge_resources(
-            current_resources=role.resources,
-            desired_resources=input.resources,
-        )
-        current_permissions = cls.__current_permissions(
+
+        current_permissions_map = cls.__current_permissions(
             role_id=role_id,
-            resources=resources_to_consider,
+            resources=role.resources,
             session=session,
         )
-        previous_permission_signatures = {
-            cls.__permission_signature(permission) for permission in current_permissions
+        current_permissions = [
+            permission
+            for permissions in current_permissions_map.values()
+            for permission in permissions
+        ]
+
+        permissions_to_append_map = cls.__permissions_from_ids(
+            permission_ids=input.permissions_ids or [],
+            session=session,
+        )
+        permissions_to_append = [
+            permission
+            for permissions in permissions_to_append_map.values()
+            for permission in permissions
+        ]
+
+        new_permissions_signatures = {
+            cls.__permission_signature(permission)
+            for permission in permissions_to_append
         }
+
+        permissions_to_create = cls.__normalize_permissions(
+            new_permissions=input.permissions,
+            existing_permissions=current_permissions_map,
+        )
+        new_permissions_signatures.update(
+            cls.__permission_signature(permission)
+            for permission in permissions_to_create
+        )
+
+        permissions_to_remove = []
+        for permission in current_permissions:
+            if cls.__permission_signature(permission) not in new_permissions_signatures:
+                permissions_to_remove.append(permission)
 
         role.name = input.name
         role.description = input.description
         role.resources = input.resources
-
-        new_permissions = cls.__normalize_permissions(
-            new_permissions=input.permissions,
-            existing_permissions=existing_permissions,
-        )
-        desired_permission_signatures = {
-            cls.__permission_signature(permission) for permission in desired_permissions
-        }
-
-        permissions_to_remove = [
-            permission
-            for permission in current_permissions
-            if cls.__permission_signature(permission)
-            not in desired_permission_signatures
-        ]
-        permissions_to_create = [
-            permission
-            for permission in desired_permissions
-            if cls.__permission_signature(permission)
-            not in previous_permission_signatures
-        ]
 
         if permissions_to_remove or permissions_to_create:
             for permission in permissions_to_remove:
@@ -139,6 +146,10 @@ class RoleRepository:
                 user=user,
                 session=session,
             )
+
+        for permission in permissions_to_append:
+            permission.role_id = role_id
+            session.add(permission)
 
         role.updated_at = BrazilDatetime.now_utc()
         session.add(role)
@@ -312,13 +323,13 @@ class RoleRepository:
         role_id: int,
         resources: list[Resource],
         session: Session,
-    ) -> list[Permission]:
+    ) -> dict[Resource, list[Permission]]:
         """Fetch current permissions linked to a role for the specified resources."""
-        permissions: list[Permission] = []
+        permissions: dict[Resource, list[Permission]] = {}
         for resource in resources:
             repository = ROLE_PERMISSION_REPOSITORY_MAP[resource]
-            permissions.extend(
-                repository.get_all_by_role_id(role_id=role_id, session=session)
+            permissions[resource] = repository.get_all_by_role_id(  # type: ignore
+                role_id=role_id, session=session
             )
         return permissions
 
@@ -337,9 +348,11 @@ class RoleRepository:
         return merged_resources
 
     @classmethod
-    def __permission_signature(cls, permission: object) -> tuple:
+    def __permission_signature(
+        cls, permission: Permission | PermissionRegister
+    ) -> tuple[Resource, tuple, int | None, int | None, int | None, int | None]:
         """Create a signature for a permission based on its resource, actions, and resource ID to ensure uniqueness."""
-        resource = getattr(permission, "resource", None)
+        resource = getattr(permission, "resource")
         if resource is None:
             if isinstance(permission, ClassroomPermission):
                 resource = Resource.CLASSROOM
@@ -363,7 +376,7 @@ class RoleRepository:
         )
 
     @staticmethod
-    def __action_signature(actions: list) -> tuple:
+    def __action_signature(actions: list) -> tuple[str, ...]:
         """Create a signature for a list of actions, ensuring that the order of actions does not affect the signature."""
         return tuple(sorted(str(action) for action in actions))
 
