@@ -1,7 +1,9 @@
 from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import Index, UniqueConstraint, text
-from sqlmodel import Field, Column, Enum, Relationship
+from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.types import Enum as SQLEnum
+from sqlmodel import Column, Field, Relationship
 
 from server.models.database.base_permission_db_model import BasePermission
 from server.utils.enums.actions_enums import ClassroomAction
@@ -14,32 +16,33 @@ if TYPE_CHECKING:
 class ClassroomPermission(BasePermission, table=True):
     __table_args__ = (
         UniqueConstraint(
-            "action",
             "classroom_id",
             "user_id",
             "role_id",
-            name="unique_action_per_classroom_permission",
+            name="unique_permission_per_classroom_target",
         ),
         Index(
-            "unique_action_per_classroom_permission_user",
-            "action",
+            "unique_permission_per_classroom_user",
             "classroom_id",
             "user_id",
             unique=True,
             postgresql_where=text("user_id IS NOT NULL"),
         ),
         Index(
-            "unique_action_per_classroom_permission_role",
-            "action",
+            "unique_permission_per_classroom_role",
             "classroom_id",
             "role_id",
             unique=True,
             postgresql_where=text("role_id IS NOT NULL"),
         ),
     )
-    classroom_id: int = Field(foreign_key="classroom.id")
-    action: ClassroomAction = Field(
-        sa_column=Column(Enum(ClassroomAction), nullable=False)
+    classroom_id: int | None = Field(foreign_key="classroom.id")
+    actions: list[ClassroomAction] = Field(
+        default_factory=list,
+        sa_column=Column(
+            ARRAY(SQLEnum(ClassroomAction, name="classroomaction")),
+            nullable=False,
+        ),
     )
 
     role: Optional["Role"] | None = Relationship(back_populates="classroom_permissions")
@@ -48,9 +51,9 @@ class ClassroomPermission(BasePermission, table=True):
         sa_relationship_kwargs={"foreign_keys": "[ClassroomPermission.user_id]"},
     )
 
-    granted_by_user: "User" = Relationship(
+    granted_by: "User" = Relationship(
         sa_relationship_kwargs={
-            "foreign_keys": "[ClassroomPermission.granted_by]",
-            "primaryjoin": "ClassroomPermission.granted_by == User.id",
+            "foreign_keys": "[ClassroomPermission.granted_by_id]",
+            "primaryjoin": "ClassroomPermission.granted_by_id == User.id",
         },
     )

@@ -10,26 +10,36 @@ from server.utils.enums.actions_enums import CourseAction
 class CoursePermissionRegister(PermissionRegister):
     course_id: int | None
 
-    @field_validator("action", mode="before")
+    @field_validator("actions", mode="before")
     @classmethod
-    def validate_action(cls, value: str | CourseAction) -> CourseAction:
-        if isinstance(value, CourseAction):
-            return value
+    def validate_actions(
+        cls, value: str | CourseAction | list[str | CourseAction]
+    ) -> list[CourseAction]:
+        if isinstance(value, str | CourseAction):
+            value = [value]
+        actions: list[CourseAction] = []
         try:
-            return CourseAction(value)
+            for action in value:
+                actions.append(CourseAction(action))
         except ValueError as exc:
-            raise ValueError("action must be a CourseAction") from exc
+            raise ValueError("actions must be a list of CourseAction") from exc
+        return actions
 
 
 class CoursePermissionUpdate(PermissionUpdate):
     course_id: int | None
 
-    @field_validator("action", mode="before")
+    @field_validator("actions", mode="before")
     @classmethod
-    def validate_action(cls, value: str | CourseAction) -> CourseAction:
-        if isinstance(value, CourseAction):
-            return value
+    def validate_actions(
+        cls, value: str | CourseAction | list[str | CourseAction]
+    ) -> list[CourseAction]:
+        if isinstance(value, str | CourseAction):
+            value = [value]
+        actions: list[CourseAction] = []
         try:
-            return CourseAction(value)
+            for action in value:
+                actions.append(CourseAction(action))
         except ValueError as exc:
-            raise ValueError("action must be a CourseAction") from exc
+            raise ValueError("actions must be a list of CourseAction") from exc
+        return actions

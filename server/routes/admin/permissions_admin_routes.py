@@ -1,6 +1,7 @@
 from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
 
+from server.deps.authenticate import UserDep
 from server.deps.session_dep import SessionDep
 from server.models.http.requests.permission_request_models import (
     PermissionRegister,
@@ -50,10 +51,11 @@ def get_permission(
 @router.post("")
 def create_permission(
     input: PermissionRegister,
+    user: UserDep,
     session: SessionDep,
 ) -> JSONResponse:
     repository = PERMISSION_REPOSITORY_MAP[input.resource]
-    permission = repository.create(input=input, session=session)
+    permission = repository.create(input=input, user=user, session=session)
     session.commit()
     session.refresh(permission)
     return JSONResponse(

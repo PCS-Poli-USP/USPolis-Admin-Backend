@@ -10,26 +10,36 @@ from server.utils.enums.actions_enums import ClassroomAction
 class ClassroomPermissionRegister(PermissionRegister):
     classroom_id: int | None
 
-    @field_validator("action", mode="before")
+    @field_validator("actions", mode="before")
     @classmethod
-    def validate_action(cls, value: str | ClassroomAction) -> ClassroomAction:
-        if isinstance(value, ClassroomAction):
-            return value
+    def validate_actions(
+        cls, value: str | ClassroomAction | list[str | ClassroomAction]
+    ) -> list[ClassroomAction]:
+        if isinstance(value, str | ClassroomAction):
+            value = [value]
+        actions: list[ClassroomAction] = []
         try:
-            return ClassroomAction(value)
+            for action in value:
+                actions.append(ClassroomAction(action))
         except ValueError as exc:
-            raise ValueError("action must be a ClassroomAction") from exc
+            raise ValueError("actions must be a list of ClassroomAction") from exc
+        return actions
 
 
 class ClassroomPermissionUpdate(PermissionUpdate):
     classroom_id: int | None
 
-    @field_validator("action", mode="before")
+    @field_validator("actions", mode="before")
     @classmethod
-    def validate_action(cls, value: str | ClassroomAction) -> ClassroomAction:
-        if isinstance(value, ClassroomAction):
-            return value
+    def validate_actions(
+        cls, value: str | ClassroomAction | list[str | ClassroomAction]
+    ) -> list[ClassroomAction]:
+        if isinstance(value, str | ClassroomAction):
+            value = [value]
+        actions: list[ClassroomAction] = []
         try:
-            return ClassroomAction(value)
+            for action in value:
+                actions.append(ClassroomAction(action))
         except ValueError as exc:
-            raise ValueError("action must be a ClassroomAction") from exc
+            raise ValueError("actions must be a list of ClassroomAction") from exc
+        return actions

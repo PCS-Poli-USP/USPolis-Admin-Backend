@@ -119,7 +119,7 @@ def upgrade() -> None:
         sa.Column("role_id", sa.Integer(), nullable=True),
         sa.Column("granted_at", sa.DateTime(), nullable=False),
         sa.Column("granted_by", sa.Integer(), nullable=False),
-        sa.Column("classroom_id", sa.Integer(), nullable=False),
+        sa.Column("classroom_id", sa.Integer(), nullable=True),
         sa.Column(
             "action",
             sa.Enum(

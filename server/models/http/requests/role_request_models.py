@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from server.models.http.requests.permission_request_models import (
     PermissionRegister,
@@ -11,7 +11,8 @@ class RoleRegister(BaseModel):
     resources: list[Resource]
     description: str = ""
 
-    permissions: list[PermissionRegister]
+    permissions_ids: list[tuple[int, Resource]] | None = None
+    permissions: list[PermissionRegister] = Field(default_factory=list)
 
 
 class RoleUpdate(RoleRegister):

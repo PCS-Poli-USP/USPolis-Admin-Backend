@@ -19,4 +19,4 @@ class BasePermission(BaseModel):
     role_id: int | None = Field(default=None, foreign_key="role.id")
 
     granted_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
-    granted_by: int = Field(default=None, foreign_key="user.id")
+    granted_by_id: int = Field(default=None, foreign_key="user.id")

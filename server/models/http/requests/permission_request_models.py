@@ -14,10 +14,9 @@ from server.utils.enums.resources_enums import Resource
 class PermissionRegister(BaseModel):
     resource: Resource
     resource_id: int | None
-    action: PermissionAction
+    actions: list[PermissionAction]
     user_id: int | None
     role_id: int | None
-    granted_by_id: int
 
     @model_validator(mode="after")
     def check_permission_body(self) -> Self:
@@ -25,15 +24,31 @@ class PermissionRegister(BaseModel):
             raise PermissionMissingTarget(data_info="User ID ou Role ID")
         if self.user_id is not None and self.role_id is not None:
             raise PermissionConflictingTarget(data_info="User ID e Role ID")
+        if not self.actions:
+            raise ValueError("Permissão deve ter pelo menos uma ação")
+
+        unique_actions: list[PermissionAction] = []
+        for action in self.actions:
+            if action not in unique_actions:
+                unique_actions.append(action)
+        self.actions = unique_actions
 
         return self
 
     @model_validator(mode="after")
     def check_action_resource_consistency(self) -> Self:
-        if self.resource == Resource.COURSE and self.action not in CourseAction:
-            raise ValueError("Ação inválida para cursos")
-        if self.resource == Resource.CLASSROOM and self.action not in ClassroomAction:
-            raise ValueError("Ação inválida para recurso salas")
+        if self.resource == Resource.COURSE:
+            invalid_actions = [
+                action for action in self.actions if action not in CourseAction
+            ]
+            if invalid_actions:
+                raise ValueError("Ação inválida para cursos")
+        if self.resource == Resource.CLASSROOM:
+            invalid_actions = [
+                action for action in self.actions if action not in ClassroomAction
+            ]
+            if invalid_actions:
+                raise ValueError("Ação inválida para recurso salas")
         return self
 
 

@@ -4,6 +4,7 @@ from fastapi import HTTPException, status
 from sqlmodel import Session, select
 
 from server.models.database.base_permission_db_model import BasePermission
+from server.models.database.user_db_model import User
 from server.models.http.requests.permission_request_models import (
     PermissionRegister,
     PermissionUpdate,
@@ -46,6 +47,7 @@ class PermissionRepository(Generic[P, A]):
         cls,
         *,
         input: PermissionRegister,
+        user: User,
         session: Session,
     ) -> P:
         """Create a permission instance using a request model."""
@@ -55,10 +57,10 @@ class PermissionRepository(Generic[P, A]):
 
         payload: dict[str, Any] = {
             resource_field: resource_id,
-            "action": input.action,
+            "actions": input.actions,
             "user_id": input.user_id,
             "role_id": input.role_id,
-            "granted_by": input.granted_by_id,
+            "granted_by": TypeGuard.must_be_int(user.id),
         }
         permission = model(**payload)
         session.add(permission)
@@ -70,6 +72,7 @@ class PermissionRepository(Generic[P, A]):
         *,
         permission: P,
         input: PermissionUpdate,
+        user: User,
         session: Session,
     ) -> P:
         """Update a permission instance with new values."""
@@ -79,10 +82,10 @@ class PermissionRepository(Generic[P, A]):
 
         resource_id = getattr(input, resource_field)
         setattr(permission, resource_field, resource_id)
-        permission.action = input.action
+        permission.actions = input.actions
         permission.user_id = input.user_id
         permission.role_id = input.role_id
-        permission.granted_by = input.granted_by_id
+        permission.granted_by = TypeGuard.must_be_int(user.id)
         session.add(permission)
         return permission
 

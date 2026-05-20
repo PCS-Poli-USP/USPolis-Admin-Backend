@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import cast
 
 from pydantic import BaseModel
 
@@ -6,16 +7,14 @@ from server.models.database.classroom_permission_db_model import ClassroomPermis
 from server.models.database.course_permission_db_model import CoursePermission
 from server.utils.enums.actions_enums import PermissionAction
 from server.utils.enums.resources_enums import Resource
+from server.utils.permissions_types import Permission, PermissionList
 from server.utils.type_guard import TypeGuard
-
-Permission = ClassroomPermission | CoursePermission
-PermissionList = list[ClassroomPermission] | list[CoursePermission]
 
 
 class PermissionResponse(BaseModel):
     id: int
     resource: Resource
-    action: PermissionAction
+    actions: list[PermissionAction]
     resource_id: int | None
     user_id: int | None
     role_id: int | None
@@ -53,12 +52,12 @@ class PermissionResponse(BaseModel):
         return cls(
             id=TypeGuard.must_be_int(classroom_permission.id),
             resource=Resource.CLASSROOM,
-            action=classroom_permission.action,
+            actions=cast(list, classroom_permission.actions),
             resource_id=classroom_permission.classroom_id,
             user_id=classroom_permission.user_id,
             role_id=classroom_permission.role_id,
-            granted_by_id=TypeGuard.must_be_int(classroom_permission.granted_by),
-            granted_by=classroom_permission.granted_by_user.name,
+            granted_by_id=TypeGuard.must_be_int(classroom_permission.granted_by_id),
+            granted_by=classroom_permission.granted_by.name,
             granted_at=classroom_permission.granted_at,
         )
 
@@ -75,12 +74,12 @@ class PermissionResponse(BaseModel):
         return cls(
             id=TypeGuard.must_be_int(course_permission.id),
             resource=Resource.COURSE,
-            action=course_permission.action,
+            actions=cast(list, course_permission.actions),
             resource_id=course_permission.course_id,
             user_id=course_permission.user_id,
             role_id=course_permission.role_id,
-            granted_by_id=TypeGuard.must_be_int(course_permission.granted_by),
-            granted_by=course_permission.granted_by_user.name,
+            granted_by_id=TypeGuard.must_be_int(course_permission.granted_by_id),
+            granted_by=course_permission.granted_by.name,
             granted_at=course_permission.granted_at,
         )
 

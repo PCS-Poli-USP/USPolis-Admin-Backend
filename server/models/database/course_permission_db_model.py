@@ -1,7 +1,9 @@
 from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import Index, UniqueConstraint, text
-from sqlmodel import Column, Enum, Field, Relationship
+from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.types import Enum as SQLEnum
+from sqlmodel import Column, Field, Relationship
 
 from server.models.database.base_permission_db_model import BasePermission
 from server.utils.enums.actions_enums import CourseAction
@@ -10,26 +12,24 @@ if TYPE_CHECKING:
     from server.models.database.role_db_model import Role
     from server.models.database.user_db_model import User
 
+
 class CoursePermission(BasePermission, table=True):
     __table_args__ = (
         UniqueConstraint(
-            "action",
             "course_id",
             "user_id",
             "role_id",
-            name="unique_action_per_course_permission",
+            name="unique_permission_per_course_target",
         ),
         Index(
-            "unique_action_per_course_permission_user",
-            "action",
+            "unique_permission_per_course_user",
             "course_id",
             "user_id",
             unique=True,
             postgresql_where=text("user_id IS NOT NULL"),
         ),
         Index(
-            "unique_action_per_course_permission_role",
-            "action",
+            "unique_permission_per_course_role",
             "course_id",
             "role_id",
             unique=True,
@@ -37,7 +37,13 @@ class CoursePermission(BasePermission, table=True):
         ),
     )
     course_id: int | None = Field(default=None, foreign_key="course.id")
-    action: CourseAction = Field(sa_column=Column(Enum(CourseAction), nullable=False))
+    actions: list[CourseAction] = Field(
+        default_factory=list,
+        sa_column=Column(
+            ARRAY(SQLEnum(CourseAction, name="courseaction")),
+            nullable=False,
+        ),
+    )
 
     role: Optional["Role"] | None = Relationship(back_populates="course_permissions")
     user: Optional["User"] | None = Relationship(
@@ -45,9 +51,9 @@ class CoursePermission(BasePermission, table=True):
         sa_relationship_kwargs={"foreign_keys": "[CoursePermission.user_id]"},
     )
 
-    granted_by_user: "User" = Relationship(
+    granted_by: "User" = Relationship(
         sa_relationship_kwargs={
-            "foreign_keys": "[CoursePermission.granted_by]",
-            "primaryjoin": "CoursePermission.granted_by == User.id",
+            "foreign_keys": "[CoursePermission.granted_by_id]",
+            "primaryjoin": "CoursePermission.granted_by_id == User.id",
         },
     )

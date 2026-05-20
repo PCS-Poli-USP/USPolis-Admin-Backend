@@ -10,5 +10,5 @@ class UserRole(BaseModel, table=True):
     user_id: int = Field(foreign_key="user.id", primary_key=True)
     role_id: int = Field(foreign_key="role.id", primary_key=True)
 
-    granted_by: int = Field(default=None, foreign_key="user.id", nullable=False)
+    granted_by_id: int = Field(default=None, foreign_key="user.id", nullable=False)
     granted_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
