@@ -11,6 +11,7 @@ from server.utils.enums.actions_enums import ClassroomAction
 if TYPE_CHECKING:
     from server.models.database.role_db_model import Role
     from server.models.database.user_db_model import User
+    from server.models.database.classroom_db_model import Classroom
 
 
 class ClassroomPermission(BasePermission, table=True):
@@ -56,4 +57,7 @@ class ClassroomPermission(BasePermission, table=True):
             "foreign_keys": "[ClassroomPermission.granted_by_id]",
             "primaryjoin": "ClassroomPermission.granted_by_id == User.id",
         },
+    )
+    classroom: Optional["Classroom"] = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "[ClassroomPermission.classroom_id]"},
     )

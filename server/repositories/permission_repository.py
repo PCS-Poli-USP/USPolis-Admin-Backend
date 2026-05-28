@@ -1,7 +1,8 @@
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, TypeVar, cast
 
 from fastapi import HTTPException, status
 from sqlmodel import Session, select
+from sqlalchemy.orm import selectinload
 
 from server.models.database.base_permission_db_model import BasePermission
 from server.models.database.user_db_model import User
@@ -21,25 +22,42 @@ class PermissionRepository(Generic[P, A]):
     model: type[P] | None = None
     resource_field: str | None = None
 
+    @staticmethod
+    def _normalize_resource_id(resource_id: int | None) -> int | None:
+        if resource_id == -1:
+            return None
+        return resource_id
+
+    @staticmethod
+    def _with_user_and_role(statement: Any, model: type[P]) -> Any:
+        model_any = cast(Any, model)
+        return statement.options(
+            selectinload(model_any.user),
+            selectinload(model_any.role),
+        )
+
     @classmethod
     def get_by_id(cls, *, id: int, session: Session) -> P:
         model = TypeGuard.ensure_not_none(cls.model)
         statement = select(model).where(model.id == id)
+        statement = cls._with_user_and_role(statement, model)
         permission = session.exec(statement).first()
         if permission is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Permissão não encontrada")
-        return permission
+        return permission  # type: ignore
 
     @classmethod
     def get_all(cls, *, session: Session) -> list[P]:
         model = TypeGuard.ensure_not_none(cls.model)
-        statement = select(model)
+        statement = cls._with_user_and_role(select(model), model)
         return list(session.exec(statement).all())
 
     @classmethod
     def get_all_by_role_id(cls, *, role_id: int, session: Session) -> list[P]:
         model = TypeGuard.ensure_not_none(cls.model)
-        statement = select(model).where(model.role_id == role_id)
+        statement = cls._with_user_and_role(
+            select(model).where(model.role_id == role_id), model
+        )
         return list(session.exec(statement).all())
 
     @classmethod
@@ -53,18 +71,33 @@ class PermissionRepository(Generic[P, A]):
         """Create a permission instance using a request model."""
         model = TypeGuard.ensure_not_none(cls.model)
         resource_field = TypeGuard.ensure_not_none(cls.resource_field)
-        resource_id = getattr(input, resource_field)
+        resource_id = cls._normalize_resource_id(input.resource_id)
 
         payload: dict[str, Any] = {
             resource_field: resource_id,
             "actions": input.actions,
             "user_id": input.user_id,
             "role_id": input.role_id,
-            "granted_by": TypeGuard.must_be_int(user.id),
+            "granted_by_id": TypeGuard.must_be_int(user.id),
         }
         permission = model(**payload)
         session.add(permission)
         return permission
+
+    @classmethod
+    def create_batch(
+        cls,
+        *,
+        inputs: list[PermissionRegister],
+        user: User,
+        session: Session,
+    ) -> list[P]:
+        """Create multiple permission instances using a list of request models."""
+        permissions: list[P] = []
+        for input in inputs:
+            permission = cls.create(input=input, user=user, session=session)
+            permissions.append(permission)
+        return permissions
 
     @classmethod
     def update(
@@ -77,15 +110,12 @@ class PermissionRepository(Generic[P, A]):
     ) -> P:
         """Update a permission instance with new values."""
         resource_field = TypeGuard.ensure_not_none(cls.resource_field)
-        if not hasattr(input, resource_field):
-            raise ValueError("PermissionRepository input is missing resource field")
-
-        resource_id = getattr(input, resource_field)
+        resource_id = cls._normalize_resource_id(input.resource_id)
         setattr(permission, resource_field, resource_id)
         permission.actions = input.actions
         permission.user_id = input.user_id
         permission.role_id = input.role_id
-        permission.granted_by = TypeGuard.must_be_int(user.id)
+        permission.granted_by_id = TypeGuard.must_be_int(user.id)
         session.add(permission)
         return permission
 

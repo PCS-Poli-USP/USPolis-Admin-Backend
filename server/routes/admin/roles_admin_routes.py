@@ -1,19 +1,22 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Query, status
 from fastapi.responses import JSONResponse
 
+from server.deps.authenticate import UserDep
 from server.deps.session_dep import SessionDep
-from server.models.database.user_db_model import User
 from server.models.http.requests.role_request_models import RoleRegister, RoleUpdate
 from server.models.http.responses.role_response_models import RoleResponse
 from server.repositories.role_repository import RoleRepository
+from server.utils.enums.resources_enums import Resource
 
 
 router = APIRouter(prefix="/roles", tags=["Roles"])
 
 
 @router.get("")
-def get_roles(session: SessionDep) -> list[RoleResponse]:
-    roles = RoleRepository.get_all(session=session)
+def get_roles(
+    session: SessionDep, resources: list[Resource] = Query([])
+) -> list[RoleResponse]:
+    roles = RoleRepository.get_all(session=session, resources=resources)
     return RoleResponse.from_roles(roles)
 
 
@@ -24,7 +27,9 @@ def get_role(role_id: int, session: SessionDep) -> RoleResponse:
 
 
 @router.post("")
-def create_role(input: RoleRegister, user: User, session: SessionDep) -> JSONResponse:
+def create_role(
+    input: RoleRegister, user: UserDep, session: SessionDep
+) -> JSONResponse:
     role = RoleRepository.create(input=input, user=user, session=session)
     session.commit()
     session.refresh(role)
@@ -36,7 +41,7 @@ def create_role(input: RoleRegister, user: User, session: SessionDep) -> JSONRes
 
 @router.put("/{role_id}")
 def update_role(
-    role_id: int, input: RoleUpdate, user: User, session: SessionDep
+    role_id: int, input: RoleUpdate, user: UserDep, session: SessionDep
 ) -> JSONResponse:
     role = RoleRepository.update(id=role_id, input=input, user=user, session=session)
     session.commit()

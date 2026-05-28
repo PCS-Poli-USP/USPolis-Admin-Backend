@@ -15,9 +15,15 @@ class PermissionResponse(BaseModel):
     id: int
     resource: Resource
     actions: list[PermissionAction]
-    resource_id: int | None
+    resource_id: int
+    resource_name: str
+
     user_id: int | None
+    user_name: str | None
+    user_email: str | None
+
     role_id: int | None
+    role_name: str | None
 
     granted_by_id: int
     granted_by: str
@@ -53,9 +59,21 @@ class PermissionResponse(BaseModel):
             id=TypeGuard.must_be_int(classroom_permission.id),
             resource=Resource.CLASSROOM,
             actions=cast(list, classroom_permission.actions),
-            resource_id=classroom_permission.classroom_id,
+            resource_id=classroom_permission.classroom_id or -1,
+            resource_name=classroom_permission.classroom.name
+            if classroom_permission.classroom
+            else "Todas as salas",
             user_id=classroom_permission.user_id,
+            user_name=classroom_permission.user.name
+            if classroom_permission.user
+            else None,
+            user_email=classroom_permission.user.email
+            if classroom_permission.user
+            else None,
             role_id=classroom_permission.role_id,
+            role_name=classroom_permission.role.name
+            if classroom_permission.role
+            else None,
             granted_by_id=TypeGuard.must_be_int(classroom_permission.granted_by_id),
             granted_by=classroom_permission.granted_by.name,
             granted_at=classroom_permission.granted_at,
@@ -75,9 +93,15 @@ class PermissionResponse(BaseModel):
             id=TypeGuard.must_be_int(course_permission.id),
             resource=Resource.COURSE,
             actions=cast(list, course_permission.actions),
-            resource_id=course_permission.course_id,
+            resource_id=course_permission.course_id or -1,
+            resource_name=course_permission.course.name
+            if course_permission.course
+            else "Todos os cursos",
             user_id=course_permission.user_id,
+            user_name=course_permission.user.name if course_permission.user else None,
+            user_email=course_permission.user.email if course_permission.user else None,
             role_id=course_permission.role_id,
+            role_name=course_permission.role.name if course_permission.role else None,
             granted_by_id=TypeGuard.must_be_int(course_permission.granted_by_id),
             granted_by=course_permission.granted_by.name,
             granted_at=course_permission.granted_at,

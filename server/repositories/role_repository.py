@@ -1,7 +1,7 @@
 from typing import cast
 
 from fastapi import HTTPException, status
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 from server.models.database.classroom_permission_db_model import ClassroomPermission
 from server.models.database.course_permission_db_model import CoursePermission
@@ -38,8 +38,10 @@ class RoleRepository:
         return role
 
     @classmethod
-    def get_all(cls, *, session: Session) -> list[Role]:
+    def get_all(cls, *, session: Session, resources: list[Resource] = []) -> list[Role]:
         statement = select(Role)
+        if resources:
+            statement = statement.where(col(Role.resources).op("&&")(resources))
         return list(session.exec(statement).all())
 
     @classmethod
@@ -65,7 +67,7 @@ class RoleRepository:
 
         existing_permissions: dict[Resource, list[Permission]] = (
             cls.__permissions_from_ids(
-                permission_ids=input.permissions_ids or [],
+                permission_ids=input.permission_ids,
                 session=session,
             )
         )
@@ -103,10 +105,10 @@ class RoleRepository:
             for permissions in current_permissions_map.values()
             for permission in permissions
         ]
-
         permissions_to_append_map = cls.__permissions_from_ids(
-            permission_ids=input.permissions_ids or [],
+            permission_ids=input.permission_ids,
             session=session,
+            role_id=role_id,
         )
         permissions_to_append = [
             permission
@@ -140,6 +142,7 @@ class RoleRepository:
         if permissions_to_remove or permissions_to_create:
             for permission in permissions_to_remove:
                 session.delete(permission)
+
             cls.__create_permissions(
                 role_id=role_id,
                 permissions=permissions_to_create,
@@ -242,6 +245,7 @@ class RoleRepository:
         *,
         permission_ids: list[tuple[int, Resource]],
         session: Session,
+        role_id: int | None = None,
     ) -> dict[Resource, list[Permission]]:
         """Fetch permissions based on provided IDs and group them by resource type."""
         permissions_map: dict[Resource, list[Permission]] = {}
@@ -251,22 +255,16 @@ class RoleRepository:
                 resource=resource,
                 session=session,
             )
-            if permission.role_id is not None:
+            if permission.role_id is not None and permission.role_id != role_id:
                 raise HTTPException(
                     status.HTTP_409_CONFLICT,
                     "Permissão já vinculada a um cargo",
                 )
+
             if permission.user_id is None:
                 raise HTTPException(
                     status.HTTP_400_BAD_REQUEST,
                     "Permissão sem alvo associado, estado inválido",
-                )
-
-            resource_id = cls.__resource_id_for_permission(permission, resource)
-            if resource_id is None:
-                raise HTTPException(
-                    status.HTTP_400_BAD_REQUEST,
-                    "Permissão não possui recurso associado",
                 )
 
             if resource not in permissions_map:
@@ -307,14 +305,22 @@ class RoleRepository:
         resources: list[Resource],
         session: Session,
     ) -> None:
-        """Delete permissions linked to a role for the specified resources."""
+        """Delete permissions linked to a role for the specified resources.\n
+        For each resource, permissions linked to the role are fetched and deleted.\n
+        If a permission is linked to a user (user_id is not None), the role association\n
+        is removed instead of deleting the permission, allowing the permission to remain valid for the user without the role.
+        """
         for resource in resources:
             repository = ROLE_PERMISSION_REPOSITORY_MAP[resource]
             for permission in repository.get_all_by_role_id(
                 role_id=role_id,
                 session=session,
             ):
-                session.delete(permission)
+                if permission.user_id is None:
+                    session.delete(permission)
+                else:
+                    permission.role_id = None
+                    session.add(permission)
 
     @classmethod
     def __current_permissions(
@@ -352,27 +358,33 @@ class RoleRepository:
         cls, permission: Permission | PermissionRegister
     ) -> tuple[Resource, tuple, int | None, int | None, int | None, int | None]:
         """Create a signature for a permission based on its resource, actions, and resource ID to ensure uniqueness."""
-        resource = getattr(permission, "resource")
+        resource: Resource | None = getattr(permission, "resource", None)
         if resource is None:
             if isinstance(permission, ClassroomPermission):
                 resource = Resource.CLASSROOM
             elif isinstance(permission, CoursePermission):
                 resource = Resource.COURSE
+        if resource is None:
+            raise ValueError("Permission without resource is invalid")
 
-        resource_id = getattr(permission, "resource_id", None)
+        resource_id: int | None = getattr(permission, "resource_id", None)
         if resource_id is None:
             if isinstance(permission, ClassroomPermission):
                 resource_id = permission.classroom_id
             elif isinstance(permission, CoursePermission):
                 resource_id = permission.course_id
 
+        user_id: int | None = getattr(permission, "user_id", None)
+        role_id: int | None = getattr(permission, "role_id", None)
+        granted_by_id: int | None = getattr(permission, "granted_by_id", None)
+
         return (
             resource,
             cls.__action_signature(getattr(permission, "actions")),
             resource_id,
-            getattr(permission, "user_id", None),
-            getattr(permission, "role_id", None),
-            getattr(permission, "granted_by", None),
+            user_id,
+            role_id,
+            granted_by_id,
         )
 
     @staticmethod

@@ -13,10 +13,10 @@ from server.utils.enums.resources_enums import Resource
 
 class PermissionRegister(BaseModel):
     resource: Resource
-    resource_id: int | None
+    resource_id: int
     actions: list[PermissionAction]
-    user_id: int | None
-    role_id: int | None
+    user_id: int | None = None
+    role_id: int | None = None
 
     @model_validator(mode="after")
     def check_permission_body(self) -> Self:
@@ -24,6 +24,8 @@ class PermissionRegister(BaseModel):
             raise PermissionMissingTarget(data_info="User ID ou Role ID")
         if self.user_id is not None and self.role_id is not None:
             raise PermissionConflictingTarget(data_info="User ID e Role ID")
+        if self.resource_id < -1 or self.resource_id == 0:
+            raise ValueError("Permissão com resource_id inválido")
         if not self.actions:
             raise ValueError("Permissão deve ter pelo menos uma ação")
 
@@ -54,6 +56,10 @@ class PermissionRegister(BaseModel):
 
 class PermissionUpdate(PermissionRegister):
     pass
+
+
+class PermissionBatchRegister(BaseModel):
+    permissions: list[PermissionRegister]
 
 
 class PermissionMissingTarget(HTTPException):
