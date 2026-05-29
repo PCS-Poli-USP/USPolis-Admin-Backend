@@ -18,6 +18,10 @@ class PermissionResponse(BaseModel):
     resource_id: int
     resource_name: str
 
+    parent_id: int | None = None
+    parent_name: str | None = None
+    parent_resource: Resource | None = None
+
     user_id: int | None
     user_name: str | None
     user_email: str | None
@@ -63,6 +67,14 @@ class PermissionResponse(BaseModel):
             resource_name=classroom_permission.classroom.name
             if classroom_permission.classroom
             else "Todas as salas",
+            parent_id=classroom_permission.classroom.building_id
+            if classroom_permission.classroom
+            else None,
+            parent_name=classroom_permission.classroom.building.name
+            if classroom_permission.classroom
+            and classroom_permission.classroom.building
+            else "Todos os prédios",
+            parent_resource=Resource.BUILDING,
             user_id=classroom_permission.user_id,
             user_name=classroom_permission.user.name
             if classroom_permission.user
