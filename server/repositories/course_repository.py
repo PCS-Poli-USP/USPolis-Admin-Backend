@@ -9,6 +9,7 @@ from server.models.http.requests.course_request_models import (
 from server.models.database.user_db_model import User
 from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.must_be_int import must_be_int
+from sqlalchemy import func
 
 class CourseRepository:
 
@@ -31,6 +32,16 @@ class CourseRepository:
         session.flush()
         return course
 
+    @staticmethod
+    def get_by_name_ignore_case(
+        name: str,
+        session: Session,
+    ) -> Course | None:
+        statement = select(Course).where(
+            func.lower(Course.name) == name.lower()
+        )
+
+        return session.exec(statement).first()
 
     @staticmethod
     def get_by_id(id: int, session: Session) -> Course | None:
