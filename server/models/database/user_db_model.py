@@ -8,13 +8,14 @@ from server.models.database.classroom_db_model import Classroom
 from server.models.database.curriculum_db_model import Curriculum
 from server.models.database.group_db_model import Group
 from server.models.database.group_user_link import GroupUserLink
-from server.models.database.role_db_model import UnifiedPermissions
 from server.models.database.user_building_link import UserBuildingLink
 from server.models.database.user_role_db_model import UserRole
 from server.models.database.user_schedule_db_model import UserSchedule
 from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.resources_enums import Resource
 from server.utils.must_be_int import must_be_int
+
+from server.utils.permissions_types import Permission
 
 if TYPE_CHECKING:
     from server.models.database.building_db_model import Building
@@ -28,6 +29,7 @@ if TYPE_CHECKING:
     from server.models.database.feedback_db_model import Feedback
     from server.models.database.bug_report_db_model import BugReport
     from server.models.database.role_db_model import Role
+    from server.models.database.building_permission_db_model import BuildingPermission
     from server.models.database.classroom_permission_db_model import ClassroomPermission
     from server.models.database.course_permission_db_model import CoursePermission
 
@@ -99,6 +101,10 @@ class User(BaseModel, table=True):
             "secondaryjoin": "Role.id == UserRole.role_id",
         },
     )
+    building_permissions: list["BuildingPermission"] = Relationship(
+        back_populates="user",
+        sa_relationship_kwargs={"foreign_keys": "[BuildingPermission.user_id]"},
+    )
     classroom_permissions: list["ClassroomPermission"] = Relationship(
         back_populates="user",
         sa_relationship_kwargs={"foreign_keys": "[ClassroomPermission.user_id]"},
@@ -108,14 +114,14 @@ class User(BaseModel, table=True):
         sa_relationship_kwargs={"foreign_keys": "[CoursePermission.user_id]"},
     )
 
-    def get_user_permissions_map(self) -> dict[Resource, list[UnifiedPermissions]]:
+    def get_user_permissions_map(self) -> dict[Resource, list[Permission]]:
         """
         Get a map of resources to permissions that the user has.
 
         Returns:
-            dict[Resource, list[UnifiedPermissions]]: A map of resources to each resource permissions.
+            dict[Resource, list[Permission]]: A map of resources to each resource permissions.
         """
-        permissions_map: dict[Resource, list[UnifiedPermissions]] = {}
+        permissions_map: dict[Resource, list[Permission]] = {}
         for role in self.roles:
             for resource in role.resources:
                 if resource not in permissions_map:
@@ -123,6 +129,21 @@ class User(BaseModel, table=True):
                 permissions_map[resource].extend(
                     role.get_resource_permissions(resource)
                 )
+        for perm in self.classroom_permissions:
+            if Resource.CLASSROOM not in permissions_map:
+                permissions_map[Resource.CLASSROOM] = []
+            permissions_map[Resource.CLASSROOM].append(perm)
+
+        for perm in self.course_permissions:  # type: ignore
+            if Resource.COURSE not in permissions_map:
+                permissions_map[Resource.COURSE] = []
+            permissions_map[Resource.COURSE].append(perm)
+
+        for perm in self.building_permissions:  # type: ignore
+            if Resource.BUILDING not in permissions_map:
+                permissions_map[Resource.BUILDING] = []
+            permissions_map[Resource.BUILDING].append(perm)
+
         return permissions_map
 
     def classrooms_ids_set(self) -> set[int]:

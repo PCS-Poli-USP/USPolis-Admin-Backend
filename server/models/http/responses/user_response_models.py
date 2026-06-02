@@ -6,9 +6,12 @@ from server.models.database.group_db_model import Group
 from server.models.database.user_db_model import User
 from server.models.http.responses.building_response_models import BuildingResponse
 from server.models.http.responses.curriculum_response_models import CurriculumResponse
+from server.models.http.responses.permissions_response_models import PermissionResponse
+from server.models.http.responses.role_response_models import RoleResponse
 from server.models.http.responses.solicitation_response_models import (
     SolicitationResponse,
 )
+from server.utils.enums.resources_enums import Resource
 from server.utils.must_be_int import must_be_int
 
 
@@ -54,6 +57,37 @@ class UserGroupResponse(BaseModel):
     @classmethod
     def from_group_list(cls, groups: list[Group]) -> list["UserGroupResponse"]:
         return [cls.from_group(group) for group in groups]
+
+
+class UserPermissionResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+    resources: list[Resource]
+    permissions: list[PermissionResponse]
+    roles: list[RoleResponse]
+
+    @classmethod
+    def from_user(cls, user: User) -> "UserPermissionResponse":
+        permissions_map = user.get_user_permissions_map()
+        permissions: list[PermissionResponse] = []
+
+        for resource, perms in permissions_map.items():
+            for perm in perms:
+                permissions.append(PermissionResponse.from_permission(perm, resource))
+
+        return cls(
+            id=must_be_int(user.id),
+            name=user.name,
+            email=user.email,
+            resources=list(permissions_map.keys()),
+            permissions=permissions,
+            roles=[RoleResponse.from_role(role) for role in user.roles],
+        )
+
+    @classmethod
+    def from_user_list(cls, users: list[User]) -> list["UserPermissionResponse"]:
+        return [cls.from_user(user) for user in users]
 
 
 class UseCoreResponse(BaseModel):

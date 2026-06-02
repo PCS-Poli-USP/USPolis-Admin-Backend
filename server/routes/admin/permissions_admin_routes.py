@@ -9,6 +9,9 @@ from server.models.http.requests.permission_request_models import (
     PermissionUpdate,
 )
 from server.models.http.responses.permissions_response_models import PermissionResponse
+from server.repositories.building_permission_repository import (
+    BuildingPermissionRepository,
+)
 from server.repositories.classroom_permission_repository import (
     ClassroomPermissionRepository,
 )
@@ -20,12 +23,15 @@ from server.utils.permissions_types import Permission
 router = APIRouter(prefix="/permissions", tags=["Permissions"])
 
 PermissionRepositoryType = (
-    type[ClassroomPermissionRepository] | type[CoursePermissionRepository]
+    type[ClassroomPermissionRepository]
+    | type[CoursePermissionRepository]
+    | type[BuildingPermissionRepository]
 )
 
 PERMISSION_REPOSITORY_MAP: dict[Resource, PermissionRepositoryType] = {
-    Resource.COURSE: CoursePermissionRepository,
+    Resource.BUILDING: BuildingPermissionRepository,
     Resource.CLASSROOM: ClassroomPermissionRepository,
+    Resource.COURSE: CoursePermissionRepository,
 }
 
 
@@ -96,7 +102,7 @@ def create_permissions_batch(
 
     for permission in created_permissions:
         session.refresh(permission)
-        
+
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,
         content={

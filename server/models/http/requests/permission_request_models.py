@@ -4,6 +4,7 @@ from fastapi import HTTPException, status
 from pydantic import BaseModel, model_validator
 
 from server.utils.enums.actions_enums import (
+    BuildingAction,
     ClassroomAction,
     CourseAction,
     PermissionAction,
@@ -51,6 +52,12 @@ class PermissionRegister(BaseModel):
             ]
             if invalid_actions:
                 raise ValueError("Ação inválida para recurso salas")
+        if self.resource == Resource.BUILDING:
+            invalid_actions = [
+                action for action in self.actions if action not in BuildingAction
+            ]
+            if invalid_actions:
+                raise ValueError("Ação inválida para recurso prédios")
         return self
 
 

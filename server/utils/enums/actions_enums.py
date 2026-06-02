@@ -8,6 +8,13 @@ class BaseAction(StrEnum):
     DELETE = "delete"
 
 
+class BuildingAction(StrEnum):
+    CREATE = BaseAction.CREATE
+    READ = BaseAction.READ
+    UPDATE = BaseAction.UPDATE
+    DELETE = BaseAction.DELETE
+
+
 class ClassroomAction(StrEnum):
     CREATE = BaseAction.CREATE
     READ = BaseAction.READ

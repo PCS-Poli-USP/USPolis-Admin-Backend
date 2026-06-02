@@ -296,6 +296,7 @@ class RoleRepository:
         if resource == Resource.COURSE:
             course_permission = cast(CoursePermission, permission)
             return course_permission.course_id
+        return None
 
     @classmethod
     def __delete_permissions(
