@@ -5,6 +5,11 @@ from server.utils.enums.curriculum_subject_category_enum import CurriculumSubjec
 from server.utils.enums.curriculum_subject_type_enum import CurriculumSubjectType
 from server.utils.must_be_int import must_be_int
 
+class SubjectSimpleResponse(BaseModel):
+    id: int
+    code: str
+    name: str
+
 class CurriculumSubjectResponse(BaseModel):
     id: int
     curriculum_id: int
@@ -12,7 +17,7 @@ class CurriculumSubjectResponse(BaseModel):
     type: CurriculumSubjectType
     category: CurriculumSubjectCategory
     period: int
-    subject_code: str | None
+    subject: SubjectSimpleResponse | None
 
     @classmethod
     def from_curriculum_subject(cls, curriculum_subject: CurriculumSubject) -> "CurriculumSubjectResponse":
@@ -23,7 +28,19 @@ class CurriculumSubjectResponse(BaseModel):
             type=curriculum_subject.type,
             category=curriculum_subject.category,
             period=curriculum_subject.period,
-            subject_code=curriculum_subject.subject.code if curriculum_subject.subject else None,
+            subject=(
+                SubjectSimpleResponse(
+                    id=must_be_int(
+                        curriculum_subject.subject.id
+                    ),
+
+                    code=curriculum_subject.subject.code,
+
+                    name=curriculum_subject.subject.name,
+                )
+                if curriculum_subject.subject
+                else None
+            ),
         )
 
     @classmethod

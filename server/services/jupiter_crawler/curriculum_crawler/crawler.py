@@ -47,9 +47,6 @@ class JupiterCurriculumCrawler:
     def __build_soup(self, content: bytes) -> BeautifulSoup:
         return BeautifulSoup(content, "html.parser")
 
-    # ============================================================
-    # GENERAL INFO
-    # ============================================================
     def __extract_general_info(self) -> CurriculumGeneralInfo:
         course_name = self.__get_final_course_name()
         minimal_duration, ideal_duration, maximal_duration = self.__get_durations()
@@ -108,7 +105,6 @@ class JupiterCurriculumCrawler:
 
         aac_match = re.search(r"AAC:\s*([0-9]+)", text)
 
-        # pega o valor de "Total geral de carga horária exigida em extensão"
         aex_match = re.search(
             r"Total\s+geral\s+de\s+carga\s+hor[áa�]ria\s+exigida\s+em\s+extens[ãa�]o:\s*([0-9]+)",
             text,
@@ -143,10 +139,7 @@ class JupiterCurriculumCrawler:
         text = re.sub(r"[ \t]+", " ", text)
 
         return text.strip()
-
-    # ============================================================
-    # SUBJECTS
-    # ============================================================
+    
     def __is_valid_subject_code(self, code: str) -> bool:
         valid_alpha = re.match(r"^[A-Z]{3}[0-9]{4}$", code)
         valid_numeric = re.match(r"^[0-9]{7}$", code)
@@ -172,7 +165,6 @@ class JupiterCurriculumCrawler:
         current_period = 0
 
         for row in rows:
-            # detecta título da seção pelo <b>
             b = row.find("b")
             if b is not None:
                 title = b.get_text(" ", strip=True)
@@ -194,7 +186,6 @@ class JupiterCurriculumCrawler:
 
             row_text = row.get_text(" ", strip=True)
 
-            # detecta período ideal (mesmo quebrado)
             period_match = re.search(r"([0-9]+)[ºo�]?\s*Per", row_text)
             if period_match:
                 current_period = int(period_match.group(1))
