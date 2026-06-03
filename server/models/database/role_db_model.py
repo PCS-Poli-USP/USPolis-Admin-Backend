@@ -81,3 +81,8 @@ class Role(BaseModel, table=True):
         for resource in self.resources:
             permissions_map[resource] = self.get_resource_permissions(resource)
         return permissions_map
+
+    def extend_resource(self, resource: Resource) -> None:
+        """Add a resource to the role's resources if it's not already present"""
+        if resource not in self.resources:
+            self.resources = [*self.resources, resource]

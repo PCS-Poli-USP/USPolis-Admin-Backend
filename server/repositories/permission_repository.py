@@ -10,7 +10,9 @@ from server.models.http.requests.permission_request_models import (
     PermissionRegister,
     PermissionUpdate,
 )
+from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.type_guard import TypeGuard
+
 
 P = TypeVar("P", bound=BasePermission)
 A = TypeVar("A")
@@ -81,6 +83,16 @@ class PermissionRepository(Generic[P, A]):
             "granted_by_id": TypeGuard.must_be_int(user.id),
         }
         permission = model(**payload)
+
+        if input.role_id is not None:
+            from server.repositories.role_repository import RoleRepository
+
+            print("Add resource to role:", input.resource)
+            role = RoleRepository.get_by_id(id=input.role_id, session=session)
+            role.extend_resource(input.resource)
+            role.updated_at = BrazilDatetime.now_utc()
+            session.add(role)
+
         session.add(permission)
         return permission
 

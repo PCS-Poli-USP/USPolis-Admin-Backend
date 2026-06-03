@@ -31,4 +31,4 @@ class CourseAction(StrEnum):
     DELETE = BaseAction.DELETE
 
 
-PermissionAction = ClassroomAction | CourseAction
+PermissionAction = ClassroomAction | CourseAction | BuildingAction
