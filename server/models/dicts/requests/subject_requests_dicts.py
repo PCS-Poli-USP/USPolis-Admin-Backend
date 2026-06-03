@@ -1,6 +1,6 @@
 from server.models.dicts.base.subject_base_dict import SubjectBaseDict
 from server.models.dicts.requests.base_requests_dicts import BaseRequestDict
-from server.utils.enums.crawler_type_enum import CrawlerType
+from server.utils.enums.crawler_enums import CrawlerType
 
 
 class CrawlSubjectDict(BaseRequestDict):

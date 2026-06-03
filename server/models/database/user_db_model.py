@@ -5,9 +5,11 @@ from sqlmodel import Field, Relationship, Session, select
 
 from server.models.database.base_db_model import BaseModel
 from server.models.database.classroom_db_model import Classroom
+from server.models.database.curriculum_db_model import Curriculum
 from server.models.database.group_db_model import Group
 from server.models.database.group_user_link import GroupUserLink
 from server.models.database.user_building_link import UserBuildingLink
+from server.models.database.user_schedule_db_model import UserSchedule
 from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.must_be_int import must_be_int
 
@@ -32,11 +34,26 @@ class User(BaseModel, table=True):
     last_visited: datetime = Field(default_factory=BrazilDatetime.now_utc)
     receive_emails: bool = Field(default=True)
     picture_url: str | None
+    curriculum_id: int | None = Field(
+        default=None,
+        foreign_key="curriculum.id",
+    )
+    active: bool = Field(default=True)
 
     created_by_id: int | None = Field(
         foreign_key="user.id",
         default=None,
         nullable=True,
+    )
+
+    current_schedule_id: int | None = Field(
+        foreign_key="userschedule.id",
+        default=None,
+        nullable=True,
+    )
+
+    current_schedule: UserSchedule | None = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "[User.current_schedule_id]"}
     )
     created_by: Optional["User"] = Relationship(
         sa_relationship_kwargs=dict(remote_side="User.id"),
@@ -61,6 +78,10 @@ class User(BaseModel, table=True):
     )
     reports: list["BugReport"] = Relationship(
         back_populates="user", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
+    curriculum: Curriculum | None = Relationship(
+        back_populates="users",
+        sa_relationship_kwargs={"foreign_keys": "[User.curriculum_id]"},
     )
 
     def classrooms_ids_set(self) -> set[int]:

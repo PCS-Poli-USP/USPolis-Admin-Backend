@@ -16,10 +16,10 @@ class Course(BaseModel, table=True):
     minimal_duration: int = Field()
     ideal_duration: int = Field()
     maximal_duration: int = Field()
-    updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
-    updated_by_id: int = Field(foreign_key="user.id")
     created_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
     created_by_id: int = Field(foreign_key="user.id")
+    updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
+    updated_by_id: int = Field(foreign_key="user.id")
     period: CoursePeriodType = Field(
         sa_column=Column(
             Enum(CoursePeriodType, name="course_period_type"), nullable=False

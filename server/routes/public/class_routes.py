@@ -1,13 +1,15 @@
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, Body, Query
 
 from server.deps.interval_dep import QueryIntervalDep
 from server.deps.session_dep import SessionDep
 from server.models.http.responses.class_response_models import (
     ClassResponse,
     ClassFullResponse,
+    ClassSchedulingResponse,
 )
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.class_repository import ClassRepository
+from server.utils.enums.week_day import WeekDay
 from server.utils.must_be_int import must_be_int
 
 embed = Body(..., embed=True)
@@ -54,3 +56,24 @@ async def get_all_classes_allocated_by_building_name(
         building_id=must_be_int(building.id), session=session, interval=interval
     )
     return ClassResponse.from_class_list(classes)
+
+
+@router.get("/comming")
+async def get_comming_classes(
+    session: SessionDep, limit: int = Query(5, ge=1, le=30)
+) -> list[ClassSchedulingResponse]:
+    """Get comming classes"""
+    classes = ClassRepository.get_comming(session=session, limit=limit)
+    # Sorting by weekday and start time
+    classes.sort(
+        key=lambda c: (
+            max(
+                [
+                    WeekDay.to_int(s.week_day) if s.week_day is not None else 0
+                    for s in c.schedules
+                ]
+            ),
+            c.schedules[0].start_time,
+        )
+    )
+    return ClassSchedulingResponse.from_class_list(classes[:limit])

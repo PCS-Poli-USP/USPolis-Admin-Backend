@@ -1,6 +1,6 @@
 from typing import Any
 from fastapi import HTTPException, status
-from sqlalchemy import Select, exists, and_
+from sqlalchemy import Select, exists, and_, tuple_
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
@@ -260,6 +260,48 @@ class ClassRepository:
         except NoResultFound:
             raise ClassNotFound()
         return class_
+
+    @staticmethod
+    def get_by_subject_code_and_class_code(
+        subject_code: str, class_code: str, session: Session
+    ) -> Class:
+        statement = (
+            select(Class)
+            .join(Subject, col(Class.subject_id) == col(Subject.id))
+            .where(col(Subject.code) == subject_code)
+            .where(col(Class.code) == class_code)
+        )
+        try:
+            class_ = session.exec(statement).one()
+        except NoResultFound:
+            raise ClassNotFound()
+        return class_
+
+    @staticmethod
+    def get_by_subject_codes_and_class_codes(
+        pairs: list[tuple[str, str]], session: Session
+    ) -> list[Class]:
+        if not pairs:
+            return []
+
+        statement = (
+            select(Class)
+            .join(Subject, col(Class.subject_id) == col(Subject.id))
+            .where(tuple_(col(Subject.code), col(Class.code)).in_(pairs))
+            .distinct()
+        )
+        classes = session.exec(statement).all()
+        return list(classes)
+
+    @staticmethod 
+    def get_comming(*, session: Session, limit: int = 5) -> list[Class]:
+        schedules = ScheduleRepository.get_comming_class_schedules(
+            session=session, limit=limit * 2
+        )
+        classes = [
+            schedule.class_ for schedule in schedules if schedule.class_ is not None
+        ]
+        return classes
 
     @staticmethod
     def create(*, input: ClassRegister, session: Session) -> Class:

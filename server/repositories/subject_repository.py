@@ -16,7 +16,7 @@ from server.repositories.building_repository import BuildingRepository
 from server.repositories.calendar_repository import CalendarRepository
 from server.services.janus_crawler.crawler import JanusCrawler
 from server.services.jupiter_crawler.crawler import JupiterCrawler
-from server.utils.enums.crawler_type_enum import CrawlerType
+from server.utils.enums.crawler_enums import CrawlerType
 from server.utils.enums.subject_type import SubjectType
 from server.utils.must_be_int import must_be_int
 
@@ -94,12 +94,18 @@ class SubjectRepository:
 
     @staticmethod
     def get_by_code(*, code: str, session: Session) -> Subject:
-        statement = select(Subject).where(Subject.code == code)
+        statement = select(Subject).where(col(Subject.code) == code)
         try:
             subject = session.exec(statement).one()
             return subject
         except NoResultFound:
             raise SubjectNotFound()
+
+    @staticmethod
+    def get_by_codes(*, codes: list[str], session: Session) -> list[Subject]:
+        statement = select(Subject).where(col(Subject.code).in_(codes))
+        subjects = session.exec(statement).all()
+        return list(subjects)
 
     @staticmethod
     def create(*, input: SubjectRegister, session: Session) -> Subject:

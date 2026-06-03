@@ -42,6 +42,10 @@ from server.models.database import (  # noqa
     course_db_model,
     curriculum_db_model,
     curriculum_subject_db_model,
+    user_schedule_db_model,
+    user_schedule_entry_db_model,
+    user_absence,
+    course_options_db_model,
 )
 
 engine = create_engine(f"{CONFIG.db_uri}/{CONFIG.db_database}")

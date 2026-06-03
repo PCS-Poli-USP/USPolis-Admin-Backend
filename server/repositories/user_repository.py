@@ -3,7 +3,6 @@ from sqlmodel import Session, col, select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import NoResultFound
 
-from server.config import CONFIG
 from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.group_db_model import Group
@@ -184,6 +183,29 @@ class UserRepository:
             session.commit()
         except Exception as e:
             print(e)
+
+    @staticmethod
+    def update_curriculum(
+        *,
+        user: User,
+        curriculum_id: int,
+        session: Session,
+    ) -> User:
+
+        from server.models.database.curriculum_db_model import Curriculum
+
+        curriculum = session.get(Curriculum, curriculum_id)
+        if not curriculum:
+            raise HTTPException(
+                status_code=404,
+                detail="Currículo não encontrado"
+            )
+
+        user.curriculum_id = curriculum_id
+        user.updated_at = BrazilDatetime.now_utc()
+        session.add(user)
+
+        return user
 
 
 class InvalidEmailDomain(HTTPException):

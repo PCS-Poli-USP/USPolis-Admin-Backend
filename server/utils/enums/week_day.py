@@ -52,6 +52,10 @@ class WeekDay(Enum):
         return dayOfWeek[value]
 
     @classmethod
+    def to_int(cls, day: "WeekDay") -> int:
+        return day.value
+
+    @classmethod
     def to_rrule(cls, value: int) -> str:
         dayOfWeek = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"]
         return dayOfWeek[value]

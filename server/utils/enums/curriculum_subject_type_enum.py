@@ -2,8 +2,8 @@ from enum import Enum
 
 
 class CurriculumSubjectType(str, Enum):
-    SEMESTRAL = "semestral"
-    QUADRIMESTER = "quadrimester"
+    SEMESTRAL = "SEMESTRAL"
+    QUADRIMESTER = "QUADRIMESTER"
 
     @classmethod
     def from_str(cls, value: str) -> "CurriculumSubjectType":

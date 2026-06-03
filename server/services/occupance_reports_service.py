@@ -8,7 +8,7 @@ from server.deps.interval_dep import QueryInterval
 from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.week_day import WeekDay
 
-from datetime import time, date
+from datetime import time
 
 from server.utils.must_be_int import must_be_int
 

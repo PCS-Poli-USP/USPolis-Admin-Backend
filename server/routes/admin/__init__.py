@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from server.deps.authenticate import admin_authenticate, admin_authenticate_from_cookie
+from server.deps.authenticate import admin_authenticate
 from server.routes.admin.building_admin_routes import router as AdminBuildingRouter
 from server.routes.admin.user_admin_routes import router as AdminUserRouter
 from server.routes.admin.mobile_admin_routes import router as AdminMobileRouter
@@ -8,11 +8,15 @@ from server.routes.admin.group_admin_routes import router as AdminGroupRouter
 from server.routes.admin.feedback_admin_routes import router as AdminFeedbackRouter
 from server.routes.admin.bug_report_admin_routes import router as AdminBugReportRouter
 from server.routes.admin.bug_report_evidence_admin_routes import (
-    cookie_router as AdminBugReportEvidenceCookieRouter,
     router as AdminBugReportEvidenceRouter,
 )
 from server.routes.admin.user_session_admin_routes import (
     router as AdminUserSessionRouter,
+)
+from server.routes.admin.course_admin_routes import router as AdminCourseRouter
+from server.routes.admin.curriculum_admin_routes import router as AdminCurriculumRouter
+from server.routes.admin.curriculum_subject_admin_routes import (
+    router as AdminCurriculumSubjectRouter,
 )
 
 router = APIRouter(
@@ -27,11 +31,6 @@ router.include_router(AdminFeedbackRouter)
 router.include_router(AdminBugReportRouter)
 router.include_router(AdminBugReportEvidenceRouter)
 router.include_router(AdminUserSessionRouter)
-
-cookie_router = APIRouter(
-    prefix="/images/admin",
-    tags=["Admin", "Cookie"],
-    dependencies=[Depends(admin_authenticate_from_cookie)],
-)
-
-cookie_router.include_router(AdminBugReportEvidenceCookieRouter)
+router.include_router(AdminCourseRouter)
+router.include_router(AdminCurriculumRouter)
+router.include_router(AdminCurriculumSubjectRouter)

@@ -65,7 +65,7 @@ def delete_user(
     if current_user.id == user_id:
         raise HTTPException(400, "Não pode remover seu próprio usuário")
 
-    UserRepository.delete(user_id=user_id, session=session)
+    # UserRepository.delete(user_id=user_id, session=session)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content={

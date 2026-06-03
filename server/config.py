@@ -60,17 +60,17 @@ class Settings(BaseModel):
 
     allowed_gmails_domains: list[str] = config(
         "ALLOWED_GMAILS_DOMAINS",
-        default=[],
+        default="",
         cast=Csv(),
     )  # pyright: ignore[reportAssignmentType]
     allowed_gmails: list[str] = config(
         "ALLOWED_GMAILS",
-        default=[],
+        default="",
         cast=Csv(),
     )  # pyright: ignore[reportAssignmentType]
 
     # Monitoring and Analytics Services
-    health_api_key: str = config("HEALTH_API_KEY")  # pyright: ignore[reportAssignmentType]
+    health_api_key: str = config("HEALTH_API_KEY", default="")  # pyright: ignore[reportAssignmentType]
 
     # Testing / Development:
     test_db_uri: str = config("TEST_DATABASE_URI", default="")  # pyright: ignore[reportAssignmentType]

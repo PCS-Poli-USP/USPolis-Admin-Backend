@@ -1,0 +1,37 @@
+from datetime import datetime
+from typing import TYPE_CHECKING
+
+from sqlalchemy import CheckConstraint
+from sqlmodel import Field, Relationship, SQLModel
+
+
+if TYPE_CHECKING:
+    from server.models.database.schedule_db_model import Schedule
+    from server.models.database.user_schedule_db_model import UserSchedule
+    from server.models.database.user_absence import UserAbsence
+
+from server.utils.brazil_datetime import BrazilDatetime
+
+
+class UserScheduleEntry(SQLModel, table=True):
+    __table_args__ = (
+        CheckConstraint(
+            "absence_count >= 0",
+            name="user_schedule_check_absence_count_non_negative",
+        ),
+    )
+
+    user_schedule_id: int = Field(
+        foreign_key="userschedule.id", index=True, primary_key=True
+    )
+    schedule_id: int = Field(foreign_key="schedule.id", index=True, primary_key=True)
+
+    absence_count: int = Field(default=0)
+    updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
+    created_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
+
+    user_schedule: "UserSchedule" = Relationship(back_populates="entries")
+    schedule: "Schedule" = Relationship()
+    absences: list["UserAbsence"] = Relationship(
+        back_populates="entry", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )

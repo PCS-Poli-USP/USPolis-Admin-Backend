@@ -6,10 +6,8 @@ from server.utils.enums.subject_type import SubjectType
 from server.utils.must_be_int import must_be_int
 
 
-class SubjectResponse(BaseModel):
+class SubjectResponseBase(BaseModel):
     id: int
-    building_ids: list[int]
-    buildings: list[BuildingResponse]
     code: str
     name: str
     professors: list[str]
@@ -18,10 +16,33 @@ class SubjectResponse(BaseModel):
     work_credit: int
 
     @classmethod
-    def from_subject(cls, subject: Subject) -> "SubjectResponse":
+    def core_from_subject(cls, subject: Subject) -> "SubjectResponseBase":
         return cls(
             id=must_be_int(subject.id),
+            code=subject.code,
+            name=subject.name,
             professors=subject.professors,
+            type=subject.type,
+            class_credit=subject.class_credit,
+            work_credit=subject.work_credit,
+        )
+
+    @classmethod
+    def core_from_subject_list(
+        cls, subjects: list[Subject]
+    ) -> list["SubjectResponseBase"]:
+        return [cls.core_from_subject(subject) for subject in subjects]
+
+
+class SubjectResponse(SubjectResponseBase):
+    building_ids: list[int]
+    buildings: list[BuildingResponse]
+
+    @classmethod
+    def from_subject(cls, subject: Subject) -> "SubjectResponse":
+        base = SubjectResponseBase.core_from_subject(subject)
+        return cls(
+            **base.model_dump(),
             building_ids=[
                 building.id for building in subject.buildings if (building.id)
             ],
@@ -29,16 +50,11 @@ class SubjectResponse(BaseModel):
                 BuildingResponse.from_building(building)
                 for building in subject.buildings
             ],
-            code=subject.code,
-            name=subject.name,
-            type=subject.type,
-            class_credit=subject.class_credit,
-            work_credit=subject.work_credit,
         )
 
     @classmethod
     def from_subject_list(cls, subjects: list[Subject]) -> list["SubjectResponse"]:
-        return [cls.from_subject(subject) for subject in subjects]
+        return [SubjectResponse.from_subject(subject) for subject in subjects]
 
 
 class SubjectCrawlResponse(BaseModel):
