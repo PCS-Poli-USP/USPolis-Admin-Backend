@@ -4,6 +4,7 @@ from fastapi import HTTPException, status
 from pydantic import BaseModel, model_validator
 
 from server.utils.enums.actions_enums import (
+    BuildingAction,
     ClassroomAction,
     CourseAction,
     PermissionAction,
@@ -13,10 +14,10 @@ from server.utils.enums.resources_enums import Resource
 
 class PermissionRegister(BaseModel):
     resource: Resource
-    resource_id: int | None
+    resource_id: int
     actions: list[PermissionAction]
-    user_id: int | None
-    role_id: int | None
+    user_id: int | None = None
+    role_id: int | None = None
 
     @model_validator(mode="after")
     def check_permission_body(self) -> Self:
@@ -24,6 +25,8 @@ class PermissionRegister(BaseModel):
             raise PermissionMissingTarget(data_info="User ID ou Role ID")
         if self.user_id is not None and self.role_id is not None:
             raise PermissionConflictingTarget(data_info="User ID e Role ID")
+        if self.resource_id < -1 or self.resource_id == 0:
+            raise ValueError("Permissão com resource_id inválido")
         if not self.actions:
             raise ValueError("Permissão deve ter pelo menos uma ação")
 
@@ -49,11 +52,21 @@ class PermissionRegister(BaseModel):
             ]
             if invalid_actions:
                 raise ValueError("Ação inválida para recurso salas")
+        if self.resource == Resource.BUILDING:
+            invalid_actions = [
+                action for action in self.actions if action not in BuildingAction
+            ]
+            if invalid_actions:
+                raise ValueError("Ação inválida para recurso prédios")
         return self
 
 
 class PermissionUpdate(PermissionRegister):
     pass
+
+
+class PermissionBatchRegister(BaseModel):
+    permissions: list[PermissionRegister]
 
 
 class PermissionMissingTarget(HTTPException):

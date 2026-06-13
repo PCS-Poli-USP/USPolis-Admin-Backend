@@ -6,6 +6,7 @@ from server.deps.session_dep import SessionDep
 from server.models.http.requests.user_request_models import UserRegister, UserUpdate
 from server.models.http.responses.user_response_models import (
     UseCoreResponse,
+    UserPermissionResponse,
     UserResponse,
 )
 from server.repositories.user_repository import UserRepository
@@ -20,6 +21,22 @@ def get_users(session: SessionDep) -> list[UseCoreResponse]:
     """Get all users"""
     users = UserRepository.get_all(session=session)
     return UseCoreResponse.core_from_user_list(users)
+
+
+@router.get("/permissions")
+def get_users_permissions(session: SessionDep) -> list[UserPermissionResponse]:
+    """Get all users with permissions and roles"""
+    users = UserRepository.get_all_with_permissions(session=session)
+    return UserPermissionResponse.from_user_list(users)
+
+
+@router.get("/permissions/{user_id}")
+def get_user_permissions(user_id: int, session: SessionDep) -> UserPermissionResponse:
+    """Get user with permissions and roles"""
+    user = UserRepository.get_with_permissions(user_id=user_id, session=session)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return UserPermissionResponse.from_user(user)
 
 
 @router.post("")

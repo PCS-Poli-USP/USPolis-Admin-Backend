@@ -47,6 +47,7 @@ from server.models.database import (  # noqa
     user_absence,
     role_db_model,
     user_role_db_model,
+    building_permission_db_model,
     classroom_permission_db_model,
     course_permission_db_model,
 )

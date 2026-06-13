@@ -10,7 +10,7 @@ from server.utils.brazil_datetime import BrazilDatetime
 class BasePermission(BaseModel):
     __table_args__: tuple[object, ...] = (
         CheckConstraint(
-            "(course_id IS NOT NULL) OR (classroom_id IS NOT NULL)",
+            "(user_id IS NOT NULL) OR (role_id IS NOT NULL)",
             name="permission_check_user_or_role",
         ),
     )

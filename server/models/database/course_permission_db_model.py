@@ -11,6 +11,7 @@ from server.utils.enums.actions_enums import CourseAction
 if TYPE_CHECKING:
     from server.models.database.role_db_model import Role
     from server.models.database.user_db_model import User
+    from server.models.database.course_db_model import Course
 
 
 class CoursePermission(BasePermission, table=True):
@@ -56,4 +57,7 @@ class CoursePermission(BasePermission, table=True):
             "foreign_keys": "[CoursePermission.granted_by_id]",
             "primaryjoin": "CoursePermission.granted_by_id == User.id",
         },
+    )
+    course: Optional["Course"] = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "[CoursePermission.course_id]"},
     )

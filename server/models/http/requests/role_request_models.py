@@ -11,7 +11,7 @@ class RoleRegister(BaseModel):
     resources: list[Resource]
     description: str = ""
 
-    permissions_ids: list[tuple[int, Resource]] | None = None
+    permission_ids: list[tuple[int, Resource]] = []
     permissions: list[PermissionRegister] = Field(default_factory=list)
 
 
