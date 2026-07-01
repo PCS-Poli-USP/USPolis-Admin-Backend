@@ -7,6 +7,8 @@ from server.utils.must_be_int import must_be_int
 class CurriculumResponse(BaseModel):
     id: int
     course_id: int
+    codcur: int
+    codhab: int
     AAC: int
     AEX: int
     updated_at: datetime
@@ -21,6 +23,8 @@ class CurriculumResponse(BaseModel):
         return cls(
             id=must_be_int(curriculum.id),
             course_id=must_be_int(curriculum.course_id),
+            codcur=curriculum.codcur,
+            codhab=curriculum.codhab,
             AAC=curriculum.AAC,
             AEX=curriculum.AEX,
             updated_at=curriculum.updated_at,

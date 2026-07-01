@@ -17,6 +17,8 @@ class CurriculumRepository:
     ) -> Curriculum:
         curriculum = Curriculum(
             course_id=input.course_id,
+            codcur=input.codcur,
+            codhab=input.codhab,
             AAC=input.AAC,
             AEX=input.AEX,
             updated_by_id=must_be_int(user.id),
@@ -51,6 +53,8 @@ class CurriculumRepository:
             raise HTTPException(404, "Currículo não encontrado")
 
         curriculum.course_id = input.course_id
+        curriculum.codcur = input.codcur
+        curriculum.codhab = input.codhab
         curriculum.AAC = input.AAC
         curriculum.AEX = input.AEX
         curriculum.updated_by_id = must_be_int(user.id)

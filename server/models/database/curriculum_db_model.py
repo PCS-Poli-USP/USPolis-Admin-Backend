@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlmodel import Field, Relationship
+from sqlmodel import Field, Relationship, UniqueConstraint
 from server.utils.brazil_datetime import BrazilDatetime
 from server.models.database.base_db_model import BaseModel
 from datetime import datetime
@@ -12,7 +12,13 @@ if TYPE_CHECKING:
 
 
 class Curriculum(BaseModel, table=True):
+    __table_args__ = (
+        UniqueConstraint("codcur", "codhab", name="uq_curriculum_codcur_codhab"),
+        UniqueConstraint("course_id", "description", name="uq_curriculum_course_description"),
+    )
     course_id: int = Field(foreign_key="course.id")
+    codcur: int = Field()
+    codhab: int = Field()
     AAC: int = Field()
     AEX: int = Field()
     created_at: datetime = Field(default_factory=BrazilDatetime.now_utc)

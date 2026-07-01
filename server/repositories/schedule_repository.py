@@ -4,6 +4,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
+from sqlalchemy import and_, or_
 
 from server.models.database.class_db_model import Class
 from server.models.database.classroom_db_model import Classroom
@@ -116,9 +117,14 @@ class ScheduleRepository:
             select(Schedule)
             .join(Occurrence, col(Occurrence.schedule_id) == Schedule.id)
             .where(
-                col(Occurrence.date) >= now.date(),
                 col(Occurrence.date) <= end.date(),
-                col(Occurrence.end_time) >= now.time(),
+                or_(
+                    col(Occurrence.date) > now.date(),
+                    and_(
+                        col(Occurrence.date) == now.date(),
+                        col(Occurrence.end_time) >= now.time(),
+                    ),
+                ),
                 col(Schedule.class_id).is_not(None),
             )
             .options(

@@ -293,7 +293,7 @@ class ClassRepository:
         classes = session.exec(statement).all()
         return list(classes)
 
-    @staticmethod
+    @staticmethod 
     def get_comming(*, session: Session, limit: int = 5) -> list[Class]:
         schedules = ScheduleRepository.get_comming_class_schedules(
             session=session, limit=limit * 2
