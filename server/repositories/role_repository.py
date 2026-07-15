@@ -1,5 +1,3 @@
-from typing import cast
-
 from fastapi import HTTPException, status
 from sqlmodel import Session, col, select
 
@@ -56,7 +54,7 @@ class RoleRepository:
     ) -> Role:
         """Create a role instance using a request model.\n
         The role is created first to ensure it has a valid ID for linking permissions.\n
-        Permissions are then created and linked to the role based on the provided permission registers and IDs.
+        Permissions are then created and linked to the role based on the provided permission registers.
         """
         role = Role(
             name=input.name,
@@ -67,16 +65,7 @@ class RoleRepository:
         session.flush()
         role_id = cls.__ensure_role_id(role)
 
-        existing_permissions: dict[Resource, list[Permission]] = (
-            cls.__permissions_from_ids(
-                permission_ids=input.permission_ids,
-                session=session,
-            )
-        )
-        new_permissions = cls.__normalize_permissions(
-            new_permissions=input.permissions,
-            existing_permissions=existing_permissions,
-        )
+        new_permissions = cls.__deduplicate_permissions(input.permissions)
         cls.__create_permissions(
             role_id=role_id,
             permissions=new_permissions,
@@ -97,64 +86,43 @@ class RoleRepository:
         role = cls.get_by_id(id=id, session=session)
         role_id = cls.__ensure_role_id(role)
 
-        current_permissions_map = cls.__current_permissions(
+        current_permissions = cls.__current_permissions(
             role_id=role_id,
             resources=role.resources,
             session=session,
         )
-        current_permissions = [
-            permission
-            for permissions in current_permissions_map.values()
-            for permission in permissions
-        ]
-        permissions_to_append_map = cls.__permissions_from_ids(
-            permission_ids=input.permission_ids,
-            session=session,
-            role_id=role_id,
-        )
-        permissions_to_append = [
-            permission
-            for permissions in permissions_to_append_map.values()
-            for permission in permissions
-        ]
-
-        new_permissions_signatures = {
-            cls.__permission_signature(permission)
-            for permission in permissions_to_append
+        desired_permissions = cls.__deduplicate_permissions(input.permissions)
+        desired_signatures = {
+            cls.__permission_signature(permission) for permission in desired_permissions
+        }
+        current_signatures = {
+            cls.__permission_signature(permission) for permission in current_permissions
         }
 
-        permissions_to_create = cls.__normalize_permissions(
-            new_permissions=input.permissions,
-            existing_permissions=current_permissions_map,
-        )
-        new_permissions_signatures.update(
-            cls.__permission_signature(permission)
-            for permission in permissions_to_create
-        )
-
-        permissions_to_remove = []
-        for permission in current_permissions:
-            if cls.__permission_signature(permission) not in new_permissions_signatures:
-                permissions_to_remove.append(permission)
+        permissions_to_remove = [
+            permission
+            for permission in current_permissions
+            if cls.__permission_signature(permission) not in desired_signatures
+        ]
+        permissions_to_create = [
+            permission
+            for permission in desired_permissions
+            if cls.__permission_signature(permission) not in current_signatures
+        ]
 
         role.name = input.name
         role.description = input.description
         role.resources = input.resources
 
-        if permissions_to_remove or permissions_to_create:
-            for permission in permissions_to_remove:
-                session.delete(permission)
+        for permission in permissions_to_remove:
+            session.delete(permission)
 
-            cls.__create_permissions(
-                role_id=role_id,
-                permissions=permissions_to_create,
-                user=user,
-                session=session,
-            )
-
-        for permission in permissions_to_append:
-            permission.role_id = role_id
-            session.add(permission)
+        cls.__create_permissions(
+            role_id=role_id,
+            permissions=permissions_to_create,
+            user=user,
+            session=session,
+        )
 
         role.updated_at = BrazilDatetime.now_utc()
         session.add(role)
@@ -188,15 +156,10 @@ class RoleRepository:
         user: User,
         session: Session,
     ) -> None:
-        """Create permissions for a role based on the provided permission registers.\n
-        For each permission register, a new permission instance is created and linked to the role.\n
-        If a permission register references an existing permission by ID, that permission is duplicated and linked to
-        """
+        """Create permissions for a role based on the provided permission registers."""
         for permission in permissions:
             repository = ROLE_PERMISSION_REPOSITORY_MAP[permission.resource]
-            permission_input = permission.model_copy(
-                update={"role_id": role_id, "user_id": None}
-            )
+            permission_input = permission.model_copy(update={"role_id": role_id})
             created_permission = repository.create(
                 input=permission_input,
                 user=user,
@@ -205,100 +168,20 @@ class RoleRepository:
             session.refresh(created_permission)
 
     @classmethod
-    def __normalize_permissions(
+    def __deduplicate_permissions(
         cls,
-        *,
-        new_permissions: list[PermissionRegister] | None,
-        existing_permissions: dict[Resource, list[Permission]],
+        permissions: list[PermissionRegister] | None,
     ) -> list[PermissionRegister]:
-        """
-        Normalize permissions from both explicit definitions and existing IDs, ensuring uniqueness.\n
-        For permissions provided as IDs, the corresponding permission are fetched for deduplicate the register list.\n
-        The final list of permissions is deduplicated based on resource, actions, and resource ID
-        """
-        normalized_permissions: list[PermissionRegister] = []
-        if new_permissions:
-            normalized_permissions.extend(new_permissions)
-
+        """Deduplicate permission registers based on resource, actions, and resource ID."""
         unique_permissions: dict[tuple, PermissionRegister] = {}
-        for permission in normalized_permissions:
+        for permission in permissions or []:
             key = (
                 permission.resource,
                 cls.__action_signature(permission.actions),
                 permission.resource_id,
             )
             unique_permissions[key] = permission
-
-        for r, p in existing_permissions.items():
-            for data in p:
-                existing_key = (
-                    r,
-                    cls.__action_signature(list(data.actions)),
-                    cls.__resource_id_for_permission(data, r),
-                )
-                if existing_key in unique_permissions:
-                    unique_permissions.pop(existing_key)
-
         return list(unique_permissions.values())
-
-    @classmethod
-    def __permissions_from_ids(
-        cls,
-        *,
-        permission_ids: list[tuple[int, Resource]],
-        session: Session,
-        role_id: int | None = None,
-    ) -> dict[Resource, list[Permission]]:
-        """Fetch permissions based on provided IDs and group them by resource type."""
-        permissions_map: dict[Resource, list[Permission]] = {}
-        for permission_id, resource in permission_ids:
-            permission = cls.__get_permission_by_id(
-                permission_id=permission_id,
-                resource=resource,
-                session=session,
-            )
-            if permission.role_id is not None and permission.role_id != role_id:
-                raise HTTPException(
-                    status.HTTP_409_CONFLICT,
-                    "Permissão já vinculada a um cargo",
-                )
-
-            if permission.user_id is None:
-                raise HTTPException(
-                    status.HTTP_400_BAD_REQUEST,
-                    "Permissão sem alvo associado, estado inválido",
-                )
-
-            if resource not in permissions_map:
-                permissions_map[resource] = []
-            permissions_map[resource].append(permission)
-        return permissions_map
-
-    @classmethod
-    def __get_permission_by_id(
-        cls,
-        *,
-        permission_id: int,
-        resource: Resource,
-        session: Session,
-    ) -> Permission:
-        """Fetch a permission instance based on its ID and resource type."""
-        repository = ROLE_PERMISSION_REPOSITORY_MAP[resource]
-        return repository.get_by_id(id=permission_id, session=session)
-
-    @staticmethod
-    def __resource_id_for_permission(
-        permission: Permission,
-        resource: Resource,
-    ) -> int | None:
-        """Extract the resource ID from a permission instance based on its resource type."""
-        if resource == Resource.CLASSROOM:
-            classroom_permission = cast(ClassroomPermission, permission)
-            return classroom_permission.classroom_id
-        if resource == Resource.COURSE:
-            course_permission = cast(CoursePermission, permission)
-            return course_permission.course_id
-        return None
 
     @classmethod
     def __delete_permissions(
@@ -308,22 +191,14 @@ class RoleRepository:
         resources: list[Resource],
         session: Session,
     ) -> None:
-        """Delete permissions linked to a role for the specified resources.\n
-        For each resource, permissions linked to the role are fetched and deleted.\n
-        If a permission is linked to a user (user_id is not None), the role association\n
-        is removed instead of deleting the permission, allowing the permission to remain valid for the user without the role.
-        """
+        """Delete all permissions linked to a role for the specified resources."""
         for resource in resources:
             repository = ROLE_PERMISSION_REPOSITORY_MAP[resource]
             for permission in repository.get_all_by_role_id(
                 role_id=role_id,
                 session=session,
             ):
-                if permission.user_id is None:
-                    session.delete(permission)
-                else:
-                    permission.role_id = None
-                    session.add(permission)
+                session.delete(permission)
 
     @classmethod
     def __current_permissions(
@@ -332,34 +207,20 @@ class RoleRepository:
         role_id: int,
         resources: list[Resource],
         session: Session,
-    ) -> dict[Resource, list[Permission]]:
+    ) -> list[Permission]:
         """Fetch current permissions linked to a role for the specified resources."""
-        permissions: dict[Resource, list[Permission]] = {}
+        permissions: list[Permission] = []
         for resource in resources:
             repository = ROLE_PERMISSION_REPOSITORY_MAP[resource]
-            permissions[resource] = repository.get_all_by_role_id(  # type: ignore
-                role_id=role_id, session=session
+            permissions.extend(
+                repository.get_all_by_role_id(role_id=role_id, session=session)
             )
         return permissions
 
     @classmethod
-    def __merge_resources(
-        cls,
-        *,
-        current_resources: list[Resource],
-        desired_resources: list[Resource],
-    ) -> list[Resource]:
-        """Merge current and desired resources, ensuring uniqueness while preserving order."""
-        merged_resources: list[Resource] = []
-        for resource in [*current_resources, *desired_resources]:
-            if resource not in merged_resources:
-                merged_resources.append(resource)
-        return merged_resources
-
-    @classmethod
     def __permission_signature(
         cls, permission: Permission | PermissionRegister
-    ) -> tuple[Resource, tuple, int | None, int | None, int | None, int | None]:
+    ) -> tuple[Resource, tuple, int | None]:
         """Create a signature for a permission based on its resource, actions, and resource ID to ensure uniqueness."""
         resource: Resource | None = getattr(permission, "resource", None)
         if resource is None:
@@ -377,17 +238,10 @@ class RoleRepository:
             elif isinstance(permission, CoursePermission):
                 resource_id = permission.course_id
 
-        user_id: int | None = getattr(permission, "user_id", None)
-        role_id: int | None = getattr(permission, "role_id", None)
-        granted_by_id: int | None = getattr(permission, "granted_by_id", None)
-
         return (
             resource,
             cls.__action_signature(getattr(permission, "actions")),
             resource_id,
-            user_id,
-            role_id,
-            granted_by_id,
         )
 
     @staticmethod

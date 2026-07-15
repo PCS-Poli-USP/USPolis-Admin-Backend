@@ -23,12 +23,8 @@ class PermissionResponse(BaseModel):
     parent_name: str | None = None
     parent_resource: Resource | None = None
 
-    user_id: int | None
-    user_name: str | None
-    user_email: str | None
-
-    role_id: int | None
-    role_name: str | None
+    role_id: int
+    role_name: str
 
     granted_by_id: int
     granted_by: str
@@ -83,17 +79,8 @@ class PermissionResponse(BaseModel):
             and classroom_permission.classroom.building
             else "Todos os prédios",
             parent_resource=Resource.BUILDING,
-            user_id=classroom_permission.user_id,
-            user_name=classroom_permission.user.name
-            if classroom_permission.user
-            else None,
-            user_email=classroom_permission.user.email
-            if classroom_permission.user
-            else None,
             role_id=classroom_permission.role_id,
-            role_name=classroom_permission.role.name
-            if classroom_permission.role
-            else None,
+            role_name=classroom_permission.role.name,
             granted_by_id=TypeGuard.must_be_int(classroom_permission.granted_by_id),
             granted_by=classroom_permission.granted_by.name,
             granted_at=classroom_permission.granted_at,
@@ -117,11 +104,8 @@ class PermissionResponse(BaseModel):
             resource_name=course_permission.course.name
             if course_permission.course
             else "Todos os cursos",
-            user_id=course_permission.user_id,
-            user_name=course_permission.user.name if course_permission.user else None,
-            user_email=course_permission.user.email if course_permission.user else None,
             role_id=course_permission.role_id,
-            role_name=course_permission.role.name if course_permission.role else None,
+            role_name=course_permission.role.name,
             granted_by_id=TypeGuard.must_be_int(course_permission.granted_by_id),
             granted_by=course_permission.granted_by.name,
             granted_at=course_permission.granted_at,
@@ -145,17 +129,8 @@ class PermissionResponse(BaseModel):
             resource_name=building_permission.building.name
             if building_permission.building
             else "Todos os prédios",
-            user_id=building_permission.user_id,
-            user_name=building_permission.user.name
-            if building_permission.user
-            else None,
-            user_email=building_permission.user.email
-            if building_permission.user
-            else None,
             role_id=building_permission.role_id,
-            role_name=building_permission.role.name
-            if building_permission.role
-            else None,
+            role_name=building_permission.role.name,
             granted_by_id=TypeGuard.must_be_int(building_permission.granted_by_id),
             granted_by=building_permission.granted_by.name,
             granted_at=building_permission.granted_at,

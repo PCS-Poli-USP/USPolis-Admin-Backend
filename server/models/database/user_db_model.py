@@ -29,9 +29,6 @@ if TYPE_CHECKING:
     from server.models.database.feedback_db_model import Feedback
     from server.models.database.bug_report_db_model import BugReport
     from server.models.database.role_db_model import Role
-    from server.models.database.building_permission_db_model import BuildingPermission
-    from server.models.database.classroom_permission_db_model import ClassroomPermission
-    from server.models.database.course_permission_db_model import CoursePermission
 
 
 class User(BaseModel, table=True):
@@ -101,19 +98,6 @@ class User(BaseModel, table=True):
             "secondaryjoin": "Role.id == UserRole.role_id",
         },
     )
-    building_permissions: list["BuildingPermission"] = Relationship(
-        back_populates="user",
-        sa_relationship_kwargs={"foreign_keys": "[BuildingPermission.user_id]"},
-    )
-    classroom_permissions: list["ClassroomPermission"] = Relationship(
-        back_populates="user",
-        sa_relationship_kwargs={"foreign_keys": "[ClassroomPermission.user_id]"},
-    )
-    course_permissions: list["CoursePermission"] = Relationship(
-        back_populates="user",
-        sa_relationship_kwargs={"foreign_keys": "[CoursePermission.user_id]"},
-    )
-
     def get_user_permissions_map(self) -> dict[Resource, list[Permission]]:
         """
         Get a map of resources to permissions that the user has.
@@ -129,21 +113,6 @@ class User(BaseModel, table=True):
                 permissions_map[resource].extend(
                     role.get_resource_permissions(resource)
                 )
-        for perm in self.classroom_permissions:
-            if Resource.CLASSROOM not in permissions_map:
-                permissions_map[Resource.CLASSROOM] = []
-            permissions_map[Resource.CLASSROOM].append(perm)
-
-        for perm in self.course_permissions:  # type: ignore
-            if Resource.COURSE not in permissions_map:
-                permissions_map[Resource.COURSE] = []
-            permissions_map[Resource.COURSE].append(perm)
-
-        for perm in self.building_permissions:  # type: ignore
-            if Resource.BUILDING not in permissions_map:
-                permissions_map[Resource.BUILDING] = []
-            permissions_map[Resource.BUILDING].append(perm)
-
         return permissions_map
 
     def classrooms_ids_set(self) -> set[int]:

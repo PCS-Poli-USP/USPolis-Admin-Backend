@@ -197,3 +197,5 @@ docker-compose.*
 # Google API
 token.json
 credentials.json
+
+CLAUDE.md

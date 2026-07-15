@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Index, UniqueConstraint, text
+from sqlalchemy import UniqueConstraint
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.types import Enum as SQLEnum
 from sqlmodel import Column, Field, Relationship
@@ -18,23 +18,8 @@ class BuildingPermission(BasePermission, table=True):
     __table_args__ = (
         UniqueConstraint(
             "building_id",
-            "user_id",
             "role_id",
-            name="unique_permission_per_building_target",
-        ),
-        Index(
-            "unique_permission_per_building_user",
-            "building_id",
-            "user_id",
-            unique=True,
-            postgresql_where=text("user_id IS NOT NULL"),
-        ),
-        Index(
-            "unique_permission_per_building_role",
-            "building_id",
-            "role_id",
-            unique=True,
-            postgresql_where=text("role_id IS NOT NULL"),
+            name="unique_permission_per_building_role",
         ),
     )
     building_id: int | None = Field(foreign_key="building.id")
@@ -46,11 +31,7 @@ class BuildingPermission(BasePermission, table=True):
         ),
     )
 
-    role: Optional["Role"] | None = Relationship(back_populates="building_permissions")
-    user: Optional["User"] | None = Relationship(
-        back_populates="building_permissions",
-        sa_relationship_kwargs={"foreign_keys": "[BuildingPermission.user_id]"},
-    )
+    role: "Role" = Relationship(back_populates="building_permissions")
 
     granted_by: "User" = Relationship(
         sa_relationship_kwargs={

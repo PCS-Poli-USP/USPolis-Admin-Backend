@@ -31,18 +31,15 @@ class PermissionRepository(Generic[P, A]):
         return resource_id
 
     @staticmethod
-    def _with_user_and_role(statement: Any, model: type[P]) -> Any:
+    def _with_role(statement: Any, model: type[P]) -> Any:
         model_any = cast(Any, model)
-        return statement.options(
-            selectinload(model_any.user),
-            selectinload(model_any.role),
-        )
+        return statement.options(selectinload(model_any.role))
 
     @classmethod
     def get_by_id(cls, *, id: int, session: Session) -> P:
         model = TypeGuard.ensure_not_none(cls.model)
         statement = select(model).where(model.id == id)
-        statement = cls._with_user_and_role(statement, model)
+        statement = cls._with_role(statement, model)
         permission = session.exec(statement).first()
         if permission is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Permissão não encontrada")
@@ -51,13 +48,13 @@ class PermissionRepository(Generic[P, A]):
     @classmethod
     def get_all(cls, *, session: Session) -> list[P]:
         model = TypeGuard.ensure_not_none(cls.model)
-        statement = cls._with_user_and_role(select(model), model)
+        statement = cls._with_role(select(model), model)
         return list(session.exec(statement).all())
 
     @classmethod
     def get_all_by_role_id(cls, *, role_id: int, session: Session) -> list[P]:
         model = TypeGuard.ensure_not_none(cls.model)
-        statement = cls._with_user_and_role(
+        statement = cls._with_role(
             select(model).where(model.role_id == role_id), model
         )
         return list(session.exec(statement).all())
@@ -78,20 +75,17 @@ class PermissionRepository(Generic[P, A]):
         payload: dict[str, Any] = {
             resource_field: resource_id,
             "actions": input.actions,
-            "user_id": input.user_id,
             "role_id": input.role_id,
             "granted_by_id": TypeGuard.must_be_int(user.id),
         }
         permission = model(**payload)
 
-        if input.role_id is not None:
-            from server.repositories.role_repository import RoleRepository
+        from server.repositories.role_repository import RoleRepository
 
-            print("Add resource to role:", input.resource)
-            role = RoleRepository.get_by_id(id=input.role_id, session=session)
-            role.extend_resource(input.resource)
-            role.updated_at = BrazilDatetime.now_utc()
-            session.add(role)
+        role = RoleRepository.get_by_id(id=input.role_id, session=session)
+        role.extend_resource(input.resource)
+        role.updated_at = BrazilDatetime.now_utc()
+        session.add(role)
 
         session.add(permission)
         return permission
@@ -125,7 +119,6 @@ class PermissionRepository(Generic[P, A]):
         resource_id = cls._normalize_resource_id(input.resource_id)
         setattr(permission, resource_field, resource_id)
         permission.actions = input.actions
-        permission.user_id = input.user_id
         permission.role_id = input.role_id
         permission.granted_by_id = TypeGuard.must_be_int(user.id)
         session.add(permission)

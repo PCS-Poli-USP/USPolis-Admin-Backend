@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint
 from sqlmodel import Field
 
 from server.models.database.base_db_model import BaseModel
@@ -8,15 +7,7 @@ from server.utils.brazil_datetime import BrazilDatetime
 
 
 class BasePermission(BaseModel):
-    __table_args__: tuple[object, ...] = (
-        CheckConstraint(
-            "(user_id IS NOT NULL) OR (role_id IS NOT NULL)",
-            name="permission_check_user_or_role",
-        ),
-    )
-
-    user_id: int | None = Field(default=None, foreign_key="user.id")
-    role_id: int | None = Field(default=None, foreign_key="role.id")
+    role_id: int = Field(foreign_key="role.id")
 
     granted_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
     granted_by_id: int = Field(default=None, foreign_key="user.id")
