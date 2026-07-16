@@ -196,19 +196,6 @@ class UserRepository:
         return user
 
     @staticmethod
-    def delete(
-        *,
-        user_id: int,
-        session: Session,
-    ) -> None:
-        try:
-            user = UserRepository.get_by_id(user_id=user_id, session=session)
-            session.delete(user)
-            session.commit()
-        except Exception as e:
-            print(e)
-
-    @staticmethod
     def update_curriculum(
         *,
         user: User,

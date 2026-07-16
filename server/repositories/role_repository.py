@@ -1,6 +1,7 @@
 from fastapi import HTTPException, status
 from sqlmodel import Session, col, select
 
+from server.models.database.building_permission_db_model import BuildingPermission
 from server.models.database.classroom_permission_db_model import ClassroomPermission
 from server.models.database.course_permission_db_model import CoursePermission
 from server.models.database.role_db_model import Role
@@ -10,6 +11,9 @@ from server.models.http.requests.permission_request_models import PermissionRegi
 from server.models.http.requests.role_request_models import RoleRegister
 from server.models.http.requests.role_request_models import RoleUpdate
 
+from server.repositories.building_permission_repository import (
+    BuildingPermissionRepository,
+)
 from server.repositories.classroom_permission_repository import (
     ClassroomPermissionRepository,
 )
@@ -21,8 +25,14 @@ from server.utils.permissions_types import Permission
 
 
 ROLE_PERMISSION_REPOSITORY_MAP: dict[
-    Resource, type[ClassroomPermissionRepository | CoursePermissionRepository]
+    Resource,
+    type[
+        BuildingPermissionRepository
+        | ClassroomPermissionRepository
+        | CoursePermissionRepository
+    ],
 ] = {
+    Resource.BUILDING: BuildingPermissionRepository,
     Resource.CLASSROOM: ClassroomPermissionRepository,
     Resource.COURSE: CoursePermissionRepository,
 }
@@ -165,6 +175,7 @@ class RoleRepository:
                 user=user,
                 session=session,
             )
+            session.flush()
             session.refresh(created_permission)
 
     @classmethod
@@ -228,6 +239,8 @@ class RoleRepository:
                 resource = Resource.CLASSROOM
             elif isinstance(permission, CoursePermission):
                 resource = Resource.COURSE
+            elif isinstance(permission, BuildingPermission):
+                resource = Resource.BUILDING
         if resource is None:
             raise ValueError("Permission without resource is invalid")
 
@@ -237,6 +250,13 @@ class RoleRepository:
                 resource_id = permission.classroom_id
             elif isinstance(permission, CoursePermission):
                 resource_id = permission.course_id
+            elif isinstance(permission, BuildingPermission):
+                resource_id = permission.building_id
+        if resource_id == -1:
+            # -1 (request-side "all instances") and None (DB-side wildcard) are the
+            # same wildcard scope and must compare equal, or an unchanged wildcard
+            # permission looks different on every update and gets deleted+recreated.
+            resource_id = None
 
         return (
             resource,

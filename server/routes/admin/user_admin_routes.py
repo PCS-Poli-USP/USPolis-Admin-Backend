@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Body, HTTPException, status
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Body, HTTPException
 
 from server.deps.authenticate import UserDep
 from server.deps.session_dep import SessionDep
@@ -70,22 +69,3 @@ def update_user(
     session.commit()
     session.refresh(updated)
     return UserResponse.from_user(updated)
-
-
-@router.delete("/{user_id}")
-def delete_user(
-    user_id: int,
-    current_user: UserDep,
-    session: SessionDep,
-) -> JSONResponse:
-    """Delete a user by id"""
-    if current_user.id == user_id:
-        raise HTTPException(400, "Não pode remover seu próprio usuário")
-
-    # UserRepository.delete(user_id=user_id, session=session)
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content={
-            "message": "Usuário removido com sucesso",
-        },
-    )

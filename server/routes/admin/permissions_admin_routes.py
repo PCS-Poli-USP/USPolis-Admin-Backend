@@ -116,11 +116,12 @@ def create_permissions_batch(
 def update_permission(
     permission_id: int,
     input: PermissionUpdate,
+    user: UserDep,
     session: SessionDep,
 ) -> JSONResponse:
     repository = PERMISSION_REPOSITORY_MAP[input.resource]
     permission = repository.get_by_id(id=permission_id, session=session)
-    permission = repository.update(permission=permission, input=input, session=session)  # type: ignore
+    permission = repository.update(permission=permission, input=input, user=user, session=session)  # type: ignore
     session.commit()
     session.refresh(permission)
     return JSONResponse(
