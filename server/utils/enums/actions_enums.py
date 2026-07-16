@@ -13,6 +13,8 @@ class BuildingAction(StrEnum):
     READ = BaseAction.READ
     UPDATE = BaseAction.UPDATE
     DELETE = BaseAction.DELETE
+    ALLOCATE = "allocate"
+    RESERVE = "reserve"
 
 
 class ClassroomAction(StrEnum):
