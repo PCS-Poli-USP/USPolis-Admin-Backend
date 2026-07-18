@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
 from server.deps.authenticate import UserDep
+from server.deps.permission_index_dep import PermissionIndexDep
 from server.deps.repository_adapters.schedule_repository_adapter import (
     ScheduleRepositoryDep,
 )
@@ -19,6 +20,7 @@ from server.repositories.schedule_repository import ScheduleRepository
 from server.services.security.schedule_permission_checker import (
     SchedulePermissionChecker,
 )
+from server.utils.enums.actions_enums import ClassroomAction
 
 router = APIRouter(
     prefix="/schedules",
@@ -32,9 +34,12 @@ def update_occurentes(
     input: ScheduleUpdateOccurrences,
     user: UserDep,
     session: SessionDep,
+    permission_index: PermissionIndexDep,
 ) -> ScheduleFullResponse:
-    checker = SchedulePermissionChecker(user=user, session=session)
-    checker.check_permission(schedule_id)
+    checker = SchedulePermissionChecker(
+        user=user, session=session, permission_index=permission_index
+    )
+    checker.check_permission(schedule_id, ClassroomAction.UPDATE)
     schedule = ScheduleRepository.update_occurrences(
         id=schedule_id, input=input, session=session
     )

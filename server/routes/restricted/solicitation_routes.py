@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 
 from server.deps.authenticate import UserDep
+from server.deps.permission_index_dep import PermissionIndexDep
 from server.deps.session_dep import SessionDep
 from server.models.http.requests.solicitation_request_models import (
     SolicitationApprove,
@@ -16,6 +17,7 @@ from server.services.email.email_service import EmailService
 from server.services.security.solicitation_permission_checker import (
     SolicitationPermissionChecker,
 )
+from server.utils.enums.actions_enums import ClassroomAction
 from pathlib import Path
 
 embed = Body(..., embed=True)
@@ -40,10 +42,11 @@ async def approve_reservation_solicitation(
     input: SolicitationApprove,
     session: SessionDep,
     user: UserDep,
+    permission_index: PermissionIndexDep,
 ) -> JSONResponse:
     """Aprove a class reservation solicitation"""
-    checker = SolicitationPermissionChecker(user, session)
-    checker.check_permission(solicitation_id)
+    checker = SolicitationPermissionChecker(user, session, permission_index)
+    checker.check_permission(solicitation_id, ClassroomAction.UPDATE)
     solicitation = SolicitationRepository.approve(
         id=solicitation_id, classroom_id=input.classroom_id, user=user, session=session
     )
@@ -64,10 +67,11 @@ async def deny_classroom_solicitation(
     input: SolicitationDeny,
     session: SessionDep,
     user: UserDep,
+    permission_index: PermissionIndexDep,
 ) -> JSONResponse:
     """Deny a class reservation solicitation"""
-    checker = SolicitationPermissionChecker(user, session)
-    checker.check_permission(solicitation_id)
+    checker = SolicitationPermissionChecker(user, session, permission_index)
+    checker.check_permission(solicitation_id, ClassroomAction.UPDATE)
 
     solicitation = SolicitationRepository.deny(
         id=solicitation_id, user=user, session=session
