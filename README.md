@@ -122,6 +122,36 @@ USPolis uses a role-based permission system: a `Role` groups a set of `Permissio
 - A `BuildingPermission` cascades down to every `Classroom` inside that building for the same action, so granting e.g. `ALLOCATE` on a building lets a role allocate any room in it without needing one `ClassroomPermission` per room.
 - A wildcard grant (no specific building/classroom/course) is only honored for `UPDATE`, `DELETE`, `ALLOCATE`, and `RESERVE` when the requesting user is an admin — a non-admin role can never be granted "update/delete/allocate/reserve everything in the system at once" through a wildcard permission, only through a building- or resource-scoped one. `CREATE`/`READ` wildcards are honored for any role.
 - Manage roles and permissions via the `/admin/roles` and `/admin/permissions` endpoints (see `server/routes/admin/roles_admin_routes.py` and `server/routes/admin/permissions_admin_routes.py`).
+- `Resource.COURSE` / `CoursePermission` exist in the data model but have no wired permission checker yet — no route enforces them today.
 
-> [!NOTE]
-> Wiring these permissions into per-request enforcement on every resource endpoint (and retiring the older `Group`-based access model it's replacing) is in progress on the `feature/role-based-permissions` branch — today the `Role`/`Permission` data model and its admin CRUD endpoints exist, but request-time authorization still runs on `Group` membership.
+> [!WARNING] 
+> Request-time authorization on every resource endpoint now checks **both** `Group` membership (legacy) **and** `Role`/`Permission` (`user has access OR role grants access`), so existing `Group`-based access keeps working unchanged while `Role` grants are additive. Every pre-existing `Group` has been migrated into an equivalent `Role` (see `migrations/versions/6950bd048a6d_*.py`), so both models currently describe the same access for existing users. Retiring `Group` entirely (dropping its tables/columns and the `OR` fallback) is a later, separate step on the `feature/role-based-permissions` branch.
+
+### What action do I need? (action → operation mapping)
+
+Every write/read endpoint resolves to one `(Resource, Action)` pair checked against the requesting user's roles (and, for now, `Group` membership as a fallback). Two design rules keep this mapping predictable:
+
+1. **`DELETE` is reserved for destroying the record itself** (a `Building`, a `Classroom`, a `Subject`, a `Class`) — never reused for a lesser, more common operation, since granting `DELETE` on a resource is a comparatively severe grant (and, for `BUILDING`/`CLASSROOM`, a wildcard `DELETE` grant is admin-only, see above).
+2. **Deleting/canceling a `Reservation` (and everything built on top of it — `Meeting`, `Event`, `Exam`, `Solicitation` approve/deny) is `RESERVE`, not `DELETE`**, since booking and un-booking a room is a routine, everyday action that shouldn't require (or imply) the ability to delete the room itself. For the same reason, **deleting a `Class` ("turma") or a `Subject` ("disciplina") is gated by `UPDATE`, not `DELETE`** — a user who can manage the academic offering in a building shouldn't thereby also be granted the ability to delete the physical `Building`/`Classroom` record, which is a much more impactful action.
+
+| I want to... | Resource checked | Action required | Notes |
+|---|---|---|---|
+| Create a building | `BUILDING` | `CREATE` | No instance yet ("creation" check); only admins hit this route today |
+| Read a building | `BUILDING` | `READ` | |
+| Update a building | `BUILDING` | `UPDATE` | |
+| Delete a building | `BUILDING` | `DELETE` | Wildcard grant is admin-only |
+| Create a classroom | `BUILDING` | `CREATE` | Checked on the classroom's building |
+| Read a classroom | `CLASSROOM` | `READ` | |
+| Update a classroom | `CLASSROOM` | `UPDATE` | |
+| Delete a classroom | `CLASSROOM` | `DELETE` | Wildcard grant is admin-only |
+| Allocate/reallocate a classroom to a class's weekly schedule | `CLASSROOM` | `ALLOCATE` | Also requires `UPDATE` on the `Class` that owns the `Schedule` |
+| Create/update/cancel a `Reservation`, `Meeting`, `Event`, or `Exam` | `CLASSROOM` (or `BUILDING` if the booking has no classroom yet) | `RESERVE` | Covers the entire booking lifecycle, including deletion |
+| Approve/deny a `Solicitation` | `CLASSROOM` | `RESERVE` | Approving/denying is fundamentally creating-or-refusing a `Reservation` |
+| Create a subject ("disciplina") | `BUILDING` | `CREATE` | |
+| Read a subject | `BUILDING` | `READ` | |
+| Update a subject | `BUILDING` | `UPDATE` | |
+| Delete a subject | `BUILDING` | `UPDATE` | Not `DELETE` — see rule 2 above |
+| Create a class ("turma") | `BUILDING` | `CREATE` | Checked via the class's subject/building |
+| Read a class | `CLASSROOM` | `READ` | |
+| Update a class | `CLASSROOM` | `UPDATE` | |
+| Delete a class | `CLASSROOM` | `UPDATE` | Not `DELETE` — see rule 2 above |
