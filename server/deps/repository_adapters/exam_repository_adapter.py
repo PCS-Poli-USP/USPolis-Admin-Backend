@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends
 from server.deps.authenticate import UserDep
+from server.deps.permission_index_dep import PermissionIndexDep
 from server.deps.session_dep import SessionDep
 from server.models.database.exam_db_model import Exam
 from server.models.database.user_db_model import User
@@ -12,25 +13,32 @@ from server.services.security.classrooms_permission_checker import (
     ClassroomPermissionChecker,
 )
 from server.services.security.exam_permission_checker import ExamPermissionChecker
+from server.utils.enums.actions_enums import ClassroomAction
 
 
 class ExamRepositoryAdapter:
-    def __init__(self, user: UserDep, session: SessionDep):
+    def __init__(
+        self, user: UserDep, session: SessionDep, permission_index: PermissionIndexDep
+    ):
         self.session = session
         self.user = user
-        self.checker = ExamPermissionChecker(user=user, session=session)
-        self.classroom_checker = ClassroomPermissionChecker(user=user, session=session)
+        self.checker = ExamPermissionChecker(
+            user=user, session=session, permission_index=permission_index
+        )
+        self.classroom_checker = ClassroomPermissionChecker(
+            user=user, session=session, permission_index=permission_index
+        )
 
     def get_by_id(self, id: int) -> Exam:
         exam = ExamRepository.get_by_id(id=id, session=self.session)
-        self.checker.check_permission(exam)
+        self.checker.check_permission(exam, ClassroomAction.READ)
         return exam
 
     def create(self, creator: User, input: ExamRegister) -> Exam:
         classroom = ClassroomRepository.get_by_id(
             id=input.classroom_id, session=self.session
         )
-        self.classroom_checker.check_permission(classroom)
+        self.classroom_checker.check_permission(classroom, ClassroomAction.CREATE)
         exam = ExamRepository.create(creator=creator, input=input, session=self.session)
         self.session.commit()
         self.session.refresh(exam)
@@ -40,7 +48,7 @@ class ExamRepositoryAdapter:
         classroom = ClassroomRepository.get_by_id(
             id=input.classroom_id, session=self.session
         )
-        self.classroom_checker.check_permission(classroom)
+        self.classroom_checker.check_permission(classroom, ClassroomAction.UPDATE)
         exam = ExamRepository.update(
             user=self.user, id=id, input=input, session=self.session
         )
