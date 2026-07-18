@@ -78,7 +78,9 @@ class ReservationRespositoryAdapter:
         classroom = ClassroomRepository.get_by_id(
             id=reservation.classroom_id, session=self.session
         )
-        self.checker.check_permission(must_be_int(classroom.id), ClassroomAction.CREATE)
+        self.checker.check_permission(
+            must_be_int(classroom.id), ClassroomAction.RESERVE
+        )
         new_reservation = ReservationRepository.create(
             creator=self.user,
             input=reservation,
@@ -97,7 +99,9 @@ class ReservationRespositoryAdapter:
         classroom = ClassroomRepository.get_by_id(
             id=input.classroom_id, session=self.session
         )
-        self.checker.check_permission(must_be_int(classroom.id), ClassroomAction.UPDATE)
+        self.checker.check_permission(
+            must_be_int(classroom.id), ClassroomAction.RESERVE
+        )
         reservation = ReservationRepository.update(
             id=id,
             input=input,
@@ -114,10 +118,10 @@ class ReservationRespositoryAdapter:
         classroom = reservation.get_classroom()
         if not classroom:
             self.building_checker.check_permission(
-                reservation.get_building(), BuildingAction.DELETE
+                reservation.get_building(), BuildingAction.RESERVE
             )
         if classroom:
-            self.checker.check_permission(classroom, ClassroomAction.DELETE)
+            self.checker.check_permission(classroom, ClassroomAction.RESERVE)
         ReservationRepository.delete(
             id=id,
             user=self.user,

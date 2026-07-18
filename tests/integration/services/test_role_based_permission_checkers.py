@@ -1,5 +1,3 @@
-import random
-
 import pytest
 from sqlmodel import Session
 
@@ -46,7 +44,6 @@ from tests.factories.request.permission_request_factory import (
 def _assign_role(*, user: User, role: Role, session: Session) -> None:
     session.add(
         UserRole(
-            id=random.randint(1, 2_000_000_000),
             user_id=must_be_int(user.id),
             role_id=must_be_int(role.id),
             granted_by_id=must_be_int(user.id),

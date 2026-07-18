@@ -46,7 +46,7 @@ async def approve_reservation_solicitation(
 ) -> JSONResponse:
     """Aprove a class reservation solicitation"""
     checker = SolicitationPermissionChecker(user, session, permission_index)
-    checker.check_permission(solicitation_id, ClassroomAction.UPDATE)
+    checker.check_permission(solicitation_id, ClassroomAction.RESERVE)
     solicitation = SolicitationRepository.approve(
         id=solicitation_id, classroom_id=input.classroom_id, user=user, session=session
     )
@@ -71,7 +71,7 @@ async def deny_classroom_solicitation(
 ) -> JSONResponse:
     """Deny a class reservation solicitation"""
     checker = SolicitationPermissionChecker(user, session, permission_index)
-    checker.check_permission(solicitation_id, ClassroomAction.UPDATE)
+    checker.check_permission(solicitation_id, ClassroomAction.RESERVE)
 
     solicitation = SolicitationRepository.deny(
         id=solicitation_id, user=user, session=session

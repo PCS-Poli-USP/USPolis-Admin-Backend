@@ -1,5 +1,3 @@
-import random
-
 import pytest
 from sqlmodel import Session, select
 
@@ -159,10 +157,6 @@ def test_delete_role_deletes_permissions_and_user_links(
 
     session.add(
         UserRole(
-            # UserRole.id has no autoincrement (it's part of a composite primary
-            # key alongside user_id/role_id), so a value must be supplied; tests
-            # no longer get a fresh, truncated table, so it can't be hardcoded.
-            id=random.randint(1, 2_000_000_000),
             user_id=must_be_int(user.id),
             role_id=must_be_int(role.id),
             granted_by_id=must_be_int(user.id),

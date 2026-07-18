@@ -103,19 +103,23 @@ class ClassRepositoryAdapter:
         return updated_class
 
     def delete(self, id: int) -> None:
+        # Deleting a Class ("turma") is gated by UPDATE, not DELETE: DELETE is
+        # reserved for destroying the Classroom/Building record itself, and a
+        # user allowed to delete turmas shouldn't thereby be granted the
+        # (far more impactful) ability to delete the physical room.
         class_ = ClassRepository.get_by_id(id=id, session=self.session)
-        self.checker.check_permission(class_, ClassroomAction.DELETE)
-        self.schedule_checker.check_permission(class_.schedules, ClassroomAction.DELETE)
+        self.checker.check_permission(class_, ClassroomAction.UPDATE)
+        self.schedule_checker.check_permission(class_.schedules, ClassroomAction.UPDATE)
         ClassRepository.delete(id=id, session=self.session)
         self.session.commit()
 
     def delete_many(self, ids: list[int]) -> None:
         classes = ClassRepository.get_by_ids(ids=ids, session=self.session)
-        self.checker.check_permission(classes, ClassroomAction.DELETE)
+        self.checker.check_permission(classes, ClassroomAction.UPDATE)
 
         for class_ in classes:
             self.schedule_checker.check_permission(
-                class_.schedules, ClassroomAction.DELETE
+                class_.schedules, ClassroomAction.UPDATE
             )
 
         ClassRepository.delete_many(ids=ids, session=self.session)

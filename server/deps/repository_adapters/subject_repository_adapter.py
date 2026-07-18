@@ -80,8 +80,12 @@ class SubjectRepositoryAdapter:
         return subject
 
     def delete(self, id: int) -> None:
+        # Deleting a Subject ("disciplina") is gated by UPDATE, not DELETE:
+        # DELETE is reserved for destroying the Building/Classroom record
+        # itself, so this doesn't imply the (far more impactful) ability to
+        # delete the physical building.
         subject = SubjectRepository.get_by_id(id=id, session=self.session)
-        self.checker.check_permission(subject, BuildingAction.DELETE)
+        self.checker.check_permission(subject, BuildingAction.UPDATE)
         SubjectRepository.delete(id=id, session=self.session)
         self.session.commit()
 

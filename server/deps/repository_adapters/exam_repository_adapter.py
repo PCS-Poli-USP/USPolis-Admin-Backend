@@ -38,7 +38,7 @@ class ExamRepositoryAdapter:
         classroom = ClassroomRepository.get_by_id(
             id=input.classroom_id, session=self.session
         )
-        self.classroom_checker.check_permission(classroom, ClassroomAction.CREATE)
+        self.classroom_checker.check_permission(classroom, ClassroomAction.RESERVE)
         exam = ExamRepository.create(creator=creator, input=input, session=self.session)
         self.session.commit()
         self.session.refresh(exam)
@@ -48,7 +48,7 @@ class ExamRepositoryAdapter:
         classroom = ClassroomRepository.get_by_id(
             id=input.classroom_id, session=self.session
         )
-        self.classroom_checker.check_permission(classroom, ClassroomAction.UPDATE)
+        self.classroom_checker.check_permission(classroom, ClassroomAction.RESERVE)
         exam = ExamRepository.update(
             user=self.user, id=id, input=input, session=self.session
         )

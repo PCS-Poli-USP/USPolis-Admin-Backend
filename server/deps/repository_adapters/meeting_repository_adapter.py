@@ -43,7 +43,7 @@ class MeetingRepositoryAdapter:
         classroom = ClassroomRepository.get_by_id(
             id=input.classroom_id, session=self.session
         )
-        self.classroom_checker.check_permission(classroom, ClassroomAction.CREATE)
+        self.classroom_checker.check_permission(classroom, ClassroomAction.RESERVE)
         meeting = MeetingRepository.create(
             creator=creator, input=input, session=self.session
         )
@@ -55,7 +55,7 @@ class MeetingRepositoryAdapter:
         classroom = ClassroomRepository.get_by_id(
             id=input.classroom_id, session=self.session
         )
-        self.classroom_checker.check_permission(classroom, ClassroomAction.UPDATE)
+        self.classroom_checker.check_permission(classroom, ClassroomAction.RESERVE)
         meeting = MeetingRepository.update(
             user=self.user, id=id, input=input, session=self.session
         )
