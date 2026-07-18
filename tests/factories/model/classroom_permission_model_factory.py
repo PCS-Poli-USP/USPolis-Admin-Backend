@@ -29,22 +29,21 @@ class ClassroomPermissionModelFactory(BaseModelFactory[ClassroomPermission]):
     def get_defaults(self) -> ClassroomPermissionModelDict:
         core = self.core_factory.get_base_defaults()
         return {
-            "classroom_id": None
-            if core["resource_id"] == -1
-            else core["resource_id"],
+            "classroom_id": None if core["resource_id"] == -1 else core["resource_id"],  # type: ignore
             "actions": core["actions"],  # type: ignore
-            "role_id": core["role_id"],
+            "role_id": core["role_id"],  # type: ignore
             "granted_by_id": must_be_int(self.granted_by.id),
         }
 
-    def create(
-        self, **overrides: Unpack[ClassroomPermissionModelDict]
-    ) -> ClassroomPermission:  # type: ignore
+    def create(  # type: ignore
+        self,
+        **overrides: Unpack[ClassroomPermissionModelDict],
+    ) -> ClassroomPermission:
         """Create a classroom permission instance with default values."""
         return super().create(**overrides)
 
-    def create_and_refresh(
+    def create_and_refresh(  # type: ignore
         self, **overrides: Unpack[ClassroomPermissionModelDict]
-    ) -> ClassroomPermission:  # type: ignore
+    ) -> ClassroomPermission:
         """Create a classroom permission instance with default values, commit and refresh it."""
         return super().create_and_refresh(**overrides)

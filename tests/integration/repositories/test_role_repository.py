@@ -1,0 +1,201 @@
+import random
+
+import pytest
+from sqlmodel import Session, select
+
+from server.models.database.classroom_permission_db_model import ClassroomPermission
+from server.models.database.role_db_model import Role
+from server.models.database.user_db_model import User
+from server.models.database.user_role_db_model import UserRole
+from server.repositories.classroom_permission_repository import (
+    ClassroomPermissionRepository,
+)
+from server.repositories.role_repository import RoleNotFound, RoleRepository
+from server.utils.enums.resources_enums import Resource
+from server.utils.must_be_int import must_be_int
+from tests.factories.request.permission_request_factory import (
+    PermissionRequestFactory,
+)
+from tests.factories.request.role_request_factory import RoleRequestFactory
+
+
+def test_create_role_without_permissions(user: User, session: Session) -> None:
+    input = RoleRequestFactory(resources=[]).create_input()
+
+    role = RoleRepository.create(input=input, user=user, session=session)
+    session.commit()
+    session.refresh(role)
+
+    assert role.name == input.name
+    assert role.resources == []
+    assert role.get_permissions() == []
+
+
+def test_create_role_with_permissions(user: User, session: Session) -> None:
+    factory = RoleRequestFactory(resources=[Resource.CLASSROOM, Resource.COURSE])
+    input = factory.create_input(
+        permissions=[
+            factory.build_permission(Resource.CLASSROOM),
+            factory.build_permission(Resource.COURSE),
+        ]
+    )
+
+    role = RoleRepository.create(input=input, user=user, session=session)
+    session.commit()
+    session.refresh(role)
+
+    assert len(role.classroom_permissions) == 1
+    assert len(role.course_permissions) == 1
+    assert role.classroom_permissions[0].role_id == role.id
+    assert role.course_permissions[0].role_id == role.id
+
+
+def test_create_role_deduplicates_repeated_permissions(
+    user: User, session: Session
+) -> None:
+    factory = RoleRequestFactory(resources=[Resource.CLASSROOM])
+    permission = factory.build_permission(Resource.CLASSROOM)
+    input = factory.create_input(permissions=[permission, permission])
+
+    role = RoleRepository.create(input=input, user=user, session=session)
+    session.commit()
+    session.refresh(role)
+
+    assert len(role.classroom_permissions) == 1
+
+
+def test_update_role_adds_new_permission(
+    user: User, role: Role, session: Session
+) -> None:
+    factory = RoleRequestFactory(resources=role.resources)
+    input = factory.update_input(
+        name=role.name,
+        description=role.description,
+        resources=role.resources,
+        permissions=[factory.build_permission(Resource.CLASSROOM)],
+    )
+
+    updated = RoleRepository.update(
+        id=must_be_int(role.id), input=input, user=user, session=session
+    )
+    session.commit()
+    session.refresh(updated)
+
+    assert len(updated.classroom_permissions) == 1
+
+
+def test_update_role_removes_missing_permission(
+    user: User, role: Role, session: Session
+) -> None:
+    factory = RoleRequestFactory(resources=role.resources)
+    create_input = factory.update_input(
+        name=role.name,
+        description=role.description,
+        resources=role.resources,
+        permissions=[factory.build_permission(Resource.CLASSROOM)],
+    )
+    role = RoleRepository.update(
+        id=must_be_int(role.id), input=create_input, user=user, session=session
+    )
+    session.commit()
+    session.refresh(role)
+    assert len(role.classroom_permissions) == 1
+
+    empty_input = factory.update_input(
+        name=role.name,
+        description=role.description,
+        resources=role.resources,
+        permissions=[],
+    )
+    updated = RoleRepository.update(
+        id=must_be_int(role.id), input=empty_input, user=user, session=session
+    )
+    session.commit()
+    session.refresh(updated)
+
+    assert updated.classroom_permissions == []
+
+
+def test_update_role_keeps_unchanged_permission(
+    user: User, role: Role, session: Session
+) -> None:
+    factory = RoleRequestFactory(resources=role.resources)
+    permission = factory.build_permission(Resource.CLASSROOM)
+    input = factory.update_input(
+        name=role.name,
+        description=role.description,
+        resources=role.resources,
+        permissions=[permission],
+    )
+
+    role = RoleRepository.update(
+        id=must_be_int(role.id), input=input, user=user, session=session
+    )
+    session.commit()
+    session.refresh(role)
+    first_permission_id = role.classroom_permissions[0].id
+
+    updated = RoleRepository.update(
+        id=must_be_int(role.id), input=input, user=user, session=session
+    )
+    session.commit()
+    session.refresh(updated)
+
+    assert len(updated.classroom_permissions) == 1
+    assert updated.classroom_permissions[0].id == first_permission_id
+
+
+def test_delete_role_deletes_permissions_and_user_links(
+    user: User, role: Role, session: Session
+) -> None:
+    permission_input = PermissionRequestFactory(
+        role=role, resource=Resource.CLASSROOM
+    ).create_input()
+    permission = ClassroomPermissionRepository.create(
+        input=permission_input, user=user, session=session
+    )
+    session.commit()
+    permission_id = must_be_int(permission.id)
+
+    session.add(
+        UserRole(
+            # UserRole.id has no autoincrement (it's part of a composite primary
+            # key alongside user_id/role_id), so a value must be supplied; tests
+            # no longer get a fresh, truncated table, so it can't be hardcoded.
+            id=random.randint(1, 2_000_000_000),
+            user_id=must_be_int(user.id),
+            role_id=must_be_int(role.id),
+            granted_by_id=must_be_int(user.id),
+        )
+    )
+    session.commit()
+
+    RoleRepository.delete(id=must_be_int(role.id), session=session)
+    session.commit()
+
+    with pytest.raises(RoleNotFound):
+        RoleRepository.get_by_id(id=must_be_int(role.id), session=session)
+
+    remaining_permission = session.exec(
+        select(ClassroomPermission).where(ClassroomPermission.id == permission_id)
+    ).first()
+    assert remaining_permission is None
+
+    remaining_links = session.exec(
+        select(UserRole).where(UserRole.role_id == role.id)
+    ).all()
+    assert list(remaining_links) == []
+
+
+def test_get_all_filters_by_resource(user: User, session: Session) -> None:
+    classroom_only = RoleRequestFactory(resources=[Resource.CLASSROOM]).create_input()
+    course_only = RoleRequestFactory(resources=[Resource.COURSE]).create_input()
+
+    RoleRepository.create(input=classroom_only, user=user, session=session)
+    RoleRepository.create(input=course_only, user=user, session=session)
+    session.commit()
+
+    roles = RoleRepository.get_all(session=session, resources=[Resource.CLASSROOM])
+
+    assert len(roles) == 1
+    assert roles[0].name == classroom_only.name

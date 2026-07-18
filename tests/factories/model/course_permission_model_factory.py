@@ -29,20 +29,20 @@ class CoursePermissionModelFactory(BaseModelFactory[CoursePermission]):
     def get_defaults(self) -> CoursePermissionModelDict:
         core = self.core_factory.get_base_defaults()
         return {
-            "course_id": None if core["resource_id"] == -1 else core["resource_id"],
+            "course_id": None if core["resource_id"] == -1 else core["resource_id"],  # type: ignore
             "actions": core["actions"],  # type: ignore
-            "role_id": core["role_id"],
+            "role_id": core["role_id"],  # type: ignore
             "granted_by_id": must_be_int(self.granted_by.id),
         }
 
-    def create(
+    def create(  # type: ignore
         self, **overrides: Unpack[CoursePermissionModelDict]
-    ) -> CoursePermission:  # type: ignore
+    ) -> CoursePermission:
         """Create a course permission instance with default values."""
         return super().create(**overrides)
 
-    def create_and_refresh(
+    def create_and_refresh(  # type: ignore
         self, **overrides: Unpack[CoursePermissionModelDict]
-    ) -> CoursePermission:  # type: ignore
+    ) -> CoursePermission:
         """Create a course permission instance with default values, commit and refresh it."""
         return super().create_and_refresh(**overrides)

@@ -9,7 +9,7 @@ from pathlib import Path
 from fastapi import Request
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlmodel import Session, select
 from server.config import CONFIG
 
@@ -29,12 +29,14 @@ from server.models.database.event_db_model import Event
 from server.models.database.exam_db_model import Exam
 from server.models.database.group_db_model import Group
 from server.models.database.meeting_db_model import Meeting
+from server.models.database.role_db_model import Role
 from server.models.database.subject_db_model import Subject
 from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister
 from server.repositories.occurrence_repository import OccurrenceRepository
 from server.repositories.user_repository import UserRepository
 from server.services.auth.auth_user_info import AuthUserInfo
+from server.utils.enums.resources_enums import Resource
 from tests.factories.model.building_model_factory import BuildingModelFactory
 from tests.factories.model.class_model_factory import ClassModelFactory
 from tests.factories.model.classroom_model_factory import ClassroomModelFactory
@@ -42,32 +44,13 @@ from tests.factories.model.event_model_factory import EventModelFactory
 from tests.factories.model.exam_model_factory import ExamModelFactory
 from tests.factories.model.group_model_factory import GroupModelFactory
 from tests.factories.model.meeting_model_factory import MeetingModelFactory
+from tests.factories.base.base_factory import shared_faker
+from tests.factories.model.role_model_factory import RoleModelFactory
 from tests.factories.model.subject_model_factory import SubjectModelFactory
 from tests.factories.model.user_model_factory import UserModelFactory
 
 test_db_url = f"{CONFIG.test_db_uri}/{CONFIG.test_db_database}"
 engine = create_engine(test_db_url)
-
-# create function to delete all data from tables and reset ids
-with Session(engine) as session:
-    statement = text("""
-        CREATE OR REPLACE FUNCTION truncate_tables(username IN VARCHAR) RETURNS void AS $$
-        DECLARE
-            statements CURSOR FOR
-                SELECT tablename FROM pg_tables
-                WHERE tableowner = username AND schemaname = 'public';
-        BEGIN
-            -- Truncar as tabelas
-            FOR stmt IN statements LOOP
-                IF stmt.tablename != 'alembic_version' THEN
-                    EXECUTE 'TRUNCATE TABLE ' || quote_ident(stmt.tablename) || ' RESTART IDENTITY' || ' CASCADE;';
-                END IF;
-            END LOOP;
-        END;
-        $$ LANGUAGE plpgsql;
-    """)
-    session.execute(statement)
-    session.commit()
 
 
 def run_alembic_migrations() -> None:
@@ -84,17 +67,29 @@ def apply_migrations() -> Generator[None, None, None]:
 
 
 @pytest.fixture(name="session")
-def session_fixture(request: pytest.FixtureRequest) -> Generator[Session, None, None]:
-    with Session(engine) as session:
+def session_fixture() -> Generator[Session, None, None]:
+    """Isolate each test in a transaction (with a SAVEPOINT so in-test
+    `session.commit()` calls don't escape it) and roll it back afterwards,
+    instead of truncating every table after every test."""
+    connection = engine.connect()
+    transaction = connection.begin()
+    session = Session(bind=connection, join_transaction_mode="create_savepoint")
 
-        def cleanup() -> None:
-            # Clean-up após o teste (executa sempre, mesmo que o teste falhe)
-            statement = text("SELECT truncate_tables('postgres');")
-            session.execute(statement)
-            session.commit()
+    yield session
 
-        request.addfinalizer(cleanup)
-        yield session
+    session.close()
+    transaction.rollback()
+    connection.close()
+
+
+@pytest.fixture(autouse=True)
+def _reset_faker_uniqueness() -> None:
+    """Factories share one Faker instance so `.unique.xxx()` calls dedupe
+    correctly within a test (see tests/factories/base/base_factory.py); clear
+    its tracking between tests so small-cardinality providers don't get
+    exhausted over the whole run — safe, since per-test rollback means no two
+    tests' rows ever coexist for a reused "unique" value to actually collide."""
+    shared_faker.unique.clear()
 
 
 @pytest.fixture(name="mock_session")
@@ -318,4 +313,13 @@ def event_fixture(user: User, classroom: Classroom, session: Session) -> Event:
     """Fixture to create a standard event."""
     return EventModelFactory(
         classroom=classroom, creator=user, session=session
+    ).create_and_refresh()
+
+
+@pytest.fixture(name="role")
+def role_fixture(session: Session) -> Role:
+    """Fixture to create a standard role without any resource or permission."""
+    return RoleModelFactory(
+        session=session,
+        resources=[Resource.BUILDING, Resource.CLASSROOM, Resource.COURSE],
     ).create_and_refresh()

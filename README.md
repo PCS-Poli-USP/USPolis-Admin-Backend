@@ -18,6 +18,7 @@
 4. [Run](#run)
 5. [Develop](#develop)
 6. [Test](#test)
+7. [Permissions](#permissions)
 
 ## Stack
 Here we have the tecnologies used on backend:
@@ -102,7 +103,7 @@ Make sure to install test dependencies before trying to run the tests:
 poetry install --with test
 ```
 
-The tests need access to a PostgreSQL database that **will be cleared** at the end of each test (look at .env file and set the test databse url and test database name).
+The tests need access to a PostgreSQL database (look at .env file and set the test databse url and test database name). Each test runs inside its own database transaction (with a SAVEPOINT, so a test's own `commit()` calls don't escape it) that is **rolled back** right after the test finishes, instead of truncating the whole database — this keeps every test isolated while staying fast regardless of how many tables the schema has.
 
 Then just run the test suite.
 
@@ -112,3 +113,15 @@ pytest
 
 > [!TIP]
 > If you use VSCode install [Python Test Explorer](https://marketplace.visualstudio.com/items?itemName=LittleFoxTeam.vscode-python-test-adapter) extension, make sure that you are running only one time each test, otherwise the tests must be fail.
+
+## Permissions
+
+USPolis uses a role-based permission system: a `Role` groups a set of `Permission`s (`BuildingPermission`, `ClassroomPermission`, `CoursePermission`) and is assigned to `User`s via `/admin/roles`. A permission is always granted to a role — there is no way to grant a permission directly to a single user ("point permissions") anymore, every `Permission` row requires a `role_id`.
+
+- Each permission scopes a set of `action`s (`CREATE`, `READ`, `UPDATE`, `DELETE`, and for `BUILDING`/`CLASSROOM` also `ALLOCATE`/`RESERVE`) to a resource (`BUILDING`, `CLASSROOM`, `COURSE`), either a specific instance (`resource_id`) or a wildcard (`resource_id = -1` in requests, stored as `NULL`) meaning "every instance of that resource".
+- A `BuildingPermission` cascades down to every `Classroom` inside that building for the same action, so granting e.g. `ALLOCATE` on a building lets a role allocate any room in it without needing one `ClassroomPermission` per room.
+- A wildcard grant (no specific building/classroom/course) is only honored for `UPDATE`, `DELETE`, `ALLOCATE`, and `RESERVE` when the requesting user is an admin — a non-admin role can never be granted "update/delete/allocate/reserve everything in the system at once" through a wildcard permission, only through a building- or resource-scoped one. `CREATE`/`READ` wildcards are honored for any role.
+- Manage roles and permissions via the `/admin/roles` and `/admin/permissions` endpoints (see `server/routes/admin/roles_admin_routes.py` and `server/routes/admin/permissions_admin_routes.py`).
+
+> [!NOTE]
+> Wiring these permissions into per-request enforcement on every resource endpoint (and retiring the older `Group`-based access model it's replacing) is in progress on the `feature/role-based-permissions` branch — today the `Role`/`Permission` data model and its admin CRUD endpoints exist, but request-time authorization still runs on `Group` membership.
