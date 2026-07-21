@@ -172,13 +172,13 @@ class ReservationRepository:
         *,
         id: int,
         input: ReservationUpdate,
-        classroom: Classroom,
+        classroom: Classroom | None,
         user: User,
         session: Session,
     ) -> Reservation:
         reservation = ReservationRepository.get_by_id(id=id, session=session)
         reservation.title = input.title
-        reservation.type = input.type
+        # reservation.type = input.type
         reservation.reason = input.reason
 
         ScheduleRepository.update_reservation_schedule(
@@ -194,6 +194,7 @@ class ReservationRepository:
             solicitation.updated_at = BrazilDatetime.now_utc()
             session.add(solicitation)
 
+        reservation.updated_at = BrazilDatetime.now_utc()
         session.add(reservation)
         return reservation
 

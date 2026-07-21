@@ -1,4 +1,5 @@
 from datetime import date
+from typing import cast
 from fastapi import HTTPException, status
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
@@ -8,9 +9,11 @@ from server.models.database.solicitation_db_model import (
     Solicitation,
 )
 from server.models.database.user_db_model import User
-from server.models.http.requests.solicitation_request_models import (
-    SolicitationRegister,
-)
+from server.models.http.requests.exam_request_models import ExamUpdate
+from server.models.http.requests.event_request_models import EventUpdate
+from server.models.http.requests.meeting_request_models import MeetingUpdate
+from server.models.http.requests.solicitation_request_models import SolicitationRegister
+
 from server.models.page_models import Page, PaginationInput
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.classroom_repository import ClassroomRepository
@@ -167,6 +170,99 @@ class SolicitationRepository:
             capacity=input.capacity,
         )  # pyright: ignore[reportCallIssue]
         session.add(solicitation)
+        return solicitation
+    
+    @staticmethod
+    def update(
+        id: int,
+        input: SolicitationRegister,
+        user: User,
+        session: Session,
+    ) -> Solicitation:
+        solicitation = SolicitationRepository.get_by_id(
+            id=id,
+            session=session,
+        )
+
+        if solicitation.user_id != user.id:
+            raise SolicitationPermissionDenied(
+                "Não é permitido editar a solicitação de outro usuário."
+            )
+
+        if solicitation.get_status() != ReservationStatus.PENDING:
+            raise SolicitationAlreadyClosed(
+                "A solicitação não pode mais ser editada."
+            )
+
+        building = BuildingRepository.get_by_id(
+            id=input.building_id,
+            session=session,
+        )
+
+        classroom = None
+        if input.reservation_data.classroom_id:
+            classroom = ClassroomRepository.get_by_id(
+                id=input.reservation_data.classroom_id,
+                session=session,
+            )
+
+            if classroom.building_id != building.id:
+                raise SolicitationInvalidClassroom(
+                    f"A sala {classroom.name} não pertence ao prédio {building.name}."
+                )
+
+            if not classroom.reservable:
+                raise ClassroomNotReservable(
+                    f"A sala {classroom.name} não é reservável."
+                )
+
+        solicitation.building = building
+        solicitation.building_id = must_be_int(building.id)
+
+        solicitation.solicited_classroom = classroom
+        solicitation.solicited_classroom_id = (
+            must_be_int(classroom.id) if classroom else None
+        )
+
+        solicitation.required_classroom = input.required_classroom
+        solicitation.capacity = input.capacity
+
+        reservation = solicitation.reservation
+        reservation_data = input.reservation_data
+
+        if reservation.type != reservation_data.type:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Não é permitido alterar o tipo da solicitação.",
+            )
+
+        if reservation.type == ReservationType.EXAM and reservation.exam:
+            ExamRepository.update(
+                user=user,
+                id=must_be_int(reservation.exam.id),
+                input=cast(ExamUpdate, reservation_data),
+                session=session,
+            )
+
+        elif reservation.type == ReservationType.EVENT and reservation.event:
+            EventRepository.update(
+                user=user,
+                id=must_be_int(reservation.event.id),
+                input=cast(EventUpdate, reservation_data),
+                session=session,
+            )
+
+        elif reservation.type == ReservationType.MEETING and reservation.meeting:
+            MeetingRepository.update(
+                user=user,
+                id=must_be_int(reservation.meeting.id),
+                input=cast(MeetingUpdate, reservation_data),
+                session=session,
+            )
+
+        solicitation.updated_at = BrazilDatetime.now_utc()
+        session.add(solicitation)
+
         return solicitation
 
     @staticmethod

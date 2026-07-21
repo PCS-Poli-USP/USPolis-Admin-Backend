@@ -329,7 +329,7 @@ class ScheduleRepository:
         user: User,
         reservation: Reservation,
         input: ScheduleUpdate,
-        classroom: Classroom,
+        classroom: Classroom | None,
         session: Session,
     ) -> Schedule:
         old_schedule = reservation.schedule
@@ -337,7 +337,9 @@ class ScheduleRepository:
         should_reallocate = False
         if not old_schedule.classroom:
             should_reallocate = True
-        if old_schedule.classroom and classroom.id != old_schedule.classroom.id:
+        if old_schedule.classroom and (
+            classroom is None or classroom.id != old_schedule.classroom.id
+        ):
             should_reallocate = True
         if ScheduleUtils.has_schedule_diff(old_schedule, input):
             should_reallocate = True

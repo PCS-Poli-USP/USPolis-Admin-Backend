@@ -88,3 +88,21 @@ async def create_solicitation(
         EmailService.send_solicitation_request_email(users, solicitation)
     )
     return SolicitationResponse.from_solicitation(solicitation)
+
+@router.put("/{solicitation_id}")
+async def update_solicitation(
+    solicitation_id: int,
+    input: SolicitationRegister,
+    user: UserDep,
+    session: SessionDep,
+) -> SolicitationResponse:
+    solicitation = SolicitationRepository.update(
+        id=solicitation_id,
+        input=input,
+        user=user,
+        session=session,
+    )
+
+    session.commit()
+
+    return SolicitationResponse.from_solicitation(solicitation)

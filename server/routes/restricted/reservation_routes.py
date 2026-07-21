@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from server.deps.repository_adapters.reservation_repository_adapter import (
     ReservationRepositoryDep,
 )
+from server.models.http.responses.reservation_response_models import ReservationResponse
 from server.services.email.email_service import EmailService
 
 from server.routes.restricted.exam_routes import router as ExamRouter
@@ -19,6 +20,14 @@ router.include_router(ExamRouter)
 router.include_router(EventRouter)
 router.include_router(MeetingRouter)
 
+
+@router.get("/{reservation_id}", response_model=ReservationResponse)
+def get_reservation(
+    reservation_id: int,
+    repository: ReservationRepositoryDep,
+) -> ReservationResponse:
+    reservation = repository.get_by_id(id=reservation_id)
+    return ReservationResponse.from_reservation(reservation)
 
 @router.delete("/{reservation_id}")
 async def delete_reservation(

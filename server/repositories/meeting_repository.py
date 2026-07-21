@@ -99,9 +99,12 @@ class MeetingRepository:
         session: Session,
     ) -> Meeting:
         meeting = MeetingRepository.get_by_id(id=id, session=session)
-        classroom = ClassroomRepository.get_by_id(
-            id=input.classroom_id, session=session
-        )
+        classroom = None
+        if input.classroom_id:
+            classroom = ClassroomRepository.get_by_id(
+                id=input.classroom_id,
+                session=session,
+            )
         ReservationRepository.update(
             id=meeting.reservation_id,
             input=input,
