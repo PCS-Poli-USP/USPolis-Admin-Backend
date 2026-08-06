@@ -41,6 +41,8 @@ jobs:
           script: |
             cd /diskb/home/backend
             git pull origin main
+            poetry install --without test,dev
+            bash scripts/install_playwright_chromium.sh
             sudo systemctl restart uspolis-backend.service
             echo "Backend reloaded com sucesso."
 
