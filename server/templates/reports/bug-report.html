@@ -1,66 +1,34 @@
-<!DOCTYPE html>
-<head>
-    <title>Um problema foi reportado </title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            color: #333;
-        }
-        .email-container {
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .logo {
-            display: flex;
-            max-width: 200px;
-            align-items: center;
-        }
-        .logo-image {
-            max-width: 150px;
-            margin-bottom: 16px;
-        }
-        .logo-text {
-            font-size: 75px;
-            font-weight: bold;
-            margin-left: 0px;
-            color: #408080;
-        }
-        .button {
-            color: #fff;
-            background-color: #007BFF;
-            border-color: #007BFF;
-            border-radius: .25rem;
-            text-decoration: none;
-            padding: .375rem .75rem;
-            font-size: 1rem;
-            line-height: 1.5;
-        }
-    </style>
-</head>
-<body>
-    <div class="email-container">
-        <div class="logo">
-          <!-- <img src="cid:logo" alt="Uspolis-Logo" class="logo-image"> -->
-          <div class="logo-text">USPolis</div>
-        </div>
-        <p>
-            <br>
-            <b>Detalhes do relatório:</b> <br>
-            <br>
-            <b>Usuário: </b>{{ data.user_name }}<br>
-            <b>Email: </b>{{ data.user_email }}<br>
-            <b>Tipo: </b>{{ data.type }}<br>
-            <b>Prioridade: </b>{{ data.priority }}<br>
-            <b>Descrição: </b><br>
-            {{ data.description }}
-        </p>
-        Para <b>ver detalhes, imagens, etc</b> acesse <a href="https://www.uspolis.com.br/reports">aqui</a>.<br>
-        <br>
-        Atenciosamente, <br>
-        Equipe USPolis
-        </p>
-        <p>ATENÇÃO! Este e-mail é apenas informativo, não é necessário respondê-lo.</p>
-    </div>
-</body>
-</html>
+{% extends "_layout/base_email.html" %}
+
+{% block title %}Um problema foi reportado{% endblock %}
+
+{% block status %}
+{% if data.priority == "Urgente" %}
+<tr><td class="status-ribbon" style="background-color: #fdecea; color: #c0392b;">&#128308; PRIORIDADE URGENTE</td></tr>
+{% elif data.priority == "Alta" %}
+<tr><td class="status-ribbon" style="background-color: #fdf1e6; color: #b7601f;">&#128992; PRIORIDADE ALTA</td></tr>
+{% elif data.priority == "Média" %}
+<tr><td class="status-ribbon" style="background-color: #fff8e6; color: #b7791f;">&#128993; PRIORIDADE MÉDIA</td></tr>
+{% else %}
+<tr><td class="status-ribbon" style="background-color: #eaf2f2; color: #2f6666;">&#128994; PRIORIDADE BAIXA</td></tr>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<p>Um novo problema foi reportado no sistema.</p>
+
+<div class="section-title">Detalhes do relatório</div>
+<table class="detail-table" role="presentation" cellpadding="0" cellspacing="0">
+    <tr><td class="detail-label">Usuário</td><td class="detail-value">{{ data.user_name }}</td></tr>
+    <tr><td class="detail-label">Email</td><td class="detail-value">{{ data.user_email }}</td></tr>
+    <tr><td class="detail-label">Tipo</td><td class="detail-value">{{ data.type }}</td></tr>
+    <tr><td class="detail-label">Prioridade</td><td class="detail-value">{{ data.priority }}</td></tr>
+</table>
+
+<div class="section-title">Descrição</div>
+<div class="quote-block">{{ data.description }}</div>
+
+<p style="margin-top: 24px;">
+    <a href="https://www.uspolis.com.br/reports" class="btn">Ver detalhes e imagens</a>
+</p>
+{% endblock %}
