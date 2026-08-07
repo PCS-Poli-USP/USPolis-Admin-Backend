@@ -7,8 +7,10 @@
 #playwright
 .playwright-browsers/
 
-# tests data
-tests/data/results
+# tests data — unreviewed crawler snapshot candidates only; promoted
+# snapshots under tests/data/{jupiter,janus}/snapshots/ ARE committed
+tests/data/jupiter/snapshots/pending/
+tests/data/**/html
 
 # build
 build/
