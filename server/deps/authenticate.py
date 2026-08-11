@@ -2,7 +2,7 @@ import secrets
 
 from typing import Annotated
 
-from fastapi import Depends, Header, HTTPException, Request, status
+from fastapi import Depends, Header, HTTPException, Request, WebSocket, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from server.config import CONFIG
@@ -149,6 +149,39 @@ def admin_authenticate(
         raise AdminAccessRequired()
 
 
+# -- websocket authentications :
+#
+# WS routes can't use the Request-based `authenticate`/`public_authenticate` helpers
+# above: FastAPI only injects a `Request`-typed dependency parameter when the
+# connection actually is an HTTP request, so those functions simply crash when
+# resolved for a `@router.websocket()` route. These variants take `WebSocket`
+# instead and read cookies/query params directly (WebSocket is a Starlette
+# HTTPConnection subtype, same as Request, so `.cookies`/`.query_params` work
+# the same way). They never raise - callers decide what to do with `None`.
+
+
+async def websocket_optional_identity(
+    websocket: WebSocket, session: SessionDep
+) -> User | None:
+    """Resolve the connecting user from a session cookie or a `?token=` query param, or None if anonymous/unresolvable."""
+    session_id = websocket.cookies.get("session")
+    if session_id:
+        try:
+            return UserSessionRepository.get_session_by_id(
+                id=session_id, session=session
+            ).user
+        except UserSessionNotFound:
+            pass
+    token = websocket.query_params.get("token")
+    if token:
+        try:
+            user_info = AuthenticationClient.get_user_info(token)
+            return UserRepository.get_from_auth(user_info=user_info, session=session)
+        except HTTPException:
+            pass
+    return None
+
+
 # -- permission authentications :
 
 
@@ -205,3 +238,6 @@ class RestrictedAccessRequired(HTTPException):
 GoogleAuthenticate = Annotated[AuthUserInfo, Depends(google_token_authenticate)]
 UserDep = Annotated[User, Depends(authenticate)]
 BuildingDep = Annotated[Building, Depends(building_authenticate)]
+WebSocketIdentityDep = Annotated[
+    User | None, Depends(websocket_optional_identity)
+]
