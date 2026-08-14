@@ -396,6 +396,11 @@ class ScheduleRepository:
                 schedule=schedule,
             )
             session.add(new_occurrence)
+
+        if new_dates:
+            schedule.start_date = min(new_dates)
+            schedule.end_date = max(new_dates)
+        
         return schedule
 
     @staticmethod
