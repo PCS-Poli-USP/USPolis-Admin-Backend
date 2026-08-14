@@ -81,7 +81,8 @@ def public_authenticate_from_cookie(request: Request, session: SessionDep) -> No
             user_session = UserSessionRepository.get_session_by_id(
                 id=session_id, session=session
             )
-            request.state.current_user = user_session.user
+            if not user_session.is_expired():
+                request.state.current_user = user_session.user
         except UserSessionNotFound:
             pass
 
@@ -95,6 +96,8 @@ def authenticate_from_cookie(request: Request, session: SessionDep) -> User:
             id=session_id, session=session
         )
     except UserSessionNotFound:
+        raise InvalidSessionCookie()
+    if user_session.is_expired():
         raise InvalidSessionCookie()
     return user_session.user
 
