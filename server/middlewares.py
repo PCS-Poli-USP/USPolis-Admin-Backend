@@ -17,13 +17,16 @@ class RoutesDescription(BaseModel):
     end_with: str
 
 
-ROUTES_LOG_BODY = {
+# Rules for which method+path combos get their body logged: on the
+# "Request" log line always, and on the "Response" log line whenever that
+# response is an error (status_code >= 400) — see `LoggerMiddleware`.
+LOG_BODY_RULES = {
     "GET": {
         "start_with": ["/admin"],
         "end_with": [""],
     },
     "POST": {
-        "start_with": ["/admin"],
+        "start_with": ["/admin", "/subjects", "/classes", "/classrooms", "/calendars"],
         "end_with": [""],
     },
     "PUT": {
@@ -63,8 +66,8 @@ class LoggerMessage(BaseModel):
     user_email: str | None = None
     status_code: int | None = None
     duration: float | None = None
-    detail: str | None = None
-    body: str | None = None
+    response_detail: str | None = None
+    request_body: str | None = None
 
     def __str__(self) -> str:
         short_url = self.url.path
@@ -81,8 +84,8 @@ class LoggerMessage(BaseModel):
             f'status="{self.status_code if self.status_code is not None else "N/A"}" '
             f'duration="{duration_str}" '  # Usa a string pré-formatada
             f'email="{self.user_email if self.user_email is not None else "N/A"}" '
-            f'detail="{self.detail if self.detail is not None else "N/A"}" '
-            f'body="{self.body if self.body is not None else "N/A"}"'
+            f'response_detail="{self.response_detail if self.response_detail is not None else "N/A"}" '
+            f'request_body="{self.request_body if self.request_body is not None else "N/A"}"'
         )
 
 
@@ -100,25 +103,34 @@ class LoggerMiddleware(BaseHTTPMiddleware):
 
     async def __get_request_body(self, request: Request) -> str | None:
         method = request.method
-        if method in ROUTES_LOG_BODY:
-            start_with = ROUTES_LOG_BODY[method]["start_with"]
-            end_with = ROUTES_LOG_BODY[method]["end_with"]
-            url_path = request.url.path
+        if method not in LOG_BODY_RULES:
+            return None
 
-            if any(url_path.startswith(prefix) for prefix in start_with) and any(
-                url_path.endswith(suffix) for suffix in end_with
-            ):
-                try:
-                    body = await request.body()
+        start_with = LOG_BODY_RULES[method]["start_with"]
+        end_with = LOG_BODY_RULES[method]["end_with"]
+        url_path = request.url.path
+        if not (
+            any(url_path.startswith(prefix) for prefix in start_with)
+            and any(url_path.endswith(suffix) for suffix in end_with)
+        ):
+            return None
 
-                    async def receive() -> dict[str, Any]:
-                        return {"type": "http.request", "body": body}
+        try:
+            body = await request.body()
 
-                    request._receive = receive
-                    return body.decode("utf-8")
-                except Exception as e:
-                    logger.error(f"Error reading request body: {e}")
-        return None
+            async def receive() -> dict[str, Any]:
+                return {"type": "http.request", "body": body}
+
+            request._receive = receive
+            decoded = body.decode("utf-8")
+        except Exception as e:
+            logger.error(f"Error reading request body: {e}")
+            return None
+
+        # Cached so `log_response` can attach it to the error-response log
+        # line too, not just this (separate) "Request" log line.
+        request.state.request_body = decoded
+        return decoded
 
     async def __get_response_detail(self, response: Response) -> Response:
         if not hasattr(response, "body_iterator"):
@@ -162,7 +174,7 @@ class LoggerMiddleware(BaseHTTPMiddleware):
         )
         info = self.__get_user_info_from_request(request)
         self.__load_user_info_in_message(msg, info)
-        msg.body = await self.__get_request_body(request)
+        msg.request_body = await self.__get_request_body(request)
         self.write_log(msg)
 
     async def log_response(
@@ -182,7 +194,9 @@ class LoggerMiddleware(BaseHTTPMiddleware):
         info = self.__get_user_info_from_request(request)
         self.__load_user_info_in_message(msg, info)
         new_response = await self.__get_response_detail(response)
-        msg.detail = self.detail
+        msg.response_detail = self.detail
+        if response.status_code >= 400 and hasattr(request.state, "request_body"):
+            msg.request_body = request.state.request_body
         self.write_log(msg)
         return new_response
 

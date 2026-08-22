@@ -29,7 +29,7 @@ Here we have the tecnologies used on backend:
 
 You can see a complete documentation at [USPolis-Admin Wiki](https://github.com/PCS-Poli-USP/USPolis-Admin/wiki), there you will find our architecture, diagrams, bussiness rules, descriptions and more.
 
-Repo-local docs: [TESTS.md](TESTS.md) (test suite structure and coverage), [SESSION_MANAGEMENT.md](SESSION_MANAGEMENT.md) (login/session cookie lifecycle and expiration rules).
+Repo-local docs: [TESTS.md](TESTS.md) (test suite structure and coverage), [SESSION_MANAGEMENT.md](SESSION_MANAGEMENT.md) (login/session cookie lifecycle and expiration rules), [LOGGING.md](LOGGING.md) (request logging, the Loki access log, and file rotation).
 
 ## Setup
 
