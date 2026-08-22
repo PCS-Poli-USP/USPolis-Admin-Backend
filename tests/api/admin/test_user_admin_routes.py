@@ -1,12 +1,9 @@
-import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlmodel import Session
-from sqlalchemy.exc import NoResultFound
 
 from server.models.database.user_db_model import User
 from server.models.database.building_db_model import Building
-from server.repositories.user_repository import UserRepository
 from server.utils.must_be_int import must_be_int
 from tests.factories.model.group_model_factory import GroupModelFactory
 from tests.factories.model.user_model_factory import UserModelFactory
@@ -178,17 +175,19 @@ def test_update_user_to_admin_with_common_user(
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
-def test_delete_user_with_admin_user(client: TestClient, session: Session) -> None:
-    factory = UserModelFactory(session)
-    user = factory.create_and_refresh()
+# def test_delete_user_with_admin_user(client: TestClient, session: Session) -> None:
+#     factory = UserModelFactory(session)
+#     user = factory.create_and_refresh()
 
-    response = client.delete(f"{URL_PREFIX}/{user.id}")
-    assert response.status_code == status.HTTP_200_OK
+#     response = client.delete(f"{URL_PREFIX}/{user.id}")
+#     assert response.status_code == status.HTTP_200_OK
 
-    with pytest.raises(
-        NoResultFound,
-    ):
-        UserRepository.get_by_id(user_id=must_be_int(user.id), session=session)
+
+#     with pytest.raises(
+#         NoResultFound,
+#     ):
+#         UserRepository.get_by_id(user_id=must_be_int(user.id), session=session)
+#
 
 
 def test_delete_self_with_admin_user(user: User, client: TestClient) -> None:

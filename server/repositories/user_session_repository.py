@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from fastapi import HTTPException, status
 from sqlmodel import Session, col, select
 from sqlalchemy.exc import NoResultFound
@@ -8,6 +8,9 @@ from server.utils.brazil_datetime import BrazilDatetime
 
 
 SESSION_DURATION_DAYS = 30
+# Absolute cap on total session lifetime since creation, regardless of
+# renewals. See SESSION_MANAGEMENT.md for the full rationale.
+SESSION_MAX_AGE_DAYS = 90
 
 
 class UserSessionRepository:
@@ -44,11 +47,13 @@ class UserSessionRepository:
         ip_address: str,
         session: Session,
     ) -> UserSession:
+        now = BrazilDatetime.now_utc()
         user_session = UserSession(
             user_id=user_id,
             user_agent=user_agent,
             ip_address=ip_address,
-            expires_at=BrazilDatetime.now_utc() + timedelta(days=SESSION_DURATION_DAYS),
+            created_at=now,
+            expires_at=UserSessionRepository._capped_expiry(created_at=now),
         )
         session.add(user_session)
         return user_session
@@ -69,11 +74,58 @@ class UserSessionRepository:
         return session.exec(statement).first()
 
     @staticmethod
+    def _capped_expiry(*, created_at: datetime) -> datetime:
+        sliding_expiry = BrazilDatetime.now_utc() + timedelta(days=SESSION_DURATION_DAYS)
+        hard_cap = created_at + timedelta(days=SESSION_MAX_AGE_DAYS)
+        return min(sliding_expiry, hard_cap)
+
+    @staticmethod
+    def has_reached_max_age(*, user_session: UserSession) -> bool:
+        return BrazilDatetime.now_utc() >= user_session.created_at + timedelta(
+            days=SESSION_MAX_AGE_DAYS
+        )
+
+    @staticmethod
     def extend_session(*, user_session: UserSession, session: Session) -> None:
-        user_session.expires_at = BrazilDatetime.now_utc() + timedelta(
-            days=SESSION_DURATION_DAYS
+        user_session.expires_at = UserSessionRepository._capped_expiry(
+            created_at=user_session.created_at
         )
         session.add(user_session)
+
+    @staticmethod
+    def start_or_renew_session(
+        *,
+        user_id: int,
+        user_agent: str,
+        ip_address: str,
+        session: Session,
+    ) -> UserSession:
+        """Used only by the interactive login flow (`/auth/get-tokens`). A
+        session that already `has_reached_max_age` is discarded and replaced
+        with a fresh one instead of extended - see SESSION_MANAGEMENT.md for
+        why this is the only path allowed to reset the absolute cap."""
+        existing = UserSessionRepository.get_session(
+            user_id=user_id,
+            user_agent=user_agent,
+            ip_address=ip_address,
+            session=session,
+        )
+        if existing and UserSessionRepository.has_reached_max_age(
+            user_session=existing
+        ):
+            session.delete(existing)
+            existing = None
+
+        if existing:
+            UserSessionRepository.extend_session(user_session=existing, session=session)
+            return existing
+
+        return UserSessionRepository.create_session(
+            user_id=user_id,
+            user_agent=user_agent,
+            ip_address=ip_address,
+            session=session,
+        )
 
     @staticmethod
     def delete_session(*, session_id: str, session: Session) -> None:

@@ -125,9 +125,13 @@ class ExamRepository:
     @staticmethod
     def update(*, user: User, id: int, input: ExamUpdate, session: Session) -> Exam:
         exam = ExamRepository.get_by_id(id=id, session=session)
-        classroom = ClassroomRepository.get_by_id(
-            id=input.classroom_id, session=session
-        )
+        classroom = None
+        if input.classroom_id:
+            classroom = ClassroomRepository.get_by_id(
+                id=input.classroom_id,
+                session=session,
+            )
+
         ReservationRepository.update(
             id=exam.reservation_id,
             input=input,

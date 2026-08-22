@@ -48,17 +48,7 @@ def get_tokens(
 
     user_session: UserSession | None = None
     if user_agent is not None and ip_address is not None:
-        user_session = UserSessionRepository.get_session(
-            user_id=must_be_int(user.id),
-            user_agent=user_agent,
-            ip_address=ip_address,
-            session=session,
-        )
-    if user_session:
-        UserSessionRepository.extend_session(user_session=user_session, session=session)
-
-    if not user_session and user_agent is not None and ip_address is not None:
-        user_session = UserSessionRepository.create_session(
+        user_session = UserSessionRepository.start_or_renew_session(
             user_id=must_be_int(user.id),
             user_agent=user_agent,
             ip_address=ip_address,

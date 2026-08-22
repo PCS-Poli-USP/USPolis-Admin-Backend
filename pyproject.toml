@@ -107,5 +107,18 @@ line-length = 88
 indent-width = 4
 
 [tool.pytest.ini_options]
-addopts = "-s --tb=short"
+addopts = "-s --tb=short --cov=server --cov-report=term-missing --cov-report=html"
 testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["server"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
+show_missing = true
+precision = 2

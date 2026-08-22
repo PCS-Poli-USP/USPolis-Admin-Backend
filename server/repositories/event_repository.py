@@ -89,9 +89,12 @@ class EventRepository:
     @staticmethod
     def update(*, user: User, id: int, input: EventUpdate, session: Session) -> Event:
         event = EventRepository.get_by_id(id=id, session=session)
-        classroom = ClassroomRepository.get_by_id(
-            id=input.classroom_id, session=session
-        )
+        classroom = None
+        if input.classroom_id:
+            classroom = ClassroomRepository.get_by_id(
+                id=input.classroom_id,
+                session=session,
+            )
         ReservationRepository.update(
             id=event.reservation_id,
             input=input,

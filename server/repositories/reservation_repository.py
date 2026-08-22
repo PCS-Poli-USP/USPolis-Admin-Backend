@@ -14,6 +14,9 @@ from server.models.http.requests.reservation_request_models import (
     ReservationRegister,
     ReservationUpdate,
 )
+from server.models.http.requests.schedule_request_models import (
+    ScheduleUpdateOccurrences,
+)
 from server.repositories.occurrence_repository import OccurrenceRepository
 from server.repositories.schedule_repository import ScheduleRepository
 from server.utils.brazil_datetime import BrazilDatetime
@@ -172,13 +175,13 @@ class ReservationRepository:
         *,
         id: int,
         input: ReservationUpdate,
-        classroom: Classroom,
+        classroom: Classroom | None,
         user: User,
         session: Session,
     ) -> Reservation:
         reservation = ReservationRepository.get_by_id(id=id, session=session)
         reservation.title = input.title
-        reservation.type = input.type
+        # reservation.type = input.type
         reservation.reason = input.reason
 
         ScheduleRepository.update_reservation_schedule(
@@ -194,6 +197,7 @@ class ReservationRepository:
             solicitation.updated_at = BrazilDatetime.now_utc()
             session.add(solicitation)
 
+        reservation.updated_at = BrazilDatetime.now_utc()
         session.add(reservation)
         return reservation
 
@@ -215,6 +219,19 @@ class ReservationRepository:
             session.add(solicitation)
         else:
             session.delete(reservation)
+
+    @staticmethod
+    def update_occurrences(
+        *, id: int, input: ScheduleUpdateOccurrences, session: Session
+    ) -> Reservation:
+        """Update reservation occurrences without committing the session"""
+        reservation = ReservationRepository.get_by_id(id=id, session=session)
+        if reservation.schedule.id is None:
+            raise ValueError("Schedule não possui id.")
+        ScheduleRepository.update_occurrences(
+            id=reservation.schedule.id, input=input, session=session
+        )
+        return reservation
 
 
 class ReservationNotFound(HTTPException):
