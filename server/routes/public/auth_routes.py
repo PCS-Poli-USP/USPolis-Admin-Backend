@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from server.config import CONFIG
 from server.deps.authenticate import AuthenticationClient
 from server.deps.session_dep import SessionDep
+from server.middlewares import get_client_ip
 from server.models.database.user_session_db_model import UserSession
 from server.repositories.user_repository import UserRepository
 from server.repositories.user_session_repository import UserSessionRepository
@@ -42,14 +43,23 @@ def get_tokens(
     user_info = AuthenticationClient.get_user_info(access_token)
     user = UserRepository.get_from_auth(user_info=user_info, session=session)
     user_agent = request.headers.get("user-agent")
-    ip_address = None
-    if request.client:
-        ip_address = request.client.host
+    ip_address = get_client_ip(request)
+    user_id = must_be_int(user.id)
 
     user_session: UserSession | None = None
-    if user_agent is not None and ip_address is not None:
+    session_id = request.cookies.get("session")
+    if session_id:
+        user_session = UserSessionRepository.get_valid_session_for_renewal(
+            session_id=session_id, user_id=user_id, session=session
+        )
+        if user_session is not None:
+            UserSessionRepository.extend_session(
+                user_session=user_session, session=session
+            )
+
+    if user_session is None and user_agent is not None and ip_address is not None:
         user_session = UserSessionRepository.start_or_renew_session(
-            user_id=must_be_int(user.id),
+            user_id=user_id,
             user_agent=user_agent,
             ip_address=ip_address,
             session=session,
@@ -108,15 +118,12 @@ def refresh_token(
         user_info = AuthenticationClient.get_user_info(new_access_token)
         user = UserRepository.get_by_email(email=user_info.email, session=session)
         user_agent = request.headers.get("user-agent")
-        ip_address = None
-        if request.client:
-            ip_address = request.client.host
+        ip_address = get_client_ip(request)
 
-        if user_agent is not None and ip_address is not None:
+        if user_agent is not None:
             user_session = UserSessionRepository.get_session(
                 user_id=must_be_int(user.id),
                 user_agent=user_agent,
-                ip_address=ip_address,
                 session=session,
             )
 

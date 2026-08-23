@@ -49,17 +49,38 @@ valid exactly as long as `expires_at` is in the future.
 
 ## Session identity: what counts as "the same session"
 
-`UserSessionRepository.get_session()` looks up an existing row by the triple
-`(user_id, user_agent, ip_address)`. This is an **application-level lookup,
-not a database uniqueness constraint** — nothing prevents two rows with the
-same triple from existing simultaneously; it's just how the login/refresh
-flows decide whether to reuse a row or create a new one.
+`/auth/get-tokens` (a real interactive login) first checks whether the
+browser already sent a live `session` cookie for the user who just
+authenticated with Google — `UserSessionRepository.get_valid_session_for_renewal()`
+looks the cookie's id up by primary key, and only accepts it if it belongs to
+this `user_id`, isn't expired, and hasn't hit the absolute max age. That's
+the common case (same browser, cookie still valid) and needs no heuristics
+at all.
 
-Practical consequence: if a user's IP address changes between logins (switch
-networks, VPN, mobile data vs wifi), the lookup won't match the old row, and
-a brand new `UserSession` is created instead of the old one being renewed —
-the old row stays in the table, unused, until it expires or is explicitly
-deleted (logout, or an admin action via `GET/DELETE /admin/sessions/users`).
+Only when there's no usable cookie — first login on this browser, or the
+cookie was rejected above — does the code fall back to
+`UserSessionRepository.get_session()`, which looks up an existing row by
+`(user_id, user_agent)`. This is an **application-level lookup, not a
+database uniqueness constraint** — nothing prevents two rows with the same
+pair from existing simultaneously; it's just how the fallback decides
+whether to reuse a row or create a new one.
+
+`ip_address` is **not** part of either lookup — it's stored on the row as
+descriptive metadata only (shown in the admin sessions view), never used to
+decide session identity. It was dropped from the matching key because it
+changes far more often than the browser/OS does — VPNs, university or
+carrier NAT subnets, and switching networks (wifi vs mobile data) all rotate
+a user's visible IP without it being a different device or a different
+session in any meaningful sense. Keeping it in the lookup meant those users
+accumulated a fresh orphaned `UserSession` row on every network change
+instead of renewing the one they already had.
+
+Practical consequence of the remaining `user_agent` fallback: if a user
+switches browsers, or a browser upgrade changes its user-agent string,
+between logins with no valid cookie in hand, the lookup won't match the old
+row, and a brand new `UserSession` is created — the old row stays in the
+table, unused, until it expires or is explicitly deleted (logout, or an
+admin action via `GET/DELETE /admin/sessions/users`).
 
 ## Expiration: two mechanisms
 
