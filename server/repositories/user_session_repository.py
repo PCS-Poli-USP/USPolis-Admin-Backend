@@ -63,13 +63,14 @@ class UserSessionRepository:
         *,
         user_id: int,
         user_agent: str,
-        ip_address: str,
         session: Session,
     ) -> UserSession | None:
+        """Matches on (user_id, user_agent) only - not ip_address, which
+        changes too often (VPNs, university/carrier NAT subnets) to be a
+        useful part of session identity. See SESSION_MANAGEMENT.md."""
         statement = select(UserSession).where(
             col(UserSession.user_id) == user_id,
             col(UserSession.user_agent) == user_agent,
-            col(UserSession.ip_address) == ip_address,
         )
         return session.exec(statement).first()
 
@@ -107,7 +108,6 @@ class UserSessionRepository:
         existing = UserSessionRepository.get_session(
             user_id=user_id,
             user_agent=user_agent,
-            ip_address=ip_address,
             session=session,
         )
         if existing and UserSessionRepository.has_reached_max_age(
@@ -126,6 +126,30 @@ class UserSessionRepository:
             ip_address=ip_address,
             session=session,
         )
+
+    @staticmethod
+    def get_valid_session_for_renewal(
+        *, session_id: str, user_id: int, session: Session
+    ) -> UserSession | None:
+        """Used by the interactive login flow (`/auth/get-tokens`) to check
+        whether the browser already carries a live session cookie for this
+        user before falling back to the user_agent-based lookup in
+        start_or_renew_session. A session belonging to a different user (e.g.
+        a shared browser previously logged in as someone else), an expired
+        one, or one that has reached the absolute max age is not reusable -
+        the max-age case is deleted outright, matching the reset-on-real-login
+        behavior documented in SESSION_MANAGEMENT.md."""
+        user_session = UserSessionRepository.get_session_opt(
+            id=session_id, session=session
+        )
+        if user_session is None or user_session.user_id != user_id:
+            return None
+        if user_session.is_expired():
+            return None
+        if UserSessionRepository.has_reached_max_age(user_session=user_session):
+            session.delete(user_session)
+            return None
+        return user_session
 
     @staticmethod
     def delete_session(*, session_id: str, session: Session) -> None:
