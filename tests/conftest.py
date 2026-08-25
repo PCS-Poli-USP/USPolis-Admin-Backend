@@ -51,6 +51,8 @@ from tests.factories.model.user_model_factory import UserModelFactory
 
 from tests.factories.base.base_factory import shared_faker
 
+CONFIG.testing = True
+
 test_db_url = f"{CONFIG.test_db_uri}/{CONFIG.test_db_database}"
 engine = create_engine(test_db_url)
 

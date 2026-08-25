@@ -8,6 +8,7 @@ from sqlmodel import Session
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 
+from server.config import CONFIG
 from server.db import engine
 from server.logger import logger, loki_access_logger
 from server.repositories.api_access_log_repository import ApiAccessLogRepository
@@ -203,7 +204,16 @@ class LoggerMiddleware(BaseHTTPMiddleware):
         raise - a metrics-write failure must not affect the real response.
         Opens a short-lived Session for just this insert+commit (matching
         the per-request pattern in server/db.py's get_db()), NOT a shared
-        long-lived session."""
+        long-lived session.
+
+        Skipped entirely when CONFIG.testing is set: this always writes via
+        server.db.engine directly (the real configured database), not
+        through get_db()/dependency_overrides, so it can't be redirected to
+        a test database the way route handlers can - running it during the
+        test suite would silently write real rows into the dev/prod
+        database on every 4xx/5xx a test happens to trigger."""
+        if CONFIG.testing:
+            return
         if response.status_code < 400:
             return
         path = request.url.path
