@@ -27,9 +27,14 @@ def get_api_incident_reports_paginated(
     session: SessionDep,
     status: IncidentReportStatus | None = Query(default=None),
     level: IncidentReportLevel | None = Query(default=None),
+    access_log_id: int | None = Query(default=None),
 ) -> PaginatedResponse[ApiIncidentReportResponse]:
     paginated_result = ApiIncidentReportRepository.get_all_paginated(
-        pagination=pagination, status=status, level=level, session=session
+        pagination=pagination,
+        status=status,
+        level=level,
+        access_log_id=access_log_id,
+        session=session,
     )
     return PaginatedResponse[ApiIncidentReportResponse](
         page=paginated_result.page,

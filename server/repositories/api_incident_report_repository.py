@@ -46,6 +46,7 @@ class ApiIncidentReportRepository:
         pagination: PaginationInput,
         status: IncidentReportStatus | None,
         level: IncidentReportLevel | None,
+        access_log_id: int | None = None,
         session: Session,
     ) -> Page[ApiIncidentReport]:
         statement = select(ApiIncidentReport)
@@ -53,6 +54,10 @@ class ApiIncidentReportRepository:
             statement = statement.where(col(ApiIncidentReport.status) == status)
         if level is not None:
             statement = statement.where(col(ApiIncidentReport.level) == level)
+        if access_log_id is not None:
+            statement = statement.where(
+                col(ApiIncidentReport.access_log_id) == access_log_id
+            )
         statement = statement.order_by(desc(col(ApiIncidentReport.created_at)))
         return Page.paginate(statement, pagination, session)
 
