@@ -18,6 +18,7 @@
 4. [Run](#run)
 5. [Develop](#develop)
 6. [Test](#test)
+7. [Permissions](#permissions)
 
 ## Stack
 Here we have the tecnologies used on backend:
@@ -104,7 +105,7 @@ Make sure to install test dependencies before trying to run the tests:
 poetry install --with test
 ```
 
-The tests need access to a PostgreSQL database that **will be cleared** at the end of each test (look at .env file and set the test databse url and test database name).
+The tests need access to a PostgreSQL database (look at .env file and set the test databse url and test database name). Each test runs inside its own database transaction (with a SAVEPOINT, so a test's own `commit()` calls don't escape it) that is **rolled back** right after the test finishes, instead of truncating the whole database — this keeps every test isolated while staying fast regardless of how many tables the schema has.
 
 Then just run the test suite.
 
@@ -114,3 +115,45 @@ pytest
 
 > [!TIP]
 > If you use VSCode install [Python Test Explorer](https://marketplace.visualstudio.com/items?itemName=LittleFoxTeam.vscode-python-test-adapter) extension, make sure that you are running only one time each test, otherwise the tests must be fail.
+
+## Permissions
+
+USPolis uses a role-based permission system: a `Role` groups a set of `Permission`s (`BuildingPermission`, `ClassroomPermission`, `CoursePermission`) and is assigned to `User`s via `/admin/roles`. A permission is always granted to a role — there is no way to grant a permission directly to a single user ("point permissions") anymore, every `Permission` row requires a `role_id`.
+
+- Each permission scopes a set of `action`s (`CREATE`, `READ`, `UPDATE`, `DELETE`, and for `BUILDING`/`CLASSROOM` also `ALLOCATE`/`RESERVE`) to a resource (`BUILDING`, `CLASSROOM`, `COURSE`), either a specific instance (`resource_id`) or a wildcard (`resource_id = -1` in requests, stored as `NULL`) meaning "every instance of that resource".
+- A `BuildingPermission` cascades down to every `Classroom` inside that building for the same action, so granting e.g. `ALLOCATE` on a building lets a role allocate any room in it without needing one `ClassroomPermission` per room.
+- A wildcard grant (no specific building/classroom/course) is only honored for `UPDATE`, `DELETE`, `ALLOCATE`, and `RESERVE` when the requesting user is an admin — a non-admin role can never be granted "update/delete/allocate/reserve everything in the system at once" through a wildcard permission, only through a building- or resource-scoped one. `CREATE`/`READ` wildcards are honored for any role.
+- Manage roles and permissions via the `/admin/roles` and `/admin/permissions` endpoints (see `server/routes/admin/roles_admin_routes.py` and `server/routes/admin/permissions_admin_routes.py`).
+- `Resource.COURSE` / `CoursePermission` exist in the data model but have no wired permission checker yet — no route enforces them today.
+
+> [!WARNING] 
+> Request-time authorization on every resource endpoint now checks **both** `Group` membership (legacy) **and** `Role`/`Permission` (`user has access OR role grants access`), so existing `Group`-based access keeps working unchanged while `Role` grants are additive. Every pre-existing `Group` has been migrated into an equivalent `Role` (see `migrations/versions/6950bd048a6d_*.py`), so both models currently describe the same access for existing users. Retiring `Group` entirely (dropping its tables/columns and the `OR` fallback) is a later, separate step on the `feature/role-based-permissions` branch.
+
+### What action do I need? (action → operation mapping)
+
+Every write/read endpoint resolves to one `(Resource, Action)` pair checked against the requesting user's roles (and, for now, `Group` membership as a fallback). Two design rules keep this mapping predictable:
+
+1. **`DELETE` is reserved for destroying the record itself** (a `Building`, a `Classroom`, a `Subject`, a `Class`) — never reused for a lesser, more common operation, since granting `DELETE` on a resource is a comparatively severe grant (and, for `BUILDING`/`CLASSROOM`, a wildcard `DELETE` grant is admin-only, see above).
+2. **Deleting/canceling a `Reservation` (and everything built on top of it — `Meeting`, `Event`, `Exam`, `Solicitation` approve/deny) is `RESERVE`, not `DELETE`**, since booking and un-booking a room is a routine, everyday action that shouldn't require (or imply) the ability to delete the room itself. For the same reason, **deleting a `Class` ("turma") or a `Subject` ("disciplina") is gated by `UPDATE`, not `DELETE`** — a user who can manage the academic offering in a building shouldn't thereby also be granted the ability to delete the physical `Building`/`Classroom` record, which is a much more impactful action.
+
+| I want to... | Resource checked | Action required | Notes |
+|---|---|---|---|
+| Create a building | `BUILDING` | `CREATE` | No instance yet ("creation" check); only admins hit this route today |
+| Read a building | `BUILDING` | `READ` | |
+| Update a building | `BUILDING` | `UPDATE` | |
+| Delete a building | `BUILDING` | `DELETE` | Wildcard grant is admin-only |
+| Create a classroom | `BUILDING` | `CREATE` | Checked on the classroom's building |
+| Read a classroom | `CLASSROOM` | `READ` | |
+| Update a classroom | `CLASSROOM` | `UPDATE` | |
+| Delete a classroom | `CLASSROOM` | `DELETE` | Wildcard grant is admin-only |
+| Allocate/reallocate a classroom to a class's weekly schedule | `CLASSROOM` | `ALLOCATE` | Also requires `UPDATE` on the `Class` that owns the `Schedule` |
+| Create/update/cancel a `Reservation`, `Meeting`, `Event`, or `Exam` | `CLASSROOM` (or `BUILDING` if the booking has no classroom yet) | `RESERVE` | Covers the entire booking lifecycle, including deletion |
+| Approve/deny a `Solicitation` | `CLASSROOM` | `RESERVE` | Approving/denying is fundamentally creating-or-refusing a `Reservation` |
+| Create a subject ("disciplina") | `BUILDING` | `CREATE` | |
+| Read a subject | `BUILDING` | `READ` | |
+| Update a subject | `BUILDING` | `UPDATE` | |
+| Delete a subject | `BUILDING` | `UPDATE` | Not `DELETE` — see rule 2 above |
+| Create a class ("turma") | `BUILDING` | `CREATE` | Checked via the class's subject/building |
+| Read a class | `CLASSROOM` | `READ` | |
+| Update a class | `CLASSROOM` | `UPDATE` | |
+| Delete a class | `CLASSROOM` | `UPDATE` | Not `DELETE` — see rule 2 above |

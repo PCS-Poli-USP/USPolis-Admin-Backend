@@ -67,6 +67,30 @@ class UserRepository:
         return list(users)
 
     @staticmethod
+    def get_all_with_permissions(*, session: Session) -> list[User]:
+        statement = select(User).options(
+            selectinload(User.roles),  # type: ignore
+            selectinload(User.classroom_permissions),  # type: ignore
+            selectinload(User.course_permissions),  # type: ignore
+        )
+        users = session.exec(statement).all()
+        return list(users)
+
+    @staticmethod
+    def get_with_permissions(*, user_id: int, session: Session) -> User:
+        statement = (
+            select(User)
+            .where(col(User.id) == user_id)
+            .options(
+                selectinload(User.roles),  # type: ignore  # type: ignore
+                selectinload(User.classroom_permissions),  # type: ignore
+                selectinload(User.course_permissions),  # type: ignore
+            )
+        )
+        user = session.exec(statement).one()
+        return user
+
+    @staticmethod
     def __update_user_groups(
         *, user: User, group_ids: list[int], session: Session
     ) -> None:
@@ -172,34 +196,17 @@ class UserRepository:
         return user
 
     @staticmethod
-    def delete(
-        *,
-        user_id: int,
-        session: Session,
-    ) -> None:
-        try:
-            user = UserRepository.get_by_id(user_id=user_id, session=session)
-            session.delete(user)
-            session.commit()
-        except Exception as e:
-            print(e)
-
-    @staticmethod
     def update_curriculum(
         *,
         user: User,
         curriculum_id: int,
         session: Session,
     ) -> User:
-
         from server.models.database.curriculum_db_model import Curriculum
 
         curriculum = session.get(Curriculum, curriculum_id)
         if not curriculum:
-            raise HTTPException(
-                status_code=404,
-                detail="Currículo não encontrado"
-            )
+            raise HTTPException(status_code=404, detail="Currículo não encontrado")
 
         user.curriculum_id = curriculum_id
         user.updated_at = BrazilDatetime.now_utc()

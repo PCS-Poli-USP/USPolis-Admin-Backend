@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends
 from server.deps.authenticate import UserDep
+from server.deps.permission_index_dep import PermissionIndexDep
 from server.deps.session_dep import SessionDep
 from server.models.database.meeting_db_model import Meeting
 from server.models.database.user_db_model import User
@@ -17,25 +18,32 @@ from server.services.security.classrooms_permission_checker import (
 from server.services.security.reservation_permission_checker import (
     ReservationPermissionChecker,
 )
+from server.utils.enums.actions_enums import ClassroomAction
 
 
 class MeetingRepositoryAdapter:
-    def __init__(self, user: UserDep, session: SessionDep):
+    def __init__(
+        self, user: UserDep, session: SessionDep, permission_index: PermissionIndexDep
+    ):
         self.session = session
         self.user = user
-        self.checker = ReservationPermissionChecker(user=user, session=session)
-        self.classroom_checker = ClassroomPermissionChecker(user=user, session=session)
+        self.checker = ReservationPermissionChecker(
+            user=user, session=session, permission_index=permission_index
+        )
+        self.classroom_checker = ClassroomPermissionChecker(
+            user=user, session=session, permission_index=permission_index
+        )
 
     def get_by_id(self, id: int) -> Meeting:
         meeting = MeetingRepository.get_by_id(id=id, session=self.session)
-        self.checker.check_permission(meeting.reservation)
+        self.checker.check_permission(meeting.reservation, ClassroomAction.READ)
         return meeting
 
     def create(self, creator: User, input: MeetingRegister) -> Meeting:
         classroom = ClassroomRepository.get_by_id(
             id=input.classroom_id, session=self.session
         )
-        self.classroom_checker.check_permission(classroom)
+        self.classroom_checker.check_permission(classroom, ClassroomAction.RESERVE)
         meeting = MeetingRepository.create(
             creator=creator, input=input, session=self.session
         )
@@ -47,7 +55,7 @@ class MeetingRepositoryAdapter:
         classroom = ClassroomRepository.get_by_id(
             id=input.classroom_id, session=self.session
         )
-        self.classroom_checker.check_permission(classroom)
+        self.classroom_checker.check_permission(classroom, ClassroomAction.RESERVE)
         meeting = MeetingRepository.update(
             user=self.user, id=id, input=input, session=self.session
         )

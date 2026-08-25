@@ -4,6 +4,7 @@ from fastapi import Depends, HTTPException, status
 
 from server.deps.authenticate import UserDep
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
+from server.deps.permission_index_dep import PermissionIndexDep
 from server.deps.session_dep import SessionDep
 from server.models.database.allocation_log_db_model import AllocationLog
 from server.models.database.schedule_db_model import Schedule
@@ -16,6 +17,7 @@ from server.services.security.class_permission_checker import ClassPermissionChe
 from server.services.security.classrooms_permission_checker import (
     ClassroomPermissionChecker,
 )
+from server.utils.enums.actions_enums import ClassroomAction
 from server.utils.must_be_int import must_be_int
 
 
@@ -25,10 +27,12 @@ class ScheduleRepositoryAdapter:
         owned_building_ids: OwnedBuildingIdsDep,
         user: UserDep,
         session: SessionDep,
+        permission_index: PermissionIndexDep,
     ):
         self.owned_building_ids = owned_building_ids
         self.user = user
         self.session = session
+        self.permission_index = permission_index
 
     def get_by_id(self, schedule_id: int) -> Schedule:
         return ScheduleRepository.get_by_id_on_buildings(
@@ -51,8 +55,10 @@ class ScheduleRepositoryAdapter:
         input: ScheduleRegister,
     ) -> Schedule:
         class_ = ClassRepository.get_by_id(id=class_id, session=self.session)
-        checker = ClassPermissionChecker(user=self.user, session=self.session)
-        checker.check_permission(class_)
+        checker = ClassPermissionChecker(
+            user=self.user, session=self.session, permission_index=self.permission_index
+        )
+        checker.check_permission(class_, ClassroomAction.UPDATE)
         schedule = ScheduleRepository.create_with_class(
             class_=class_, input=input, session=self.session
         )
@@ -61,8 +67,10 @@ class ScheduleRepositoryAdapter:
                 id=input.classroom_id, session=self.session
             )
             ClassroomPermissionChecker(
-                user=self.user, session=self.session
-            ).check_permission(classroom)
+                user=self.user,
+                session=self.session,
+                permission_index=self.permission_index,
+            ).check_permission(classroom, ClassroomAction.ALLOCATE)
             OccurrenceRepository.allocate_schedule(
                 user=self.user,
                 schedule=schedule,

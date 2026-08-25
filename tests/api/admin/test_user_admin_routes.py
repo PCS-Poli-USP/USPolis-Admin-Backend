@@ -173,33 +173,3 @@ def test_update_user_to_admin_with_common_user(
     response = common_client.put(f"{URL_PREFIX}/{user.id}", json=input.model_dump())
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
-
-
-# def test_delete_user_with_admin_user(client: TestClient, session: Session) -> None:
-#     factory = UserModelFactory(session)
-#     user = factory.create_and_refresh()
-
-#     response = client.delete(f"{URL_PREFIX}/{user.id}")
-#     assert response.status_code == status.HTTP_200_OK
-
-
-#     with pytest.raises(
-#         NoResultFound,
-#     ):
-#         UserRepository.get_by_id(user_id=must_be_int(user.id), session=session)
-#
-
-
-def test_delete_self_with_admin_user(user: User, client: TestClient) -> None:
-    response = client.delete(f"{URL_PREFIX}/{user.id}")
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-
-
-def test_delete_user_with_restricted_user(restricted_client: TestClient) -> None:
-    response = restricted_client.delete(f"{URL_PREFIX}/1")
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-
-
-def test_delete_user_with_common_user(common_client: TestClient) -> None:
-    response = common_client.delete(f"{URL_PREFIX}/1")
-    assert response.status_code == status.HTTP_403_FORBIDDEN

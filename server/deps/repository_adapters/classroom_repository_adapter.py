@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 
 from server.deps.authenticate import UserDep
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
+from server.deps.permission_index_dep import PermissionIndexDep
 from server.deps.session_dep import SessionDep
 from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
@@ -21,6 +22,7 @@ from server.services.security.classrooms_permission_checker import (
     ClassroomPermissionChecker,
 )
 from server.services.security.group_permission_checker import GroupPermissionChecker
+from server.utils.enums.actions_enums import BuildingAction, ClassroomAction
 from server.utils.must_be_int import must_be_int
 
 
@@ -30,12 +32,17 @@ class ClassroomRepositoryAdapter:
         owned_building_ids: OwnedBuildingIdsDep,
         session: SessionDep,
         user: UserDep,
+        permission_index: PermissionIndexDep,
     ):
         self.session = session
         self.user = user
         self.owned_building_ids = owned_building_ids
-        self.building_checker = BuildingPermissionChecker(user=user, session=session)
-        self.classroom_checker = ClassroomPermissionChecker(user=user, session=session)
+        self.building_checker = BuildingPermissionChecker(
+            user=user, session=session, permission_index=permission_index
+        )
+        self.classroom_checker = ClassroomPermissionChecker(
+            user=user, session=session, permission_index=permission_index
+        )
         self.group_checker = GroupPermissionChecker(user=user, session=session)
 
     def get_all(self) -> list[Classroom]:
@@ -48,7 +55,7 @@ class ClassroomRepositoryAdapter:
 
     def get_all_on_building(self, building_id: int) -> list[Classroom]:
         """Get all classrooms on a building that the user has access to."""
-        self.building_checker.check_permission(building_id)
+        self.building_checker.check_permission(building_id, BuildingAction.READ)
         return ClassroomRepository.get_all_on_buildings(
             building_ids=[building_id], session=self.session
         )
@@ -60,18 +67,20 @@ class ClassroomRepositoryAdapter:
         )
 
     def get_by_id(self, id: int) -> Classroom:
-        self.classroom_checker.check_permission(object=id)
+        self.classroom_checker.check_permission(object=id, action=ClassroomAction.READ)
         return ClassroomRepository.get_by_id(id=id, session=self.session)
 
     def get_by_ids(self, ids: list[int]) -> list[Classroom]:
-        self.classroom_checker.check_permission(object=ids)
+        self.classroom_checker.check_permission(object=ids, action=ClassroomAction.READ)
         return ClassroomRepository.get_by_ids(ids=ids, session=self.session)
 
     def get_by_name_and_building(self, name: str, building: Building) -> Classroom:
         classroom = ClassroomRepository.get_by_name_and_building(
             name, building, self.session
         )
-        self.classroom_checker.check_permission(classroom)
+        self.classroom_checker.check_permission(
+            classroom, action=ClassroomAction.READ
+        )
         return classroom
 
     def __update_groups_classrooms(
@@ -99,7 +108,7 @@ class ClassroomRepositoryAdapter:
         self,
         input: ClassroomRegister,
     ) -> Classroom:
-        self.building_checker.check_permission(input.building_id)
+        self.building_checker.check_permission(input.building_id, BuildingAction.CREATE)
         try:
             new_classroom = ClassroomRepository.create(
                 input=input,
@@ -121,7 +130,7 @@ class ClassroomRepositoryAdapter:
         classroom_id: int,
         input: ClassroomUpdate,
     ) -> Classroom:
-        self.classroom_checker.check_permission(classroom_id)
+        self.classroom_checker.check_permission(classroom_id, ClassroomAction.UPDATE)
         classroom = ClassroomRepository.update(
             id=classroom_id,
             input=input,
@@ -137,7 +146,9 @@ class ClassroomRepositoryAdapter:
 
     def delete(self, id: int) -> None:
         classroom = ClassroomRepository.get_by_id(id=id, session=self.session)
-        self.classroom_checker.check_permission(must_be_int(classroom.id))
+        self.classroom_checker.check_permission(
+            must_be_int(classroom.id), ClassroomAction.DELETE
+        )
         groups = classroom.groups
         for group in groups:
             if len(group.classrooms) == 1:

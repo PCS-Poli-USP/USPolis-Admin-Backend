@@ -19,10 +19,12 @@ from server.repositories.calendar_repository import CalendarRepository
 from server.repositories.schedule_repository import ScheduleRepository
 from server.repositories.subject_repository import SubjectRepository
 
+from server.services.security.role_permission_evaluator import PermissionIndex
 from server.services.security.schedule_permission_checker import (
     SchedulePermissionChecker,
 )
 from server.utils.common_utils import compare_SQLModel_vectors_by_id
+from server.utils.enums.actions_enums import ClassroomAction
 from server.utils.schedule_utils import ScheduleUtils
 
 
@@ -361,7 +363,14 @@ class ClassRepository:
         return reallocate
 
     @staticmethod
-    def update(*, id: int, input: ClassUpdate, user: User, session: Session) -> Class:
+    def update(
+        *,
+        id: int,
+        input: ClassUpdate,
+        user: User,
+        session: Session,
+        permission_index: PermissionIndex,
+    ) -> Class:
         updated_class = ClassRepository.get_by_id(id=id, session=session)
         input_data = input.model_dump()
         for key, value in input_data.items():
@@ -380,8 +389,10 @@ class ClassRepository:
             updated_class.schedules, input.schedules_data
         )
         if should_update:
-            checker = SchedulePermissionChecker(user=user, session=session)
-            checker.check_permission(object=updated_class.schedules)
+            checker = SchedulePermissionChecker(
+                user=user, session=session, permission_index=permission_index
+            )
+            checker.check_permission(updated_class.schedules, ClassroomAction.UPDATE)
             updated_class.schedules = ScheduleRepository.update_class_schedules(
                 class_=updated_class,
                 input=input.schedules_data,

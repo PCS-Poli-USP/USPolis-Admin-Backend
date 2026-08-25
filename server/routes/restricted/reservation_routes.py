@@ -3,6 +3,7 @@ from fastapi import APIRouter, Body
 from fastapi.responses import JSONResponse
 
 from server.deps.authenticate import UserDep
+from server.deps.permission_index_dep import PermissionIndexDep
 from server.deps.repository_adapters.reservation_repository_adapter import (
     ReservationRepositoryDep,
 )
@@ -19,6 +20,7 @@ from server.services.security.reservation_permission_checker import (
     ReservationPermissionChecker,
 )
 from server.repositories.reservation_repository import ReservationRepository
+from server.utils.enums.actions_enums import ClassroomAction
 
 from server.routes.restricted.exam_routes import router as ExamRouter
 from server.routes.restricted.event_routes import router as EventRouter
@@ -54,9 +56,12 @@ def update_reservation_occurrences(
     input: ScheduleUpdateOccurrences,
     user: UserDep,
     session: SessionDep,
+    permission_index: PermissionIndexDep,
 ) -> ReservationFullResponse:
-    checker = ReservationPermissionChecker(user=user, session=session)
-    checker.check_permission(reservation_id)
+    checker = ReservationPermissionChecker(
+        user=user, session=session, permission_index=permission_index
+    )
+    checker.check_permission(reservation_id, ClassroomAction.RESERVE)
     reservation = ReservationRepository.update_occurrences(
         id=reservation_id, input=input, session=session
     )

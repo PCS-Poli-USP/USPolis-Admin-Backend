@@ -5,6 +5,7 @@ from fastapi import Depends
 from server.deps.authenticate import UserDep
 from server.deps.conflict_checker import ConflictCheckerDep
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
+from server.deps.permission_index_dep import PermissionIndexDep
 from server.deps.repository_adapters.classroom_repository_adapter import (
     ClassroomRepositoryDep,
 )
@@ -28,6 +29,7 @@ from server.services.security.occurrence_permission_checker import (
 from server.services.security.schedule_permission_checker import (
     SchedulePermissionChecker,
 )
+from server.utils.enums.actions_enums import ClassroomAction
 
 
 class OccurrenceRepositoryAdapter:
@@ -39,6 +41,7 @@ class OccurrenceRepositoryAdapter:
         classroom_repo: ClassroomRepositoryDep,
         schedule_repo: ScheduleRepositoryDep,
         conflict_checker: ConflictCheckerDep,
+        permission_index: PermissionIndexDep,
     ):
         self.owned_building_ids = owned_building_ids
         self.session = session
@@ -46,11 +49,15 @@ class OccurrenceRepositoryAdapter:
         self.owned_building_ids = owned_building_ids
         self.classroom_repo = classroom_repo
         self.schedule_repo = schedule_repo
-        self.checker = ClassroomPermissionChecker(user=user, session=session)
-        self.occurrence_checker = OccurrencePermissionChecker(
-            user=user, session=session
+        self.checker = ClassroomPermissionChecker(
+            user=user, session=session, permission_index=permission_index
         )
-        self.schedule_checker = SchedulePermissionChecker(user=user, session=session)
+        self.occurrence_checker = OccurrencePermissionChecker(
+            user=user, session=session, permission_index=permission_index
+        )
+        self.schedule_checker = SchedulePermissionChecker(
+            user=user, session=session, permission_index=permission_index
+        )
         self.conflict_checker = conflict_checker
 
     def get_all(self) -> list[Occurrence]:
@@ -61,7 +68,7 @@ class OccurrenceRepositoryAdapter:
 
     def get_by_id(self, id: int) -> Occurrence:
         occurrence = OccurrenceRepository.get_by_id(id=id, session=self.session)
-        self.occurrence_checker.check_permission(occurrence)
+        self.occurrence_checker.check_permission(occurrence, ClassroomAction.READ)
         return occurrence
 
     def allocate_schedule(
@@ -86,7 +93,7 @@ class OccurrenceRepositoryAdapter:
     ) -> None:
         for pair in schedule_classroom_pairs:
             schedule = self.schedule_repo.get_by_id(pair.schedule_id)
-            self.schedule_checker.check_permission(schedule)
+            self.schedule_checker.check_permission(schedule, ClassroomAction.ALLOCATE)
             if pair.classroom_id == -1:
                 OccurrenceRepository.remove_schedule_allocation(
                     user=self.user, schedule=schedule, session=self.session
@@ -94,7 +101,7 @@ class OccurrenceRepositoryAdapter:
                 continue
 
             classroom = self.classroom_repo.get_by_id(pair.classroom_id)
-            self.checker.check_permission(classroom)
+            self.checker.check_permission(classroom, ClassroomAction.ALLOCATE)
 
             occurrences = OccurrenceRepository.allocate_schedule(
                 user=self.user,

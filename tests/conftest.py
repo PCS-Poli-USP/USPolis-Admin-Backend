@@ -29,12 +29,14 @@ from server.models.database.event_db_model import Event
 from server.models.database.exam_db_model import Exam
 from server.models.database.group_db_model import Group
 from server.models.database.meeting_db_model import Meeting
+from server.models.database.role_db_model import Role
 from server.models.database.subject_db_model import Subject
 from server.models.database.user_db_model import User
 from server.models.http.requests.user_request_models import UserRegister
 from server.repositories.occurrence_repository import OccurrenceRepository
 from server.repositories.user_repository import UserRepository
 from server.services.auth.auth_user_info import AuthUserInfo
+from server.utils.enums.resources_enums import Resource
 from tests.factories.model.building_model_factory import BuildingModelFactory
 from tests.factories.model.class_model_factory import ClassModelFactory
 from tests.factories.model.classroom_model_factory import ClassroomModelFactory
@@ -42,6 +44,8 @@ from tests.factories.model.event_model_factory import EventModelFactory
 from tests.factories.model.exam_model_factory import ExamModelFactory
 from tests.factories.model.group_model_factory import GroupModelFactory
 from tests.factories.model.meeting_model_factory import MeetingModelFactory
+from tests.factories.base.base_factory import shared_faker
+from tests.factories.model.role_model_factory import RoleModelFactory
 from tests.factories.model.subject_model_factory import SubjectModelFactory
 from tests.factories.model.user_model_factory import UserModelFactory
 
@@ -311,4 +315,13 @@ def event_fixture(user: User, classroom: Classroom, session: Session) -> Event:
     """Fixture to create a standard event."""
     return EventModelFactory(
         classroom=classroom, creator=user, session=session
+    ).create_and_refresh()
+
+
+@pytest.fixture(name="role")
+def role_fixture(session: Session) -> Role:
+    """Fixture to create a standard role without any resource or permission."""
+    return RoleModelFactory(
+        session=session,
+        resources=[Resource.BUILDING, Resource.CLASSROOM, Resource.COURSE],
     ).create_and_refresh()

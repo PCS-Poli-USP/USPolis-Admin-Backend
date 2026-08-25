@@ -3,6 +3,7 @@ from fastapi import Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from server.deps.authenticate import UserDep
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
+from server.deps.permission_index_dep import PermissionIndexDep
 from server.deps.session_dep import SessionDep
 from server.models.database.building_db_model import Building
 from server.models.http.requests.building_request_models import (
@@ -13,6 +14,7 @@ from server.repositories.building_repository import BuildingRepository
 from server.services.security.buildings_permission_checker import (
     BuildingPermissionChecker,
 )
+from server.utils.enums.actions_enums import BuildingAction
 
 
 class BuildingRepositoryAdapter:
@@ -21,11 +23,14 @@ class BuildingRepositoryAdapter:
         owned_building_ids: OwnedBuildingIdsDep,
         session: SessionDep,
         user: UserDep,
+        permission_index: PermissionIndexDep,
     ):
         self.session = session
         self.user = user
         self.owned_building_ids = owned_building_ids
-        self.checker = BuildingPermissionChecker(user=user, session=session)
+        self.checker = BuildingPermissionChecker(
+            user=user, session=session, permission_index=permission_index
+        )
 
     def get_all(self) -> list[Building]:
         return BuildingRepository.get_by_ids(
@@ -33,19 +38,20 @@ class BuildingRepositoryAdapter:
         )
 
     def get_by_id(self, id: int) -> Building:
-        self.checker.check_permission(id)
+        self.checker.check_permission(id, BuildingAction.READ)
         building = BuildingRepository.get_by_id(id=id, session=self.session)
         return building
 
     def get_by_name(self, name: str) -> Building:
         building = BuildingRepository.get_by_name(name=name, session=self.session)
-        self.checker.check_permission(building)
+        self.checker.check_permission(building, BuildingAction.READ)
         return building
 
     def create(
         self,
         input: BuildingRegister,
     ) -> Building:
+        self.checker.check_creation_permission(BuildingAction.CREATE)
         building = BuildingRepository.create(
             building_in=input, creator=self.user, session=self.session
         )
@@ -58,6 +64,7 @@ class BuildingRepositoryAdapter:
         return building
 
     def update(self, id: int, input: BuildingUpdate) -> Building:
+        self.checker.check_permission(id, BuildingAction.UPDATE)
         building = BuildingRepository.update(id=id, input=input, session=self.session)
         try:
             self.session.commit()
@@ -68,6 +75,7 @@ class BuildingRepositoryAdapter:
         return building
 
     def delete(self, id: int) -> None:
+        self.checker.check_permission(id, BuildingAction.DELETE)
         BuildingRepository.delete(id=id, session=self.session)
         self.session.commit()
 
