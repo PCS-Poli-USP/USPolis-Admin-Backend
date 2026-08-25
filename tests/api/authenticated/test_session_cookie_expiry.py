@@ -13,10 +13,10 @@ URL = "/users"
 
 
 def test_expired_session_cookie_is_rejected(
-    public_client: TestClient, user: User, session: Session
+    public_client: TestClient, admin_user: User, session: Session
 ) -> None:
     user_session = UserSessionRepository.create_session(
-        user_id=must_be_int(user.id),
+        user_id=must_be_int(admin_user.id),
         user_agent="pytest",
         ip_address="127.0.0.1",
         session=session,
@@ -31,10 +31,10 @@ def test_expired_session_cookie_is_rejected(
 
 
 def test_valid_session_cookie_is_accepted(
-    public_client: TestClient, user: User, session: Session
+    public_client: TestClient, admin_user: User, session: Session
 ) -> None:
     user_session = UserSessionRepository.create_session(
-        user_id=must_be_int(user.id),
+        user_id=must_be_int(admin_user.id),
         user_agent="pytest",
         ip_address="127.0.0.1",
         session=session,

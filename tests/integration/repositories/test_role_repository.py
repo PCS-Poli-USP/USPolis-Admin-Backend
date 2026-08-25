@@ -17,10 +17,10 @@ from tests.factories.request.permission_request_factory import (
 from tests.factories.request.role_request_factory import RoleRequestFactory
 
 
-def test_create_role_without_permissions(user: User, session: Session) -> None:
+def test_create_role_without_permissions(admin_user: User, session: Session) -> None:
     input = RoleRequestFactory(resources=[]).create_input()
 
-    role = RoleRepository.create(input=input, user=user, session=session)
+    role = RoleRepository.create(input=input, user=admin_user, session=session)
     session.commit()
     session.refresh(role)
 
@@ -29,7 +29,7 @@ def test_create_role_without_permissions(user: User, session: Session) -> None:
     assert role.get_permissions() == []
 
 
-def test_create_role_with_permissions(user: User, session: Session) -> None:
+def test_create_role_with_permissions(admin_user: User, session: Session) -> None:
     factory = RoleRequestFactory(resources=[Resource.CLASSROOM, Resource.COURSE])
     input = factory.create_input(
         permissions=[
@@ -38,7 +38,7 @@ def test_create_role_with_permissions(user: User, session: Session) -> None:
         ]
     )
 
-    role = RoleRepository.create(input=input, user=user, session=session)
+    role = RoleRepository.create(input=input, user=admin_user, session=session)
     session.commit()
     session.refresh(role)
 
@@ -49,13 +49,13 @@ def test_create_role_with_permissions(user: User, session: Session) -> None:
 
 
 def test_create_role_deduplicates_repeated_permissions(
-    user: User, session: Session
+    admin_user: User, session: Session
 ) -> None:
     factory = RoleRequestFactory(resources=[Resource.CLASSROOM])
     permission = factory.build_permission(Resource.CLASSROOM)
     input = factory.create_input(permissions=[permission, permission])
 
-    role = RoleRepository.create(input=input, user=user, session=session)
+    role = RoleRepository.create(input=input, user=admin_user, session=session)
     session.commit()
     session.refresh(role)
 
@@ -63,7 +63,7 @@ def test_create_role_deduplicates_repeated_permissions(
 
 
 def test_update_role_adds_new_permission(
-    user: User, role: Role, session: Session
+    admin_user: User, role: Role, session: Session
 ) -> None:
     factory = RoleRequestFactory(resources=role.resources)
     input = factory.update_input(
@@ -74,7 +74,7 @@ def test_update_role_adds_new_permission(
     )
 
     updated = RoleRepository.update(
-        id=must_be_int(role.id), input=input, user=user, session=session
+        id=must_be_int(role.id), input=input, user=admin_user, session=session
     )
     session.commit()
     session.refresh(updated)
@@ -83,7 +83,7 @@ def test_update_role_adds_new_permission(
 
 
 def test_update_role_removes_missing_permission(
-    user: User, role: Role, session: Session
+    admin_user: User, role: Role, session: Session
 ) -> None:
     factory = RoleRequestFactory(resources=role.resources)
     create_input = factory.update_input(
@@ -93,7 +93,7 @@ def test_update_role_removes_missing_permission(
         permissions=[factory.build_permission(Resource.CLASSROOM)],
     )
     role = RoleRepository.update(
-        id=must_be_int(role.id), input=create_input, user=user, session=session
+        id=must_be_int(role.id), input=create_input, user=admin_user, session=session
     )
     session.commit()
     session.refresh(role)
@@ -106,7 +106,7 @@ def test_update_role_removes_missing_permission(
         permissions=[],
     )
     updated = RoleRepository.update(
-        id=must_be_int(role.id), input=empty_input, user=user, session=session
+        id=must_be_int(role.id), input=empty_input, user=admin_user, session=session
     )
     session.commit()
     session.refresh(updated)
@@ -115,7 +115,7 @@ def test_update_role_removes_missing_permission(
 
 
 def test_update_role_keeps_unchanged_permission(
-    user: User, role: Role, session: Session
+    admin_user: User, role: Role, session: Session
 ) -> None:
     factory = RoleRequestFactory(resources=role.resources)
     permission = factory.build_permission(Resource.CLASSROOM)
@@ -127,14 +127,14 @@ def test_update_role_keeps_unchanged_permission(
     )
 
     role = RoleRepository.update(
-        id=must_be_int(role.id), input=input, user=user, session=session
+        id=must_be_int(role.id), input=input, user=admin_user, session=session
     )
     session.commit()
     session.refresh(role)
     first_permission_id = role.classroom_permissions[0].id
 
     updated = RoleRepository.update(
-        id=must_be_int(role.id), input=input, user=user, session=session
+        id=must_be_int(role.id), input=input, user=admin_user, session=session
     )
     session.commit()
     session.refresh(updated)
@@ -144,22 +144,22 @@ def test_update_role_keeps_unchanged_permission(
 
 
 def test_delete_role_deletes_permissions_and_user_links(
-    user: User, role: Role, session: Session
+    admin_user: User, role: Role, session: Session
 ) -> None:
     permission_input = PermissionRequestFactory(
         role=role, resource=Resource.CLASSROOM
     ).create_input()
     permission = ClassroomPermissionRepository.create(
-        input=permission_input, user=user, session=session
+        input=permission_input, user=admin_user, session=session
     )
     session.commit()
     permission_id = must_be_int(permission.id)
 
     session.add(
         UserRole(
-            user_id=must_be_int(user.id),
+            user_id=must_be_int(admin_user.id),
             role_id=must_be_int(role.id),
-            granted_by_id=must_be_int(user.id),
+            granted_by_id=must_be_int(admin_user.id),
         )
     )
     session.commit()
@@ -181,12 +181,12 @@ def test_delete_role_deletes_permissions_and_user_links(
     assert list(remaining_links) == []
 
 
-def test_get_all_filters_by_resource(user: User, session: Session) -> None:
+def test_get_all_filters_by_resource(admin_user: User, session: Session) -> None:
     classroom_only = RoleRequestFactory(resources=[Resource.CLASSROOM]).create_input()
     course_only = RoleRequestFactory(resources=[Resource.COURSE]).create_input()
 
-    RoleRepository.create(input=classroom_only, user=user, session=session)
-    RoleRepository.create(input=course_only, user=user, session=session)
+    RoleRepository.create(input=classroom_only, user=admin_user, session=session)
+    RoleRepository.create(input=course_only, user=admin_user, session=session)
     session.commit()
 
     roles = RoleRepository.get_all(session=session, resources=[Resource.CLASSROOM])

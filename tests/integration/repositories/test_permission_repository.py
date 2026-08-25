@@ -13,10 +13,11 @@ from server.models.http.requests.permission_request_models import (
     PermissionRegister,
     PermissionUpdate,
 )
+from server.utils.must_be_int import must_be_int
 
 
 def test_permission_repository_create_adds_resource_to_role(
-    user: User, session: Session
+    admin_user: User, session: Session
 ) -> None:
     role = Role(name="Test Role", description="", resources=[Resource.CLASSROOM])
     session.add(role)
@@ -27,12 +28,12 @@ def test_permission_repository_create_adds_resource_to_role(
         resource=Resource.BUILDING,
         resource_id=-1,
         actions=[BuildingAction.CREATE],
-        role_id=role.id,
+        role_id=must_be_int(role.id),
     )
 
     BuildingPermissionRepository.create(
         input=permission_input,
-        user=user,
+        user=admin_user,
         session=session,
     )
     session.commit()
@@ -43,27 +44,27 @@ def test_permission_repository_create_adds_resource_to_role(
 
 
 def test_permission_repository_get_all_by_role_id(
-    user: User, role: Role, session: Session
+    admin_user: User, role: Role, session: Session
 ) -> None:
     permission_input = PermissionRegister(
         resource=Resource.BUILDING,
         resource_id=-1,
         actions=[BuildingAction.CREATE],
-        role_id=role.id,
+        role_id=must_be_int(role.id),
     )
-    BuildingPermissionRepository.create(input=permission_input, user=user, session=session)
+    BuildingPermissionRepository.create(input=permission_input, user=admin_user, session=session)
     session.commit()
 
     permissions = BuildingPermissionRepository.get_all_by_role_id(
-        role_id=role.id, session=session
+        role_id=must_be_int(role.id), session=session
     )
 
     assert len(permissions) == 1
-    assert permissions[0].role_id == role.id
+    assert permissions[0].role_id == must_be_int(role.id)
 
 
 def test_permission_repository_update_changes_actions_and_role(
-    user: User, role: Role, session: Session
+    admin_user: User, role: Role, session: Session
 ) -> None:
     other_role = Role(name="Other Role", description="", resources=[Resource.BUILDING])
     session.add(other_role)
@@ -75,9 +76,9 @@ def test_permission_repository_update_changes_actions_and_role(
             resource=Resource.BUILDING,
             resource_id=-1,
             actions=[BuildingAction.READ],
-            role_id=role.id,
+            role_id=must_be_int(role.id),
         ),
-        user=user,
+        user=admin_user,
         session=session,
     )
     session.commit()
@@ -89,27 +90,27 @@ def test_permission_repository_update_changes_actions_and_role(
             resource=Resource.BUILDING,
             resource_id=-1,
             actions=[BuildingAction.CREATE, BuildingAction.DELETE],
-            role_id=other_role.id,
+            role_id=must_be_int(other_role.id),
         ),
-        user=user,
+        user=admin_user,
         session=session,
     )
     session.commit()
     session.refresh(updated)
 
-    assert updated.role_id == other_role.id
+    assert updated.role_id == must_be_int(other_role.id)
     assert set(updated.actions) == {BuildingAction.CREATE, BuildingAction.DELETE}
 
 
-def test_permission_repository_delete(user: User, role: Role, session: Session) -> None:
+def test_permission_repository_delete(admin_user: User, role: Role, session: Session) -> None:
     permission = BuildingPermissionRepository.create(
         input=PermissionRegister(
             resource=Resource.BUILDING,
             resource_id=-1,
             actions=[BuildingAction.READ],
-            role_id=role.id,
+            role_id=must_be_int(role.id),
         ),
-        user=user,
+        user=admin_user,
         session=session,
     )
     session.commit()

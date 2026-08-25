@@ -2,10 +2,11 @@ from datetime import datetime
 
 from server.models.database.building_permission_db_model import BuildingPermission
 from server.models.database.classroom_permission_db_model import ClassroomPermission
+from server.models.database.course_permission_db_model import CoursePermission
 from server.models.database.role_db_model import Role
 from server.models.database.user_db_model import User
 from server.services.security.role_permission_evaluator import build_permission_index
-from server.utils.enums.actions_enums import BuildingAction, ClassroomAction
+from server.utils.enums.actions_enums import BuildingAction, ClassroomAction, CourseAction
 from server.utils.enums.resources_enums import Resource
 
 
@@ -28,6 +29,7 @@ def make_role(
     resources: list[Resource],
     classroom_permissions: list[ClassroomPermission] | None = None,
     building_permissions: list[BuildingPermission] | None = None,
+    course_permissions: list[CoursePermission] | None = None,
 ) -> Role:
     role = Role(
         id=1,
@@ -39,7 +41,7 @@ def make_role(
     )
     role.classroom_permissions = classroom_permissions or []
     role.building_permissions = building_permissions or []
-    role.course_permissions = []
+    role.course_permissions = course_permissions or []
     return role
 
 
@@ -176,6 +178,21 @@ def test_classroom_permission_without_building_id_does_not_cascade() -> None:
 
     assert not index.has_classroom_permission(
         action=ClassroomAction.READ, classroom_id=42, building_id=None
+    )
+
+
+def test_course_permission_target_id_resolves_via_course_id() -> None:
+    permission = CoursePermission(
+        role_id=1, granted_by_id=1, course_id=42, actions=[CourseAction.READ]
+    )
+    role = make_role(resources=[Resource.COURSE], course_permissions=[permission])
+    index = build_permission_index(make_user(roles=[role]))
+
+    assert index.has_permission(
+        resource=Resource.COURSE, action=CourseAction.READ, resource_id=42
+    )
+    assert not index.has_permission(
+        resource=Resource.COURSE, action=CourseAction.READ, resource_id=99
     )
 
 

@@ -16,7 +16,7 @@ URL_PREFIX = "/admin/permissions"
 
 
 def test_create_permission_with_admin_user(role: Role, client: TestClient) -> None:
-    """A permission can no longer target a user directly: role_id is mandatory."""
+    """A permission can no longer target a admin_user directly: role_id is mandatory."""
     input = PermissionRequestFactory(
         role=role, resource=Resource.CLASSROOM
     ).create_input()
@@ -28,7 +28,7 @@ def test_create_permission_with_admin_user(role: Role, client: TestClient) -> No
 def test_create_permission_without_role_id_is_rejected(
     role: Role, client: TestClient
 ) -> None:
-    """A permission can no longer target a user directly: role_id is mandatory."""
+    """A permission can no longer target a admin_user directly: role_id is mandatory."""
     input = PermissionRequestFactory(
         role=role, resource=Resource.CLASSROOM
     ).create_input()
@@ -70,13 +70,13 @@ def test_get_permissions_by_resource(
 
 
 def test_get_permission_by_id(
-    role: Role, user: User, session: Session, client: TestClient
+    role: Role, admin_user: User, session: Session, client: TestClient
 ) -> None:
     input = PermissionRequestFactory(
         role=role, resource=Resource.CLASSROOM
     ).create_input()
     created = ClassroomPermissionRepository.create(
-        input=input, user=user, session=session
+        input=input, user=admin_user, session=session
     )
     session.commit()
     session.refresh(created)

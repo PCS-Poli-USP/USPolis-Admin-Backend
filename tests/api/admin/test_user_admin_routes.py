@@ -92,11 +92,11 @@ def test_update_user_to_admin_with_admin_user(
 
 
 def test_update_self_admin_status_with_admin_user(
-    user: User,
+    admin_user: User,
     client: TestClient,
 ) -> None:
     input = UserRequestFactory().update_input(group_ids=[], is_admin=False)
-    response = client.put(f"{URL_PREFIX}/{user.id}", json=input.model_dump())
+    response = client.put(f"{URL_PREFIX}/{admin_user.id}", json=input.model_dump())
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 

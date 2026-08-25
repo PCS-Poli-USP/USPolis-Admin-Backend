@@ -9,7 +9,7 @@ from tests.factories.model.building_model_factory import BuildingModelFactory
 from tests.factories.request.building_request_factory import BuildingRequestFactory
 
 
-def test_building_repository_create(user: User, mock_session: MagicMock) -> None:
+def test_building_repository_create(admin_user: User, mock_session: MagicMock) -> None:
     """Test the create method of the BuildingRepository.\n
     Tests:\n
     - building is created with the correct values\n
@@ -19,7 +19,7 @@ def test_building_repository_create(user: User, mock_session: MagicMock) -> None
     factory = BuildingRequestFactory()
     input = factory.create_input()
     building = BuildingRepository.create(
-        building_in=input, creator=user, session=mock_session
+        building_in=input, creator=admin_user, session=mock_session
     )
 
     mock_session.commit.assert_not_called()
@@ -27,24 +27,24 @@ def test_building_repository_create(user: User, mock_session: MagicMock) -> None
     assert building.name == input.name
 
 
-def test_building_repository_get_by_id(user: User, session: Session) -> None:
+def test_building_repository_get_by_id(admin_user: User, session: Session) -> None:
     """Test the get by id method of the BuildingRepository.\n
     Tests:\n
     - buildings read are the same as the ones created\n
     """
-    factory = BuildingModelFactory(user, session)
+    factory = BuildingModelFactory(admin_user, session)
     building = factory.create_and_refresh()
     query = BuildingRepository.get_by_id(id=must_be_int(building.id), session=session)
     assert query.name == building.name
 
 
-def test_building_repository_get_all(user: User, session: Session) -> None:
+def test_building_repository_get_all(admin_user: User, session: Session) -> None:
     """Test **get_all** method of the BuildingRepository.\n
     Tests:\n
     - number of buildings get is correct\n
     - buildings read are the same as the ones created\n
     """
-    factory = BuildingModelFactory(user, session)
+    factory = BuildingModelFactory(admin_user, session)
     old_buildings = factory.create_many_default()
     buildings = BuildingRepository.get_all(session=session)
 
@@ -53,24 +53,24 @@ def test_building_repository_get_all(user: User, session: Session) -> None:
         assert building in old_buildings
 
 
-def test_building_repository_get_by_name(user: User, session: Session) -> None:
+def test_building_repository_get_by_name(admin_user: User, session: Session) -> None:
     """Test **get_by_name** method of the BuildingRepository.\n
     Tests:\n
     - buildings read are the same as the ones created\n
     """
-    factory = BuildingModelFactory(user, session)
+    factory = BuildingModelFactory(admin_user, session)
     building = factory.create_and_refresh()
     query = BuildingRepository.get_by_name(name=building.name, session=session)
     assert query.name == building.name
 
 
-def test_building_repository_get_by_ids(user: User, session: Session) -> None:
+def test_building_repository_get_by_ids(admin_user: User, session: Session) -> None:
     """Test **get_by_ids** method of the BuildingRepository.\n
     Tests:\n
     - number of buildings read is correct\n
     - all buildings read are in the list of ids\n
     """
-    factory = BuildingModelFactory(user, session)
+    factory = BuildingModelFactory(admin_user, session)
     old_buildings = factory.create_many_default()
     factory.commit()
     factory.refresh_many(old_buildings)
@@ -82,13 +82,13 @@ def test_building_repository_get_by_ids(user: User, session: Session) -> None:
         assert building.id in ids
 
 
-def test_building_repository_update(user: User, session: Session) -> None:
+def test_building_repository_update(admin_user: User, session: Session) -> None:
     """Test **update** method of the BuildingRepository.\n
     Tests:\n
     - building new name is equal input\n
     - building name is different from the old name\n
     """
-    factory = BuildingModelFactory(user, session)
+    factory = BuildingModelFactory(admin_user, session)
     building = factory.create_and_refresh()
     old_name = building.name
     input = BuildingRequestFactory().update_input()
@@ -99,12 +99,12 @@ def test_building_repository_update(user: User, session: Session) -> None:
     assert building.name != old_name
 
 
-def test_building_repository_delete(user: User, session: Session) -> None:
+def test_building_repository_delete(admin_user: User, session: Session) -> None:
     """Test **delete** method of the BuildingRepository.\n
     Tests:\n
     - building get by id from old id raises BuildingNotFound\n
     """
-    factory = BuildingModelFactory(user, session)
+    factory = BuildingModelFactory(admin_user, session)
     building = factory.create_and_refresh()
     id = must_be_int(building.id)
     BuildingRepository.delete(id=id, session=session)

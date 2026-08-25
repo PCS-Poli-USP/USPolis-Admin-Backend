@@ -4,16 +4,9 @@ from sqlmodel import Session
 from server.models.database.building_db_model import Building
 from server.models.database.class_db_model import Class
 from server.models.database.classroom_db_model import Classroom
+from server.models.database.group_db_model import Group
 from server.models.database.reservation_db_model import Reservation
-from server.models.database.role_db_model import Role
 from server.models.database.user_db_model import User
-from server.models.database.user_role_db_model import UserRole
-from server.repositories.building_permission_repository import (
-    BuildingPermissionRepository,
-)
-from server.repositories.classroom_permission_repository import (
-    ClassroomPermissionRepository,
-)
 from server.services.security.buildings_permission_checker import (
     BuildingPermissionChecker,
     ForbiddenBuildingAccess,
@@ -32,25 +25,14 @@ from server.services.security.reservation_permission_checker import (
 from server.services.security.role_permission_evaluator import build_permission_index
 from server.utils.enums.actions_enums import BuildingAction, ClassroomAction
 from server.utils.enums.reservation_type import ReservationType
-from server.utils.enums.resources_enums import Resource
 from server.utils.must_be_int import must_be_int
+from tests.factories.model.building_model_factory import BuildingModelFactory
+from tests.factories.model.class_model_factory import ClassModelFactory
+from tests.factories.model.classroom_model_factory import ClassroomModelFactory
 from tests.factories.model.reservation_model_factory import ReservationModelFactory
-from tests.factories.model.role_model_factory import RoleModelFactory
-from tests.factories.request.permission_request_factory import (
-    PermissionRequestFactory,
-)
-
-
-def _assign_role(*, user: User, role: Role, session: Session) -> None:
-    session.add(
-        UserRole(
-            user_id=must_be_int(user.id),
-            role_id=must_be_int(role.id),
-            granted_by_id=must_be_int(user.id),
-        )
-    )
-    session.commit()
-    session.refresh(user)
+from tests.factories.model.solicitation_model_factory import SolicitationModelFactory
+from tests.factories.model.subject_model_factory import SubjectModelFactory
+from tests.utils.permission_test_utils import RolePermissionTestHelper
 
 
 def test_building_checker_denies_without_group_or_role(
@@ -67,18 +49,15 @@ def test_building_checker_denies_without_group_or_role(
 
 
 def test_building_checker_allows_via_role_permission(
-    building: Building, common_user: User, session: Session
+    building: Building, admin_user: User, common_user: User, session: Session
 ) -> None:
-    role = RoleModelFactory(
-        session=session, resources=[Resource.BUILDING]
-    ).create_and_refresh()
-    permission_input = PermissionRequestFactory(
-        role=role, resource=Resource.BUILDING
-    ).create_input(resource_id=must_be_int(building.id), actions=[BuildingAction.READ])
-    BuildingPermissionRepository.create(
-        input=permission_input, user=common_user, session=session
+    RolePermissionTestHelper.grant_building_permission(
+        user=common_user,
+        resource_id=must_be_int(building.id),
+        actions=[BuildingAction.READ],
+        granted_by=admin_user,
+        session=session,
     )
-    _assign_role(user=common_user, role=role, session=session)
 
     checker = BuildingPermissionChecker(
         user=common_user,
@@ -86,6 +65,32 @@ def test_building_checker_allows_via_role_permission(
         permission_index=build_permission_index(common_user),
     )
     checker.check_permission(must_be_int(building.id), BuildingAction.READ)
+
+
+def test_building_checker_allows_via_wildcard_role_permission(
+    building: Building, admin_user: User, common_user: User, session: Session
+) -> None:
+    """A wildcard grant (resource_id=-1) is honored for READ even without
+    ever specifically granting `building` - it covers every instance of
+    the resource, not just the one it happened to be tested against."""
+    other_building = BuildingModelFactory(
+        creator=admin_user, session=session
+    ).create_and_refresh()
+    RolePermissionTestHelper.grant_building_permission(
+        user=common_user,
+        resource_id=-1,
+        actions=[BuildingAction.READ],
+        granted_by=admin_user,
+        session=session,
+    )
+
+    checker = BuildingPermissionChecker(
+        user=common_user,
+        session=session,
+        permission_index=build_permission_index(common_user),
+    )
+    checker.check_permission(must_be_int(building.id), BuildingAction.READ)
+    checker.check_permission(must_be_int(other_building.id), BuildingAction.READ)
 
 
 def test_building_checker_denies_creation_without_role(
@@ -102,18 +107,15 @@ def test_building_checker_denies_creation_without_role(
 
 
 def test_building_checker_allows_creation_via_wildcard_role_permission(
-    common_user: User, session: Session
+    admin_user: User, common_user: User, session: Session
 ) -> None:
-    role = RoleModelFactory(
-        session=session, resources=[Resource.BUILDING]
-    ).create_and_refresh()
-    permission_input = PermissionRequestFactory(
-        role=role, resource=Resource.BUILDING
-    ).create_input(resource_id=-1, actions=[BuildingAction.CREATE])
-    BuildingPermissionRepository.create(
-        input=permission_input, user=common_user, session=session
+    RolePermissionTestHelper.grant_building_permission(
+        user=common_user,
+        resource_id=-1,
+        actions=[BuildingAction.CREATE],
+        granted_by=admin_user,
+        session=session,
     )
-    _assign_role(user=common_user, role=role, session=session)
 
     checker = BuildingPermissionChecker(
         user=common_user,
@@ -137,20 +139,15 @@ def test_classroom_checker_denies_without_group_or_role(
 
 
 def test_classroom_checker_allows_via_direct_classroom_permission(
-    classroom: Classroom, common_user: User, session: Session
+    classroom: Classroom, admin_user: User, common_user: User, session: Session
 ) -> None:
-    role = RoleModelFactory(
-        session=session, resources=[Resource.CLASSROOM]
-    ).create_and_refresh()
-    permission_input = PermissionRequestFactory(
-        role=role, resource=Resource.CLASSROOM
-    ).create_input(
-        resource_id=must_be_int(classroom.id), actions=[ClassroomAction.UPDATE]
+    RolePermissionTestHelper.grant_classroom_permission(
+        user=common_user,
+        resource_id=must_be_int(classroom.id),
+        actions=[ClassroomAction.UPDATE],
+        granted_by=admin_user,
+        session=session,
     )
-    ClassroomPermissionRepository.create(
-        input=permission_input, user=common_user, session=session
-    )
-    _assign_role(user=common_user, role=role, session=session)
 
     checker = ClassroomPermissionChecker(
         user=common_user,
@@ -161,20 +158,19 @@ def test_classroom_checker_allows_via_direct_classroom_permission(
 
 
 def test_classroom_checker_allows_via_building_permission_cascade(
-    building: Building, classroom: Classroom, common_user: User, session: Session
+    building: Building,
+    classroom: Classroom,
+    admin_user: User,
+    common_user: User,
+    session: Session,
 ) -> None:
-    role = RoleModelFactory(
-        session=session, resources=[Resource.BUILDING]
-    ).create_and_refresh()
-    permission_input = PermissionRequestFactory(
-        role=role, resource=Resource.BUILDING
-    ).create_input(
-        resource_id=must_be_int(building.id), actions=[BuildingAction.DELETE]
+    RolePermissionTestHelper.grant_building_permission(
+        user=common_user,
+        resource_id=must_be_int(building.id),
+        actions=[BuildingAction.DELETE],
+        granted_by=admin_user,
+        session=session,
     )
-    BuildingPermissionRepository.create(
-        input=permission_input, user=common_user, session=session
-    )
-    _assign_role(user=common_user, role=role, session=session)
 
     checker = ClassroomPermissionChecker(
         user=common_user,
@@ -187,6 +183,64 @@ def test_classroom_checker_allows_via_building_permission_cascade(
     # A different, non-granted action does not.
     with pytest.raises(ForbiddenClassroomAccess):
         checker.check_permission(must_be_int(classroom.id), ClassroomAction.RESERVE)
+
+
+def test_classroom_checker_list_denies_when_any_classroom_disallowed(
+    building: Building,
+    classroom: Classroom,
+    group: Group,
+    admin_user: User,
+    common_user: User,
+    session: Session,
+) -> None:
+    other_classroom = ClassroomModelFactory(
+        creator=admin_user, building=building, group=group, session=session
+    ).create_and_refresh()
+    RolePermissionTestHelper.grant_classroom_permission(
+        user=common_user,
+        resource_id=must_be_int(classroom.id),
+        actions=[ClassroomAction.READ],
+        granted_by=admin_user,
+        session=session,
+    )
+
+    checker = ClassroomPermissionChecker(
+        user=common_user,
+        session=session,
+        permission_index=build_permission_index(common_user),
+    )
+    # Granted for `classroom` only - `other_classroom` is not, so the list
+    # check should still raise, exercising the list-dispatch branch.
+    with pytest.raises(ForbiddenClassroomAccess):
+        checker.check_permission([classroom, other_classroom], ClassroomAction.READ)
+
+
+def test_classroom_checker_allows_via_wildcard_role_permission(
+    building: Building,
+    classroom: Classroom,
+    group: Group,
+    admin_user: User,
+    common_user: User,
+    session: Session,
+) -> None:
+    other_classroom = ClassroomModelFactory(
+        creator=admin_user, building=building, group=group, session=session
+    ).create_and_refresh()
+    RolePermissionTestHelper.grant_classroom_permission(
+        user=common_user,
+        resource_id=-1,
+        actions=[ClassroomAction.READ],
+        granted_by=admin_user,
+        session=session,
+    )
+
+    checker = ClassroomPermissionChecker(
+        user=common_user,
+        session=session,
+        permission_index=build_permission_index(common_user),
+    )
+    checker.check_permission(must_be_int(classroom.id), ClassroomAction.READ)
+    checker.check_permission(must_be_int(other_classroom.id), ClassroomAction.READ)
 
 
 def _create_reservation_with_classroom(
@@ -208,10 +262,10 @@ def _create_reservation_with_classroom(
 
 
 def test_reservation_checker_denies_without_group_or_role(
-    classroom: Classroom, user: User, common_user: User, session: Session
+    classroom: Classroom, admin_user: User, common_user: User, session: Session
 ) -> None:
     reservation = _create_reservation_with_classroom(
-        classroom=classroom, creator=user, session=session
+        classroom=classroom, creator=admin_user, session=session
     )
 
     checker = ReservationPermissionChecker(
@@ -224,24 +278,167 @@ def test_reservation_checker_denies_without_group_or_role(
 
 
 def test_reservation_checker_allows_via_classroom_permission(
-    classroom: Classroom, user: User, common_user: User, session: Session
+    classroom: Classroom, admin_user: User, common_user: User, session: Session
 ) -> None:
     reservation = _create_reservation_with_classroom(
-        classroom=classroom, creator=user, session=session
+        classroom=classroom, creator=admin_user, session=session
     )
 
-    role = RoleModelFactory(
-        session=session, resources=[Resource.CLASSROOM]
+    RolePermissionTestHelper.grant_classroom_permission(
+        user=common_user,
+        resource_id=must_be_int(classroom.id),
+        actions=[ClassroomAction.READ],
+        granted_by=admin_user,
+        session=session,
+    )
+
+    checker = ReservationPermissionChecker(
+        user=common_user,
+        session=session,
+        permission_index=build_permission_index(common_user),
+    )
+    checker.check_permission(reservation, ClassroomAction.READ)
+
+
+def test_reservation_checker_allows_via_wildcard_classroom_permission(
+    classroom: Classroom, admin_user: User, common_user: User, session: Session
+) -> None:
+    reservation = _create_reservation_with_classroom(
+        classroom=classroom, creator=admin_user, session=session
+    )
+
+    RolePermissionTestHelper.grant_classroom_permission(
+        user=common_user,
+        resource_id=-1,
+        actions=[ClassroomAction.READ],
+        granted_by=admin_user,
+        session=session,
+    )
+
+    checker = ReservationPermissionChecker(
+        user=common_user,
+        session=session,
+        permission_index=build_permission_index(common_user),
+    )
+    checker.check_permission(reservation, ClassroomAction.READ)
+
+
+def test_reservation_checker_admin_bypasses(
+    classroom: Classroom, admin_user: User, session: Session
+) -> None:
+    reservation = _create_reservation_with_classroom(
+        classroom=classroom, creator=admin_user, session=session
+    )
+    checker = ReservationPermissionChecker(
+        user=admin_user,
+        session=session,
+        permission_index=build_permission_index(admin_user),
+    )
+    checker.check_permission(reservation, ClassroomAction.READ)
+
+
+def test_reservation_checker_id_dispatch_matches_object_dispatch(
+    classroom: Classroom, admin_user: User, common_user: User, session: Session
+) -> None:
+    reservation = _create_reservation_with_classroom(
+        classroom=classroom, creator=admin_user, session=session
+    )
+    checker = ReservationPermissionChecker(
+        user=common_user,
+        session=session,
+        permission_index=build_permission_index(common_user),
+    )
+    with pytest.raises(ForbiddenClassroomAccess):
+        checker.check_permission(must_be_int(reservation.id), ClassroomAction.READ)
+
+
+def test_reservation_checker_list_denies_when_any_reservation_disallowed(
+    building: Building,
+    classroom: Classroom,
+    group: Group,
+    admin_user: User,
+    common_user: User,
+    session: Session,
+) -> None:
+    """Grants access to `classroom` only, so reservation_a (booked in it) is
+    individually allowed while reservation_b (a different, ungranted
+    classroom) is not - proving the list check evaluates every item rather
+    than short-circuiting once it finds one allowed entry."""
+    other_classroom = ClassroomModelFactory(
+        creator=admin_user, building=building, group=group, session=session
     ).create_and_refresh()
-    permission_input = PermissionRequestFactory(
-        role=role, resource=Resource.CLASSROOM
-    ).create_input(
-        resource_id=must_be_int(classroom.id), actions=[ClassroomAction.READ]
+    reservation_a = _create_reservation_with_classroom(
+        classroom=classroom, creator=admin_user, session=session
     )
-    ClassroomPermissionRepository.create(
-        input=permission_input, user=common_user, session=session
+    reservation_b = _create_reservation_with_classroom(
+        classroom=other_classroom, creator=admin_user, session=session
     )
-    _assign_role(user=common_user, role=role, session=session)
+    RolePermissionTestHelper.grant_classroom_permission(
+        user=common_user,
+        resource_id=must_be_int(classroom.id),
+        actions=[ClassroomAction.READ],
+        granted_by=admin_user,
+        session=session,
+    )
+
+    checker = ReservationPermissionChecker(
+        user=common_user,
+        session=session,
+        permission_index=build_permission_index(common_user),
+    )
+    with pytest.raises(ForbiddenClassroomAccess):
+        checker.check_permission(
+            [reservation_a, reservation_b], ClassroomAction.READ
+        )
+
+
+def _create_reservation_without_classroom(
+    *, building: Building, creator: User, session: Session
+) -> Reservation:
+    """A reservation with no classroom, backed by a Solicitation so
+    Reservation.get_building() can resolve via the solicitation instead of
+    raising - exercising the checker's building-fallback branch."""
+    reservation = ReservationModelFactory(
+        reservation_type=ReservationType.MEETING,
+        creator=creator,
+        classroom=None,  # type: ignore[arg-type]
+        session=session,
+    ).create_and_refresh()
+    SolicitationModelFactory(
+        building=building, user=creator, reservation=reservation, session=session
+    ).create_and_refresh()
+    session.refresh(reservation)
+    return reservation
+
+
+def test_reservation_checker_without_classroom_denies_without_building_permission(
+    building: Building, admin_user: User, common_user: User, session: Session
+) -> None:
+    reservation = _create_reservation_without_classroom(
+        building=building, creator=admin_user, session=session
+    )
+    checker = ReservationPermissionChecker(
+        user=common_user,
+        session=session,
+        permission_index=build_permission_index(common_user),
+    )
+    with pytest.raises(ForbiddenBuildingAccess):
+        checker.check_permission(reservation, ClassroomAction.READ)
+
+
+def test_reservation_checker_without_classroom_allows_via_building_permission(
+    building: Building, admin_user: User, common_user: User, session: Session
+) -> None:
+    reservation = _create_reservation_without_classroom(
+        building=building, creator=admin_user, session=session
+    )
+    RolePermissionTestHelper.grant_building_permission(
+        user=common_user,
+        resource_id=must_be_int(building.id),
+        actions=[BuildingAction.READ],
+        granted_by=admin_user,
+        session=session,
+    )
 
     checker = ReservationPermissionChecker(
         user=common_user,
@@ -264,18 +461,19 @@ def test_class_checker_denies_without_group_or_role(
 
 
 def test_class_checker_allows_via_building_permission(
-    class_: Class, building: Building, common_user: User, session: Session
+    class_: Class,
+    building: Building,
+    admin_user: User,
+    common_user: User,
+    session: Session,
 ) -> None:
-    role = RoleModelFactory(
-        session=session, resources=[Resource.BUILDING]
-    ).create_and_refresh()
-    permission_input = PermissionRequestFactory(
-        role=role, resource=Resource.BUILDING
-    ).create_input(resource_id=must_be_int(building.id), actions=[BuildingAction.READ])
-    BuildingPermissionRepository.create(
-        input=permission_input, user=common_user, session=session
+    RolePermissionTestHelper.grant_building_permission(
+        user=common_user,
+        resource_id=must_be_int(building.id),
+        actions=[BuildingAction.READ],
+        granted_by=admin_user,
+        session=session,
     )
-    _assign_role(user=common_user, role=role, session=session)
 
     checker = ClassPermissionChecker(
         user=common_user,
@@ -285,3 +483,86 @@ def test_class_checker_allows_via_building_permission(
     # The class's only schedule is unallocated, so once the building-level
     # check passes, the schedule-level check passes too automatically.
     checker.check_permission(class_, ClassroomAction.READ)
+
+
+def test_class_checker_id_dispatch_matches_object_dispatch(
+    class_: Class, common_user: User, session: Session
+) -> None:
+    checker = ClassPermissionChecker(
+        user=common_user,
+        session=session,
+        permission_index=build_permission_index(common_user),
+    )
+    with pytest.raises(ForbiddenClassAccess):
+        checker.check_permission(must_be_int(class_.id), ClassroomAction.READ)
+
+
+def test_class_checker_list_denies_when_any_class_disallowed(
+    class_: Class,
+    building: Building,
+    admin_user: User,
+    common_user: User,
+    session: Session,
+) -> None:
+    """Grants access to `class_`'s own building only, so `class_` is
+    individually allowed while `other_class` (a different, ungranted
+    building) is not - proving the list check evaluates every item rather
+    than short-circuiting once it finds one allowed entry."""
+    other_building = BuildingModelFactory(
+        creator=admin_user, session=session
+    ).create_and_refresh()
+    other_subject = SubjectModelFactory(
+        building=other_building, session=session
+    ).create_and_refresh()
+    other_class = ClassModelFactory(
+        subject=other_subject, session=session
+    ).create_and_refresh()
+
+    RolePermissionTestHelper.grant_building_permission(
+        user=common_user,
+        resource_id=must_be_int(building.id),
+        actions=[BuildingAction.READ],
+        granted_by=admin_user,
+        session=session,
+    )
+
+    checker = ClassPermissionChecker(
+        user=common_user,
+        session=session,
+        permission_index=build_permission_index(common_user),
+    )
+    with pytest.raises(ForbiddenClassAccess):
+        checker.check_permission([class_, other_class], ClassroomAction.READ)
+
+
+def test_class_checker_allows_via_wildcard_building_permission(
+    class_: Class, admin_user: User, common_user: User, session: Session
+) -> None:
+    """Wildcard grant on BUILDING covers a class in a building that was
+    never specifically granted, proving it is a true wildcard and not
+    accidentally scoped to the fixture's own building."""
+    other_building = BuildingModelFactory(
+        creator=admin_user, session=session
+    ).create_and_refresh()
+    other_subject = SubjectModelFactory(
+        building=other_building, session=session
+    ).create_and_refresh()
+    other_class = ClassModelFactory(
+        subject=other_subject, session=session
+    ).create_and_refresh()
+
+    RolePermissionTestHelper.grant_building_permission(
+        user=common_user,
+        resource_id=-1,
+        actions=[BuildingAction.READ],
+        granted_by=admin_user,
+        session=session,
+    )
+
+    checker = ClassPermissionChecker(
+        user=common_user,
+        session=session,
+        permission_index=build_permission_index(common_user),
+    )
+    checker.check_permission(class_, ClassroomAction.READ)
+    checker.check_permission(other_class, ClassroomAction.READ)

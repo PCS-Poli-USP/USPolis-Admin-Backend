@@ -86,14 +86,14 @@ def test_get_classroom_by_id_with_public_user(
 
 
 def test_get_classroom_full_with_admin_user(
-    user: User,
+    admin_user: User,
     classroom: Classroom,
     class_: Class,
     client: TestClient,
     session: Session,
 ) -> None:
     OccurrenceRepository.allocate_schedule(
-        user=user, classroom=classroom, schedule=class_.schedules[0], session=session
+        user=admin_user, classroom=classroom, schedule=class_.schedules[0], session=session
     )
     response = client.get(f"{URL_PREFIX}/full/{classroom.id}")
     assert response.status_code == status.HTTP_200_OK
@@ -134,7 +134,7 @@ def test_get_classroom_full_with_public_user(
 
 
 def test_create_classroom_with_admin_user(
-    user: User, group: Group, client: TestClient
+    admin_user: User, group: Group, client: TestClient
 ) -> None:
     input = ClassroomRequestFactory(group=group).create_input()
     body = input.model_dump()
@@ -143,7 +143,7 @@ def test_create_classroom_with_admin_user(
 
     assert response.status_code == status.HTTP_200_OK
     assert created["name"] == input.name
-    assert created["created_by"] == user.name
+    assert created["created_by"] == admin_user.name
     assert created["building_id"] == group.building.id
 
 
@@ -189,13 +189,13 @@ def test_create_classroom_with_restricted_user_outisder_group(
 
 
 def test_create_classroom_with_group_in_other_building(
-    user: User,
+    admin_user: User,
     restricted_user: User,
     building: Building,
     session: Session,
     restricted_client: TestClient,
 ) -> None:
-    building_B = BuildingModelFactory(creator=user, session=session).create_and_refresh(
+    building_B = BuildingModelFactory(creator=admin_user, session=session).create_and_refresh(
         users=[restricted_user]
     )
     outsider_group = GroupModelFactory(
@@ -210,13 +210,13 @@ def test_create_classroom_with_group_in_other_building(
 
 
 def test_create_classroom_with_user_in_other_building(
-    user: User,
+    admin_user: User,
     restricted_user: User,
     group: Group,
     session: Session,
     restricted_client: TestClient,
 ) -> None:
-    building_B = BuildingModelFactory(creator=user, session=session).create_and_refresh(
+    building_B = BuildingModelFactory(creator=admin_user, session=session).create_and_refresh(
         users=[restricted_user]
     )
     restricted_user.buildings = [building_B]
@@ -300,14 +300,14 @@ def test_update_classroom_with_restricted_user_outisder_group(
 
 
 def test_update_classroom_with_group_in_other_building(
-    user: User,
+    admin_user: User,
     restricted_user: User,
     building: Building,
     classroom: Classroom,
     session: Session,
     restricted_client: TestClient,
 ) -> None:
-    factory = BuildingModelFactory(creator=user, session=session)
+    factory = BuildingModelFactory(creator=admin_user, session=session)
     building_B = factory.create_and_refresh(users=[restricted_user])
     outsider_group = GroupModelFactory(
         building=building_B, session=session
@@ -331,14 +331,14 @@ def test_update_classroom_with_group_in_other_building(
 
 
 def test_update_classroom_with_user_in_other_building(
-    user: User,
+    admin_user: User,
     restricted_user: User,
     group: Group,
     classroom: Classroom,
     session: Session,
     restricted_client: TestClient,
 ) -> None:
-    building_B = BuildingModelFactory(creator=user, session=session).create_and_refresh(
+    building_B = BuildingModelFactory(creator=admin_user, session=session).create_and_refresh(
         users=[restricted_user]
     )
     restricted_user.buildings = [building_B]
@@ -378,10 +378,10 @@ def test_update_classroom_with_public_user(
 
 
 def test_delete_classroom_with_admin_user(
-    user: User, group: Group, session: Session, client: TestClient
+    admin_user: User, group: Group, session: Session, client: TestClient
 ) -> None:
     classrooms = ClassroomModelFactory(
-        creator=user, building=group.building, group=group, session=session
+        creator=admin_user, building=group.building, group=group, session=session
     ).create_many_default_and_refresh()
     deleted = classrooms[0]
     response = client.delete(f"{URL_PREFIX}/{deleted.id}")
@@ -452,10 +452,10 @@ def test_delete_classroom_last_one_in_group(
 
 
 def test_delete_classroom_with_common_user(
-    user: User, group: Group, session: Session, common_client: TestClient
+    admin_user: User, group: Group, session: Session, common_client: TestClient
 ) -> None:
     created = ClassroomModelFactory(
-        creator=user, building=group.building, group=group, session=session
+        creator=admin_user, building=group.building, group=group, session=session
     ).create_and_refresh()
 
     response = common_client.delete(f"{URL_PREFIX}/{created.id}")

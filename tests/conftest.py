@@ -117,7 +117,9 @@ def mock_authenticate(user: User, request: Request, session: SessionDep) -> User
 
 
 @pytest.fixture(name="client")
-def client_fixture(user: User, session: Session) -> Generator[TestClient, None, None]:
+def client_fixture(
+    admin_user: User, session: Session
+) -> Generator[TestClient, None, None]:
     """
     Admin client fixture, which is a TestClient with the mocked authentication and the mocked google authentication.
     """
@@ -125,7 +127,7 @@ def client_fixture(user: User, session: Session) -> Generator[TestClient, None, 
     app.dependency_overrides[google_token_authenticate] = mock_google_authenticate
 
     def _mock_authenticate(request: Request, session: SessionDep) -> User:
-        return mock_authenticate(user, request, session)
+        return mock_authenticate(admin_user, request, session)
 
     app.dependency_overrides[authenticate] = _mock_authenticate
     with TestClient(app) as c:
@@ -190,25 +192,25 @@ def public_client_fixture(session: Session) -> Generator[TestClient, None, None]
     app.dependency_overrides.clear()
 
 
-@pytest.fixture(name="user")
-def user_fixture(session: Session) -> Generator[User, None, None]:
-    user = session.exec(
+@pytest.fixture(name="admin_user")
+def admin_user_fixture(session: Session) -> Generator[User, None, None]:
+    admin_user = session.exec(
         select(User).where(User.email == CONFIG.first_superuser_email)
     ).first()
-    if not user:
+    if not admin_user:
         user_in = UserRegister(
             name=CONFIG.first_superuser_name,
             email=CONFIG.first_superuser_email,
             is_admin=True,
         )
-        user = UserRepository.create(
+        admin_user = UserRepository.create(
             creator=None,
             session=session,
             input=user_in,
         )
         session.commit()
-        session.refresh(user)
-    yield user
+        session.refresh(admin_user)
+    yield admin_user
 
 
 @pytest.fixture(name="restricted_user")
@@ -231,9 +233,9 @@ def common_user_fixture(session: Session) -> Generator[User, None, None]:
 
 
 @pytest.fixture(name="building")
-def building_fixture(user: User, session: Session) -> Building:
+def building_fixture(admin_user: User, session: Session) -> Building:
     """Fixture to create a standard building."""
-    building = BuildingModelFactory(user, session).create_and_refresh()
+    building = BuildingModelFactory(admin_user, session).create_and_refresh()
     group = GroupModelFactory(building, session).create_and_refresh(classrooms=[])
     building.main_group = group
     session.add(building)
@@ -255,27 +257,30 @@ def group_fixture(restricted_user: User, building: Building, session: Session) -
 
 @pytest.fixture(name="classroom")
 def classroom_fixture(
-    user: User, building: Building, group: Group, session: Session
+    admin_user: User, building: Building, group: Group, session: Session
 ) -> Classroom:
     """Fixture to create a standard classroom in the standard main group that includes the starndard restricted user."""
     return ClassroomModelFactory(
-        creator=user, building=building, group=group, session=session
+        creator=admin_user, building=building, group=group, session=session
     ).create_and_refresh()
 
 
 @pytest.fixture(name="allocated_classroom")
 def allocated_classroom_fixture(
-    user: User, building: Building, group: Group, class_: Class, session: Session
+    admin_user: User, building: Building, group: Group, class_: Class, session: Session
 ) -> Classroom:
     """Fixture to **create a classroom** in the default group of default building and **allocate the standard class in**.
 
     Keep in mind that this fixture will allocate the standard class, so make sure that you not use it at class allocation tests that uses the standard class.
     """
     classroom = ClassroomModelFactory(
-        creator=user, building=building, group=group, session=session
+        creator=admin_user, building=building, group=group, session=session
     ).create_and_refresh()
     OccurrenceRepository.allocate_schedule(
-        user=user, classroom=classroom, schedule=class_.schedules[0], session=session
+        user=admin_user,
+        classroom=classroom,
+        schedule=class_.schedules[0],
+        session=session,
     )
     return classroom
 
@@ -293,28 +298,28 @@ def class_fixture(subject: Subject, session: Session) -> Class:
 
 
 @pytest.fixture(name="meeting")
-def meeting_fixture(user: User, classroom: Classroom, session: Session) -> Meeting:
+def meeting_fixture(admin_user: User, classroom: Classroom, session: Session) -> Meeting:
     """Fixture to create a standard meeting."""
     return MeetingModelFactory(
-        classroom=classroom, creator=user, session=session
+        classroom=classroom, creator=admin_user, session=session
     ).create_and_refresh()
 
 
 @pytest.fixture(name="exam")
 def exam_fixture(
-    user: User, classroom: Classroom, subject: Subject, session: Session
+    admin_user: User, classroom: Classroom, subject: Subject, session: Session
 ) -> Exam:
     """Fixture to create a standard exam (without classes)."""
     return ExamModelFactory(
-        creator=user, classroom=classroom, subject=subject, session=session
+        creator=admin_user, classroom=classroom, subject=subject, session=session
     ).create_and_refresh()
 
 
 @pytest.fixture(name="event")
-def event_fixture(user: User, classroom: Classroom, session: Session) -> Event:
+def event_fixture(admin_user: User, classroom: Classroom, session: Session) -> Event:
     """Fixture to create a standard event."""
     return EventModelFactory(
-        classroom=classroom, creator=user, session=session
+        classroom=classroom, creator=admin_user, session=session
     ).create_and_refresh()
 
 

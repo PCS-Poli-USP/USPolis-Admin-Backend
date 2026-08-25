@@ -14,10 +14,10 @@ from tests.factories.model.user_model_factory import UserModelFactory
 
 
 def test_create_session_sets_expiry_within_sliding_window(
-    user: User, session: Session
+    admin_user: User, session: Session
 ) -> None:
     user_session = UserSessionRepository.create_session(
-        user_id=must_be_int(user.id),
+        user_id=must_be_int(admin_user.id),
         user_agent="pytest",
         ip_address="127.0.0.1",
         session=session,
@@ -27,9 +27,9 @@ def test_create_session_sets_expiry_within_sliding_window(
     assert abs((user_session.expires_at - expected).total_seconds()) < 5
 
 
-def test_extend_session_pushes_expiry_forward(user: User, session: Session) -> None:
+def test_extend_session_pushes_expiry_forward(admin_user: User, session: Session) -> None:
     user_session = UserSessionRepository.create_session(
-        user_id=must_be_int(user.id),
+        user_id=must_be_int(admin_user.id),
         user_agent="pytest",
         ip_address="127.0.0.1",
         session=session,
@@ -44,10 +44,10 @@ def test_extend_session_pushes_expiry_forward(user: User, session: Session) -> N
 
 
 def test_extend_session_never_pushes_expiry_past_max_age(
-    user: User, session: Session
+    admin_user: User, session: Session
 ) -> None:
     user_session = UserSessionRepository.create_session(
-        user_id=must_be_int(user.id),
+        user_id=must_be_int(admin_user.id),
         user_agent="pytest",
         ip_address="127.0.0.1",
         session=session,
@@ -64,9 +64,9 @@ def test_extend_session_never_pushes_expiry_past_max_age(
     assert user_session.expires_at == hard_cap
 
 
-def test_has_reached_max_age(user: User, session: Session) -> None:
+def test_has_reached_max_age(admin_user: User, session: Session) -> None:
     fresh_session = UserSessionRepository.create_session(
-        user_id=must_be_int(user.id),
+        user_id=must_be_int(admin_user.id),
         user_agent="pytest",
         ip_address="127.0.0.1",
         session=session,
@@ -80,10 +80,10 @@ def test_has_reached_max_age(user: User, session: Session) -> None:
 
 
 def test_start_or_renew_session_reuses_a_session_within_max_age(
-    user: User, session: Session
+    admin_user: User, session: Session
 ) -> None:
     original = UserSessionRepository.create_session(
-        user_id=must_be_int(user.id),
+        user_id=must_be_int(admin_user.id),
         user_agent="pytest",
         ip_address="127.0.0.1",
         session=session,
@@ -91,7 +91,7 @@ def test_start_or_renew_session_reuses_a_session_within_max_age(
     session.commit()
 
     renewed = UserSessionRepository.start_or_renew_session(
-        user_id=must_be_int(user.id),
+        user_id=must_be_int(admin_user.id),
         user_agent="pytest",
         ip_address="127.0.0.1",
         session=session,
@@ -101,10 +101,10 @@ def test_start_or_renew_session_reuses_a_session_within_max_age(
 
 
 def test_start_or_renew_session_replaces_a_session_past_max_age(
-    user: User, session: Session
+    admin_user: User, session: Session
 ) -> None:
     original = UserSessionRepository.create_session(
-        user_id=must_be_int(user.id),
+        user_id=must_be_int(admin_user.id),
         user_agent="pytest",
         ip_address="127.0.0.1",
         session=session,
@@ -117,7 +117,7 @@ def test_start_or_renew_session_replaces_a_session_past_max_age(
     original_id = original.id
 
     renewed = UserSessionRepository.start_or_renew_session(
-        user_id=must_be_int(user.id),
+        user_id=must_be_int(admin_user.id),
         user_agent="pytest",
         ip_address="127.0.0.1",
         session=session,
@@ -130,10 +130,10 @@ def test_start_or_renew_session_replaces_a_session_past_max_age(
 
 
 def test_start_or_renew_session_reuses_a_session_when_ip_address_changes(
-    user: User, session: Session
+    admin_user: User, session: Session
 ) -> None:
     original = UserSessionRepository.create_session(
-        user_id=must_be_int(user.id),
+        user_id=must_be_int(admin_user.id),
         user_agent="pytest",
         ip_address="127.0.0.1",
         session=session,
@@ -141,7 +141,7 @@ def test_start_or_renew_session_reuses_a_session_when_ip_address_changes(
     session.commit()
 
     renewed = UserSessionRepository.start_or_renew_session(
-        user_id=must_be_int(user.id),
+        user_id=must_be_int(admin_user.id),
         user_agent="pytest",
         ip_address="10.0.0.99",
         session=session,
@@ -151,10 +151,10 @@ def test_start_or_renew_session_reuses_a_session_when_ip_address_changes(
 
 
 def test_get_valid_session_for_renewal_returns_matching_session(
-    user: User, session: Session
+    admin_user: User, session: Session
 ) -> None:
     user_session = UserSessionRepository.create_session(
-        user_id=must_be_int(user.id),
+        user_id=must_be_int(admin_user.id),
         user_agent="pytest",
         ip_address="127.0.0.1",
         session=session,
@@ -162,7 +162,7 @@ def test_get_valid_session_for_renewal_returns_matching_session(
     session.commit()
 
     result = UserSessionRepository.get_valid_session_for_renewal(
-        session_id=user_session.id, user_id=must_be_int(user.id), session=session
+        session_id=user_session.id, user_id=must_be_int(admin_user.id), session=session
     )
 
     assert result is not None
@@ -180,11 +180,11 @@ def test_get_valid_session_for_renewal_returns_none_for_unknown_id(
 
 
 def test_get_valid_session_for_renewal_returns_none_for_different_user(
-    user: User, session: Session
+    admin_user: User, session: Session
 ) -> None:
     other_user = UserModelFactory(session).create_and_refresh()
     user_session = UserSessionRepository.create_session(
-        user_id=must_be_int(user.id),
+        user_id=must_be_int(admin_user.id),
         user_agent="pytest",
         ip_address="127.0.0.1",
         session=session,
@@ -201,10 +201,10 @@ def test_get_valid_session_for_renewal_returns_none_for_different_user(
 
 
 def test_get_valid_session_for_renewal_returns_none_for_expired_session(
-    user: User, session: Session
+    admin_user: User, session: Session
 ) -> None:
     user_session = UserSessionRepository.create_session(
-        user_id=must_be_int(user.id),
+        user_id=must_be_int(admin_user.id),
         user_agent="pytest",
         ip_address="127.0.0.1",
         session=session,
@@ -214,17 +214,17 @@ def test_get_valid_session_for_renewal_returns_none_for_expired_session(
     session.commit()
 
     result = UserSessionRepository.get_valid_session_for_renewal(
-        session_id=user_session.id, user_id=must_be_int(user.id), session=session
+        session_id=user_session.id, user_id=must_be_int(admin_user.id), session=session
     )
 
     assert result is None
 
 
 def test_get_valid_session_for_renewal_deletes_session_past_max_age(
-    user: User, session: Session
+    admin_user: User, session: Session
 ) -> None:
     user_session = UserSessionRepository.create_session(
-        user_id=must_be_int(user.id),
+        user_id=must_be_int(admin_user.id),
         user_agent="pytest",
         ip_address="127.0.0.1",
         session=session,
@@ -237,7 +237,7 @@ def test_get_valid_session_for_renewal_deletes_session_past_max_age(
     session_id = user_session.id
 
     result = UserSessionRepository.get_valid_session_for_renewal(
-        session_id=session_id, user_id=must_be_int(user.id), session=session
+        session_id=session_id, user_id=must_be_int(admin_user.id), session=session
     )
     session.commit()
 
