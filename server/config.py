@@ -22,6 +22,9 @@ class Settings(BaseModel):
     environment: str = config("ENVIRONMENT", default="DEVELOPMENT", cast=str)  # pyright: ignore[reportAssignmentType]
     log_max_size: int = config("LOG_MAX_SIZE", default=1_073_741_824, cast=int)  # pyright: ignore[reportAssignmentType]
     log_backup_count: int = config("LOG_BACKUP_COUNT", default=2, cast=int)  # pyright: ignore[reportAssignmentType]
+    error_metrics_retention_days: int = config(
+        "ERROR_METRICS_RETENTION_DAYS", default=30, cast=int
+    )  # pyright: ignore[reportAssignmentType]
     # CORS
     allowed_origins: list[str] = config(
         "ALLOWED_ORIGINS",

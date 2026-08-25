@@ -4,11 +4,15 @@ from typing import Any
 from collections.abc import Callable
 from fastapi import Request, Response
 from pydantic import BaseModel
+from sqlmodel import Session
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 
+from server.db import engine
 from server.logger import logger, loki_access_logger
+from server.repositories.api_access_log_repository import ApiAccessLogRepository
 from server.services.auth.auth_user_info import AuthUserInfo
+from server.utils.enums.api_security_level_enum import APISecurityLevel
 
 
 class RoutesDescription(BaseModel):
@@ -132,6 +136,33 @@ class LoggerMiddleware(BaseHTTPMiddleware):
         request.state.request_body = decoded
         return decoded
 
+    async def __cache_request_body_for_persistence(self, request: Request) -> None:
+        """Bounded, unconditional-but-content-type-gated body capture used
+        only for the ApiAccessLog DB row - independent of LOG_BODY_RULES,
+        which stays scoped to the text log line above. Skips non-JSON/
+        non-text bodies (e.g. file uploads) so binary payloads are never
+        buffered in memory."""
+        content_type = request.headers.get("content-type", "")
+        if not (
+            content_type.startswith("application/json")
+            or content_type.startswith("text/")
+        ):
+            return
+
+        try:
+            body = await request.body()
+
+            async def receive() -> dict[str, Any]:
+                return {"type": "http.request", "body": body}
+
+            request._receive = receive
+            decoded = body.decode("utf-8")
+        except Exception as e:
+            logger.error(f"Error reading request body for persistence: {e}")
+            return
+
+        request.state.access_log_request_body = decoded
+
     async def __get_response_detail(self, response: Response) -> Response:
         if not hasattr(response, "body_iterator"):
             return response
@@ -165,6 +196,44 @@ class LoggerMiddleware(BaseHTTPMiddleware):
     def write_log(self, message: LoggerMessage) -> None:
         logger.info(str(message))
 
+    def __persist_access_log(
+        self, request: Request, response: Response, process_time: float
+    ) -> None:
+        """Best-effort DB write of a single error-response row. Must never
+        raise - a metrics-write failure must not affect the real response.
+        Opens a short-lived Session for just this insert+commit (matching
+        the per-request pattern in server/db.py's get_db()), NOT a shared
+        long-lived session."""
+        if response.status_code < 400:
+            return
+        path = request.url.path
+        if any(path.startswith(p) for p in LOKI_EXCLUDED_PATHS):
+            return
+
+        try:
+            route = request.scope.get("route")
+            tags = list(route.tags) if route is not None and route.tags else []
+            current_user = getattr(request.state, "current_user", None)
+            request_body = getattr(request.state, "access_log_request_body", None)
+            with Session(engine) as session:
+                ApiAccessLogRepository.create(
+                    security_level=APISecurityLevel.get_from_tags(tags),
+                    endpoint=path,
+                    method=request.method,
+                    status_code=response.status_code,
+                    ip_address=get_client_ip(request),
+                    user_agent=request.headers.get("user-agent"),
+                    response_time_ms=round(process_time * 1000),
+                    tags=tags,
+                    user_id=current_user.id if current_user else None,
+                    detail=self.detail,
+                    request_body=request_body,
+                    session=session,
+                )
+                session.commit()
+        except Exception as e:
+            logger.error(f"Failed to persist API access log: {e}")
+
     async def log_request(self, request: Request) -> None:
         msg = LoggerMessage(
             method=request.method,
@@ -195,6 +264,7 @@ class LoggerMiddleware(BaseHTTPMiddleware):
         self.__load_user_info_in_message(msg, info)
         new_response = await self.__get_response_detail(response)
         msg.response_detail = self.detail
+        self.__persist_access_log(request, response, process_time)
         if response.status_code >= 400 and hasattr(request.state, "request_body"):
             msg.request_body = request.state.request_body
         self.write_log(msg)
@@ -202,12 +272,13 @@ class LoggerMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         start_time = time.time()
+        await self.__cache_request_body_for_persistence(request)
         # Log the request details
         await self.log_request(request)
-        process_time = time.time() - start_time
 
         # Call the next middleware or endpoint
         response: Response = await call_next(request)
+        process_time = time.time() - start_time
 
         # Log the response details
         response = await self.log_response(request, response, process_time)

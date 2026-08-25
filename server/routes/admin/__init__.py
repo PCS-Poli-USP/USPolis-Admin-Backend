@@ -18,6 +18,12 @@ from server.routes.admin.curriculum_admin_routes import router as AdminCurriculu
 from server.routes.admin.curriculum_subject_admin_routes import (
     router as AdminCurriculumSubjectRouter,
 )
+from server.routes.admin.api_access_log_admin_routes import (
+    router as AdminApiAccessLogRouter,
+)
+from server.routes.admin.api_incident_report_admin_routes import (
+    router as AdminApiIncidentReportRouter,
+)
 
 router = APIRouter(
     prefix="/admin", tags=["Admin"], dependencies=[Depends(admin_authenticate)]
@@ -34,3 +40,5 @@ router.include_router(AdminUserSessionRouter)
 router.include_router(AdminCourseRouter)
 router.include_router(AdminCurriculumRouter)
 router.include_router(AdminCurriculumSubjectRouter)
+router.include_router(AdminApiAccessLogRouter)
+router.include_router(AdminApiIncidentReportRouter)
