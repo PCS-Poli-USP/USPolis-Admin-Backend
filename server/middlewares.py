@@ -1,5 +1,6 @@
 import json
 import time
+import traceback
 from typing import Any
 from collections.abc import Callable
 from fastapi import Request, Response
@@ -54,6 +55,14 @@ LOKI_EXCLUDED_PATHS = (
     "/api/docs",
     "/api/openapi.json",
 )
+
+
+def truncate_keeping_tail(text: str, limit: int) -> str:
+    """Keeps the last `limit` characters instead of the first - for a
+    traceback, the exception type/message (the useful part) is at the end,
+    while ApiAccessLogRepository.create truncates `detail` by keeping only
+    the first 500 characters."""
+    return text if len(text) <= limit else text[-limit:]
 
 
 def get_client_ip(request: Request) -> str | None:
@@ -216,6 +225,8 @@ class LoggerMiddleware(BaseHTTPMiddleware):
             return
         if response.status_code < 400:
             return
+        if response.status_code == 401:
+            return
         path = request.url.path
         if any(path.startswith(p) for p in LOKI_EXCLUDED_PATHS):
             return
@@ -287,7 +298,20 @@ class LoggerMiddleware(BaseHTTPMiddleware):
         await self.log_request(request)
 
         # Call the next middleware or endpoint
-        response: Response = await call_next(request)
+        try:
+            response: Response = await call_next(request)
+        except Exception:
+            process_time = time.time() - start_time
+            tb = traceback.format_exc()
+            logger.error(f"Unhandled exception in {request.method} {request.url.path}:\n{tb}")
+            self.detail = truncate_keeping_tail(tb, 500)
+            response = Response(
+                content=json.dumps({"detail": "Internal Server Error"}),
+                media_type="application/json",
+                status_code=500,
+            )
+            self.__persist_access_log(request, response, process_time)
+            return response
         process_time = time.time() - start_time
 
         # Log the response details

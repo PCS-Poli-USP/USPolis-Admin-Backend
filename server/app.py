@@ -2,6 +2,7 @@
 
 import asyncio
 from collections.abc import AsyncGenerator
+from datetime import timedelta
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -21,8 +22,11 @@ from server.routes.dev import router as DevRouter
 
 from server.config import CONFIG
 from server.cache import clear_expired_cache
+from server.services.daily_tasks import run_daily_tasks
+from server.utils.brazil_datetime import BrazilDatetime
 
 _cleanup_task: asyncio.Task[None] | None = None  # Declaração explícita
+_daily_tasks_task: asyncio.Task[None] | None = None
 
 
 async def periodic_cache_cleanup() -> None:
@@ -33,12 +37,26 @@ async def periodic_cache_cleanup() -> None:
         print(f"Cache cleanup: removed {count} expired entries")
 
 
+async def periodic_daily_tasks() -> None:
+    """Task que roda uma vez por dia, à meia-noite (horário de Brasília)"""
+    while True:
+        now = BrazilDatetime.now_utc()
+        next_midnight = (now + timedelta(days=1)).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        await asyncio.sleep((next_midnight - now).total_seconds())
+        run_daily_tasks()
+        print("Daily tasks ran")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Gerencia o ciclo de vida da aplicação"""
-    global _cleanup_task
+    global _cleanup_task, _daily_tasks_task
     _cleanup_task = asyncio.create_task(periodic_cache_cleanup())
     print("Cache cleanup started")
+    _daily_tasks_task = asyncio.create_task(periodic_daily_tasks())
+    print("Daily tasks scheduler started")
 
     yield
 
@@ -50,6 +68,14 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         except asyncio.CancelledError:
             pass
     print("Cache cleanup stoped")
+
+    if _daily_tasks_task:
+        _daily_tasks_task.cancel()
+        try:
+            await _daily_tasks_task
+        except asyncio.CancelledError:
+            pass
+    print("Daily tasks scheduler stoped")
 
 
 app = FastAPI(

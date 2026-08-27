@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Query
 
+from server.config import CONFIG
 from server.deps.pagination_dep import PaginationDep
 from server.deps.session_dep import SessionDep
 from server.models.http.responses.api_access_log_response import ApiAccessLogResponse
@@ -47,7 +48,8 @@ def get_api_access_logs_paginated(
 
 @router.get("/summary")
 def get_api_access_log_summary(
-    session: SessionDep, days: int = Query(default=7, ge=1, le=90)
+    session: SessionDep,
+    days: int = Query(default=7, ge=1, le=CONFIG.error_metrics_retention_days),
 ) -> ApiAccessLogSummaryResponse:
     since = BrazilDatetime.now_utc() - timedelta(days=days)
     counts = ApiAccessLogRepository.get_summary(since=since, session=session)
