@@ -10,7 +10,7 @@ from server.models.http.requests.solicitation_request_models import (
     SolicitationApprove,
     SolicitationDeny,
 )
-from server.utils.enums.bug_enums import BugPriority
+from server.utils.enums.bug_enums import BugPriority, BugType
 from server.utils.enums.month_week import MonthWeek
 from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.reservation_type import ReservationType
@@ -162,7 +162,7 @@ class BugReportMail(BaseModel):
         return BugReportMail(
             user_name=bug_report.user.name,
             user_email=bug_report.user.email,
-            type=bug_report.type.to_ptBr(),
+            type=BugType.to_ptBr(bug_report.type),
             priority=BugPriority.to_ptBr(bug_report.priority),
             description=bug_report.description,
         )

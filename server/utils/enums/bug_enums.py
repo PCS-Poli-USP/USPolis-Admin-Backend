@@ -50,21 +50,23 @@ class BugType(StrEnum):
             BugType.OTHER,
         ]
 
-    @classmethod
-    def to_ptBr(cls) -> str:
-        if cls.CRASH_ERROR:
-            return "Erro inesperado"
-        if cls.FUNCTIONALITY:
-            return "Funcionalidade"
-        if cls.PERFORMANCE:
-            return "Desempenho"
-        if cls.SECURITY:
-            return "Segurança"
-        if cls.UI:
-            return "Interface"
-        if cls.OTHER:
-            return "Outro"
-        return "Desconhecido"
+    @staticmethod
+    def to_ptBr(value: "BugType") -> str:
+        match value:
+            case BugType.FUNCTIONALITY:
+                return "Funcionalidade"
+            case BugType.PERFORMANCE:
+                return "Desempenho"
+            case BugType.SECURITY:
+                return "Segurança"
+            case BugType.CRASH_ERROR:
+                return "Erro inesperado"
+            case BugType.UI:
+                return "Interface"
+            case BugType.OTHER:
+                return "Outro"
+            case _:
+                return "Desconhecido"
 
 
 class BugStatus(StrEnum):
