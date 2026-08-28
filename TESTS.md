@@ -64,18 +64,18 @@ Four `TestClient` fixtures, each overriding `authenticate`/`google_token_authent
      the table below; edit the script instead. Everything outside the
      METRICS:START/END markers is untouched by the script. -->
 
-Baseline as of **2026-08-21**.
+Baseline as of **2026-08-27**.
 
 | Metric | Value |
 |---|---|
-| Test files | 22 |
-| Test functions | 181 |
-| Line coverage | 65.53% (11,008 statements, 3,795 missed) |
-| Branch coverage | 20.13% (1,570 branches, 1,254 fully missed, 136 partial) |
-| Combined coverage (line + branch) | 59.86% |
-| Repository test-file ratio | 3 / 31 |
-| Service test-file ratio | 0 / 14 |
-| Last full run | 222 passed, 0 failed, 0 deselected |
+| Test files | 60 |
+| Test functions | 415 |
+| Line coverage | 71.53% (12,249 statements, 3,487 missed) |
+| Branch coverage | 39.39% (1,734 branches, 1,051 fully missed, 169 partial) |
+| Combined coverage (line + branch) | 67.55% |
+| Repository test-file ratio | 5 / 38 |
+| Service test-file ratio | 7 / 15 |
+| Last full run | 512 passed, 0 failed, 0 deselected |
 
 The failure/skip counts above are whatever the run produced — check §7 to see which ones are pre-existing/known issues versus new regressions.
 <!-- METRICS:END -->
