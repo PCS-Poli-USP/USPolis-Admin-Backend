@@ -193,3 +193,31 @@ def test_get_all_filters_by_resource(admin_user: User, session: Session) -> None
 
     assert len(roles) == 1
     assert roles[0].name == classroom_only.name
+
+
+def test_get_all_without_a_filter_returns_every_role(
+    admin_user: User, session: Session
+) -> None:
+    classroom_only = RoleRequestFactory(resources=[Resource.CLASSROOM]).create_input()
+    course_only = RoleRequestFactory(resources=[Resource.COURSE]).create_input()
+
+    RoleRepository.create(input=classroom_only, user=admin_user, session=session)
+    RoleRepository.create(input=course_only, user=admin_user, session=session)
+    session.commit()
+
+    roles = RoleRepository.get_all(session=session)
+
+    names = {role.name for role in roles}
+    assert {classroom_only.name, course_only.name} <= names
+
+
+def test_get_by_id_returns_the_matching_role(role: Role, session: Session) -> None:
+    found = RoleRepository.get_by_id(id=must_be_int(role.id), session=session)
+
+    assert found.id == role.id
+    assert found.name == role.name
+
+
+def test_get_by_id_raises_when_role_does_not_exist(session: Session) -> None:
+    with pytest.raises(RoleNotFound):
+        RoleRepository.get_by_id(id=999999, session=session)
