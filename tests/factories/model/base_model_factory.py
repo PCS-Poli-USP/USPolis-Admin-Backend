@@ -59,6 +59,15 @@ class BaseModelFactory(Generic[M], metaclass=ABCMeta):
         model = self._get_model_type()(**defaults)
         return model
 
+    def build(self, **overrides: Unpack[InputType]) -> M:  # type: ignore
+        """Build a model instance with default values merged with overrides,
+        without touching the session - unlike create(), this never calls
+        session.add()/commit(), so it's safe to use in pure unit tests (with
+        an unbound Session()) that want the same default-population and
+        relationship-wiring logic as the DB-backed factories, without
+        persisting anything."""
+        return self._instanciate_model(overrides)
+
     def create(self, **overrides: Unpack[InputType]) -> M:  # type: ignore
         """Create a model instance without commit the session"""
         model = self._instanciate_model(overrides)

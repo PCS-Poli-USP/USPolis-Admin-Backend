@@ -17,9 +17,6 @@ class ScheduleModelFactory(BaseModelFactory[Schedule]):
         reservation: Reservation | None = None,
     ) -> None:
         super().__init__(session)
-        if class_ is None and reservation is None:
-            raise ValueError("Either class_ or reservation must be provided.")
-
         self.core_factory = ScheduleBaseFactory()
         self.class_ = class_
         self.reservation = reservation
