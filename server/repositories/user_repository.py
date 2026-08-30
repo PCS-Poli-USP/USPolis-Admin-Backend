@@ -63,7 +63,7 @@ class UserRepository:
 
     @staticmethod
     def get_admin_users(*, session: Session) -> list[User]:
-        statement = select(User).where(User.is_admin is True)
+        statement = select(User).where(col(User.is_admin))
         users = session.exec(statement).all()
         return list(users)
 
