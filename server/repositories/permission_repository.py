@@ -60,6 +60,18 @@ class PermissionRepository(Generic[P, A]):
         return list(session.exec(statement).all())
 
     @classmethod
+    def get_by_ids(cls, *, resource_ids: list[int], session: Session) -> list[P]:
+        """Get every permission scoped to any of `resource_ids` (matched
+        against this subclass's `resource_field`, e.g. `building_id` or
+        `classroom_id`). Used to clean up permissions left dangling when
+        their resource is deleted - those FKs have no ON DELETE CASCADE."""
+        model = TypeGuard.ensure_not_none(cls.model)
+        resource_field = TypeGuard.ensure_not_none(cls.resource_field)
+        column = getattr(model, resource_field)
+        statement = select(model).where(column.in_(resource_ids))
+        return list(session.exec(statement).all())
+
+    @classmethod
     def create(
         cls,
         *,

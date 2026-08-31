@@ -12,6 +12,12 @@ from server.models.http.requests.building_request_models import (
     BuildingRegister,
     BuildingUpdate,
 )
+from server.repositories.building_permission_repository import (
+    BuildingPermissionRepository,
+)
+from server.repositories.classroom_permission_repository import (
+    ClassroomPermissionRepository,
+)
 from server.utils.must_be_int import must_be_int
 
 
@@ -116,6 +122,26 @@ class BuildingRepository:
     @staticmethod
     def delete(*, id: int, session: Session) -> None:
         building = BuildingRepository.get_by_id(id=id, session=session)
+
+        # BuildingPermission/ClassroomPermission rows scoped to this building
+        # (or to a classroom that cascade-deletes with it) have no ON DELETE
+        # CASCADE at the DB level, so they must be cleared explicitly here -
+        # otherwise the delete below fails with an unhandled IntegrityError
+        # instead of a clean removal.
+        building_permissions = BuildingPermissionRepository.get_by_ids(
+            resource_ids=[id], session=session
+        )
+        for building_permission in building_permissions:
+            session.delete(building_permission)
+
+        classroom_ids = [must_be_int(c.id) for c in building.classrooms]
+        if classroom_ids:
+            classroom_permissions = ClassroomPermissionRepository.get_by_ids(
+                resource_ids=classroom_ids, session=session
+            )
+            for classroom_permission in classroom_permissions:
+                session.delete(classroom_permission)
+
         building.main_group = None
         session.add(building)
         session.flush()
