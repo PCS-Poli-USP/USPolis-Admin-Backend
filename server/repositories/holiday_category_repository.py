@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status
 from sqlmodel import Session, col, select, desc
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from server.models.database.holiday_category_db_model import HolidayCategory
 from server.models.database.user_db_model import User
@@ -38,7 +38,10 @@ class HolidayCategoryRepository:
     @staticmethod
     def get_by_name(*, name: str, session: Session) -> HolidayCategory:
         statement = select(HolidayCategory).where(col(HolidayCategory.name) == name)
-        holiday_category = session.exec(statement).one()
+        try:
+            holiday_category = session.exec(statement).one()
+        except NoResultFound:
+            raise HolidayCategoryNotFound(f"nome: {name}")
         return holiday_category
 
     @staticmethod
@@ -52,7 +55,11 @@ class HolidayCategoryRepository:
             created_by_id=must_be_int(creator.id),
         )
         session.add(new_holiday_category)
-        session.commit()
+        try:
+            session.commit()
+        except IntegrityError:
+            session.rollback()
+            raise HolidayCategoryAlreadyExists(input.name, input.year)
         session.refresh(new_holiday_category)
         return new_holiday_category
 
@@ -85,6 +92,14 @@ class HolidayCategoryNotFound(HTTPException):
         super().__init__(
             status.HTTP_404_NOT_FOUND,
             f"Categoria de Feriado com {holiday_category_info} não encontrada",
+        )
+
+
+class HolidayCategoryAlreadyExists(HTTPException):
+    def __init__(self, name: str, year: int) -> None:
+        super().__init__(
+            status.HTTP_409_CONFLICT,
+            f"Categoria de Feriado {name} para o ano {year} já existe",
         )
 
 

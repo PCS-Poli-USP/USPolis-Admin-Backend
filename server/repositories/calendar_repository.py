@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, col, select, desc
 from datetime import date
 
@@ -74,7 +75,11 @@ class CalendarRepository:
             created_by=creator,
         )
         session.add(new_calendar)
-        session.commit()
+        try:
+            session.commit()
+        except IntegrityError:
+            session.rollback()
+            raise CalendarAlreadyExists(input.name, input.year)
         session.refresh(new_calendar)
         return new_calendar
 
@@ -109,6 +114,13 @@ class CalendarNotFound(HTTPException):
     def __init__(self, calendar_info: str) -> None:
         super().__init__(
             status.HTTP_404_NOT_FOUND, f"Calendário {calendar_info} não encontrado"
+        )
+
+
+class CalendarAlreadyExists(HTTPException):
+    def __init__(self, name: str, year: int) -> None:
+        super().__init__(
+            status.HTTP_409_CONFLICT, f"Calendário {name} para o ano {year} já existe"
         )
 
 
