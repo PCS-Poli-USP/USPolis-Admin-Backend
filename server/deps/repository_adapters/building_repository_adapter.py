@@ -52,10 +52,15 @@ class BuildingRepositoryAdapter:
         input: BuildingRegister,
     ) -> Building:
         self.checker.check_creation_permission(BuildingAction.CREATE)
-        building = BuildingRepository.create(
-            building_in=input, creator=self.user, session=self.session
-        )
         try:
+            # BuildingRepository.create() flushes internally (it needs the
+            # new building's id to create its main Group), so a duplicate
+            # name raises IntegrityError from inside that call - it must be
+            # inside this try, not just the commit() below, or the duplicate
+            # surfaces as an unhandled 500 instead of BuildingAlreadyExists.
+            building = BuildingRepository.create(
+                building_in=input, creator=self.user, session=self.session
+            )
             self.session.commit()
         except IntegrityError:
             self.session.rollback()

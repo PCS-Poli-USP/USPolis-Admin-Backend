@@ -75,7 +75,13 @@ class OccurrenceRepositoryAdapter:
         self, schedule_id: int, classroom_id: int, intentional_conflict: bool = False
     ) -> Schedule:
         schedule = self.schedule_repo.get_by_id(schedule_id)
+        self.schedule_checker.check_permission(schedule, ClassroomAction.ALLOCATE)
         classroom = self.classroom_repo.get_by_id(classroom_id)
+        # classroom_repo.get_by_id() only enforces READ - ALLOCATE must be
+        # checked explicitly here too, or a user with mere read access could
+        # allocate schedules into a classroom without ever being granted
+        # ALLOCATE on it (allocate_schedule_many already checks this).
+        self.checker.check_permission(classroom, ClassroomAction.ALLOCATE)
         OccurrenceRepository.allocate_schedule(
             user=self.user,
             schedule=schedule,

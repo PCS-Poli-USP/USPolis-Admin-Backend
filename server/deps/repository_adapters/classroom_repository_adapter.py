@@ -153,7 +153,12 @@ class ClassroomRepositoryAdapter:
         for group in groups:
             if len(group.classrooms) == 1:
                 raise DeleteLastClassroomOnGroups(classroom=classroom.name)
-        self.session.delete(classroom)
+        # Delegate to the repository rather than deleting the row directly -
+        # it also deallocates the classroom's schedules and clears any
+        # ClassroomPermission rows scoped to it, both of which have no ON
+        # DELETE CASCADE and would otherwise crash this commit with an
+        # unhandled IntegrityError.
+        ClassroomRepository.delete(id=id, user=self.user, session=self.session)
         self.session.commit()
 
 
