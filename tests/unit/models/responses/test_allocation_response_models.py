@@ -209,6 +209,16 @@ class TestEventExtendedProps:
         assert props.class_data is not None
         assert props.reservation_data is not None
 
+    def test_from_schedule_with_reservation_only(self) -> None:
+        classroom = make_classroom(building=make_building())
+        schedule = make_schedule(class_=None, classroom=classroom)
+        make_reservation(schedule=schedule)
+
+        props = EventExtendedProps.from_schedule(schedule)
+
+        assert props.class_data is None
+        assert props.reservation_data is not None
+
 
 class TestAllocationEventResponseHelpers:
     @pytest.mark.parametrize(
@@ -228,6 +238,35 @@ class TestAllocationEventResponseHelpers:
         )
         title = AllocationEventResponse.get_reservation_title(reservation)
         assert title == f"{expected_prefix} Título"
+
+    def test_get_reservation_title_falls_back_to_the_plain_title(self) -> None:
+        # ReservationType only has three members, all handled above by name -
+        # this exercises the defensive fallback for a value outside that set.
+        schedule = make_schedule()
+        reservation = make_reservation(schedule=schedule, title="Título")
+        reservation.type = "solicitation"  # type: ignore[assignment]
+
+        title = AllocationEventResponse.get_reservation_title(reservation)
+
+        assert title == "Título"
+
+    def test_background_color_from_occurrence_with_reservation(self) -> None:
+        classroom = make_classroom(building=make_building())
+        schedule = make_schedule(classroom=classroom)
+        make_reservation(schedule=schedule, type_=ReservationType.MEETING)
+        occurrence = make_occurrence(schedule=schedule)
+
+        color = AllocationEventResponse.backgroundColor_from_occurrence(occurrence)
+
+        assert color == ReservationType.get_color(ReservationType.MEETING)
+
+    def test_background_color_from_occurrence_without_reservation(self) -> None:
+        schedule = make_schedule()
+        occurrence = make_occurrence(schedule=schedule)
+
+        color = AllocationEventResponse.backgroundColor_from_occurrence(occurrence)
+
+        assert color == "#408080"
 
     def test_background_color_from_schedule_with_reservation(self) -> None:
         schedule = make_schedule()
@@ -319,6 +358,20 @@ class TestAllocationEventResponseFromSchedule:
         assert len(events) == 1
         assert events[0].rrule is not None
         assert events[0].resourceId == f"{building.name}-{classroom.name}"
+
+    def test_non_custom_recurrence_with_a_reservation_uses_its_title(self) -> None:
+        building = make_building()
+        classroom = make_classroom(building=building)
+        schedule = make_schedule(
+            class_=None, classroom=classroom, recurrence=Recurrence.WEEKLY
+        )
+        make_reservation(
+            schedule=schedule, type_=ReservationType.MEETING, title="Reunião de equipe"
+        )
+
+        events = AllocationEventResponse.from_schedule(schedule)
+
+        assert events[0].title == "👥 Reunião de equipe"
 
     def test_custom_recurrence_delegates_to_occurrences(self) -> None:
         schedule = make_schedule(recurrence=Recurrence.CUSTOM)

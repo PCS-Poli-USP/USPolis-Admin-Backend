@@ -1,27 +1,21 @@
 #!/bin/bash
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+SKIP_FOLDERS=(-name "__pycache__" -o -name ".mypy_cache" -o -name ".ruff_cache" -o -name ".pytest_cache" -o -name ".venv")
 
-SKIP_FOLDERS=(
-    -path "$REPO_ROOT/.playwright-browsers" -o
-    -path "$REPO_ROOT/.pytest_cache" -o
-    -path "$REPO_ROOT/.ruff_cache" -o
-    -path "$REPO_ROOT/.venv" -o
-    -path "$REPO_ROOT/build" -o
-    -path "$REPO_ROOT/dist" -o
-    -path "$REPO_ROOT/.mypy_cache" -o
-    -path "$REPO_ROOT/.pylint_cache" -o
-    -name "__pycache__"
-)
+count_lines() {
+    local dir="$1"
+    mapfile -t files < <(find "$dir" \( "${SKIP_FOLDERS[@]}" \) -prune -o -name "*.py" -print)
+    local lines_count=0
+    for file in "${files[@]}"; do
+        lines_in_file=$(wc -l < "$file")  # importante: usar '<' para pegar só o número
+        ((lines_count += lines_in_file))
+    done
+    echo "$lines_count"
+}
 
-mapfile -t FILES < <(find "$REPO_ROOT" \( "${SKIP_FOLDERS[@]}" \) -prune -false -o -type f -name "*.py" -print)
+SERVER_LINES=$(count_lines ./server)
+TESTS_LINES=$(count_lines ./tests)
 
-LINES_COUNT=0
-for file in "${FILES[@]}"; do
-    lines_in_file=$(wc -l < "$file")  # importante: usar '<' para pegar só o número
-    ((LINES_COUNT += lines_in_file))
-done
-
-
-echo "Total lines of code: $LINES_COUNT"
+echo "Server lines of code: $SERVER_LINES"
+echo "Tests lines of code: $TESTS_LINES"
+echo "Total lines of code: $((SERVER_LINES + TESTS_LINES))"

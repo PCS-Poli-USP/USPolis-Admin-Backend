@@ -130,6 +130,30 @@ class TestPermissionResponseFromPermissionDispatch:
 
         assert data.id == permission.id
 
+    def test_dispatches_course_resource(self) -> None:
+        role = make_role(resources=[Resource.COURSE])
+        granter = make_user()
+        course = make_course(creator=granter)
+        permission = make_course_permission(role=role, granted_by=granter, course=course)
+
+        data = PermissionResponse.from_permission(permission, Resource.COURSE)
+
+        assert data.id == permission.id
+        assert data.resource == Resource.COURSE
+
+    def test_dispatches_building_resource(self) -> None:
+        role = make_role(resources=[Resource.BUILDING])
+        granter = make_user()
+        building = make_building()
+        permission = make_building_permission(
+            role=role, granted_by=granter, building=building
+        )
+
+        data = PermissionResponse.from_permission(permission, Resource.BUILDING)
+
+        assert data.id == permission.id
+        assert data.resource == Resource.BUILDING
+
     def test_raises_for_an_unsupported_resource(self) -> None:
         role = make_role(resources=[Resource.CLASSROOM])
         granter = make_user()

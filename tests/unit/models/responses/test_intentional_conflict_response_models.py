@@ -1,5 +1,6 @@
 import pytest
 
+from server.models.database.intentional_conflict_db_model import IntentionalConflict
 from server.models.http.responses.intentional_conflict_response_models import (
     BuildingIntentionalConflictMap,
     InvalidIntentionalConflict,
@@ -128,3 +129,35 @@ class TestBuildingIntentionalConflictMap:
 
         with pytest.raises(InvalidIntentionalConflict):
             BuildingIntentionalConflictMap.from_intentional_conflicts([conflict])
+
+    def test_groups_a_second_conflict_into_the_same_building_and_classroom(self) -> None:
+        building = make_building(name="Bloco A")
+        classroom = make_classroom(building=building, name="Sala 1")
+        subject = make_subject()
+        class_ = make_class(subject=subject)
+
+        def _make_conflict() -> IntentionalConflict:
+            schedule1 = make_schedule(classroom=classroom, class_=class_)
+            occurrence1 = make_occurrence(schedule=schedule1, classroom=classroom)
+            schedule2 = make_schedule(classroom=classroom, class_=class_)
+            occurrence2 = make_occurrence(schedule=schedule2, classroom=classroom)
+            return make_intentional_conflict(
+                first_occurrence=occurrence1, second_occurrence=occurrence2
+            )
+
+        first_conflict = _make_conflict()
+        second_conflict = _make_conflict()
+
+        data = BuildingIntentionalConflictMap.from_intentional_conflicts(
+            [first_conflict, second_conflict]
+        )
+
+        # Both conflicts share the same building and classroom, so they must
+        # collapse into the single existing entry for each rather than
+        # creating duplicate building/classroom maps.
+        assert len(data) == 1
+        assert len(data[0].classroom_maps) == 1
+        assert [c.id for c in data[0].classroom_maps[0].conflicts] == [
+            first_conflict.id,
+            second_conflict.id,
+        ]

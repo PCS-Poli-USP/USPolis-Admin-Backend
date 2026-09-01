@@ -1,5 +1,8 @@
 from datetime import date
 
+import pytest
+
+from server.models.http.exceptions.responses_exceptions import UnfetchDataError
 from server.models.http.responses.schedule_response_models import (
     ScheduleFullResponse,
     ScheduleResponse,
@@ -84,6 +87,16 @@ class TestScheduleResponse:
         assert data.occurrence_ids == [occurrence.id]
         assert data.occurrences is not None
         assert data.occurrences[0].id == occurrence.id
+
+    def test_raises_when_an_occurrence_has_no_id(self) -> None:
+        schedule = make_schedule(recurrence=Recurrence.CUSTOM)
+        occurrence = make_occurrence(schedule=schedule, occurrence_date=date(2025, 1, 6))
+        occurrence.id = None
+        schedule.occurrences = [occurrence]
+        schedule.logs = []
+
+        with pytest.raises(UnfetchDataError):
+            ScheduleResponse.from_schedule(schedule)
 
     def test_non_custom_recurrence_omits_occurrences(self) -> None:
         schedule = make_schedule(recurrence=Recurrence.WEEKLY)

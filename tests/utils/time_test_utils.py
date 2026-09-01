@@ -16,11 +16,17 @@ from server.models.database.classroom_db_model import Classroom
 from server.models.database.holiday_category_db_model import HolidayCategory
 from server.models.database.holiday_db_model import Holiday
 from server.models.database.schedule_db_model import Schedule
+from server.models.database.user_db_model import User
 from server.utils.enums.audiovisual_type_enum import AudiovisualType
 from server.utils.enums.class_type import ClassType
 from server.utils.enums.month_week import MonthWeek
 from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.week_day import WeekDay
+from tests.factories.model.calendar_model_factory import CalendarModelFactory
+from tests.factories.model.holiday_category_model_factory import (
+    HolidayCategoryModelFactory,
+)
+from tests.factories.model.holiday_model_factory import HolidayModelFactory
 from tests.factories.model.schedule_model_factory import ScheduleModelFactory
 
 _next_id = iter(range(1, 1_000_000))
@@ -57,6 +63,53 @@ def make_schedule(
     )
     schedule.id = next(_next_id)
     return schedule
+
+
+def make_holiday_category(
+    *, creator: User, name: str | None = None, year: int | None = None
+) -> HolidayCategory:
+    category = HolidayCategoryModelFactory(creator, Session()).build(
+        **{k: v for k, v in {"name": name, "year": year}.items() if v is not None}
+    )
+    category.id = next(_next_id)
+    category.created_by = creator
+    return category
+
+
+def make_holiday(
+    *,
+    creator: User,
+    category: HolidayCategory,
+    name: str | None = None,
+    holiday_date: date | None = None,
+) -> Holiday:
+    holiday = HolidayModelFactory(creator, category, Session()).build(
+        **{
+            k: v
+            for k, v in {"name": name, "date": holiday_date}.items()
+            if v is not None
+        }
+    )
+    holiday.id = next(_next_id)
+    holiday.created_by = creator
+    holiday.category = category
+    return holiday
+
+
+def make_calendar(
+    *,
+    creator: User,
+    name: str | None = None,
+    year: int | None = None,
+    categories: list[HolidayCategory] | None = None,
+) -> Calendar:
+    calendar = CalendarModelFactory(creator, Session()).build(
+        **{k: v for k, v in {"name": name, "year": year}.items() if v is not None}
+    )
+    calendar.id = next(_next_id)
+    calendar.created_by = creator
+    calendar.categories = categories or []
+    return calendar
 
 
 def make_class_with_holidays(*, holiday_dates: list[date]) -> Class:
