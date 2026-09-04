@@ -27,6 +27,7 @@ class Solicitation(BaseModel, table=True):
     required_classroom: bool = Field(default=False)
     closed_by: str | None = Field(nullable=True, default=None)
     deleted_by: str | None = Field(nullable=True, default=None)
+    denial_justification: str | None = Field(nullable=True, default=None)
 
     created_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
     updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)

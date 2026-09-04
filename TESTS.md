@@ -102,18 +102,18 @@ Don't merge the two into one file/flavor: which one a helper belongs in is deter
      the table below; edit the script instead. Everything outside the
      METRICS:START/END markers is untouched by the script. -->
 
-Baseline as of **2026-08-31**.
+Baseline as of **2026-09-04**.
 
 | Metric | Value |
 |---|---|
-| Test files | 162 |
-| Test functions | 1258 |
-| Line coverage | 86.97% (12,551 statements, 1,636 missed) |
-| Branch coverage | 68.34% (1,734 branches, 549 fully missed, 183 partial) |
-| Combined coverage (line + branch) | 84.70% |
+| Test files | 177 |
+| Test functions | 1329 |
+| Line coverage | 87.69% (12,555 statements, 1,545 missed) |
+| Branch coverage | 71.40% (1,734 branches, 496 fully missed, 156 partial) |
+| Combined coverage (line + branch) | 85.72% |
 | Repository test-file ratio | 21 / 38 |
 | Service test-file ratio | 13 / 15 |
-| Last full run | 1355 passed, 2 failed, 0 deselected |
+| Last full run | 1428 passed, 0 failed, 0 deselected |
 
 The failure/skip counts above are whatever the run produced — check §7 to see which ones are pre-existing/known issues versus new regressions.
 <!-- METRICS:END -->

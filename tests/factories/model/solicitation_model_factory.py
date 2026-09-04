@@ -37,6 +37,7 @@ class SolicitationModelFactory(BaseModelFactory[Solicitation]):
             "required_classroom": self.solicited_classroom is not None,
             "closed_by": None,
             "deleted_by": None,
+            "denial_justification": None,
             "created_at": datetime.now(),
             "updated_at": datetime.now(),
             "building_id": must_be_int(self.building.id),

@@ -74,7 +74,7 @@ async def deny_classroom_solicitation(
     checker.check_permission(solicitation_id, ClassroomAction.RESERVE)
 
     solicitation = SolicitationRepository.deny(
-        id=solicitation_id, user=user, session=session
+        id=solicitation_id, input=input, user=user, session=session
     )
     session.commit()
     asyncio.create_task(

@@ -14,6 +14,7 @@ class SolicitationModelDict(SolicitationBaseDict, BaseModelDict, total=False):
 
     closed_by: str | None
     deleted_by: str | None
+    denial_justification: str | None
     created_at: datetime
     updated_at: datetime
 
