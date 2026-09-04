@@ -10,6 +10,7 @@ from server.models.database.user_db_model import User
 from server.models.http.requests.solicitation_request_models import (
     EventSolicitation,
     MeetingSolicitation,
+    SolicitationDeny,
     SolicitationRegister,
 )
 from server.models.page_models import PaginationInput
@@ -432,7 +433,10 @@ class TestUpdate:
         )
         session.commit()
         SolicitationRepository.deny(
-            id=must_be_int(solicitation.id), user=admin_user, session=session
+            id=must_be_int(solicitation.id),
+            input=SolicitationDeny(justification="Sala indisponível"),
+            user=admin_user,
+            session=session,
         )
         session.commit()
 
@@ -545,7 +549,10 @@ class TestApprove:
         )
         session.commit()
         SolicitationRepository.deny(
-            id=must_be_int(solicitation.id), user=admin_user, session=session
+            id=must_be_int(solicitation.id),
+            input=SolicitationDeny(justification="Sala indisponível"),
+            user=admin_user,
+            session=session,
         )
         session.commit()
 
@@ -659,13 +666,17 @@ class TestDeny:
         session.commit()
 
         denied = SolicitationRepository.deny(
-            id=must_be_int(solicitation.id), user=admin_user, session=session
+            id=must_be_int(solicitation.id),
+            input=SolicitationDeny(justification="Sala já reservada para outro evento"),
+            user=admin_user,
+            session=session,
         )
         session.commit()
         session.refresh(denied)
 
         assert denied.get_status() == ReservationStatus.DENIED
         assert denied.closed_by == admin_user.name
+        assert denied.denial_justification == "Sala já reservada para outro evento"
 
     def test_raises_when_already_closed(
         self, admin_user: User, building: Building, classroom: Classroom, session: Session
@@ -679,13 +690,19 @@ class TestDeny:
         )
         session.commit()
         SolicitationRepository.deny(
-            id=must_be_int(solicitation.id), user=admin_user, session=session
+            id=must_be_int(solicitation.id),
+            input=SolicitationDeny(justification="Sala indisponível"),
+            user=admin_user,
+            session=session,
         )
         session.commit()
 
         with pytest.raises(SolicitationAlreadyClosed):
             SolicitationRepository.deny(
-                id=must_be_int(solicitation.id), user=admin_user, session=session
+                id=must_be_int(solicitation.id),
+                input=SolicitationDeny(justification="Segunda tentativa"),
+                user=admin_user,
+                session=session,
             )
 
 

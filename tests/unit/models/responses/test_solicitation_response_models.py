@@ -25,12 +25,30 @@ class TestSolicitationResponse:
         data = SolicitationResponse.from_solicitation(solicitation)
 
         assert data.id == solicitation.id
+        assert data.denial_justification is None
         assert data.capacity == 25
         assert data.status == ReservationStatus.APPROVED
         assert data.building == "Bloco A"
         assert data.user == user.name
         assert data.email == user.email
         assert data.reservation.id == reservation.id
+
+    def test_from_solicitation_includes_the_denial_justification_when_denied(
+        self,
+    ) -> None:
+        building = make_building()
+        user = make_user()
+        solicitation = make_solicitation(building=building, user=user)
+        solicitation.denial_justification = "Sala já reservada"
+        schedule = make_schedule(classroom=None)
+        schedule.occurrences = []
+        schedule.logs = []
+        reservation = make_reservation(schedule=schedule, solicitation=solicitation)
+        solicitation.reservation = reservation
+
+        data = SolicitationResponse.from_solicitation(solicitation)
+
+        assert data.denial_justification == "Sala já reservada"
 
     def test_from_solicitation_list(self) -> None:
         building = make_building()

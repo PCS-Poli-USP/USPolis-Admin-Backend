@@ -58,13 +58,47 @@ def test_permission_register_deduplicates_actions() -> None:
     assert permission.actions == [ClassroomAction.READ]
 
 
-def test_permission_register_rejects_action_not_valid_for_resource() -> None:
-    with pytest.raises(ValidationError):
-        PermissionRegister(  # type: ignore[call-arg]
+def test_permission_register_rejects_action_not_valid_for_course() -> None:
+    # role_id must be supplied here, or pydantic's own required-field check
+    # raises ValidationError first - before the "action valid for resource"
+    # model_validator this test means to exercise ever runs at all.
+    with pytest.raises(ValidationError, match="Ação inválida para cursos"):
+        PermissionRegister(
             resource=Resource.COURSE,
             resource_id=-1,
             actions=[ClassroomAction.ALLOCATE],
+            role_id=1,
         )
+
+
+def test_permission_register_rejects_action_not_valid_for_classroom() -> None:
+    # ClassroomAction's own 6 values are a superset of every other
+    # PermissionAction member, so no real action value can ever fail this
+    # check via normal construction - model_construct() bypasses pydantic's
+    # enum coercion so the validator can still be exercised directly.
+    permission = PermissionRegister.model_construct(
+        resource=Resource.CLASSROOM,
+        resource_id=-1,
+        actions=["bogus_action"],
+        role_id=1,
+    )
+
+    with pytest.raises(ValueError, match="Ação inválida para recurso salas"):
+        permission.check_action_resource_consistency()  # type: ignore[operator]
+
+
+def test_permission_register_rejects_action_not_valid_for_building() -> None:
+    # Same reasoning as the classroom case above - BuildingAction's values
+    # are also a superset of every other PermissionAction member.
+    permission = PermissionRegister.model_construct(
+        resource=Resource.BUILDING,
+        resource_id=-1,
+        actions=["bogus_action"],
+        role_id=1,
+    )
+
+    with pytest.raises(ValueError, match="Ação inválida para recurso prédios"):
+        permission.check_action_resource_consistency()  # type: ignore[operator]
 
 
 def test_permission_register_accepts_action_valid_for_resource() -> None:
