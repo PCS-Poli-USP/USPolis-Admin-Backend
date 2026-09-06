@@ -82,6 +82,7 @@ fallback — see below). Two design rules keep this mapping predictable:
 | Allocate/reallocate a classroom to a class's weekly schedule | `CLASSROOM` | `ALLOCATE` | Also requires `UPDATE` on the `Class` that owns the `Schedule` |
 | Create/update/cancel a `Reservation`, `Meeting`, `Event`, or `Exam` | `CLASSROOM` (or `BUILDING` if the booking has no classroom yet) | `RESERVE` | Covers the entire booking lifecycle, including deletion |
 | Approve/deny a `Solicitation` | `CLASSROOM` | `RESERVE` | Approving/denying is fundamentally creating-or-refusing a `Reservation` |
+| Create/update a `Solicitation` targeting a `restricted` classroom | `CLASSROOM` | `REQUEST` | Only checked when the targeted classroom has `restricted=True`; unrestricted classrooms or solicitations with no classroom chosen yet need no check here |
 | Create a subject ("disciplina") | `BUILDING` | `CREATE` | |
 | Read a subject | `BUILDING` | `READ` | |
 | Update a subject | `BUILDING` | `UPDATE` | |

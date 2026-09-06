@@ -60,3 +60,30 @@ def delete_role(role_id: int, session: SessionDep) -> JSONResponse:
         status_code=status.HTTP_200_OK,
         content={"message": "Cargo deletado com sucesso"},
     )
+
+
+@router.post("/{role_id}/users/{user_id}")
+def add_user_to_role(
+    role_id: int, user_id: int, user: UserDep, session: SessionDep
+) -> JSONResponse:
+    """Grant a single user this role"""
+    RoleRepository.add_user(
+        role_id=role_id, user_id=user_id, granted_by=user, session=session
+    )
+    return JSONResponse(
+        status_code=status.HTTP_201_CREATED,
+        content={"message": "Usuário adicionado ao cargo com sucesso"},
+    )
+
+
+@router.delete("/{role_id}/users/{user_id}")
+def remove_user_from_role(
+    role_id: int, user_id: int, session: SessionDep
+) -> JSONResponse:
+    """Revoke this role from a single user"""
+    RoleRepository.remove_user(role_id=role_id, user_id=user_id, session=session)
+    session.commit()
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={"message": "Usuário removido do cargo com sucesso"},
+    )

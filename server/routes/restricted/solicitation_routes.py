@@ -3,21 +3,14 @@ from fastapi import APIRouter, Body, status
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 
-from server.deps.authenticate import UserDep
-from server.deps.permission_index_dep import PermissionIndexDep
-from server.deps.session_dep import SessionDep
+from server.deps.repository_adapters.solicitation_repository_adapter import (
+    SolicitationRepositoryDep,
+)
 from server.models.http.requests.solicitation_request_models import (
     SolicitationApprove,
     SolicitationDeny,
 )
-from server.repositories.solicitation_repository import (
-    SolicitationRepository,
-)
 from server.services.email.email_service import EmailService
-from server.services.security.solicitation_permission_checker import (
-    SolicitationPermissionChecker,
-)
-from server.utils.enums.actions_enums import ClassroomAction
 from pathlib import Path
 
 embed = Body(..., embed=True)
@@ -40,18 +33,10 @@ templates = Jinja2Templates(directory=template_path)
 async def approve_reservation_solicitation(
     solicitation_id: int,
     input: SolicitationApprove,
-    session: SessionDep,
-    user: UserDep,
-    permission_index: PermissionIndexDep,
+    solicitation_repo: SolicitationRepositoryDep,
 ) -> JSONResponse:
     """Aprove a class reservation solicitation"""
-    checker = SolicitationPermissionChecker(user, session, permission_index)
-    checker.check_permission(solicitation_id, ClassroomAction.RESERVE)
-    solicitation = SolicitationRepository.approve(
-        id=solicitation_id, classroom_id=input.classroom_id, user=user, session=session
-    )
-    session.refresh(solicitation)
-    session.commit()
+    solicitation = solicitation_repo.approve(solicitation_id, input)
     asyncio.create_task(
         EmailService.send_solicitation_approved_email(input, solicitation)
     )
@@ -65,18 +50,10 @@ async def approve_reservation_solicitation(
 async def deny_classroom_solicitation(
     solicitation_id: int,
     input: SolicitationDeny,
-    session: SessionDep,
-    user: UserDep,
-    permission_index: PermissionIndexDep,
+    solicitation_repo: SolicitationRepositoryDep,
 ) -> JSONResponse:
     """Deny a class reservation solicitation"""
-    checker = SolicitationPermissionChecker(user, session, permission_index)
-    checker.check_permission(solicitation_id, ClassroomAction.RESERVE)
-
-    solicitation = SolicitationRepository.deny(
-        id=solicitation_id, input=input, user=user, session=session
-    )
-    session.commit()
+    solicitation = solicitation_repo.deny(solicitation_id, input)
     asyncio.create_task(
         EmailService.send_solicitation_denied_email(input, solicitation)
     )

@@ -26,6 +26,19 @@ class TestRoleResponse:
         assert data.resources == [Resource.CLASSROOM]
         assert [p.id for p in data.permissions] == [permission.id]
 
+    def test_from_role_includes_its_user_ids_and_strs(self) -> None:
+        role = make_role(resources=[])
+        role.classroom_permissions = []
+        role.course_permissions = []
+        role.building_permissions = []
+        user = make_user(name="Ana")
+        role.users = [user]
+
+        data = RoleResponse.from_role(role)
+
+        assert data.user_ids == [user.id]
+        assert data.user_strs == [f"Ana ({user.email})"]
+
     def test_from_role_without_permissions(self) -> None:
         role = make_role(resources=[])
         role.classroom_permissions = []

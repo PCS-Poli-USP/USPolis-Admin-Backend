@@ -11,10 +11,16 @@ from server.utils.permissions_types import Permission
 
 # A global wildcard grant (no specific building/classroom/course) is only honored
 # for these actions when the user is a real admin: a non-admin role can never be
-# granted "update/delete/allocate/reserve everything in the system" through a
-# wildcard permission, only through a building- or resource-scoped one.
+# granted "update/delete/allocate/reserve/request everything in the system" through
+# a wildcard permission, only through a building- or resource-scoped one.
 GLOBAL_WILDCARD_ADMIN_ONLY_ACTIONS = frozenset(
-    {BaseAction.UPDATE, BaseAction.DELETE, ClassroomAction.ALLOCATE, ClassroomAction.RESERVE}
+    {
+        BaseAction.UPDATE,
+        BaseAction.DELETE,
+        ClassroomAction.ALLOCATE,
+        ClassroomAction.RESERVE,
+        ClassroomAction.REQUEST,
+    }
 )
 
 _EMPTY_IDS: frozenset[int] = frozenset()

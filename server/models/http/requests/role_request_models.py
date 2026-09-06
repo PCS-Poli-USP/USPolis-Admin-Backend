@@ -12,6 +12,7 @@ class RoleRegister(BaseModel):
     description: str = ""
 
     permissions: list[PermissionRegister] = Field(default_factory=list)
+    user_ids: list[int] = Field(default_factory=list)
 
 
 class RoleUpdate(RoleRegister):

@@ -7,6 +7,7 @@ class RoleRegisterDict(RoleBaseDict, BaseRequestDict, total=False):
     """Role register dictionary."""
 
     permissions: list[PermissionRegister]
+    user_ids: list[int]
 
 
 class RoleUpdateDict(RoleRegisterDict, total=False):

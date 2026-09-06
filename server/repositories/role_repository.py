@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, col, select
 
 from server.models.database.building_permission_db_model import BuildingPermission
@@ -18,9 +19,11 @@ from server.repositories.classroom_permission_repository import (
     ClassroomPermissionRepository,
 )
 from server.repositories.course_permission_repository import CoursePermissionRepository
+from server.repositories.user_repository import UserRepository
 
 from server.utils.enums.resources_enums import Resource
 from server.utils.brazil_datetime import BrazilDatetime
+from server.utils.must_be_int import must_be_int
 from server.utils.permissions_types import Permission
 
 
@@ -82,6 +85,12 @@ class RoleRepository:
             user=user,
             session=session,
         )
+        cls.__sync_users(
+            role_id=role_id,
+            user_ids=input.user_ids,
+            granted_by=user,
+            session=session,
+        )
         return role
 
     @classmethod
@@ -133,9 +142,14 @@ class RoleRepository:
             user=user,
             session=session,
         )
+        cls.__sync_users(
+            role_id=role_id,
+            user_ids=input.user_ids,
+            granted_by=user,
+            session=session,
+        )
 
         role.updated_at = BrazilDatetime.now_utc()
-        session.add(role)
         return role
 
     @classmethod
@@ -156,6 +170,79 @@ class RoleRepository:
             session.delete(link)
 
         session.delete(role)
+
+    @classmethod
+    def add_user(
+        cls, *, role_id: int, user_id: int, granted_by: User, session: Session
+    ) -> Role:
+        """Grant a single user this role. Raises `UserAlreadyInRole` (409) if the
+        user already holds it - commits internally to catch that conflict."""
+        role = cls.get_by_id(id=role_id, session=session)
+        user = UserRepository.get_by_id(user_id=user_id, session=session)
+        session.add(
+            UserRole(
+                user_id=must_be_int(user.id),
+                role_id=role_id,
+                granted_by_id=must_be_int(granted_by.id),
+            )
+        )
+        try:
+            session.commit()
+        except IntegrityError:
+            session.rollback()
+            raise UserAlreadyInRole(role_name=role.name, user_name=user.name)
+        session.refresh(role)
+        return role
+
+    @classmethod
+    def remove_user(cls, *, role_id: int, user_id: int, session: Session) -> Role:
+        role = cls.get_by_id(id=role_id, session=session)
+        link = session.exec(
+            select(UserRole).where(
+                UserRole.role_id == role_id, UserRole.user_id == user_id
+            )
+        ).first()
+        if link is None:
+            user = UserRepository.get_by_id(user_id=user_id, session=session)
+            raise UserNotInRole(role_name=role.name, user_name=user.name)
+        session.delete(link)
+        return role
+
+    @classmethod
+    def __sync_users(
+        cls,
+        *,
+        role_id: int,
+        user_ids: list[int],
+        granted_by: User,
+        session: Session,
+    ) -> None:
+        """Sync a role's user assignments to match `user_ids` exactly: creates
+        UserRole links for newly added ids and deletes links for removed ones.
+        `UserRole` carries a required `granted_by_id`, so - unlike a bare link
+        table - it can't be synced via plain relationship assignment."""
+        current_links = list(
+            session.exec(select(UserRole).where(UserRole.role_id == role_id)).all()
+        )
+        current_user_ids = {link.user_id for link in current_links}
+        desired_user_ids = set(user_ids)
+
+        for link in current_links:
+            if link.user_id not in desired_user_ids:
+                session.delete(link)
+
+        ids_to_add = desired_user_ids - current_user_ids
+        if not ids_to_add:
+            return
+        users_to_add = UserRepository.get_by_ids(ids=list(ids_to_add), session=session)
+        for user in users_to_add:
+            session.add(
+                UserRole(
+                    user_id=must_be_int(user.id),
+                    role_id=role_id,
+                    granted_by_id=must_be_int(granted_by.id),
+                )
+            )
 
     @classmethod
     def __create_permissions(
@@ -280,3 +367,19 @@ class RoleRepository:
 class RoleNotFound(HTTPException):
     def __init__(self, id: int):
         super().__init__(status.HTTP_404_NOT_FOUND, f"Cargo com id {id} não encontrado")
+
+
+class UserAlreadyInRole(HTTPException):
+    def __init__(self, *, role_name: str, user_name: str) -> None:
+        super().__init__(
+            status.HTTP_409_CONFLICT,
+            f"Usuário {user_name} já possui o cargo {role_name}",
+        )
+
+
+class UserNotInRole(HTTPException):
+    def __init__(self, *, role_name: str, user_name: str) -> None:
+        super().__init__(
+            status.HTTP_404_NOT_FOUND,
+            f"Usuário {user_name} não possui o cargo {role_name}",
+        )

@@ -16,6 +16,8 @@ class RoleResponse(BaseModel):
     description: str
     resources: list[Resource]
     permissions: list[PermissionResponse]
+    user_ids: list[int]
+    user_strs: list[str]
 
     created_at: datetime
     updated_at: datetime
@@ -35,6 +37,8 @@ class RoleResponse(BaseModel):
             description=role.description,
             resources=role.resources,
             permissions=permissions,
+            user_ids=[TypeGuard.must_be_int(user.id) for user in role.users],
+            user_strs=[f"{user.name} ({user.email})" for user in role.users],
             created_at=role.created_at,
             updated_at=role.updated_at,
         )

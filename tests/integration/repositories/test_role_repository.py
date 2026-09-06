@@ -8,7 +8,12 @@ from server.models.database.user_role_db_model import UserRole
 from server.repositories.classroom_permission_repository import (
     ClassroomPermissionRepository,
 )
-from server.repositories.role_repository import RoleNotFound, RoleRepository
+from server.repositories.role_repository import (
+    RoleNotFound,
+    RoleRepository,
+    UserAlreadyInRole,
+    UserNotInRole,
+)
 from server.utils.enums.resources_enums import Resource
 from server.utils.must_be_int import must_be_int
 from tests.factories.request.permission_request_factory import (
@@ -141,6 +146,186 @@ def test_update_role_keeps_unchanged_permission(
 
     assert len(updated.classroom_permissions) == 1
     assert updated.classroom_permissions[0].id == first_permission_id
+
+
+def test_create_role_with_user_ids(
+    admin_user: User, common_user: User, session: Session
+) -> None:
+    factory = RoleRequestFactory(resources=[])
+    input = factory.create_input(user_ids=[must_be_int(common_user.id)])
+
+    role = RoleRepository.create(input=input, user=admin_user, session=session)
+    session.commit()
+    session.refresh(role)
+
+    assert [must_be_int(u.id) for u in role.users] == [must_be_int(common_user.id)]
+    link = session.exec(select(UserRole).where(UserRole.role_id == role.id)).one()
+    assert link.granted_by_id == admin_user.id
+
+
+def test_create_role_deduplicates_repeated_user_ids(
+    admin_user: User, common_user: User, session: Session
+) -> None:
+    factory = RoleRequestFactory(resources=[])
+    input = factory.create_input(
+        user_ids=[must_be_int(common_user.id), must_be_int(common_user.id)]
+    )
+
+    role = RoleRepository.create(input=input, user=admin_user, session=session)
+    session.commit()
+    session.refresh(role)
+
+    assert len(role.users) == 1
+
+
+def test_update_role_adds_new_user(
+    admin_user: User, common_user: User, role: Role, session: Session
+) -> None:
+    factory = RoleRequestFactory(resources=role.resources)
+    input = factory.update_input(
+        name=role.name,
+        description=role.description,
+        resources=role.resources,
+        user_ids=[must_be_int(common_user.id)],
+    )
+
+    updated = RoleRepository.update(
+        id=must_be_int(role.id), input=input, user=admin_user, session=session
+    )
+    session.commit()
+    session.refresh(updated)
+
+    assert [must_be_int(u.id) for u in updated.users] == [must_be_int(common_user.id)]
+
+
+def test_update_role_removes_missing_user(
+    admin_user: User, common_user: User, role: Role, session: Session
+) -> None:
+    factory = RoleRequestFactory(resources=role.resources)
+    with_user = factory.update_input(
+        name=role.name,
+        description=role.description,
+        resources=role.resources,
+        user_ids=[must_be_int(common_user.id)],
+    )
+    role = RoleRepository.update(
+        id=must_be_int(role.id), input=with_user, user=admin_user, session=session
+    )
+    session.commit()
+    session.refresh(role)
+    assert len(role.users) == 1
+
+    without_user = factory.update_input(
+        name=role.name,
+        description=role.description,
+        resources=role.resources,
+        user_ids=[],
+    )
+    updated = RoleRepository.update(
+        id=must_be_int(role.id), input=without_user, user=admin_user, session=session
+    )
+    session.commit()
+    session.refresh(updated)
+
+    assert updated.users == []
+
+
+def test_update_role_keeps_unchanged_user(
+    admin_user: User, common_user: User, role: Role, session: Session
+) -> None:
+    factory = RoleRequestFactory(resources=role.resources)
+    input = factory.update_input(
+        name=role.name,
+        description=role.description,
+        resources=role.resources,
+        user_ids=[must_be_int(common_user.id)],
+    )
+
+    role = RoleRepository.update(
+        id=must_be_int(role.id), input=input, user=admin_user, session=session
+    )
+    session.commit()
+    session.refresh(role)
+    first_link_id = (
+        session.exec(select(UserRole).where(UserRole.role_id == role.id)).one().id
+    )
+
+    updated = RoleRepository.update(
+        id=must_be_int(role.id), input=input, user=admin_user, session=session
+    )
+    session.commit()
+    session.refresh(updated)
+
+    assert len(updated.users) == 1
+    second_link_id = (
+        session.exec(select(UserRole).where(UserRole.role_id == role.id)).one().id
+    )
+    assert second_link_id == first_link_id
+
+
+def test_add_user_grants_the_role(
+    admin_user: User, common_user: User, role: Role, session: Session
+) -> None:
+    updated = RoleRepository.add_user(
+        role_id=must_be_int(role.id),
+        user_id=must_be_int(common_user.id),
+        granted_by=admin_user,
+        session=session,
+    )
+    session.refresh(updated)
+
+    assert [must_be_int(u.id) for u in updated.users] == [must_be_int(common_user.id)]
+
+
+def test_add_user_raises_when_already_in_role(
+    admin_user: User, common_user: User, role: Role, session: Session
+) -> None:
+    RoleRepository.add_user(
+        role_id=must_be_int(role.id),
+        user_id=must_be_int(common_user.id),
+        granted_by=admin_user,
+        session=session,
+    )
+
+    with pytest.raises(UserAlreadyInRole):
+        RoleRepository.add_user(
+            role_id=must_be_int(role.id),
+            user_id=must_be_int(common_user.id),
+            granted_by=admin_user,
+            session=session,
+        )
+
+
+def test_remove_user_revokes_the_role(
+    admin_user: User, common_user: User, role: Role, session: Session
+) -> None:
+    RoleRepository.add_user(
+        role_id=must_be_int(role.id),
+        user_id=must_be_int(common_user.id),
+        granted_by=admin_user,
+        session=session,
+    )
+
+    updated = RoleRepository.remove_user(
+        role_id=must_be_int(role.id),
+        user_id=must_be_int(common_user.id),
+        session=session,
+    )
+    session.commit()
+    session.refresh(updated)
+
+    assert updated.users == []
+
+
+def test_remove_user_raises_when_not_in_role(
+    common_user: User, role: Role, session: Session
+) -> None:
+    with pytest.raises(UserNotInRole):
+        RoleRepository.remove_user(
+            role_id=must_be_int(role.id),
+            user_id=must_be_int(common_user.id),
+            session=session,
+        )
 
 
 def test_delete_role_deletes_permissions_and_user_links(

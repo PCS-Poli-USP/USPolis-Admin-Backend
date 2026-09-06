@@ -24,6 +24,7 @@ class ClassroomAction(StrEnum):
     DELETE = BaseAction.DELETE
     ALLOCATE = "allocate"
     RESERVE = "reserve"
+    REQUEST = "request"
 
 
 class CourseAction(StrEnum):

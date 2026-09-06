@@ -43,6 +43,7 @@ class RoleRequestFactory(BaseRequestFactory):
         return {
             **core,
             "permissions": [],
+            "user_ids": [],
         }
 
     def get_default_update(self) -> RoleUpdateDict:
