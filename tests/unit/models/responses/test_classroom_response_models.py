@@ -14,7 +14,7 @@ class TestClassroomResponseBase:
     def test_from_classroom(self) -> None:
         building = make_building(name="Bloco A")
         classroom = make_classroom(
-            building=building, name="Sala 5", capacity=40, remote=False
+            building=building, name="Sala 5", capacity=40, restricted=False
         )
 
         data = ClassroomResponseBase.from_classroom(classroom)
@@ -22,7 +22,8 @@ class TestClassroomResponseBase:
         assert data.id == classroom.id
         assert data.name == "Sala 5"
         assert data.capacity == 40
-        assert data.remote is False
+        assert data.restricted is False
+        assert data.reservable == classroom.reservable
         assert data.building_id == building.id
         assert data.building == "Bloco A"
         assert data.created_by_id == building.created_by_id

@@ -76,7 +76,7 @@ class OccurrenceRepository:
         start: date, end: date, session: Session
     ) -> list[Occurrence]:
         """Get all occurrences on interval [start, end], that satisfy one of:\n
-        - It's not remote
+        - It's not restricted
         - It's unallocated and belongs to a schedule from a class
         """
         statement = (
@@ -87,7 +87,7 @@ class OccurrenceRepository:
                 Occurrence.date >= start,
                 Occurrence.date <= end,
                 or_(
-                    ~col(Classroom.remote),
+                    ~col(Classroom.restricted),
                     (col(Occurrence.classroom_id).is_(None))
                     & (col(Schedule.class_id).is_not(None)),
                 ),

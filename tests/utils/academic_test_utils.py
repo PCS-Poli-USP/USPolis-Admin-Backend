@@ -106,19 +106,13 @@ def make_classroom(
     building: Building,
     name: str | None = None,
     capacity: int = 30,
-    remote: bool = False,
+    restricted: bool = False,
 ) -> Classroom:
     classroom = ClassroomModelFactory(
         session=Session(), creator=building.created_by, building=building
     ).build(capacity=capacity, **_given(name=name))
     classroom.id = next(_next_id)
-    # ClassroomBaseFactory.get_base_defaults() doesn't set `remote` at all,
-    # so passing it as a .build() override is silently dropped (the
-    # override merge only touches keys already present in get_defaults())
-    # and the DB model's own default (remote=True) wins instead - set it
-    # directly here rather than changing the shared factory's defaults,
-    # which other tests may implicitly rely on.
-    classroom.remote = remote
+    classroom.restricted = restricted
     return classroom
 
 
@@ -130,7 +124,9 @@ def make_subject(*, code: str | None = None, name: str | None = None) -> Subject
     return subject
 
 
-def make_class(*, subject: Subject, code: str | None = None, vacancies: int = 40) -> Class:
+def make_class(
+    *, subject: Subject, code: str | None = None, vacancies: int = 40
+) -> Class:
     class_ = ClassModelFactory(subject=subject, session=Session()).build(
         schedules=[], vacancies=vacancies, **_given(code=code)
     )
@@ -190,7 +186,9 @@ def make_occurrence(
     return occurrence
 
 
-def make_exam(*, reservation: Reservation, subject: Subject, classes: list[Class]) -> Exam:
+def make_exam(
+    *, reservation: Reservation, subject: Subject, classes: list[Class]
+) -> Exam:
     """Constructed directly (not via ExamModelFactory.build()) because
     ExamModelFactory.get_defaults() itself calls
     reservation_factory.create_and_refresh() - a real DB write - so it isn't

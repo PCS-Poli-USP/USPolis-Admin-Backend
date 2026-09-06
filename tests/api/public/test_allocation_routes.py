@@ -23,14 +23,14 @@ def _clear_response_cache() -> Generator[None, None, None]:
 
 
 class TestGetAllAllocationResources:
-    def test_returns_building_and_its_non_remote_classrooms(
+    def test_returns_building_and_its_non_restricted_classrooms(
         self,
         public_client: TestClient,
         building: Building,
         classroom: Classroom,
         session: Session,
     ) -> None:
-        classroom.remote = False
+        classroom.restricted = False
         session.add(classroom)
         session.commit()
 
@@ -65,9 +65,7 @@ class TestGetAllAllocationEvents:
 
         assert response.status_code == status.HTTP_200_OK
         subject_events = [e for e in response.json() if e["type"] == "subject"]
-        assert any(
-            class_.subject.code in e["title"] for e in subject_events
-        )
+        assert any(class_.subject.code in e["title"] for e in subject_events)
 
     def test_returns_allocated_occurrences_with_the_classroom(
         self,
@@ -77,8 +75,8 @@ class TestGetAllAllocationEvents:
         session: Session,
     ) -> None:
         # get_all_on_interval_for_allocation only includes an allocated
-        # occurrence when its classroom isn't remote.
-        allocated_classroom.remote = False
+        # occurrence when its classroom isn't restricted.
+        allocated_classroom.restricted = False
         session.add(allocated_classroom)
         session.commit()
 

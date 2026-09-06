@@ -30,7 +30,7 @@ class ClassroomBase(BaseModel):
     )
     air_conditioning: bool = False
     reservable: bool = Field(default=True)
-    remote: bool = Field(default=True)
+    restricted: bool = Field(default=True)
     observation: str = Field(default="")
     updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
 
@@ -137,4 +137,6 @@ class ClassroomWithConflictsIndicator(ClassroomBase):
             created_by_id=classroom.created_by_id,
             building_id=classroom.building_id,
             observation=classroom.observation,
+            restricted=classroom.restricted,
+            reservable=classroom.reservable,
         )

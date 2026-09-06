@@ -43,7 +43,9 @@ class TestRRule:
         assert rrule.until == "2025-06-30T10:00:00"
 
     def test_biweekly_schedule_uses_weekly_freq_with_interval_two(self) -> None:
-        schedule = make_schedule(recurrence=Recurrence.BIWEEKLY, week_day=WeekDay.FRIDAY)
+        schedule = make_schedule(
+            recurrence=Recurrence.BIWEEKLY, week_day=WeekDay.FRIDAY
+        )
         rrule = RRule.from_schedule(schedule)
         assert rrule.freq == "weekly"
         assert rrule.interval == 2
@@ -334,7 +336,9 @@ class TestAllocationEventResponseFromOccurrence:
     def test_with_a_reservation_uses_the_reservation_title(self) -> None:
         classroom = make_classroom(building=make_building())
         schedule = make_schedule(classroom=classroom)
-        make_reservation(schedule=schedule, type_=ReservationType.EVENT, title="Palestra")
+        make_reservation(
+            schedule=schedule, type_=ReservationType.EVENT, title="Palestra"
+        )
         occurrence = make_occurrence(schedule=schedule)
 
         event = AllocationEventResponse.from_occurrence(occurrence)
@@ -390,11 +394,13 @@ class TestAllocationEventResponseFromSchedule:
 
 
 class TestAllocationResourceResponse:
-    def test_from_building_includes_non_remote_classrooms_only(self) -> None:
+    def test_from_building_includes_non_restricted_classrooms_only(self) -> None:
         building = make_building(name="Bloco B")
-        visible = make_classroom(building=building, name="Sala 1", remote=False)
-        remote = make_classroom(building=building, name="Sala Remota", remote=True)
-        building.classrooms = [visible, remote]
+        visible = make_classroom(building=building, name="Sala 1", restricted=False)
+        restricted = make_classroom(
+            building=building, name="Sala Remota", restricted=True
+        )
+        building.classrooms = [visible, restricted]
 
         resources = AllocationResourceResponse.from_building(building)
 

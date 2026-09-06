@@ -13,6 +13,8 @@ class ClassroomResponseAsserts:
         assert data["floor"] == classroom.floor
         assert data["capacity"] == classroom.capacity
         assert data["audiovisual"] == classroom.audiovisual
+        assert data["reservable"] == classroom.reservable
+        assert data["restricted"] == classroom.restricted
 
     @staticmethod
     def assert_get_classroom_full_response(

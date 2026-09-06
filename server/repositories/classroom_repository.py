@@ -32,7 +32,7 @@ class ClassroomRepository:
         classroom.air_conditioning = input.air_conditioning
         classroom.building_id = input.building_id
         classroom.reservable = input.reservable
-        classroom.remote = input.remote
+        classroom.restricted = input.restricted
         classroom.observation = input.observation
 
     @staticmethod

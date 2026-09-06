@@ -24,7 +24,9 @@ class TestGetById:
             schedule=class_.schedules[0], session=session
         ).create_and_refresh()
 
-        found = OccurrenceRepository.get_by_id(id=must_be_int(occurrence.id), session=session)
+        found = OccurrenceRepository.get_by_id(
+            id=must_be_int(occurrence.id), session=session
+        )
 
         assert found.id == occurrence.id
 
@@ -57,7 +59,9 @@ class TestGetByDateAndClassroom:
         ).create_and_refresh(date=date(2025, 3, 1))
 
         found = OccurrenceRepository.get_by_date_and_classroom(
-            date=date(2025, 3, 1), classroom_id=must_be_int(classroom.id), session=session
+            date=date(2025, 3, 1),
+            classroom_id=must_be_int(classroom.id),
+            session=session,
         )
 
         assert [o.id for o in found] == [occurrence.id]
@@ -70,7 +74,9 @@ class TestGetByDateAndClassroom:
         ).create_and_refresh(date=date(2025, 3, 1))
 
         found = OccurrenceRepository.get_by_date_and_classroom(
-            date=date(2025, 4, 1), classroom_id=must_be_int(classroom.id), session=session
+            date=date(2025, 4, 1),
+            classroom_id=must_be_int(classroom.id),
+            session=session,
         )
 
         assert found == []
@@ -133,10 +139,10 @@ class TestGetAllOnInterval:
 
 
 class TestGetAllOnIntervalForAllocation:
-    def test_includes_a_non_remote_allocated_occurrence(
+    def test_includes_a_non_restricted_allocated_occurrence(
         self, classroom: Classroom, class_: Class, session: Session
     ) -> None:
-        classroom.remote = False
+        classroom.restricted = False
         session.add(classroom)
         session.commit()
         occurrence = OccurrenceModelFactory(
@@ -162,10 +168,10 @@ class TestGetAllOnIntervalForAllocation:
 
         assert occurrence.id in [o.id for o in found]
 
-    def test_excludes_a_remote_allocated_occurrence(
+    def test_excludes_a_restricted_allocated_occurrence(
         self, classroom: Classroom, class_: Class, session: Session
     ) -> None:
-        classroom.remote = True
+        classroom.restricted = True
         session.add(classroom)
         session.commit()
         occurrence = OccurrenceModelFactory(

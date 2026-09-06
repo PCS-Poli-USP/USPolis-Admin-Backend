@@ -4,6 +4,7 @@ import pytest
 from sqlmodel import Session
 
 from server.models.database.role_db_model import Role
+from server.models.database.user_db_model import User
 from server.repositories.role_repository import RoleNotFound, RoleRepository
 from server.utils.enums.resources_enums import Resource
 from server.utils.must_be_int import must_be_int
@@ -21,7 +22,9 @@ def test_get_roles_with_admin_user(role: Role, client: TestClient) -> None:
     assert data[0]["id"] == role.id
 
 
-def test_get_roles_with_restricted_user(role: Role, restricted_client: TestClient) -> None:
+def test_get_roles_with_restricted_user(
+    role: Role, restricted_client: TestClient
+) -> None:
     response = restricted_client.get(URL_PREFIX)
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
@@ -108,4 +111,105 @@ def test_delete_role_with_restricted_user(
     role: Role, restricted_client: TestClient
 ) -> None:
     response = restricted_client.delete(f"{URL_PREFIX}/{role.id}")
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_create_role_with_user_ids(
+    common_user: User, session: Session, client: TestClient
+) -> None:
+    input = RoleRequestFactory(resources=[]).create_input(
+        user_ids=[must_be_int(common_user.id)]
+    )
+    response = client.post(URL_PREFIX, json=input.model_dump())
+
+    assert response.status_code == status.HTTP_201_CREATED
+    role_id = response.json()["id"]
+
+    role = RoleRepository.get_by_id(id=role_id, session=session)
+    assert [must_be_int(u.id) for u in role.users] == [must_be_int(common_user.id)]
+
+
+def test_get_role_by_id_includes_user_ids_and_strs(
+    admin_user: User,
+    common_user: User,
+    role: Role,
+    session: Session,
+    client: TestClient,
+) -> None:
+    RoleRepository.add_user(
+        role_id=must_be_int(role.id),
+        user_id=must_be_int(common_user.id),
+        granted_by=admin_user,
+        session=session,
+    )
+
+    response = client.get(f"{URL_PREFIX}/{role.id}")
+
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert data["user_ids"] == [common_user.id]
+    assert data["user_strs"] == [f"{common_user.name} ({common_user.email})"]
+
+
+def test_add_user_to_role_with_admin_user(
+    common_user: User, role: Role, session: Session, client: TestClient
+) -> None:
+    response = client.post(f"{URL_PREFIX}/{role.id}/users/{common_user.id}")
+
+    assert response.status_code == status.HTTP_201_CREATED
+    updated = RoleRepository.get_by_id(id=must_be_int(role.id), session=session)
+    assert [must_be_int(u.id) for u in updated.users] == [must_be_int(common_user.id)]
+
+
+def test_add_user_to_role_conflict_when_already_granted(
+    common_user: User, role: Role, client: TestClient
+) -> None:
+    client.post(f"{URL_PREFIX}/{role.id}/users/{common_user.id}")
+
+    response = client.post(f"{URL_PREFIX}/{role.id}/users/{common_user.id}")
+
+    assert response.status_code == status.HTTP_409_CONFLICT
+
+
+def test_add_user_to_role_with_restricted_user(
+    common_user: User, role: Role, restricted_client: TestClient
+) -> None:
+    response = restricted_client.post(f"{URL_PREFIX}/{role.id}/users/{common_user.id}")
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_remove_user_from_role_with_admin_user(
+    admin_user: User,
+    common_user: User,
+    role: Role,
+    session: Session,
+    client: TestClient,
+) -> None:
+    RoleRepository.add_user(
+        role_id=must_be_int(role.id),
+        user_id=must_be_int(common_user.id),
+        granted_by=admin_user,
+        session=session,
+    )
+
+    response = client.delete(f"{URL_PREFIX}/{role.id}/users/{common_user.id}")
+
+    assert response.status_code == status.HTTP_200_OK
+    updated = RoleRepository.get_by_id(id=must_be_int(role.id), session=session)
+    assert updated.users == []
+
+
+def test_remove_user_from_role_not_found(
+    common_user: User, role: Role, client: TestClient
+) -> None:
+    response = client.delete(f"{URL_PREFIX}/{role.id}/users/{common_user.id}")
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_remove_user_from_role_with_restricted_user(
+    common_user: User, role: Role, restricted_client: TestClient
+) -> None:
+    response = restricted_client.delete(
+        f"{URL_PREFIX}/{role.id}/users/{common_user.id}"
+    )
     assert response.status_code == status.HTTP_403_FORBIDDEN

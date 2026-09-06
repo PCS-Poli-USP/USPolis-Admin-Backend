@@ -72,10 +72,6 @@ def _event_solicitation_input(
 
 
 def _make_unreservable(classroom: Classroom, session: Session) -> Classroom:
-    # ClassroomBaseFactory doesn't expose `reservable` as an overridable key
-    # (same gap as the `remote` field), so it's set directly here rather than
-    # via the factory - see tests/utils/academic_test_utils.py's make_classroom
-    # for the established precedent.
     classroom.reservable = False
     session.add(classroom)
     session.commit()
@@ -85,7 +81,11 @@ def _make_unreservable(classroom: Classroom, session: Session) -> Classroom:
 
 class TestCreate:
     def test_creates_a_meeting_solicitation_with_a_requested_classroom(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         input = _meeting_solicitation_input(
             building=building,
@@ -105,7 +105,11 @@ class TestCreate:
         assert solicitation.reservation.schedule.allocated is False
 
     def test_creates_a_solicitation_without_a_requested_classroom(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         input = _meeting_solicitation_input(
             building=building,
@@ -123,7 +127,11 @@ class TestCreate:
         assert solicitation.solicited_classroom is None
 
     def test_creates_an_event_solicitation(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         input = _event_solicitation_input(
             building=building,
@@ -140,7 +148,11 @@ class TestCreate:
         assert solicitation.reservation.event is not None
 
     def test_raises_when_the_classroom_does_not_belong_to_the_building(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         other_building = BuildingModelFactory(admin_user, session).create_and_refresh()
         input = _meeting_solicitation_input(
@@ -155,7 +167,11 @@ class TestCreate:
             )
 
     def test_raises_when_the_classroom_is_not_reservable(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         _make_unreservable(classroom, session)
         input = _meeting_solicitation_input(
@@ -172,7 +188,11 @@ class TestCreate:
 
 class TestGetById:
     def test_returns_the_matching_solicitation(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         input = _meeting_solicitation_input(
             building=building, schedule_classroom=classroom, requested_classroom=None
@@ -195,20 +215,28 @@ class TestGetById:
 
 class TestGetByUser:
     def test_returns_only_the_users_own_solicitations(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         other_user = UserModelFactory(session=session).create_and_refresh()
         mine = SolicitationRepository.create(
             requester=admin_user,
             input=_meeting_solicitation_input(
-                building=building, schedule_classroom=classroom, requested_classroom=None
+                building=building,
+                schedule_classroom=classroom,
+                requested_classroom=None,
             ),
             session=session,
         )
         SolicitationRepository.create(
             requester=other_user,
             input=_meeting_solicitation_input(
-                building=building, schedule_classroom=classroom, requested_classroom=None
+                building=building,
+                schedule_classroom=classroom,
+                requested_classroom=None,
             ),
             session=session,
         )
@@ -221,12 +249,18 @@ class TestGetByUser:
 
 class TestGetByBuildingsIds:
     def test_returns_solicitations_of_the_given_buildings(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         solicitation = SolicitationRepository.create(
             requester=admin_user,
             input=_meeting_solicitation_input(
-                building=building, schedule_classroom=classroom, requested_classroom=None
+                building=building,
+                schedule_classroom=classroom,
+                requested_classroom=None,
             ),
             session=session,
         )
@@ -239,12 +273,18 @@ class TestGetByBuildingsIds:
         assert solicitation.id in [s.id for s in found]
 
     def test_excludes_solicitations_of_other_buildings(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         solicitation = SolicitationRepository.create(
             requester=admin_user,
             input=_meeting_solicitation_input(
-                building=building, schedule_classroom=classroom, requested_classroom=None
+                building=building,
+                schedule_classroom=classroom,
+                requested_classroom=None,
             ),
             session=session,
         )
@@ -259,12 +299,18 @@ class TestGetByBuildingsIds:
 
 class TestGetByBuildingsIdsPaginated:
     def test_paginates_solicitations_of_the_given_buildings(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         solicitation = SolicitationRepository.create(
             requester=admin_user,
             input=_meeting_solicitation_input(
-                building=building, schedule_classroom=classroom, requested_classroom=None
+                building=building,
+                schedule_classroom=classroom,
+                requested_classroom=None,
             ),
             session=session,
         )
@@ -282,12 +328,18 @@ class TestGetByBuildingsIdsPaginated:
 
 class TestGetByBuildingsIdsOnRange:
     def test_returns_solicitations_created_within_the_range(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         solicitation = SolicitationRepository.create(
             requester=admin_user,
             input=_meeting_solicitation_input(
-                building=building, schedule_classroom=classroom, requested_classroom=None
+                building=building,
+                schedule_classroom=classroom,
+                requested_classroom=None,
             ),
             session=session,
         )
@@ -304,12 +356,18 @@ class TestGetByBuildingsIdsOnRange:
         assert solicitation.id in [s.id for s in found]
 
     def test_excludes_solicitations_created_outside_the_range(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         solicitation = SolicitationRepository.create(
             requester=admin_user,
             input=_meeting_solicitation_input(
-                building=building, schedule_classroom=classroom, requested_classroom=None
+                building=building,
+                schedule_classroom=classroom,
+                requested_classroom=None,
             ),
             session=session,
         )
@@ -327,19 +385,27 @@ class TestGetByBuildingsIdsOnRange:
 
 class TestGetPendingByBuildingsIds:
     def test_returns_only_pending_solicitations(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         pending = SolicitationRepository.create(
             requester=admin_user,
             input=_meeting_solicitation_input(
-                building=building, schedule_classroom=classroom, requested_classroom=None
+                building=building,
+                schedule_classroom=classroom,
+                requested_classroom=None,
             ),
             session=session,
         )
         approved = SolicitationRepository.create(
             requester=admin_user,
             input=_meeting_solicitation_input(
-                building=building, schedule_classroom=classroom, requested_classroom=None
+                building=building,
+                schedule_classroom=classroom,
+                requested_classroom=None,
             ),
             session=session,
         )
@@ -363,7 +429,11 @@ class TestGetPendingByBuildingsIds:
 
 class TestUpdate:
     def test_updates_capacity_and_delegates_to_the_meeting_repository(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         solicitation = SolicitationRepository.create(
             requester=admin_user,
@@ -397,13 +467,19 @@ class TestUpdate:
         assert updated.solicited_classroom_id == classroom.id
 
     def test_raises_when_a_different_user_tries_to_update(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         other_user = UserModelFactory(session=session).create_and_refresh()
         solicitation = SolicitationRepository.create(
             requester=admin_user,
             input=_meeting_solicitation_input(
-                building=building, schedule_classroom=classroom, requested_classroom=None
+                building=building,
+                schedule_classroom=classroom,
+                requested_classroom=None,
             ),
             session=session,
         )
@@ -422,12 +498,18 @@ class TestUpdate:
             )
 
     def test_raises_when_the_solicitation_is_no_longer_pending(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         solicitation = SolicitationRepository.create(
             requester=admin_user,
             input=_meeting_solicitation_input(
-                building=building, schedule_classroom=classroom, requested_classroom=None
+                building=building,
+                schedule_classroom=classroom,
+                requested_classroom=None,
             ),
             session=session,
         )
@@ -453,12 +535,18 @@ class TestUpdate:
             )
 
     def test_raises_when_changing_the_reservation_type(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         solicitation = SolicitationRepository.create(
             requester=admin_user,
             input=_meeting_solicitation_input(
-                building=building, schedule_classroom=classroom, requested_classroom=None
+                building=building,
+                schedule_classroom=classroom,
+                requested_classroom=None,
             ),
             session=session,
         )
@@ -486,7 +574,9 @@ class TestUpdate:
         solicitation = SolicitationRepository.create(
             requester=admin_user,
             input=_meeting_solicitation_input(
-                building=building, schedule_classroom=classroom, requested_classroom=None
+                building=building,
+                schedule_classroom=classroom,
+                requested_classroom=None,
             ),
             session=session,
         )
@@ -510,7 +600,11 @@ class TestUpdate:
 
 class TestApprove:
     def test_approves_using_the_solicited_classroom(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         solicitation = SolicitationRepository.create(
             requester=admin_user,
@@ -538,12 +632,18 @@ class TestApprove:
         assert approved.reservation.schedule.classroom_id == classroom.id
 
     def test_raises_when_already_closed(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         solicitation = SolicitationRepository.create(
             requester=admin_user,
             input=_meeting_solicitation_input(
-                building=building, schedule_classroom=classroom, requested_classroom=None
+                building=building,
+                schedule_classroom=classroom,
+                requested_classroom=None,
             ),
             session=session,
         )
@@ -628,7 +728,11 @@ class TestApprove:
         assert approved.reservation.schedule.classroom_id == other_classroom.id
 
     def test_raises_when_the_approved_classroom_belongs_to_a_different_building(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         other_building = BuildingModelFactory(admin_user, session).create_and_refresh()
         other_classroom = ClassroomModelFactory(
@@ -637,7 +741,9 @@ class TestApprove:
         solicitation = SolicitationRepository.create(
             requester=admin_user,
             input=_meeting_solicitation_input(
-                building=building, schedule_classroom=classroom, requested_classroom=None
+                building=building,
+                schedule_classroom=classroom,
+                requested_classroom=None,
             ),
             session=session,
         )
@@ -654,12 +760,18 @@ class TestApprove:
 
 class TestDeny:
     def test_denies_a_pending_solicitation(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         solicitation = SolicitationRepository.create(
             requester=admin_user,
             input=_meeting_solicitation_input(
-                building=building, schedule_classroom=classroom, requested_classroom=None
+                building=building,
+                schedule_classroom=classroom,
+                requested_classroom=None,
             ),
             session=session,
         )
@@ -679,12 +791,18 @@ class TestDeny:
         assert denied.denial_justification == "Sala já reservada para outro evento"
 
     def test_raises_when_already_closed(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         solicitation = SolicitationRepository.create(
             requester=admin_user,
             input=_meeting_solicitation_input(
-                building=building, schedule_classroom=classroom, requested_classroom=None
+                building=building,
+                schedule_classroom=classroom,
+                requested_classroom=None,
             ),
             session=session,
         )
@@ -708,13 +826,19 @@ class TestDeny:
 
 class TestCancel:
     def test_owner_can_cancel_their_own_solicitation(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         requester = UserModelFactory(session=session).create_and_refresh()
         solicitation = SolicitationRepository.create(
             requester=requester,
             input=_meeting_solicitation_input(
-                building=building, schedule_classroom=classroom, requested_classroom=None
+                building=building,
+                schedule_classroom=classroom,
+                requested_classroom=None,
             ),
             session=session,
         )
@@ -729,13 +853,19 @@ class TestCancel:
         assert cancelled.get_status() == ReservationStatus.CANCELLED
 
     def test_admin_can_cancel_someone_elses_solicitation(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         requester = UserModelFactory(session=session).create_and_refresh()
         solicitation = SolicitationRepository.create(
             requester=requester,
             input=_meeting_solicitation_input(
-                building=building, schedule_classroom=classroom, requested_classroom=None
+                building=building,
+                schedule_classroom=classroom,
+                requested_classroom=None,
             ),
             session=session,
         )
@@ -750,7 +880,11 @@ class TestCancel:
         assert cancelled.get_status() == ReservationStatus.CANCELLED
 
     def test_raises_when_a_non_admin_tries_to_cancel_someone_elses_solicitation(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         requester = UserModelFactory(session=session).create_and_refresh()
         other_user = UserModelFactory(session=session).create_and_refresh(
@@ -759,7 +893,9 @@ class TestCancel:
         solicitation = SolicitationRepository.create(
             requester=requester,
             input=_meeting_solicitation_input(
-                building=building, schedule_classroom=classroom, requested_classroom=None
+                building=building,
+                schedule_classroom=classroom,
+                requested_classroom=None,
             ),
             session=session,
         )

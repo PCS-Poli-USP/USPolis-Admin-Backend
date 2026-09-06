@@ -77,9 +77,7 @@ def _occurrence_in_classroom(
     class_ = ClassModelFactory(subject=subject, session=session).create_and_refresh(
         schedules=[]
     )
-    schedule = ScheduleModelFactory(
-        class_=class_, session=session
-    ).create_and_refresh()
+    schedule = ScheduleModelFactory(class_=class_, session=session).create_and_refresh()
     return OccurrenceModelFactory(
         schedule=schedule, session=session, classroom=classroom
     ).create_and_refresh(date=_FUTURE_DATE, start_time=start, end_time=end)
@@ -120,11 +118,10 @@ class TestSpecificateConflictsForAllowedClassroomsInBuilding:
         subject: Subject,
         session: Session,
     ) -> None:
-        # Classroom.remote defaults to True at the model level (the factory
-        # never overrides it), and the method under test skips remote
-        # classrooms entirely - so it must be turned off for this classroom's
-        # conflicts to be counted at all.
-        classroom.remote = False
+        # The method under test skips restricted classrooms entirely - so it
+        # must be turned off for this classroom's conflicts to be counted at
+        # all.
+        classroom.restricted = False
         session.add(classroom)
         session.commit()
         _occurrence_in_classroom(
@@ -166,7 +163,7 @@ class TestSpecificateConflictsForAllowedClassroomsInBuilding:
         subject: Subject,
         session: Session,
     ) -> None:
-        classroom.remote = False
+        classroom.restricted = False
         session.add(classroom)
         session.commit()
         first = _occurrence_in_classroom(
@@ -188,11 +185,13 @@ class TestSpecificateConflictsForAllowedClassroomsInBuilding:
         ).create_and_refresh()
         checker = _checker(user=admin_user, session=session)
 
-        unintentional = checker.specificate_conflicts_for_allowed_classrooms_in_building(
-            building_id=must_be_int(building.id),
-            type=ConflictType.UNINTENTIONAL,
-            start=None,
-            end=None,
+        unintentional = (
+            checker.specificate_conflicts_for_allowed_classrooms_in_building(
+                building_id=must_be_int(building.id),
+                type=ConflictType.UNINTENTIONAL,
+                start=None,
+                end=None,
+            )
         )
         intentional = checker.specificate_conflicts_for_allowed_classrooms_in_building(
             building_id=must_be_int(building.id),
@@ -236,7 +235,9 @@ class TestClassroomsWithConflictsIndicatorForSchedule:
         ).create_and_refresh(recurrence=Recurrence.CUSTOM, allocated=False)
         OccurrenceModelFactory(
             schedule=candidate_schedule, session=session, classroom=None
-        ).create_and_refresh(date=_FUTURE_DATE, start_time=time(9, 0), end_time=time(11, 0))
+        ).create_and_refresh(
+            date=_FUTURE_DATE, start_time=time(9, 0), end_time=time(11, 0)
+        )
         session.refresh(candidate_schedule)
 
         checker = _checker(user=admin_user, session=session)
