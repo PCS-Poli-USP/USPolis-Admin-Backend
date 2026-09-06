@@ -56,6 +56,36 @@ LOKI_EXCLUDED_PATHS = (
     "/api/openapi.json",
 )
 
+# Keys redacted (case-insensitive) from any request body before it's logged
+# or persisted - e.g. JupiterLoginRequest.password carries the user's real
+# USP Jupiter password, and a wrong-password crawl attempt is exactly the
+# case that trips the error-response body persistence below.
+SENSITIVE_BODY_KEYS = frozenset({"password"})
+
+
+def redact_sensitive_fields(data: Any) -> Any:
+    """Recursively redact `SENSITIVE_BODY_KEYS` from a parsed JSON body."""
+    if isinstance(data, dict):
+        return {
+            key: "***REDACTED***"
+            if key.lower() in SENSITIVE_BODY_KEYS
+            else redact_sensitive_fields(value)
+            for key, value in data.items()
+        }
+    if isinstance(data, list):
+        return [redact_sensitive_fields(item) for item in data]
+    return data
+
+
+def redact_json_body(decoded: str) -> str:
+    """Best-effort: redact sensitive fields if `decoded` is a JSON object/array,
+    otherwise return it unchanged (e.g. non-JSON text bodies)."""
+    try:
+        parsed = json.loads(decoded)
+    except Exception:
+        return decoded
+    return json.dumps(redact_sensitive_fields(parsed))
+
 
 def truncate_keeping_tail(text: str, limit: int) -> str:
     """Keeps the last `limit` characters instead of the first - for a
@@ -136,7 +166,7 @@ class LoggerMiddleware(BaseHTTPMiddleware):
                 return {"type": "http.request", "body": body}
 
             request._receive = receive
-            decoded = body.decode("utf-8")
+            decoded = redact_json_body(body.decode("utf-8"))
         except Exception as e:
             logger.error(f"Error reading request body: {e}")
             return None
@@ -166,7 +196,7 @@ class LoggerMiddleware(BaseHTTPMiddleware):
                 return {"type": "http.request", "body": body}
 
             request._receive = receive
-            decoded = body.decode("utf-8")
+            decoded = redact_json_body(body.decode("utf-8"))
         except Exception as e:
             logger.error(f"Error reading request body for persistence: {e}")
             return
@@ -303,7 +333,9 @@ class LoggerMiddleware(BaseHTTPMiddleware):
         except Exception:
             process_time = time.time() - start_time
             tb = traceback.format_exc()
-            logger.error(f"Unhandled exception in {request.method} {request.url.path}:\n{tb}")
+            logger.error(
+                f"Unhandled exception in {request.method} {request.url.path}:\n{tb}"
+            )
             self.detail = truncate_keeping_tail(tb, 500)
             response = Response(
                 content=json.dumps({"detail": "Internal Server Error"}),

@@ -7,7 +7,13 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
-from server.middlewares import LoggerMessage, LoggerMiddleware, get_client_ip
+from server.middlewares import (
+    LoggerMessage,
+    LoggerMiddleware,
+    get_client_ip,
+    redact_json_body,
+    redact_sensitive_fields,
+)
 
 
 def make_request(
@@ -40,6 +46,47 @@ class TestGetClientIp:
     def test_returns_none_without_header_or_client(self) -> None:
         request = make_request()
         assert get_client_ip(request) is None
+
+
+class TestRedactSensitiveFields:
+    def test_redacts_a_top_level_password(self) -> None:
+        data = {"n_usp": "12345678", "password": "hunter2"}
+        assert redact_sensitive_fields(data) == {
+            "n_usp": "12345678",
+            "password": "***REDACTED***",
+        }
+
+    def test_redacts_a_nested_password(self) -> None:
+        data = {"user": {"email": "a@usp.br", "password": "hunter2"}}
+        assert redact_sensitive_fields(data) == {
+            "user": {"email": "a@usp.br", "password": "***REDACTED***"}
+        }
+
+    def test_redacts_password_inside_a_list(self) -> None:
+        data = [{"password": "hunter2"}, {"password": "hunter3"}]
+        assert redact_sensitive_fields(data) == [
+            {"password": "***REDACTED***"},
+            {"password": "***REDACTED***"},
+        ]
+
+    def test_is_case_insensitive(self) -> None:
+        assert redact_sensitive_fields({"Password": "hunter2"}) == {
+            "Password": "***REDACTED***"
+        }
+
+    def test_leaves_unrelated_fields_untouched(self) -> None:
+        data = {"code": "MAC0110"}
+        assert redact_sensitive_fields(data) == data
+
+
+class TestRedactJsonBody:
+    def test_redacts_password_in_valid_json(self) -> None:
+        result = redact_json_body('{"n_usp":"123","password":"hunter2"}')
+        assert "hunter2" not in result
+        assert "***REDACTED***" in result
+
+    def test_returns_non_json_text_unchanged(self) -> None:
+        assert redact_json_body("not json") == "not json"
 
 
 class TestLoggerMessageFormat:
@@ -139,7 +186,7 @@ class TestRequestBodyOnErrorResponses:
         assert len(lines) == 1
         assert 'status="409"' in lines[0]
         assert 'response_detail="Integrity error"' in lines[0]
-        assert 'request_body="{"code":"MAC0110"}"' in lines[0]
+        assert 'request_body="{"code": "MAC0110"}"' in lines[0]
 
     def test_matched_route_success_does_not_include_body_on_response_line(
         self, client: TestClient, captured_logs: MagicMock
@@ -149,7 +196,7 @@ class TestRequestBodyOnErrorResponses:
 
         assert 'request_body="N/A"' in response_lines(captured_logs)[0]
         # The body is still captured on the Request line regardless of status.
-        assert 'request_body="{"code":"MAC0110"}"' in request_lines(captured_logs)[0]
+        assert 'request_body="{"code": "MAC0110"}"' in request_lines(captured_logs)[0]
 
     def test_unmatched_route_conflict_does_not_capture_body(
         self, client: TestClient, captured_logs: MagicMock
@@ -160,6 +207,30 @@ class TestRequestBodyOnErrorResponses:
         lines = response_lines(captured_logs)
         assert 'request_body="N/A"' in lines[0]
         assert 'response_detail="Other conflict"' in lines[0]
+
+
+class TestRequestBodyRedaction:
+    def test_password_is_redacted_on_the_response_log_line(
+        self, client: TestClient, captured_logs: MagicMock
+    ) -> None:
+        payload = b'{"code":"MAC0110","password":"hunter2"}'
+        client.post("/subjects/duplicate", content=payload)
+
+        lines = response_lines(captured_logs)
+        assert len(lines) == 1
+        assert "hunter2" not in lines[0]
+        assert "***REDACTED***" in lines[0]
+
+    def test_password_is_redacted_on_the_request_log_line(
+        self, client: TestClient, captured_logs: MagicMock
+    ) -> None:
+        payload = b'{"code":"MAC0110","password":"hunter2"}'
+        client.post("/subjects", content=payload)
+
+        lines = request_lines(captured_logs)
+        assert len(lines) == 1
+        assert "hunter2" not in lines[0]
+        assert "***REDACTED***" in lines[0]
 
 
 class TestLokiAccessLog:
