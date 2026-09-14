@@ -14,6 +14,6 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=int(CONFIG.port),
         reload=dev,
-        ssl_keyfile=os.path.join(BASE_DIR, "certs", "key.pem") if dev else None,
-        ssl_certfile=os.path.join(BASE_DIR, "certs", "cert.pem") if dev else None,
+#        ssl_keyfile=os.path.join(BASE_DIR, "certs", "key.pem") if dev else None,
+ #       ssl_certfile=os.path.join(BASE_DIR, "certs", "cert.pem") if dev else None,
     )

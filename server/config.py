@@ -29,6 +29,8 @@ class Settings(BaseModel):
             "http://localhost:3000",
             "https://uspolis.com.br",
             "https://localhost:3000",
+            "https://www.uspolis.com.br",
+            "https://localhost",
         ],
         cast=Csv(),
     )  # pyright: ignore[reportAssignmentType]

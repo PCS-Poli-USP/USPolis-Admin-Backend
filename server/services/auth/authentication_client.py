@@ -73,6 +73,43 @@ class AuthenticationClient:
             )
 
     @staticmethod
+    def exchange_server_auth_code_for_tokens(
+        server_auth_code: str,
+    ) -> tuple[str | None, str | None]:
+        data = {
+            "code": server_auth_code,
+            "client_id": CONFIG.google_auth_client_id,
+            "client_secret": CONFIG.google_auth_client_secret,
+            "grant_type": "authorization_code",
+        }
+
+        # response = requests.post(
+        #     AuthenticationClient.token_url,
+        #     data=data,
+        # )
+
+        # if response.status_code != 200:
+        #     return None, None
+
+        response = requests.post(
+            AuthenticationClient.token_url,
+            data=data,
+        )
+
+        print("STATUS GOOGLE TOKEN:", response.status_code)
+        print("RESPOSTA GOOGLE TOKEN:", response.text)
+
+        if response.status_code != 200:
+            return None, None
+
+        token_data = response.json()
+
+        return (
+            token_data.get("access_token"),
+            token_data.get("refresh_token"),
+        )
+
+    @staticmethod
     def refresh_access_token(refresh_token: str) -> Any:
         token_url = "https://oauth2.googleapis.com/token"
         client_id = CONFIG.google_auth_client_id
