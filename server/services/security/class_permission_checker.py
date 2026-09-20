@@ -12,7 +12,7 @@ from server.services.security.classrooms_permission_checker import (
     ClassroomPermissionChecker,
 )
 from server.services.security.role_permission_evaluator import PermissionIndex
-from server.utils.enums.actions_enums import ClassroomAction
+from server.utils.enums.actions_enums import ClassroomAction, translate_action
 
 
 class ClassPermissionChecker(PermissionChecker[Class]):
@@ -59,18 +59,23 @@ class ClassPermissionChecker(PermissionChecker[Class]):
         elif isinstance(object, list):
             self.__class_list_permission_checker(object, action)
 
-    def __class_id_permission_checker(self, class_id: int, action: ClassroomAction) -> None:
+    def __class_id_permission_checker(
+        self, class_id: int, action: ClassroomAction
+    ) -> None:
         class_ = ClassRepository.get_by_id(id=class_id, session=self.session)
         self.__class_obj_permission_checker(class_, action)
 
-    def __class_obj_permission_checker(self, class_: Class, action: ClassroomAction) -> None:
+    def __class_obj_permission_checker(
+        self, class_: Class, action: ClassroomAction
+    ) -> None:
         class_building_ids = class_.building_ids()
         if not any(
             self.building_checker.is_allowed(building_id, action)
             for building_id in class_building_ids
         ):
             raise ForbiddenClassAccess(
-                f"Usuário não tem permissão para acessar a turma {class_.subject.code} - {class_.code}"
+                f"Usuário não tem permissão para {translate_action(action)} "
+                f"a turma {class_.subject.code} - {class_.code}"
             )
 
         allowed = False
@@ -86,7 +91,8 @@ class ClassPermissionChecker(PermissionChecker[Class]):
 
         if not allowed:
             raise ForbiddenClassAccess(
-                f"Usuário não tem permissão para acessar a turma {class_.subject.code} - {class_.code}"
+                f"Usuário não tem permissão para {translate_action(action)} "
+                f"a turma {class_.subject.code} - {class_.code}"
             )
 
     def __class_list_permission_checker(

@@ -5,7 +5,7 @@ from server.models.database.classroom_db_model import Classroom
 from server.models.database.user_db_model import User
 from server.services.security.base_permission_checker import PermissionChecker
 from server.services.security.role_permission_evaluator import PermissionIndex
-from server.utils.enums.actions_enums import ClassroomAction
+from server.utils.enums.actions_enums import ClassroomAction, translate_action
 from server.utils.must_be_int import must_be_int
 
 
@@ -66,7 +66,7 @@ class ClassroomPermissionChecker(PermissionChecker[Classroom]):
     ) -> None:
         if not self.is_allowed(classroom_id, action):
             raise ForbiddenClassroomAccess(
-                "Usuário não tem permissão para acessar a sala"
+                f"Usuário não tem permissão para {translate_action(action)} a sala"
             )
 
     def __classroom_obj_permission_checker(
@@ -75,7 +75,7 @@ class ClassroomPermissionChecker(PermissionChecker[Classroom]):
         classroom_id = must_be_int(classroom.id)
         if not self.is_allowed(classroom_id, action, building_id=classroom.building_id):
             raise ForbiddenClassroomAccess(
-                "Usuário não tem permissão para acessar a sala"
+                f"Usuário não tem permissão para {translate_action(action)} a sala"
             )
 
     def __classroom_list_permission_checker(
@@ -85,7 +85,9 @@ class ClassroomPermissionChecker(PermissionChecker[Classroom]):
             classroom
             for classroom in classrooms
             if not self.is_allowed(
-                must_be_int(classroom.id) if isinstance(classroom, Classroom) else classroom,
+                must_be_int(classroom.id)
+                if isinstance(classroom, Classroom)
+                else classroom,
                 action,
                 building_id=classroom.building_id
                 if isinstance(classroom, Classroom)
@@ -94,7 +96,8 @@ class ClassroomPermissionChecker(PermissionChecker[Classroom]):
         ]
         if disallowed:
             raise ForbiddenClassroomAccess(
-                "Usuário não tem permissão para acessar uma ou mais salas"
+                f"Usuário não tem permissão para {translate_action(action)} "
+                "uma ou mais salas"
             )
 
 

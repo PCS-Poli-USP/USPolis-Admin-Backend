@@ -9,7 +9,7 @@ from server.services.security.buildings_permission_checker import (
     BuildingPermissionChecker,
 )
 from server.services.security.role_permission_evaluator import PermissionIndex
-from server.utils.enums.actions_enums import BuildingAction
+from server.utils.enums.actions_enums import BuildingAction, translate_action
 from server.utils.must_be_int import must_be_int
 
 
@@ -64,7 +64,8 @@ class SubjectPermissionChecker(PermissionChecker[Subject]):
             for building_id in building_ids
         ):
             raise ForbiddenSubjectAccess(
-                f"Usuário não tem permissão para acessar a disciplina {subject.code}"
+                f"Usuário não tem permissão para {translate_action(action)} "
+                f"a disciplina {subject.code}"
             )
 
     def __subject_list_permission_checker(

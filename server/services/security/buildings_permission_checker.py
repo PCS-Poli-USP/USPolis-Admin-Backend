@@ -5,7 +5,7 @@ from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
 from server.services.security.base_permission_checker import PermissionChecker
 from server.services.security.role_permission_evaluator import PermissionIndex
-from server.utils.enums.actions_enums import PermissionAction
+from server.utils.enums.actions_enums import PermissionAction, translate_action
 from server.utils.enums.resources_enums import Resource
 from server.utils.must_be_int import must_be_int
 
@@ -71,7 +71,8 @@ class BuildingPermissionChecker(PermissionChecker[Building]):
     ) -> None:
         if not self.is_allowed(building_id, action):
             raise ForbiddenBuildingAccess(
-                f"Usuário não tem permissão para acessar o prédio com ID {building_id}"
+                f"Usuário não tem permissão para {translate_action(action)} "
+                f"o prédio com ID {building_id}"
             )
 
     def __building_obj_permission_checker(
@@ -79,7 +80,8 @@ class BuildingPermissionChecker(PermissionChecker[Building]):
     ) -> None:
         if not self.is_allowed(must_be_int(building.id), action):
             raise ForbiddenBuildingAccess(
-                f"Usuário não tem permissão para acessar o prédio {building.name}"
+                f"Usuário não tem permissão para {translate_action(action)} "
+                f"o prédio {building.name}"
             )
 
     def __building_list_permission_checker(
@@ -89,17 +91,22 @@ class BuildingPermissionChecker(PermissionChecker[Building]):
             building
             for building in buildings
             if not self.is_allowed(
-                must_be_int(building.id) if isinstance(building, Building) else building,
+                must_be_int(building.id)
+                if isinstance(building, Building)
+                else building,
                 action,
             )
         ]
         if disallowed:
             names = ", ".join(
-                building.name if isinstance(building, Building) else "ID " + str(building)
+                building.name
+                if isinstance(building, Building)
+                else "ID " + str(building)
                 for building in disallowed
             )
             raise ForbiddenBuildingAccess(
-                f"Usuário não tem permissão para acessar um ou mais prédios: {names}"
+                f"Usuário não tem permissão para {translate_action(action)} "
+                f"um ou mais prédios: {names}"
             )
 
 

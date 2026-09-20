@@ -29,6 +29,21 @@ def test_classroom_checker_denies_without_group_or_role(
         checker.check_permission(must_be_int(classroom.id), ClassroomAction.UPDATE)
 
 
+def test_classroom_checker_denial_message_names_the_action(
+    classroom: Classroom, common_user: User, session: Session
+) -> None:
+    checker = ClassroomPermissionChecker(
+        user=common_user,
+        session=session,
+        permission_index=build_permission_index(common_user),
+    )
+
+    with pytest.raises(ForbiddenClassroomAccess) as exc_info:
+        checker.check_permission(must_be_int(classroom.id), ClassroomAction.RESERVE)
+
+    assert "reservar" in exc_info.value.detail
+
+
 def test_classroom_checker_allows_via_direct_classroom_permission(
     classroom: Classroom, admin_user: User, common_user: User, session: Session
 ) -> None:

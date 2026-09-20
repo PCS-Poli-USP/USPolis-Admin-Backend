@@ -12,7 +12,7 @@ from server.services.security.classrooms_permission_checker import (
     ClassroomPermissionChecker,
 )
 from server.services.security.role_permission_evaluator import PermissionIndex
-from server.utils.enums.actions_enums import ClassroomAction
+from server.utils.enums.actions_enums import ClassroomAction, translate_action
 from server.utils.must_be_int import must_be_int
 
 
@@ -78,14 +78,16 @@ class SchedulePermissionChecker(PermissionChecker[Schedule]):
 
         if schedule.class_:
             buildings_ids = [
-                must_be_int(building.id) for building in schedule.class_.subject.buildings
+                must_be_int(building.id)
+                for building in schedule.class_.subject.buildings
             ]
             if buildings_ids and not any(
                 self.building_checker.is_allowed(building_id, action)
                 for building_id in buildings_ids
             ):
                 raise ForbiddenScheduleAccess(
-                    f"Usuário não tem permissão para acessar a agenda de ID {schedule.id}"
+                    f"Usuário não tem permissão para {translate_action(action)} "
+                    f"a agenda de ID {schedule.id}"
                 )
         if schedule.reservation:
             building = schedule.reservation.get_building()
@@ -93,7 +95,8 @@ class SchedulePermissionChecker(PermissionChecker[Schedule]):
                 must_be_int(building.id), action
             ):
                 raise ForbiddenScheduleAccess(
-                    f"Usuário não tem permissão para acessar a agenda da reserva {schedule.reservation.title}"
+                    f"Usuário não tem permissão para {translate_action(action)} "
+                    f"a agenda da reserva {schedule.reservation.title}"
                 )
 
 

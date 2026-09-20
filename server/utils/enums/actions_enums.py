@@ -35,3 +35,20 @@ class CourseAction(StrEnum):
 
 
 PermissionAction = ClassroomAction | CourseAction | BuildingAction
+
+_ACTION_TRANSLATIONS: dict[str, str] = {
+    BaseAction.CREATE: "criar",
+    BaseAction.READ: "ler",
+    BaseAction.UPDATE: "atualizar",
+    BaseAction.DELETE: "excluir",
+    "allocate": "alocar",
+    "reserve": "reservar",
+    "request": "solicitar",
+}
+
+
+def translate_action(action: PermissionAction) -> str:
+    """Human-readable Portuguese verb for a permission action, meant to be
+    embedded in "Usuário não tem permissão para <ação> ..." exception
+    messages so it's evident which action was denied, not just that one was."""
+    return _ACTION_TRANSLATIONS.get(str(action), str(action))

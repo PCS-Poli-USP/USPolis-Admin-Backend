@@ -18,7 +18,7 @@ from server.services.cron.scheduler import lifespan
 
 app = FastAPI(
     title="USPolis Server",
-    version="2.0.0",
+    version="3.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
