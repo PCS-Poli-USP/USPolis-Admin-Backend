@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 
 class Building(BaseModel, table=True):
-    __table__args__ = (UniqueConstraint("main_group_id", name="unique_main_group_id"),)
+    __table_args__ = (UniqueConstraint("main_group_id", name="unique_main_group_id"),)
 
     name: str = Field(index=True, unique=True)
     updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
