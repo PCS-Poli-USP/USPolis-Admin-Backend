@@ -10,7 +10,7 @@ from collections.abc import Sequence
 
 from alembic import op
 from sqlmodel import Session, col, select
-
+from sqlalchemy import text
 from server.config import CONFIG
 from server.models.database.building_db_model import Building
 from server.models.database.building_permission_db_model import BuildingPermission
@@ -145,11 +145,22 @@ def upgrade() -> None:
             )
             session.add(group_role)
             session.flush()
-            for classroom in group.classrooms:
+            classroom_ids = session.execute(
+                text(
+                    """
+                    SELECT classroom_id
+                    FROM groupclassroomlink
+                    WHERE group_id = :group_id
+                    """
+                ),
+                {"group_id": must_be_int(group.id)},
+            ).scalars().all()
+
+            for classroom_id in classroom_ids:
                 session.add(
                     ClassroomPermission(
                         role_id=must_be_int(group_role.id),
-                        classroom_id=must_be_int(classroom.id),
+                        classroom_id=must_be_int(classroom_id),
                         actions=list(MIGRATED_CLASSROOM_ACTIONS),
                         granted_by_id=admin_id,
                     )
