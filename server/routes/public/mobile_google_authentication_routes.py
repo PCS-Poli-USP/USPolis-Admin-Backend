@@ -8,7 +8,8 @@ from server.models.http.responses.mobile_auth_user_response_models import (
     AuthenticationResponse,
 )
 from server.routes.public.auth_routes import AuthResponse
-from server.utils.google_auth_utils import authenticate_with_google
+from google.oauth2 import id_token
+from google.auth.transport import requests
 from server.config import CONFIG
 from server.repositories.user_session_repository import UserSessionRepository
 from server.models.database.user_session_db_model import UserSession
@@ -143,7 +144,6 @@ def login(
         user_session = UserSessionRepository.get_session(
             user_id=must_be_int(user.id),
             user_agent=user_agent,
-            ip_address=ip_address,
             session=session,
         )
 
