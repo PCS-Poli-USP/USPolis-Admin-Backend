@@ -390,7 +390,7 @@ class AllocationResourceResponse(BaseModel):
         return [
             AllocationResourceResponse.from_classroom(classroom)
             for classroom in classrooms
-            if not classroom.remote
+            if not classroom.restricted
         ]
 
     @classmethod

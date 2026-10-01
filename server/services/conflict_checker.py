@@ -294,7 +294,7 @@ class ConflictChecker:
         )
 
         for classroom in classrooms:
-            if classroom.remote:
+            if classroom.restricted:
                 continue
             conflicts = self.calculate_conflicts_for_allowed_classroom(
                 classroom=classroom,

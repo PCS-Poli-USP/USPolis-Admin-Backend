@@ -216,6 +216,18 @@ class ScheduleRepository:
         session: Session,
         allocate: bool = True,
     ) -> Schedule:
+        # For a custom recurrence with a distinct start/end time per date, the
+        # schedule's own start_time/end_time (used as a summary for the whole
+        # reservation, e.g. in AllocationEventResponse's extendedProps) can't
+        # be any single occurrence's time — use the envelope covering every
+        # occurrence instead, so it's never misleadingly narrower than the
+        # actual reservation.
+        schedule_start_time = input.start_time
+        schedule_end_time = input.end_time
+        if input.recurrence == Recurrence.CUSTOM and input.times:
+            schedule_start_time = min(t[0] for t in input.times)
+            schedule_end_time = max(t[1] for t in input.times)
+
         new_schedule = Schedule(
             start_date=input.start_date,
             end_date=input.end_date,
@@ -224,8 +236,8 @@ class ScheduleRepository:
             all_day=input.all_day,
             allocated=input.allocated,
             week_day=input.week_day,
-            start_time=input.start_time,
-            end_time=input.end_time,
+            start_time=schedule_start_time,
+            end_time=schedule_end_time,
             class_id=None,
             class_=None,
             reservation_id=reservation.id,

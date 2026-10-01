@@ -16,6 +16,7 @@ class SolicitationResponse(BaseModel):
     status: ReservationStatus
     closed_by: str | None
     deleted_by: str | None
+    denial_justification: str | None
     created_at: datetime
     updated_at: datetime
 
@@ -37,6 +38,7 @@ class SolicitationResponse(BaseModel):
             status=solicitation.get_status(),
             closed_by=solicitation.closed_by,
             deleted_by=solicitation.deleted_by,
+            denial_justification=solicitation.denial_justification,
             created_at=solicitation.created_at,
             updated_at=solicitation.updated_at,
             building_id=solicitation.building_id,

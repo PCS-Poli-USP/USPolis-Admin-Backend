@@ -109,8 +109,9 @@ class ReservationRepository:
     ) -> Reservation:
         statement = (
             select(Reservation)
-            .join(Classroom)
-            .join(Building)
+            .join(Schedule, col(Schedule.reservation_id) == col(Reservation.id))
+            .join(Classroom, col(Schedule.classroom_id) == col(Classroom.id))
+            .join(Building, col(Classroom.building_id) == col(Building.id))
             .where(col(Building.id).in_(building_ids))
             .where(col(Reservation.id) == id)
         )
@@ -130,6 +131,7 @@ class ReservationRepository:
             .join(Classroom, col(Classroom.id) == col(Schedule.classroom_id))
             .where(
                 col(Classroom.id).in_(classroom_ids),
+                col(Reservation.id) == id,
             )
         )
         try:

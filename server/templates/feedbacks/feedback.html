@@ -1,61 +1,25 @@
-<!DOCTYPE html>
-<head>
-    <title>Um feedback foi enviado </title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            color: #333;
-        }
-        .email-container {
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .logo {
-            display: flex;
-            max-width: 200px;
-            align-items: center;
-        }
-        .logo-image {
-            max-width: 150px;
-            margin-bottom: 16px;
-        }
-        .logo-text {
-            font-size: 75px;
-            font-weight: bold;
-            margin-left: 0px;
-            color: #408080;
-        }
-        .button {
-            color: #fff;
-            background-color: #007BFF;
-            border-color: #007BFF;
-            border-radius: .25rem;
-            text-decoration: none;
-            padding: .375rem .75rem;
-            font-size: 1rem;
-            line-height: 1.5;
-        }
-    </style>
-</head>
-<body>
-    <div class="email-container">
-        <div class="logo">
-          <!-- <img src="cid:logo" alt="Uspolis-Logo" class="logo-image"> -->
-          <div class="logo-text">USPolis</div>
-        </div>
-        <p>
-            <b>Usuário: </b>{{ data.user_name }}<br>
-            <b>Email: </b>{{ data.user_email }}<br>
-            <b>Título: </b>{{ data.title }}<br>
-            <b>Mensagem: </b><br>
-            {{ data.message }}
-        </p>
-        <br>
-        Atenciosamente, <br>
-        Equipe USPolis
-        </p>
-        <p>ATENÇÃO! Este e-mail é apenas informativo, não é necessário respondê-lo.</p>
-    </div>
-</body>
-</html>
+{% extends "_layout/base_email.html" %}
+
+{% block title %}Um feedback foi enviado{% endblock %}
+
+{% block status %}
+<tr>
+    <td class="status-ribbon" style="background-color: #eaf2f2; color: #2f6666;">
+        &#128172; NOVO FEEDBACK
+    </td>
+</tr>
+{% endblock %}
+
+{% block content %}
+<p>Um novo feedback foi enviado pelo sistema.</p>
+
+<div class="section-title">Detalhes do feedback</div>
+<table class="detail-table" role="presentation" cellpadding="0" cellspacing="0">
+    <tr><td class="detail-label">Usuário</td><td class="detail-value">{{ data.user_name }}</td></tr>
+    <tr><td class="detail-label">Email</td><td class="detail-value">{{ data.user_email }}</td></tr>
+    <tr><td class="detail-label">Título</td><td class="detail-value">{{ data.title }}</td></tr>
+</table>
+
+<div class="section-title">Mensagem</div>
+<div class="quote-block">{{ data.message }}</div>
+{% endblock %}

@@ -16,7 +16,7 @@ class ClassroomRegister(BaseModel):
     accessibility: bool
     audiovisual: AudiovisualType
     air_conditioning: bool
-    remote: bool = False
+    restricted: bool = False
     reservable: bool = True
     observation: str = ""
 

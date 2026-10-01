@@ -15,3 +15,6 @@ class UserSession(SQLModel, table=True):
     created_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
 
     user: User = Relationship()
+
+    def is_expired(self) -> bool:
+        return self.expires_at < BrazilDatetime.now_utc()

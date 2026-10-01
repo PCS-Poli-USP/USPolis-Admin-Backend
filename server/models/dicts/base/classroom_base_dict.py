@@ -13,4 +13,4 @@ class ClassroomBaseDict(BaseDict, total=False):
     air_conditioning: bool
     observation: str
     reservable: bool
-    remote: bool
+    restricted: bool

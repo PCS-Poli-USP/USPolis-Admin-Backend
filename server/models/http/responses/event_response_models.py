@@ -12,7 +12,7 @@ class EventResponse(EventResponseBase):
 
     @classmethod
     def from_event(cls, event: Event) -> Self:
-        base = super().from_event(event)
+        base = EventResponseBase.from_event(event)
         return cls(
             **base.model_dump(),
             reservation=ReservationCoreResponse.from_reservation(event.reservation),

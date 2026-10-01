@@ -29,6 +29,8 @@ Here we have the tecnologies used on backend:
 
 You can see a complete documentation at [USPolis-Admin Wiki](https://github.com/PCS-Poli-USP/USPolis-Admin/wiki), there you will find our architecture, diagrams, bussiness rules, descriptions and more.
 
+Repo-local docs: [TESTS.md](TESTS.md) (test suite structure and coverage), [SESSION_MANAGEMENT.md](SESSION_MANAGEMENT.md) (login/session cookie lifecycle and expiration rules), [LOGGING.md](LOGGING.md) (request logging, the Loki access log, and file rotation), [PERMISSIONS.md](PERMISSIONS.md) (role-based permission model, the `Group`→`Role` migration, and how `PermissionIndex` is wired into route dependencies).
+
 ## Setup
 
 This codebase was written for Python 3.12 and above. Don't forget about a venv as well, in this project we use [Poetry](https://python-poetry.org/docs/) for dependency management. 
@@ -102,7 +104,7 @@ Make sure to install test dependencies before trying to run the tests:
 poetry install --with test
 ```
 
-The tests need access to a PostgreSQL database that **will be cleared** at the end of each test (look at .env file and set the test databse url and test database name).
+The tests need access to a PostgreSQL database (look at .env file and set the test databse url and test database name). Each test runs inside its own database transaction (with a SAVEPOINT, so a test's own `commit()` calls don't escape it) that is **rolled back** right after the test finishes, instead of truncating the whole database — this keeps every test isolated while staying fast regardless of how many tables the schema has.
 
 Then just run the test suite.
 
@@ -112,3 +114,4 @@ pytest
 
 > [!TIP]
 > If you use VSCode install [Python Test Explorer](https://marketplace.visualstudio.com/items?itemName=LittleFoxTeam.vscode-python-test-adapter) extension, make sure that you are running only one time each test, otherwise the tests must be fail.
+

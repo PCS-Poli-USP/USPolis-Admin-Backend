@@ -1,4 +1,8 @@
+from typing import TypeVar, TypeGuard as TypeGuardProtocol
+
 from fastapi import HTTPException, status
+
+T = TypeVar("T")
 
 
 class TypeGuard:
@@ -19,6 +23,20 @@ class TypeGuard:
         if string is None:
             raise StringIsNoneException()
         return string
+
+    @staticmethod
+    def is_not_none(value: T | None) -> TypeGuardProtocol[T]:
+        """
+        TypeGuard for any value that can be T | None.
+        """
+        return value is not None
+
+    @staticmethod
+    def ensure_not_none(value: T | None) -> T:
+        """Ensure a value is not None and return it."""
+        if value is None:
+            raise ValueError("Value is None.")
+        return value
 
 
 class IdIsNoneException(HTTPException):

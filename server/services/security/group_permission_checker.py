@@ -33,8 +33,8 @@ class GroupPermissionChecker(PermissionChecker[Group]):
         self,
         group_id: int,
     ) -> None:
-        user_ids = self.user.classrooms_ids_set()
-        if group_id not in user_ids:
+        user_group_ids = self.user.group_ids_set()
+        if group_id not in user_group_ids:
             raise ForbiddenGroupAccess()
 
     def __group_obj_permission_checker(self, group: Group) -> None:

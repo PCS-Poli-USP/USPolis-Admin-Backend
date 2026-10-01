@@ -17,6 +17,11 @@ class MobileUserRepository:
         return user
 
     @staticmethod
+    def get_user_by_sub_or_none(*, sub: str, session: Session) -> MobileUser | None:
+        statement = select(MobileUser).where(col(MobileUser.sub) == sub)
+        return session.exec(statement).first()
+
+    @staticmethod
     def get_user_by_id(*, id: int, session: Session) -> MobileUser:
         statement = select(MobileUser).where(col(MobileUser.id) == id)
         user = session.exec(statement).one()

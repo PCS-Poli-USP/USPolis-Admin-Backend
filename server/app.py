@@ -1,11 +1,7 @@
 """Server app config."""
 
-import asyncio
-from collections.abc import AsyncGenerator
-
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
 
 from server.deps_overrides import DepsOverrides
 from server.exception_handlers import add_exception_handlers
@@ -18,41 +14,11 @@ from server.routes.health import router as HealthRouter
 from server.routes.dev import router as DevRouter
 
 from server.config import CONFIG
-from server.cache import clear_expired_cache
-
-_cleanup_task: asyncio.Task[None] | None = None  # Declaração explícita
-
-
-async def periodic_cache_cleanup() -> None:
-    """Task que roda a cada 60 minutos limpando cache expirado"""
-    while True:
-        await asyncio.sleep(3600)
-        count = clear_expired_cache()
-        print(f"Cache cleanup: removed {count} expired entries")
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    """Gerencia o ciclo de vida da aplicação"""
-    global _cleanup_task
-    _cleanup_task = asyncio.create_task(periodic_cache_cleanup())
-    print("Cache cleanup started")
-
-    yield
-
-    # Shutdown
-    if _cleanup_task:
-        _cleanup_task.cancel()
-        try:
-            await _cleanup_task
-        except asyncio.CancelledError:
-            pass
-    print("Cache cleanup stoped")
-
+from server.services.cron.scheduler import lifespan
 
 app = FastAPI(
     title="USPolis Server",
-    version="2.0.0",
+    version="3.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",

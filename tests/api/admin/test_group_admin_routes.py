@@ -61,10 +61,10 @@ def test_get_group_by_id_with_common_user(
 
 
 def test_create_group_with_admin_user(
-    user: User, building: Building, session: Session, client: TestClient
+    admin_user: User, building: Building, session: Session, client: TestClient
 ) -> None:
     classrooms = ClassroomModelFactory(
-        creator=user, building=building, session=session
+        creator=admin_user, building=building, session=session
     ).create_many_default_and_refresh()
     input = GroupRequestFactory(building).create_input(
         classroom_ids=[must_be_int(classrooms[0].id)]
@@ -74,10 +74,14 @@ def test_create_group_with_admin_user(
 
 
 def test_create_group_with_same_name(
-    user: User, building: Building, group: Group, session: Session, client: TestClient
+    admin_user: User,
+    building: Building,
+    group: Group,
+    session: Session,
+    client: TestClient,
 ) -> None:
     classrooms = ClassroomModelFactory(
-        creator=user, building=building, session=session
+        creator=admin_user, building=building, session=session
     ).create_many_default_and_refresh()
     input = GroupRequestFactory(building).create_input(
         name=group.name, classroom_ids=[must_be_int(classrooms[0].id)]
@@ -110,14 +114,14 @@ def test_create_group_with_users(
 
 
 def test_create_group_with_classrooms(
-    user: User,
+    admin_user: User,
     group: Group,
     building: Building,
     session: Session,
     client: TestClient,
 ) -> None:
     classrooms = ClassroomModelFactory(
-        creator=user, building=building, session=session
+        creator=admin_user, building=building, session=session
     ).create_many_default_and_refresh(count=10)
     ids = []
     for i in range(5):
@@ -132,11 +136,11 @@ def test_create_group_with_all_classrooms(
     building: Building,
     group: Group,
     session: Session,
-    user: User,
+    admin_user: User,
     client: TestClient,
 ) -> None:
     classrooms = ClassroomModelFactory(
-        creator=user, building=building, session=session
+        creator=admin_user, building=building, session=session
     ).create_many_default_and_refresh()
     input = GroupRequestFactory(building).create_input(
         classroom_ids=[must_be_int(classroom.id) for classroom in classrooms],
@@ -155,19 +159,19 @@ def test_create_group_without_classrooms(
 
 
 def test_create_group_with_classrooms_in_other_building(
-    user: User,
+    admin_user: User,
     building: Building,
     session: Session,
     client: TestClient,
 ) -> None:
     building_B = BuildingModelFactory(
-        creator=user, session=session
+        creator=admin_user, session=session
     ).create_and_refresh()
     main_group_B = GroupModelFactory(  # noqa: F841
         building=building_B, session=session
     ).create_and_refresh()
     classrooms = ClassroomModelFactory(
-        creator=user, building=building_B, session=session
+        creator=admin_user, building=building_B, session=session
     ).create_many_default_and_refresh(count=5)
     ids = [must_be_int(classroom.id) for classroom in classrooms]
     input = GroupRequestFactory(building).create_input(classroom_ids=ids)
@@ -194,10 +198,13 @@ def test_create_group_with_common_user(
 
 
 def test_update_group_with_admin_user(
-    building: Building, user: User, session: Session, client: TestClient
+    building: Building, admin_user: User, session: Session, client: TestClient
 ) -> None:
     classrooms = ClassroomModelFactory(
-        session=session, creator=user, building=building, group=building.main_group
+        session=session,
+        creator=admin_user,
+        building=building,
+        group=building.main_group,
     ).create_many_default_and_refresh()
 
     group = GroupModelFactory(building=building, session=session).create_and_refresh(
@@ -219,10 +226,14 @@ def test_update_group_with_admin_user(
 
 
 def test_update_group_with_same_name(
-    user: User, building: Building, group: Group, session: Session, client: TestClient
+    admin_user: User,
+    building: Building,
+    group: Group,
+    session: Session,
+    client: TestClient,
 ) -> None:
     classrooms = ClassroomModelFactory(
-        creator=user, building=building, session=session
+        creator=admin_user, building=building, session=session
     ).create_many_default_and_refresh()
     group_B = GroupModelFactory(building=building, session=session).create_and_refresh(
         classrooms=[classrooms[0]]
@@ -265,10 +276,14 @@ def test_update_group_add_users_without_buildings(
 
 
 def test_update_group_add_users_with_buildings(
-    user: User, building: Building, group: Group, session: Session, client: TestClient
+    admin_user: User,
+    building: Building,
+    group: Group,
+    session: Session,
+    client: TestClient,
 ) -> None:
     building_B = BuildingModelFactory(
-        creator=user, session=session
+        creator=admin_user, session=session
     ).create_and_refresh()
     users = UserModelFactory(session).create_many_and_refresh(buildings=[building_B])
     ids = [must_be_int(created.id) for created in users]
@@ -303,7 +318,11 @@ def test_update_group_add_users_with_buildings(
 
 
 def test_update_group_remove_users_with_one_group_on_same_building(
-    user: User, building: Building, group: Group, session: Session, client: TestClient
+    admin_user: User,
+    building: Building,
+    group: Group,
+    session: Session,
+    client: TestClient,
 ) -> None:
     users = UserModelFactory(session).create_many_and_refresh(
         buildings=[building], groups=[group]
@@ -332,13 +351,17 @@ def test_update_group_remove_users_with_one_group_on_same_building(
 
 
 def test_update_group_remove_users_with_groups_on_same_building(
-    user: User, group: Group, building: Building, session: Session, client: TestClient
+    admin_user: User,
+    group: Group,
+    building: Building,
+    session: Session,
+    client: TestClient,
 ) -> None:
     users = UserModelFactory(session).create_many_and_refresh(
         buildings=[building], groups=[group]
     )
     classrooms = ClassroomModelFactory(
-        creator=user, building=building, session=session
+        creator=admin_user, building=building, session=session
     ).create_many_and_refresh()
     selected = []
     selected_ids = []
@@ -377,10 +400,14 @@ def test_update_group_remove_users_with_groups_on_same_building(
 
 
 def test_update_group_remove_users_with_groups_on_diff_buildings(
-    user: User, group: Group, building: Building, session: Session, client: TestClient
+    admin_user: User,
+    group: Group,
+    building: Building,
+    session: Session,
+    client: TestClient,
 ) -> None:
     building_B = BuildingModelFactory(
-        creator=user, session=session
+        creator=admin_user, session=session
     ).create_and_refresh()
     group_B = GroupModelFactory(
         building=building_B, session=session

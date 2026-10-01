@@ -1,6 +1,7 @@
 from typing import Any
-from fastapi import APIRouter, Body, Header, Query
+from fastapi import APIRouter, Body, Query
 
+from server.deps.google_auth_dep import GoogleAuthorizationDep
 from server.deps.session_dep import SessionDep
 from server.models.database.forum_db_model import ForumPost
 from server.models.database.subject_db_model import Subject
@@ -17,8 +18,8 @@ from server.models.http.responses.forum_post_response import (
 )
 from server.repositories.forum_repository import ForumRepository
 from server.repositories.subject_repository import SubjectNotFound, SubjectRepository
-from server.utils.google_auth_utils import authenticate_with_google
 from server.services.gmail_service import gmail_login, gmail_send_message
+from server.utils.must_be_int import must_be_int
 
 embed = Body(..., embed=True)
 
@@ -50,11 +51,9 @@ async def get_posts(
 async def create_forum_post(
     input: ForumPostRegister,
     session: SessionDep,
-    authorization: str = Header(None),
+    _: GoogleAuthorizationDep,
 ) -> ForumPostResponse:
     """Create a forum post with provided tags. The General Forum is associeted with subject_id == -1"""
-    # authenticate before creating and saving a post
-    authenticate_with_google(authorization)
 
     if input.subject_id == -1:
         globalForumSubject: Subject
@@ -67,7 +66,7 @@ async def create_forum_post(
                 id=input.subject_id, name="Forum Geral", session=session
             )
 
-        input.subject_id = globalForumSubject.id  # type: ignore
+        input.subject_id = must_be_int(globalForumSubject.id)
         input.class_id = None
 
     forum_post = ForumRepository.create(
@@ -79,12 +78,9 @@ async def create_forum_post(
 
 @router.delete("/posts/{post_id}")
 async def delete_forum_post(
-    post_id: int, session: SessionDep, authorization: str = Header(None)
+    post_id: int, session: SessionDep, _: GoogleAuthorizationDep
 ) -> None:
     """Soft delete (disable) a forum post"""
-    # authenticate (perhaps its better to use cognito and the admin)
-    authenticate_with_google(authorization)
-
     ForumRepository.disable_post(post_id=post_id, session=session)
 
 
@@ -124,13 +120,9 @@ async def create_forum_post_reply(
     post_id: int,
     input: ForumPostRegister,
     session: SessionDep,
-    authorization: str = Header(None),
+    _: GoogleAuthorizationDep,
 ) -> ForumPostReplyResponse:
     """Create forum post reply"""
-
-    # authenticate before creating and saving reply
-    authenticate_with_google(authorization)
-
     reply = ForumRepository.create_reply(
         input=to_forumreply_model(post_id, input),
         session=session,

@@ -16,4 +16,6 @@ class ClassroomBaseFactory(BaseFactory):
             "audiovisual": self.faker.random_element(AudiovisualType.values()),
             "air_conditioning": self.faker.boolean(),
             "observation": "",
+            "reservable": True,
+            "restricted": False,
         }

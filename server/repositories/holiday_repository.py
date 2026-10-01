@@ -2,7 +2,7 @@ from datetime import datetime
 
 from fastapi import HTTPException, status
 from sqlmodel import col, select, Session
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from server.models.database.holiday_db_model import Holiday
 from server.models.database.user_db_model import User
@@ -36,10 +36,14 @@ class HolidayRepository:
     def check_date_is_valid(
         *, category_id: int, date: datetime, session: Session
     ) -> bool:
+        # Holiday.date is a Date column - comparing it against the raw
+        # datetime (with a non-midnight time-of-day, e.g. BrazilDatetime.now_utc())
+        # would never match an existing holiday, silently always reporting
+        # "valid" regardless of whether one already exists that day.
         statement = (
             select(Holiday)
             .where(col(Holiday.category_id) == category_id)
-            .where(col(Holiday.date) == date)
+            .where(col(Holiday.date) == date.date())
         )
         result = session.exec(statement).first()
         return result is None
@@ -62,7 +66,13 @@ class HolidayRepository:
             created_by=creator,
         )
         session.add(new_holiday)
-        session.commit()
+        try:
+            session.commit()
+        except IntegrityError:
+            session.rollback()
+            raise HolidayInCategoryAlreadyExists(
+                input.date.strftime("%d/%m/%Y"), category.name
+            )
         session.refresh(new_holiday)
         return new_holiday
 

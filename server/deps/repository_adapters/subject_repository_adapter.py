@@ -4,6 +4,7 @@ from fastapi import Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from server.deps.authenticate import UserDep
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
+from server.deps.permission_index_dep import PermissionIndexDep
 from server.deps.session_dep import SessionDep
 from server.models.database.subject_db_model import Subject
 from server.models.http.requests.subject_request_models import (
@@ -17,6 +18,7 @@ from server.services.security.buildings_permission_checker import (
 from server.services.security.subjects_permission_checker import (
     SubjectPermissionChecker,
 )
+from server.utils.enums.actions_enums import BuildingAction
 
 
 class SubjectRepositoryAdapter:
@@ -25,19 +27,23 @@ class SubjectRepositoryAdapter:
         owned_building_ids: OwnedBuildingIdsDep,
         session: SessionDep,
         user: UserDep,
+        permission_index: PermissionIndexDep,
     ):
         self.owned_building_ids = owned_building_ids
         self.session = session
         self.user = user
-        self.checker = SubjectPermissionChecker(user=user, session=session)
+        self.checker = SubjectPermissionChecker(
+            user=user, session=session, permission_index=permission_index
+        )
         self.building_checker = BuildingPermissionChecker(
             user=user,
             session=session,
+            permission_index=permission_index,
         )
 
     def get_by_id(self, id: int) -> Subject:
         subject = SubjectRepository.get_by_id(id=id, session=self.session)
-        self.checker.check_permission(object=subject)
+        self.checker.check_permission(subject, BuildingAction.READ)
         return subject
 
     def get_all(self) -> list[Subject]:
@@ -47,11 +53,11 @@ class SubjectRepositoryAdapter:
 
     def get_by_code(self, code: str) -> Subject:
         subject = SubjectRepository.get_by_code(code=code, session=self.session)
-        self.checker.check_permission(object=subject)
+        self.checker.check_permission(subject, BuildingAction.READ)
         return subject
 
     def create(self, input: SubjectRegister) -> Subject:
-        self.building_checker.check_permission(input.building_ids)
+        self.building_checker.check_permission(input.building_ids, BuildingAction.CREATE)
         subject = SubjectRepository.create(input=input, session=self.session)
 
         try:
@@ -63,7 +69,7 @@ class SubjectRepositoryAdapter:
         return subject
 
     def update(self, id: int, input: SubjectUpdate) -> Subject:
-        self.checker.check_permission(object=id)
+        self.checker.check_permission(id, BuildingAction.UPDATE)
         subject = SubjectRepository.update(id=id, input=input, session=self.session)
 
         try:
@@ -74,8 +80,12 @@ class SubjectRepositoryAdapter:
         return subject
 
     def delete(self, id: int) -> None:
+        # Deleting a Subject ("disciplina") is gated by UPDATE, not DELETE:
+        # DELETE is reserved for destroying the Building/Classroom record
+        # itself, so this doesn't imply the (far more impactful) ability to
+        # delete the physical building.
         subject = SubjectRepository.get_by_id(id=id, session=self.session)
-        self.checker.check_permission(object=subject)
+        self.checker.check_permission(subject, BuildingAction.UPDATE)
         SubjectRepository.delete(id=id, session=self.session)
         self.session.commit()
 

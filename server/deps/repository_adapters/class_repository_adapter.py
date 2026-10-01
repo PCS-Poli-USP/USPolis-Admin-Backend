@@ -5,6 +5,7 @@ from fastapi import Depends
 from server.deps.authenticate import UserDep
 from server.deps.interval_dep import QueryIntervalDep
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
+from server.deps.permission_index_dep import PermissionIndexDep
 from server.deps.session_dep import SessionDep
 from server.models.database.class_db_model import Class
 from server.models.http.requests.class_request_models import ClassRegister, ClassUpdate
@@ -16,6 +17,7 @@ from server.services.security.schedule_permission_checker import (
 from server.services.security.subjects_permission_checker import (
     SubjectPermissionChecker,
 )
+from server.utils.enums.actions_enums import BuildingAction, ClassroomAction
 
 
 class ClassRepositoryAdapter:
@@ -25,14 +27,22 @@ class ClassRepositoryAdapter:
         session: SessionDep,
         user: UserDep,
         interval: QueryIntervalDep,
+        permission_index: PermissionIndexDep,
     ):
         self.session = session
         self.interval = interval
         self.user = user
         self.owned_building_ids = owned_building_ids
-        self.checker = ClassPermissionChecker(user=user, session=session)
-        self.schedule_checker = SchedulePermissionChecker(user=user, session=session)
-        self.subject_checker = SubjectPermissionChecker(user=user, session=session)
+        self.permission_index = permission_index
+        self.checker = ClassPermissionChecker(
+            user=user, session=session, permission_index=permission_index
+        )
+        self.schedule_checker = SchedulePermissionChecker(
+            user=user, session=session, permission_index=permission_index
+        )
+        self.subject_checker = SubjectPermissionChecker(
+            user=user, session=session, permission_index=permission_index
+        )
 
     def get_all(self) -> list[Class]:
         """Get all class on buildings that the user has access to."""
@@ -68,11 +78,11 @@ class ClassRepositoryAdapter:
 
     def get_by_id(self, id: int) -> Class:
         class_ = ClassRepository.get_by_id(id=id, session=self.session)
-        self.checker.check_permission(object=class_)
+        self.checker.check_permission(class_, ClassroomAction.READ)
         return class_
 
     def create(self, input: ClassRegister) -> Class:
-        self.subject_checker.check_permission(object=input.subject_id)
+        self.subject_checker.check_permission(input.subject_id, BuildingAction.CREATE)
         new_class = ClassRepository.create(input=input, session=self.session)
         self.session.commit()
         for schedule in new_class.schedules:
@@ -80,27 +90,37 @@ class ClassRepositoryAdapter:
         return new_class
 
     def update(self, id: int, input: ClassUpdate) -> Class:
-        self.checker.check_permission(object=id)
+        self.checker.check_permission(id, ClassroomAction.UPDATE)
         updated_class = ClassRepository.update(
-            id=id, input=input, user=self.user, session=self.session
+            id=id,
+            input=input,
+            user=self.user,
+            session=self.session,
+            permission_index=self.permission_index,
         )
         self.session.commit()
         self.session.refresh(updated_class)
         return updated_class
 
     def delete(self, id: int) -> None:
+        # Deleting a Class ("turma") is gated by UPDATE, not DELETE: DELETE is
+        # reserved for destroying the Classroom/Building record itself, and a
+        # user allowed to delete turmas shouldn't thereby be granted the
+        # (far more impactful) ability to delete the physical room.
         class_ = ClassRepository.get_by_id(id=id, session=self.session)
-        self.checker.check_permission(object=class_)
-        self.schedule_checker.check_permission(object=class_.schedules)
+        self.checker.check_permission(class_, ClassroomAction.UPDATE)
+        self.schedule_checker.check_permission(class_.schedules, ClassroomAction.UPDATE)
         ClassRepository.delete(id=id, session=self.session)
         self.session.commit()
 
     def delete_many(self, ids: list[int]) -> None:
         classes = ClassRepository.get_by_ids(ids=ids, session=self.session)
-        self.checker.check_permission(object=classes)
+        self.checker.check_permission(classes, ClassroomAction.UPDATE)
 
         for class_ in classes:
-            self.schedule_checker.check_permission(object=class_.schedules)
+            self.schedule_checker.check_permission(
+                class_.schedules, ClassroomAction.UPDATE
+            )
 
         ClassRepository.delete_many(ids=ids, session=self.session)
         self.session.commit()

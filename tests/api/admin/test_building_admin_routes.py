@@ -15,7 +15,7 @@ URL_PREFIX = "/admin/buildings"
 
 
 def test_create_building_with_admin_user(
-    user: User, session: Session, client: TestClient
+    admin_user: User, session: Session, client: TestClient
 ) -> None:
     input = BuildingRequestFactory().create_input()
     body = input.model_dump()
@@ -24,7 +24,7 @@ def test_create_building_with_admin_user(
 
     assert response.status_code == status.HTTP_200_OK
     assert created["name"] == input.name
-    assert created["created_by"] == user.name
+    assert created["created_by"] == admin_user.name
 
     group = GroupRepository.get_building_main_group(
         building_id=created["id"], session=session

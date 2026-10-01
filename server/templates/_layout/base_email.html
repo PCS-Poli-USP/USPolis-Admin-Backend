@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}USPolis{% endblock %}</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: #eef3f3;
+        font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        color: #22302f;
+    }
+    .body-wrap {
+        width: 100%;
+        background-color: #eef3f3;
+        padding: 40px 16px;
+    }
+    .container {
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border: 1px solid #dde6e6;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(20, 50, 50, 0.06);
+    }
+    .header {
+        background-color: #408080;
+        padding: 24px 32px;
+    }
+    .logo-text {
+        font-size: 22px;
+        font-weight: 700;
+        color: #ffffff;
+        letter-spacing: 0.5px;
+    }
+    .tagline {
+        margin-top: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: rgba(255, 255, 255, 0.75);
+    }
+    .status-ribbon {
+        padding: 12px 32px;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        border-bottom: 1px solid #dde6e6;
+    }
+    .content {
+        padding: 32px;
+        font-size: 15px;
+        line-height: 1.6;
+        color: #22302f;
+    }
+    .content p {
+        margin: 0 0 16px 0;
+    }
+    .section-title {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: #408080;
+        margin: 28px 0 10px 0;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #dde6e6;
+    }
+    .detail-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+    .detail-table td {
+        padding: 7px 0;
+        vertical-align: top;
+    }
+    .detail-label {
+        width: 150px;
+        color: #62726f;
+        font-weight: 600;
+    }
+    .detail-value {
+        color: #1a2524;
+        font-weight: 500;
+    }
+    .quote-block {
+        background-color: #f6f9f9;
+        border-left: 3px solid #408080;
+        border-radius: 4px;
+        padding: 12px 16px;
+        margin: 4px 0 16px 0;
+        font-style: italic;
+        color: #3a4a49;
+    }
+    .btn {
+        display: inline-block;
+        background-color: #408080;
+        color: #ffffff !important;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        padding: 12px 24px;
+        border-radius: 8px;
+        margin-top: 8px;
+    }
+    .footer {
+        background-color: #f6f9f9;
+        border-top: 1px solid #e5ecec;
+        padding: 20px 32px;
+        text-align: center;
+        font-size: 12px;
+        line-height: 1.6;
+        color: #7c8a89;
+    }
+    .footer strong {
+        color: #40605f;
+    }
+    .disclaimer {
+        margin-top: 8px;
+    }
+</style>
+</head>
+<body>
+    <table role="presentation" class="body-wrap" width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+            <td align="center">
+                <table role="presentation" class="container" width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td class="header">
+                            <table role="presentation" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td width="48" height="48" style="vertical-align: middle;">
+                                        <img src="{{ logo_url }}" width="48" height="43" alt="USPolis" style="display: block;">
+                                    </td>
+                                    <td style="padding-left: 14px;">
+                                        <div class="logo-text">USPolis</div>
+                                        <div class="tagline">Sistema de Alocação de Salas</div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    {% block status %}{% endblock %}
+                    <tr>
+                        <td class="content">
+                            {% block content %}{% endblock %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="footer">
+                            <p style="margin: 0;">Atenciosamente,<br><strong>Equipe USPolis</strong></p>
+                            <p class="disclaimer">Este e-mail é apenas informativo, não é necessário respondê-lo.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

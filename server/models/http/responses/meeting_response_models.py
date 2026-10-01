@@ -13,7 +13,7 @@ class MeetingResponse(MeetingResponseBase):
 
     @classmethod
     def from_meeting(cls, meeting: Meeting) -> Self:
-        base = super().from_meeting(meeting)
+        base = MeetingResponseBase.from_meeting(meeting)
         return cls(
             **base.model_dump(),
             reservation=ReservationCoreResponse.from_reservation(meeting.reservation),

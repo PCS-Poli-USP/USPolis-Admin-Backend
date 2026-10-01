@@ -1,0 +1,21 @@
+# Postgraduate subject codes used to test the Janus crawler
+# (server/services/janus_crawler/crawler.py). Unlike Jupiter, Janus offerings
+# aren't tied to a semester reset, so this list only needs occasional manual
+# review, not automatic staleness detection (see tests/scripts/generate_janus_snapshot.py).
+#
+# Browse these to find/verify real active postgrad subject codes to add:
+#   https://uspdigital.usp.br/janus/componente/disciplinasOferecidasInicial.jsf?action=1&tipo=T&codcpg=3
+#   https://uspdigital.usp.br/janus/componente/disciplinasOferecidasInicial.jsf?action=2&codcpg=3&codare=3141
+#
+# Placeholder seed list below — replace/expand with real, currently-offered
+# codes found via the URLs above.
+PCS5011
+PCS5037
+PCS5039
+PCS5734
+PCS5782
+PCS5787
+PCS5790
+PCS5792
+PCS5916
+PCS5917

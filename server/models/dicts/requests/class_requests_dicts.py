@@ -6,10 +6,9 @@ from server.models.http.requests.schedule_request_models import (
 )
 
 
-class ClassRequestBaseDict(ClassBaseDict, BaseRequestDict):
+class ClassRequestBaseDict(ClassBaseDict, BaseRequestDict, total=False):
     """Base for any Class request of register or update"""
 
-    building_id: int
     calendar_ids: list[int]
 
 

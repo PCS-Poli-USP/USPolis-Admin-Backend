@@ -5,6 +5,7 @@ from fastapi import Depends
 from server.deps.authenticate import UserDep
 from server.deps.interval_dep import QueryIntervalDep
 from server.deps.owned_building_ids import OwnedBuildingIdsDep
+from server.deps.permission_index_dep import PermissionIndexDep
 from server.deps.session_dep import SessionDep
 from server.models.database.reservation_db_model import Reservation
 from server.models.http.requests.reservation_request_models import (
@@ -19,6 +20,7 @@ from server.services.security.buildings_permission_checker import (
 from server.services.security.classrooms_permission_checker import (
     ClassroomPermissionChecker,
 )
+from server.utils.enums.actions_enums import BuildingAction, ClassroomAction
 from server.utils.must_be_int import must_be_int
 
 
@@ -29,13 +31,18 @@ class ReservationRespositoryAdapter:
         session: SessionDep,
         user: UserDep,
         interval: QueryIntervalDep,
+        permission_index: PermissionIndexDep,
     ):
         self.session = session
         self.interval = interval
         self.user = user
         self.owned_building_ids = owned_building_ids
-        self.checker = ClassroomPermissionChecker(user=user, session=session)
-        self.building_checker = BuildingPermissionChecker(user=user, session=session)
+        self.checker = ClassroomPermissionChecker(
+            user=user, session=session, permission_index=permission_index
+        )
+        self.building_checker = BuildingPermissionChecker(
+            user=user, session=session, permission_index=permission_index
+        )
 
     def get_all(self) -> list[Reservation]:
         """Get all reservations for authenticated user on owned buildings"""
@@ -57,9 +64,11 @@ class ReservationRespositoryAdapter:
         reservation = ReservationRepository.get_by_id(id=id, session=self.session)
         classroom = reservation.get_classroom()
         if classroom:
-            self.checker.check_permission(classroom)
+            self.checker.check_permission(classroom, ClassroomAction.READ)
         if not classroom:
-            self.building_checker.check_permission(reservation.get_building())
+            self.building_checker.check_permission(
+                reservation.get_building(), BuildingAction.READ
+            )
         return reservation
 
     def create(
@@ -69,7 +78,9 @@ class ReservationRespositoryAdapter:
         classroom = ClassroomRepository.get_by_id(
             id=reservation.classroom_id, session=self.session
         )
-        self.checker.check_permission(must_be_int(classroom.id))
+        self.checker.check_permission(
+            must_be_int(classroom.id), ClassroomAction.RESERVE
+        )
         new_reservation = ReservationRepository.create(
             creator=self.user,
             input=reservation,
@@ -88,7 +99,9 @@ class ReservationRespositoryAdapter:
         classroom = ClassroomRepository.get_by_id(
             id=input.classroom_id, session=self.session
         )
-        self.checker.check_permission(must_be_int(classroom.id))
+        self.checker.check_permission(
+            must_be_int(classroom.id), ClassroomAction.RESERVE
+        )
         reservation = ReservationRepository.update(
             id=id,
             input=input,
@@ -104,9 +117,11 @@ class ReservationRespositoryAdapter:
         reservation = ReservationRepository.get_by_id(id=id, session=self.session)
         classroom = reservation.get_classroom()
         if not classroom:
-            self.building_checker.check_permission(reservation.get_building())
+            self.building_checker.check_permission(
+                reservation.get_building(), BuildingAction.RESERVE
+            )
         if classroom:
-            self.checker.check_permission(classroom)
+            self.checker.check_permission(classroom, ClassroomAction.RESERVE)
         ReservationRepository.delete(
             id=id,
             user=self.user,

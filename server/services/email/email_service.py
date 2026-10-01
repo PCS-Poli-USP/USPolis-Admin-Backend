@@ -37,6 +37,12 @@ template_path = Path(__file__).resolve().parent.parent.parent / "templates"
 image_path = Path(__file__).resolve().parent.parent.parent / "static" / "assets"
 env = Environment(loader=FileSystemLoader(template_path))
 
+# The API is only reachable under the "/api" prefix behind the production/staging
+# nginx proxy (which strips it before forwarding); in local dev there is no proxy
+# in front, so CONFIG.root_url already points straight at the app.
+_static_host = CONFIG.root_url if CONFIG.development else f"{CONFIG.root_url}/api"
+env.globals["logo_url"] = f"{_static_host}/static/assets/uspolis-logo-email.png"
+
 
 RESERVATION_SUBJECT = "Reserva de Sala - USPolis"
 FEEDBACK_SUBJECT = "Feedback - USPolis"

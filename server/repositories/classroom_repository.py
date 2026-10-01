@@ -13,6 +13,9 @@ from server.models.http.requests.classroom_request_models import (
 from server.models.page_models import Page, PaginationInput
 from server.utils.must_be_int import must_be_int
 
+from server.repositories.classroom_permission_repository import (
+    ClassroomPermissionRepository,
+)
 from server.repositories.occurrence_repository import OccurrenceRepository
 
 
@@ -29,7 +32,7 @@ class ClassroomRepository:
         classroom.air_conditioning = input.air_conditioning
         classroom.building_id = input.building_id
         classroom.reservable = input.reservable
-        classroom.remote = input.remote
+        classroom.restricted = input.restricted
         classroom.observation = input.observation
 
     @staticmethod
@@ -161,6 +164,17 @@ class ClassroomRepository:
             OccurrenceRepository.remove_schedule_allocation(
                 user, schedule, session=session
             )
+
+        # ClassroomPermission rows scoped to this classroom have no ON
+        # DELETE CASCADE at the DB level, so they must be cleared explicitly
+        # here - otherwise the delete below fails with an unhandled
+        # IntegrityError instead of a clean removal.
+        classroom_permissions = ClassroomPermissionRepository.get_by_ids(
+            resource_ids=[id], session=session
+        )
+        for classroom_permission in classroom_permissions:
+            session.delete(classroom_permission)
+
         session.delete(classroom)
 
 

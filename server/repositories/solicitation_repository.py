@@ -12,7 +12,10 @@ from server.models.database.user_db_model import User
 from server.models.http.requests.exam_request_models import ExamUpdate
 from server.models.http.requests.event_request_models import EventUpdate
 from server.models.http.requests.meeting_request_models import MeetingUpdate
-from server.models.http.requests.solicitation_request_models import SolicitationRegister
+from server.models.http.requests.solicitation_request_models import (
+    SolicitationDeny,
+    SolicitationRegister,
+)
 
 from server.models.page_models import Page, PaginationInput
 from server.repositories.building_repository import BuildingRepository
@@ -317,13 +320,16 @@ class SolicitationRepository:
         return solicitation
 
     @staticmethod
-    def deny(id: int, user: User, session: Session) -> Solicitation:
+    def deny(
+        id: int, input: SolicitationDeny, user: User, session: Session
+    ) -> Solicitation:
         solicitation = SolicitationRepository.get_by_id(id=id, session=session)
         status = solicitation.get_status()
         if status != ReservationStatus.PENDING:
             raise SolicitationAlreadyClosed(ReservationStatus.get_status_detail(status))
         solicitation.set_status(ReservationStatus.DENIED)
         solicitation.closed_by = user.name
+        solicitation.denial_justification = input.justification
         solicitation.updated_at = BrazilDatetime.now_utc()
         session.add(solicitation)
         return solicitation
