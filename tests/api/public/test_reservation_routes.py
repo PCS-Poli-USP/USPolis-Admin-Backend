@@ -1,3 +1,6 @@
+from urllib.parse import quote
+
+import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlmodel import Session
@@ -70,7 +73,31 @@ class TestGetAllReservationsByBuildingName:
         session.add(meeting.reservation.schedule)
         session.commit()
 
-        response = public_client.get(f"{URL_PREFIX}/building/{building.name}")
+        response = public_client.get(
+            f"{URL_PREFIX}/building/{quote(building.name, safe='')}"
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert meeting.reservation_id in [r["id"] for r in response.json()]
+
+    @pytest.mark.parametrize(
+        "name", ["Martins S/A", "Bloco A/B/C", "Prédio ? # % & Anexo"]
+    )
+    def test_names_with_special_characters_still_match(
+        self,
+        public_client: TestClient,
+        meeting: Meeting,
+        classroom: Classroom,
+        building: Building,
+        session: Session,
+        name: str,
+    ) -> None:
+        meeting.reservation.schedule.classroom = classroom
+        building.name = name
+        session.add_all([meeting.reservation.schedule, building])
+        session.commit()
+
+        response = public_client.get(f"{URL_PREFIX}/building/{quote(name, safe='')}")
 
         assert response.status_code == status.HTTP_200_OK
         assert meeting.reservation_id in [r["id"] for r in response.json()]

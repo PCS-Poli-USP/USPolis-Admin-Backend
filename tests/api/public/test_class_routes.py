@@ -1,4 +1,7 @@
 from datetime import date, timedelta
+from urllib.parse import quote
+
+import pytest
 
 from fastapi import status
 from fastapi.testclient import TestClient
@@ -72,7 +75,47 @@ class TestGetAllClassesAllocatedByBuildingName:
         building: Building,
         class_: Class,
     ) -> None:
-        response = public_client.get(f"{URL_PREFIX}/building/{building.name}")
+        response = public_client.get(
+            f"{URL_PREFIX}/building/{quote(building.name, safe='')}"
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert class_.id in [c["id"] for c in response.json()]
+
+    @pytest.mark.parametrize(
+        "name", ["Martins S/A", "Bloco A/B/C", "Prédio ? # % & Anexo"]
+    )
+    def test_names_with_special_characters_still_match(
+        self,
+        public_client: TestClient,
+        allocated_classroom: Classroom,
+        building: Building,
+        class_: Class,
+        session: Session,
+        name: str,
+    ) -> None:
+        building.name = name
+        session.add(building)
+        session.commit()
+
+        response = public_client.get(f"{URL_PREFIX}/building/{quote(name, safe='')}")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert class_.id in [c["id"] for c in response.json()]
+
+    def test_unencoded_slash_in_the_name_still_matches(
+        self,
+        public_client: TestClient,
+        allocated_classroom: Classroom,
+        building: Building,
+        class_: Class,
+        session: Session,
+    ) -> None:
+        building.name = "Martins S/A"
+        session.add(building)
+        session.commit()
+
+        response = public_client.get(f"{URL_PREFIX}/building/Martins S/A")
 
         assert response.status_code == status.HTTP_200_OK
         assert class_.id in [c["id"] for c in response.json()]

@@ -46,7 +46,9 @@ async def get_all_classes_by_subject(
     return ClassResponse.from_class_list(classes)
 
 
-@router.get("/building/{building_name}")
+# `:path` so names containing "/" (e.g. "Martins S/A") still match. Clients
+# must URL-encode the name, since "?", "#" and "%" break it otherwise.
+@router.get("/building/{building_name:path}")
 async def get_all_classes_allocated_by_building_name(
     building_name: str, session: SessionDep, interval: QueryIntervalDep
 ) -> list[ClassResponse]:
