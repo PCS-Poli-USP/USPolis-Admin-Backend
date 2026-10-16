@@ -33,17 +33,19 @@ def make_request(
 
 
 class TestGetClientIp:
-    def test_uses_first_forwarded_for_entry(self) -> None:
+    def test_ignores_client_supplied_forwarded_for(self) -> None:
+        # Uvicorn resolves X-Forwarded-For into `client` for trusted proxies
+        # only; trusting the raw header would let any client spoof its IP.
         request = make_request(
             headers={"x-forwarded-for": "1.1.1.1, 2.2.2.2"}, client_host="9.9.9.9"
         )
-        assert get_client_ip(request) == "1.1.1.1"
+        assert get_client_ip(request) == "9.9.9.9"
 
-    def test_falls_back_to_client_host_without_header(self) -> None:
+    def test_uses_client_host(self) -> None:
         request = make_request(client_host="9.9.9.9")
         assert get_client_ip(request) == "9.9.9.9"
 
-    def test_returns_none_without_header_or_client(self) -> None:
+    def test_returns_none_without_client(self) -> None:
         request = make_request()
         assert get_client_ip(request) is None
 

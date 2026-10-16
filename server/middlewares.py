@@ -3,17 +3,30 @@ import time
 import traceback
 from typing import Any
 from collections.abc import Callable
-from fastapi import Request, Response
+from fastapi import Request, Response, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlmodel import Session
+from starlette.datastructures import MutableHeaders
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.types import ASGIApp
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from server.config import CONFIG
 from server.db import engine
 from server.logger import logger, loki_access_logger
 from server.repositories.api_access_log_repository import ApiAccessLogRepository
 from server.services.auth.auth_user_info import AuthUserInfo
+from server.services.rate_limiter import (
+    RATE_LIMIT_EVENT_STATE_KEY,
+    FixedWindowRateLimiter,
+    RateLimitEvent,
+    RateLimitMode,
+    RateLimitResult,
+    RateLimitRule,
+    client_identity,
+    resolve_rate_limit_config,
+)
+from server.services.redis_client import get_redis
 from server.utils.enums.api_security_level_enum import APISecurityLevel
 
 
@@ -96,9 +109,9 @@ def truncate_keeping_tail(text: str, limit: int) -> str:
 
 
 def get_client_ip(request: Request) -> str | None:
-    x_forwarded_for = request.headers.get("x-forwarded-for")
-    if x_forwarded_for:
-        return x_forwarded_for.split(",")[0].strip()
+    # Uvicorn already resolves X-Forwarded-For into `request.client`, trusting
+    # it only from --forwarded-allow-ips (Nginx). Reading the header here
+    # instead would let any client pick its own IP and dodge per-IP limits.
     return request.client.host if request.client else None
 
 
@@ -239,7 +252,56 @@ class LoggerMiddleware(BaseHTTPMiddleware):
     def __persist_access_log(
         self, request: Request, response: Response, process_time: float
     ) -> None:
-        """Best-effort DB write of a single error-response row. Must never
+        """Persist a single error-response row (see `__write_access_log`)."""
+        if response.status_code < 400:
+            return
+        # 429s are written by `__persist_rate_limit_event` instead, only for
+        # the first hit per IP and window: persisting every rejected request
+        # would turn the rate limiter into a database write per hit.
+        if response.status_code in (401, 429):
+            return
+        path = request.url.path
+        if any(path.startswith(p) for p in LOKI_EXCLUDED_PATHS):
+            return
+        self.__write_access_log(
+            request,
+            status_code=response.status_code,
+            extra_tags=[],
+            detail=self.detail,
+            process_time=process_time,
+        )
+
+    def __persist_rate_limit_event(self, request: Request, process_time: float) -> None:
+        """Persist the first request over a rate limit per IP and window,
+        flagged by `RateLimitMiddleware`, to keep data for tuning the limits.
+        In shadow mode nothing is blocked, so the row records the 429 the
+        request would have received, tagged `RateLimit:shadow`."""
+        event: RateLimitEvent | None = getattr(
+            request.state, RATE_LIMIT_EVENT_STATE_KEY, None
+        )
+        if event is None:
+            return
+        detail = f"Rate limit: regra {event.rule} excedida"
+        if event.mode == RateLimitMode.SHADOW:
+            detail += " (modo shadow, requisição não bloqueada)"
+        self.__write_access_log(
+            request,
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            extra_tags=["RateLimit", f"RateLimit:{event.mode}"],
+            detail=detail,
+            process_time=process_time,
+        )
+
+    def __write_access_log(
+        self,
+        request: Request,
+        *,
+        status_code: int,
+        extra_tags: list[str],
+        detail: str | None,
+        process_time: float,
+    ) -> None:
+        """Best-effort DB write of a single `ApiAccessLog` row. Must never
         raise - a metrics-write failure must not affect the real response.
         Opens a short-lived Session for just this insert+commit (matching
         the per-request pattern in server/db.py's get_db()), NOT a shared
@@ -253,14 +315,6 @@ class LoggerMiddleware(BaseHTTPMiddleware):
         database on every 4xx/5xx a test happens to trigger."""
         if CONFIG.testing:
             return
-        if response.status_code < 400:
-            return
-        if response.status_code == 401:
-            return
-        path = request.url.path
-        if any(path.startswith(p) for p in LOKI_EXCLUDED_PATHS):
-            return
-
         try:
             route = request.scope.get("route")
             tags = list(route.tags) if route is not None and route.tags else []
@@ -269,15 +323,15 @@ class LoggerMiddleware(BaseHTTPMiddleware):
             with Session(engine) as session:
                 ApiAccessLogRepository.create(
                     security_level=APISecurityLevel.get_from_tags(tags),
-                    endpoint=path,
+                    endpoint=request.url.path,
                     method=request.method,
-                    status_code=response.status_code,
+                    status_code=status_code,
                     ip_address=get_client_ip(request),
                     user_agent=request.headers.get("user-agent"),
                     response_time_ms=round(process_time * 1000),
-                    tags=tags,
+                    tags=[*tags, *extra_tags],
                     user_id=current_user.id if current_user else None,
-                    detail=self.detail,
+                    detail=detail,
                     request_body=request_body,
                     session=session,
                 )
@@ -316,6 +370,7 @@ class LoggerMiddleware(BaseHTTPMiddleware):
         new_response = await self.__get_response_detail(response)
         msg.response_detail = self.detail
         self.__persist_access_log(request, response, process_time)
+        self.__persist_rate_limit_event(request, process_time)
         if response.status_code >= 400 and hasattr(request.state, "request_body"):
             msg.request_body = request.state.request_body
         self.write_log(msg)
@@ -369,3 +424,142 @@ class LoggerMiddleware(BaseHTTPMiddleware):
             )
 
         return response
+
+
+# Paths (relative to the /api root path) never counted by the rate limiter:
+# health checks are API-key protected and polled by monitoring.
+RATE_LIMIT_EXEMPT_PATHS = ("/health", "/docs", "/redoc", "/openapi.json")
+REDIS_ERROR_LOG_INTERVAL_SECONDS = 60
+
+
+def app_path(scope: Scope) -> str:
+    """Request path without the app's root path (e.g. "/api/classrooms" and
+    "/classrooms" both become "/classrooms")."""
+    path: str = scope.get("path", "")
+    root_path: str = scope.get("root_path", "")
+    if root_path and (path == root_path or path.startswith(root_path + "/")):
+        return path[len(root_path) :] or "/"
+    return path
+
+
+def rate_limit_headers(result: RateLimitResult) -> dict[str, str]:
+    return {
+        "X-RateLimit-Limit": str(result.limit),
+        "X-RateLimit-Remaining": str(result.remaining),
+        "X-RateLimit-Reset": str(result.reset_seconds),
+    }
+
+
+class RateLimitMiddleware:
+    """Per-IP fixed-window rate limit on every request (see docs/RATE_LIMIT.md).
+
+    Pure ASGI and placed before routing and authentication, so a rejected
+    request costs one Redis round trip and nothing else - in particular, no
+    Google token validation. Fails open when Redis is unavailable.
+    """
+
+    def __init__(
+        self,
+        app: ASGIApp,
+        *,
+        mode: RateLimitMode | None = None,
+        rules: list[RateLimitRule] | None = None,
+        limiter: FixedWindowRateLimiter | None = None,
+    ) -> None:
+        self.app = app
+        # Explicit mode/rules (tests) skip the config; otherwise read it.
+        # Redis reachability is reported once at startup by
+        # `check_rate_limit_setup` (see the app lifespan).
+        config_mode: RateLimitMode = RateLimitMode.OFF
+        config_rules: list[RateLimitRule] = []
+        if mode is None or rules is None:
+            try:
+                config_mode, config_rules = resolve_rate_limit_config(
+                    CONFIG.rate_limit_mode,
+                    CONFIG.anon_rate_limits,
+                    testing=CONFIG.testing,
+                )
+            except ValueError as e:
+                # Starlette builds middlewares on the first request, so
+                # raising here would turn every request into a 500.
+                # Fail open: config_mode/config_rules stay off/empty.
+                logger.error(f"Invalid rate limit config, rate limiting disabled: {e}")
+
+        self.mode = mode if mode is not None else config_mode
+        self.rules = rules if rules is not None else config_rules
+        self.limiter = limiter
+        self.last_redis_error_log = 0.0
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if not self.__applies_to(scope):
+            await self.app(scope, receive, send)
+            return
+        limiter = self.__get_limiter()
+        client = scope.get("client")
+        if limiter is None or client is None:
+            await self.app(scope, receive, send)
+            return
+
+        result = await limiter.hit(f"ip:{client_identity(client[0])}", self.rules)
+        if result is None:
+            self.__log_redis_failure()
+            await self.app(scope, receive, send)
+            return
+
+        if not result.allowed and result.first_exceed and result.exceeded:
+            logger.warning(
+                f'type="RateLimit" mode="{self.mode}" host="{client[0]}" '
+                f'method="{scope["method"]}" path="{app_path(scope)}" '
+                f'rule="{result.exceeded}"'
+            )
+            # Picked up by LoggerMiddleware, which persists only this first
+            # hit per IP and window (see __persist_rate_limit_event).
+            scope.setdefault("state", {})[RATE_LIMIT_EVENT_STATE_KEY] = RateLimitEvent(
+                rule=result.exceeded, mode=self.mode
+            )
+
+        if self.mode == RateLimitMode.SHADOW:
+            await self.app(scope, receive, send)
+            return
+
+        headers = rate_limit_headers(result)
+        if not result.allowed:
+            response = JSONResponse(
+                {
+                    "detail": "Muitas requisições. Tente novamente em "
+                    f"{result.reset_seconds} segundos."
+                },
+                status_code=429,
+                headers={**headers, "Retry-After": str(result.reset_seconds)},
+            )
+            await response(scope, receive, send)
+            return
+
+        async def send_with_headers(message: Message) -> None:
+            if message["type"] == "http.response.start":
+                MutableHeaders(scope=message).update(headers)
+            await send(message)
+
+        await self.app(scope, receive, send_with_headers)
+
+    def __applies_to(self, scope: Scope) -> bool:
+        return (
+            scope["type"] == "http"
+            and self.mode != RateLimitMode.OFF
+            and bool(self.rules)
+            and scope["method"] != "OPTIONS"
+            and not app_path(scope).startswith(RATE_LIMIT_EXEMPT_PATHS)
+        )
+
+    def __get_limiter(self) -> FixedWindowRateLimiter | None:
+        if self.limiter is None:
+            redis = get_redis()
+            if redis is not None:
+                self.limiter = FixedWindowRateLimiter(redis)
+        return self.limiter
+
+    def __log_redis_failure(self) -> None:
+        now = time.monotonic()
+        if now - self.last_redis_error_log >= REDIS_ERROR_LOG_INTERVAL_SECONDS:
+            self.last_redis_error_log = now
+            logger.error("Rate limit: Redis unavailable, letting requests through")

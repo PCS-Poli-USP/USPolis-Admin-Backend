@@ -29,7 +29,7 @@ Here we have the tecnologies used on backend:
 
 You can see a complete documentation at [USPolis-Admin Wiki](https://github.com/PCS-Poli-USP/USPolis-Admin/wiki), there you will find our architecture, diagrams, bussiness rules, descriptions and more.
 
-Repo-local docs: [TESTS.md](docs/TESTS.md) (test suite structure and coverage), [SESSION_MANAGEMENT.md](docs/SESSION_MANAGEMENT.md) (login/session cookie lifecycle and expiration rules), [LOGGING.md](docs/LOGGING.md) (request logging, the Loki access log, and file rotation), [PERMISSIONS.md](docs/PERMISSIONS.md) (role-based permission model, the `Group`→`Role` migration, and how `PermissionIndex` is wired into route dependencies).
+Repo-local docs: [TESTS.md](docs/TESTS.md) (test suite structure and coverage), [SESSION_MANAGEMENT.md](docs/SESSION_MANAGEMENT.md) (login/session cookie lifecycle and expiration rules), [LOGGING.md](docs/LOGGING.md) (request logging, the Loki access log, and file rotation), [PERMISSIONS.md](docs/PERMISSIONS.md) (role-based permission model, the `Group`→`Role` migration, and how `PermissionIndex` is wired into route dependencies), [RATE_LIMIT.md](docs/RATE_LIMIT.md) (per-IP rate limiting: Nginx + Redis-backed middleware, limits, rollout and Redis setup).
 
 ## Setup
 

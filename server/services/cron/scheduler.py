@@ -7,6 +7,7 @@ from fastapi import FastAPI
 
 from server.cache import clear_expired_cache
 from server.services.cron.daily_tasks import run_daily_tasks
+from server.services.redis_client import check_rate_limit_setup
 from server.utils.brazil_datetime import BrazilDatetime
 
 
@@ -43,6 +44,7 @@ async def cancel_task(task: asyncio.Task[None] | None) -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Gerencia o ciclo de vida da aplicação"""
+    print(await check_rate_limit_setup())
     cleanup_task = asyncio.create_task(periodic_cache_cleanup())
     print("Cache cleanup started")
     daily_tasks_task = asyncio.create_task(periodic_daily_tasks())

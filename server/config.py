@@ -75,6 +75,15 @@ class Settings(BaseModel):
     # Monitoring and Analytics Services
     health_api_key: str = config("HEALTH_API_KEY", default="")  # pyright: ignore[reportAssignmentType]
 
+    # Rate limiting (see docs/RATE_LIMIT.md)
+    redis_url: str = config("REDIS_URL", default="")  # pyright: ignore[reportAssignmentType]
+    rate_limit_mode: str = config("RATE_LIMIT_MODE", default="off")  # pyright: ignore[reportAssignmentType]
+    # "max/window_seconds" rules, all enforced together, per client IP.
+    # Defaults come from the 2025-12 → 2026-10 production traffic analysis.
+    anon_rate_limits: str = config(
+        "ANON_RATE_LIMITS", default="40/10,150/60,5000/86400"
+    )  # pyright: ignore[reportAssignmentType]
+
     # Testing / Development:
     test_db_uri: str = config("TEST_DATABASE_URI", default="")  # pyright: ignore[reportAssignmentType]
     test_db_database: str = config("TEST_DATABASE_NAME", default="")  # pyright: ignore[reportAssignmentType]

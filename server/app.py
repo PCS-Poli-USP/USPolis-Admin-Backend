@@ -5,7 +5,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from server.deps_overrides import DepsOverrides
 from server.exception_handlers import add_exception_handlers
-from server.middlewares import LoggerMiddleware
+from server.middlewares import LoggerMiddleware, RateLimitMiddleware
 from server.routes.admin import router as AdminRouter
 from server.routes.public import router as PublicRouter
 from server.routes.authenticated import router as AuthenticatedRouter
@@ -26,12 +26,23 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Middlewares run outermost-last-added: Logger -> CORS -> RateLimit -> app.
+# RateLimit sits inside CORS so a 429 still carries CORS headers (otherwise
+# the browser reports a CORS error instead of the 429).
+app.add_middleware(RateLimitMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CONFIG.allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=[
+        "Retry-After",
+        "X-RateLimit-Limit",
+        "X-RateLimit-Remaining",
+        "X-RateLimit-Reset",
+    ],
 )
 
 

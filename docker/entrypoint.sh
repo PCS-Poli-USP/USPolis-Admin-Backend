@@ -45,8 +45,11 @@ case "${1:-dev}" in
     exec python wsgi.py
     ;;
   prod)
+    # Only the reverse proxy may set X-Forwarded-For. A "*" default would let
+    # any client spoof its IP (and dodge the per-IP rate limit); behind
+    # Compose, set this to the network gateway (see USPolis-Admin compose).
     exec gunicorn asgi:app \
-      --forwarded-allow-ips="${GUNICORN_FORWARDED_ALLOW_IPS:-*}" \
+      --forwarded-allow-ips="${GUNICORN_FORWARDED_ALLOW_IPS:-127.0.0.1}" \
       --workers "${GUNICORN_WORKERS:-4}" \
       --worker-class uvicorn.workers.UvicornWorker \
       --bind "0.0.0.0:${PORT:-5000}" \

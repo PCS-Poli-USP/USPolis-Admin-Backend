@@ -42,8 +42,10 @@ app (no shipping config lives in this repo).
   [date] LEVEL client_ip="..." method="..." path="..." status="..." duration="..." email="..."
   ```
 
-  `client_ip` comes from `get_client_ip()` — the first entry of the
-  `X-Forwarded-For` header if present, otherwise `request.client.host`.
+  `client_ip` comes from `get_client_ip()`, i.e. `request.client.host` —
+  which Uvicorn resolves from `X-Forwarded-For` only for proxies listed in
+  `--forwarded-allow-ips` (the raw header is never trusted; see
+  `RATE_LIMIT.md`).
   `email` comes from `request.state.user_info` when the request is
   authenticated, otherwise `"N/A"`. `duration` is in milliseconds.
 
