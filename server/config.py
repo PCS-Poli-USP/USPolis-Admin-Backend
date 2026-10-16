@@ -84,6 +84,19 @@ class Settings(BaseModel):
         "ANON_RATE_LIMITS", default="40/10,150/60,5000/86400"
     )  # pyright: ignore[reportAssignmentType]
 
+    # Partner API keys (see docs/API_KEYS.md). The secret HMACs every key
+    # before it's stored: 32+ random bytes, different per environment.
+    api_key_secret: str = config("API_KEY_SECRET", default="")  # pyright: ignore[reportAssignmentType]
+    # Used for keys without their own `apikeyratelimit` rows, so a key is
+    # never unlimited. Browser keys get their own default (shared by every
+    # visitor of the partner's site).
+    api_key_default_limits: str = config(
+        "API_KEY_DEFAULT_LIMITS", default="30/10,120/60,10000/86400"
+    )  # pyright: ignore[reportAssignmentType]
+    api_key_browser_default_limits: str = config(
+        "API_KEY_BROWSER_DEFAULT_LIMITS", default="60/10,300/60,20000/86400"
+    )  # pyright: ignore[reportAssignmentType]
+
     # Testing / Development:
     test_db_uri: str = config("TEST_DATABASE_URI", default="")  # pyright: ignore[reportAssignmentType]
     test_db_database: str = config("TEST_DATABASE_NAME", default="")  # pyright: ignore[reportAssignmentType]

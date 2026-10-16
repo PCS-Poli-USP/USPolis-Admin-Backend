@@ -53,6 +53,9 @@ from server.models.database import (  # noqa
     building_permission_db_model,
     classroom_permission_db_model,
     course_permission_db_model,
+    api_client_db_model,
+    api_key_rate_limit_db_model,
+    api_key_db_model,
 )
 
 engine = create_engine(f"{CONFIG.db_uri}/{CONFIG.db_database}")
