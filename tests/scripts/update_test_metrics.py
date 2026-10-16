@@ -1,9 +1,9 @@
-"""Runs the test suite and rewrites the "Current metrics" table in TESTS.md.
+"""Runs the test suite and rewrites the "Current metrics" table in docs/TESTS.md.
 
 Usage: poetry run python tests/scripts/update_test_metrics.py
 
 Only the block between the `<!-- METRICS:START -->`/`<!-- METRICS:END -->`
-markers in TESTS.md is replaced; everything else in the file is left as-is.
+markers in docs/TESTS.md is replaced; everything else in the file is left as-is.
 """
 
 import json
@@ -15,7 +15,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 TESTS_DIR = REPO_ROOT / "tests"
-TESTS_MD = REPO_ROOT / "TESTS.md"
+TESTS_MD = REPO_ROOT / "docs" / "TESTS.md"
 COVERAGE_JSON = REPO_ROOT / "coverage.json"
 
 TEST_FUNC_RE = re.compile(r"^\s*(?:async\s+)?def (test_\w+)", re.MULTILINE)
@@ -153,7 +153,7 @@ def update_tests_md(new_block: str) -> None:
     content = TESTS_MD.read_text(encoding="utf-8")
     if not METRICS_BLOCK_RE.search(content):
         raise RuntimeError(
-            "Could not find METRICS:START/METRICS:END markers in TESTS.md — "
+            "Could not find METRICS:START/METRICS:END markers in docs/TESTS.md — "
             "has the file been restructured?"
         )
     updated = METRICS_BLOCK_RE.sub(new_block.replace("\\", "\\\\"), content)

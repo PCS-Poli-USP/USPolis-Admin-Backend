@@ -3,7 +3,7 @@ object graphs in pure unit tests (no session, nothing persisted).
 
 These delegate to the real tests/factories/model/*ModelFactory classes via
 their session-free `.build()` method, so unit and integration tests share
-the exact same default-population logic (dicts + Faker) - see TESTS.md's
+the exact same default-population logic (dicts + Faker) - see docs/TESTS.md's
 "Test data protocol" section before adding a new make_* helper here."""
 
 from datetime import date, time

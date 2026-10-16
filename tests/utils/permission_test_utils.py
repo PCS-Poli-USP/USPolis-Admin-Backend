@@ -27,7 +27,7 @@ from tests.factories.request.permission_request_factory import (
 class RolePermissionTestHelper:
     """Shared setup for tests that need a user to hold a Role-granted
     permission. A permission can only ever be granted to a Role, never
-    directly to a user (see PERMISSIONS.md) - so every such test needs the
+    directly to a user (see docs/PERMISSIONS.md) - so every such test needs the
     same three steps: create a role, grant it a permission as some granting
     admin, then assign that role to the target user. `grant_by` is the
     actor recorded as having granted the permission/role (normally an admin)

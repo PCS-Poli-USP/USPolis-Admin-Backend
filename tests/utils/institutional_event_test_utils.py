@@ -5,7 +5,7 @@ Constructed directly rather than via a ModelFactory - InstitutionalEvent has
 no relationships or foreign keys and no factory/dict scaffolding exists for
 it yet, so a full base-dict/model-dict/base-factory/model-factory stack
 would be pure overhead for the handful of response-model tests that need
-one. See TESTS.md's "Test data protocol" section before adding a new make_*
+one. See docs/TESTS.md's "Test data protocol" section before adding a new make_*
 helper here."""
 
 from datetime import datetime

@@ -4,7 +4,7 @@ persisted).
 
 These delegate to the real tests/factories/model/*ModelFactory classes via
 their session-free `.build()` method, same as academic_test_utils.py and
-time_test_utils.py - see TESTS.md's "Test data protocol" section before
+time_test_utils.py - see docs/TESTS.md's "Test data protocol" section before
 adding a new make_* helper here. UserAbsence has no factory/dict scaffolding
 of its own yet and is constructed directly instead."""
 

@@ -5,7 +5,7 @@ Constructed directly rather than via a ModelFactory - no factory/dict
 scaffolding exists for ApiAccessLog yet, and it's only needed by the
 api_access_log and api_incident_report response-model tests, so a full
 base-dict/model-dict/base-factory/model-factory stack would be pure
-overhead. See TESTS.md's "Test data protocol" section before adding a new
+overhead. See docs/TESTS.md's "Test data protocol" section before adding a new
 make_* helper here."""
 
 from datetime import datetime

@@ -4,7 +4,7 @@ tests (no session, nothing persisted).
 Constructed directly rather than via a ModelFactory - no factory/dict
 scaffolding exists for Feedback yet, and it's only needed by a couple of
 response/request-model tests, so a full base-dict/model-dict/base-factory/
-model-factory stack would be pure overhead. See TESTS.md's "Test data
+model-factory stack would be pure overhead. See docs/TESTS.md's "Test data
 protocol" section before adding a new make_* helper here."""
 
 from datetime import datetime

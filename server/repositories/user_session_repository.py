@@ -9,7 +9,7 @@ from server.utils.brazil_datetime import BrazilDatetime
 
 SESSION_DURATION_DAYS = 30
 # Absolute cap on total session lifetime since creation, regardless of
-# renewals. See SESSION_MANAGEMENT.md for the full rationale.
+# renewals. See docs/SESSION_MANAGEMENT.md for the full rationale.
 SESSION_MAX_AGE_DAYS = 90
 
 
@@ -67,7 +67,7 @@ class UserSessionRepository:
     ) -> UserSession | None:
         """Matches on (user_id, user_agent) only - not ip_address, which
         changes too often (VPNs, university/carrier NAT subnets) to be a
-        useful part of session identity. See SESSION_MANAGEMENT.md."""
+        useful part of session identity. See docs/SESSION_MANAGEMENT.md."""
         statement = select(UserSession).where(
             col(UserSession.user_id) == user_id,
             col(UserSession.user_agent) == user_agent,
@@ -103,7 +103,7 @@ class UserSessionRepository:
     ) -> UserSession:
         """Used only by the interactive login flow (`/auth/get-tokens`). A
         session that already `has_reached_max_age` is discarded and replaced
-        with a fresh one instead of extended - see SESSION_MANAGEMENT.md for
+        with a fresh one instead of extended - see docs/SESSION_MANAGEMENT.md for
         why this is the only path allowed to reset the absolute cap."""
         existing = UserSessionRepository.get_session(
             user_id=user_id,
@@ -138,7 +138,7 @@ class UserSessionRepository:
         a shared browser previously logged in as someone else), an expired
         one, or one that has reached the absolute max age is not reusable -
         the max-age case is deleted outright, matching the reset-on-real-login
-        behavior documented in SESSION_MANAGEMENT.md."""
+        behavior documented in docs/SESSION_MANAGEMENT.md."""
         user_session = UserSessionRepository.get_session_opt(
             id=session_id, session=session
         )

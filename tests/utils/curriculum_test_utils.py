@@ -6,7 +6,7 @@ This persists (unlike academic_test_utils.py/time_test_utils.py's DB-free
 build() helpers) because it backs integration/route-level tests that need a
 real, queryable row - so it delegates to CourseModelFactory/
 CurriculumModelFactory's create_and_refresh() rather than .build(). See
-TESTS.md's "Test data protocol" section for when to use which."""
+docs/TESTS.md's "Test data protocol" section for when to use which."""
 
 from typing import Any
 

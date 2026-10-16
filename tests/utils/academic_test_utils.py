@@ -6,7 +6,7 @@ These delegate to the real tests/factories/model/*ModelFactory classes via
 their session-free `.build()` method wherever that's actually safe (most
 factories' get_defaults() never touches the session), so unit and
 integration tests share the exact same default-population logic (dicts +
-Faker) instead of duplicating field lists. See TESTS.md's "Test data
+Faker) instead of duplicating field lists. See docs/TESTS.md's "Test data
 protocol" section before adding a new make_* helper here or a new
 XxxModelFactory.
 
