@@ -1,12 +1,18 @@
+import asyncio
 from dataclasses import dataclass
 from datetime import time
 from pathlib import Path
 import os
 
-from playwright.async_api import Locator, Page
+from playwright.async_api import Browser, Locator, Page
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 from playwright.async_api import async_playwright
 
+from server.config import CONFIG
+from server.services.jupiter_crawler.crawl_limiter import (
+    JupiterCrawlTimeout,
+    crawl_slot,
+)
 from server.services.jupiter_crawler.models import (
     JupiterScheduleSlot,
     JupiterStudentSchedule,
@@ -20,7 +26,10 @@ USER_INFO_URL = (
     "https://uspdigital.usp.br/jupiterweb/uspDadosPessoaisMostrar?codmnu=4543"
 )
 WEEK_DAYS = ["seg", "ter", "qua", "qui", "sex", "sab", "dom"]
-MAX_RETRIES = 10
+# "Failed to launch" usually means the host is short on memory: relaunching
+# right away only makes it worse, so retry few times and back off.
+MAX_RETRIES = 3
+LAUNCH_RETRY_BACKOFF_SECONDS = 2
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 os.environ.setdefault(
@@ -47,8 +56,16 @@ class AuthenticatedJupiterCrawler:
         password: str,
         retry: int = 0,
     ) -> JupiterStudentSchedule:
+        """Entry point for routes: runs the crawl inside a host-wide slot
+        (see `crawl_limiter`) and under a hard overall timeout, which closes
+        the browser when it fires."""
         crawler = AuthenticatedJupiterCrawler()
-        return await crawler.crawl_student_schedule(n_usp, password, retry)
+        async with crawl_slot(n_usp):
+            try:
+                async with asyncio.timeout(CONFIG.jupiter_crawl_timeout_seconds):
+                    return await crawler.crawl_student_schedule(n_usp, password, retry)
+            except TimeoutError as exc:
+                raise JupiterCrawlTimeout() from exc
 
     async def crawl_student_schedule(
         self,
@@ -63,107 +80,117 @@ class AuthenticatedJupiterCrawler:
             async with async_playwright() as playwright:
                 browser = await playwright.chromium.launch(
                     headless=True,
-                    args=["--no-sandbox"],
+                    # Docker's default /dev/shm is 64 MB, too small for
+                    # Chromium: it would crash mid-crawl.
+                    args=["--no-sandbox", "--disable-dev-shm-usage"],
                 )
-                context = await browser.new_context(
-                    user_agent=(
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                        "AppleWebKit/537.36 (KHTML, like Gecko) "
-                        "Chrome/69.0.3497.100 Safari/537.36"
-                    )
-                )
-                page = await context.new_page()
-
-                await page.goto(LOGIN_URL, timeout=15000)
-                await page.locator("input[name='codpes']").fill(n_usp)
-                await page.locator("input[name='senusu']").fill(password)
-                await page.keyboard.press("Enter")
-
                 try:
-                    await page.wait_for_selector(
-                        "a[href='gradeHoraria?codmnu=4759']",
-                        timeout=5000,
-                    )
-                except PlaywrightTimeoutError as exc:
-                    raise JupiterAuthenticationError(
-                        "Erro ao acessar o JupiterWeb. Cheque suas credenciais."
-                    ) from exc
-
-                await page.click("a[href='gradeHoraria?codmnu=4759']")
-                await page.wait_for_selector("#codpgm", timeout=15000)
-
-                options = await self._get_program_options(page)
-                if not options:
-                    raise RuntimeError("Nenhum programa disponível para seleção no JupiterWeb")
-
-                selected_option = sorted(options, key=int)[-1]
-                await page.select_option("#codpgm", value=selected_option)
-                await page.click("#buscar")
-
-                # Some terms return no classes or use non-sequential row ids.
-                # We only need to wait for the grade page to settle before parsing.
-                try:
-                    await page.wait_for_load_state("networkidle", timeout=10000)
-                except PlaywrightTimeoutError:
-                    pass
-
-                await self._wait_for_grade_content(page)
-
-                course_raw = await page.locator("#curso").text_content() or ""
-                institute_raw = await page.locator("#unidade").text_content() or ""
-                course = self._extract_course_name(course_raw)
-                institute = self._extract_institute_name(institute_raw)
-
-                subjects_map = await self._extract_subjects(page)
-
-                await page.goto(USER_INFO_URL, wait_until="load")
-
-                fonts_texts: list[str | None] = await page.eval_on_selector_all(
-                    "font",
-                    "(elements) => elements.map((el) => el.textContent)",
-                )
-                personal_texts: list[str | None] = await page.eval_on_selector_all(
-                    "td[width='77%'] font",
-                    "(elements) => elements.map((el) => el.textContent)",
-                )
-
-                name = self._clean(personal_texts[1]) if len(personal_texts) > 1 else ""
-                name = name or "Estudante USP"
-
-                emails = [
-                    self._clean(text) for text in fonts_texts if text and "@" in text
-                ]
-                preferred_email = next(
-                    (email for email in emails if "usp.br" in email), ""
-                )
-                email = preferred_email or (emails[0] if emails else n_usp)
-
-                subjects = [
-                    JupiterStudentSubject(
-                        code=code,
-                        name=acc.name,
-                        class_code=acc.class_code,
-                        available_days=acc.slots,
-                        observations=acc.observations,
-                    )
-                    for code, acc in sorted(subjects_map.items())
-                ]
-
-                await context.close()
-                await browser.close()
-
-                return JupiterStudentSchedule(
-                    n_usp=n_usp,
-                    name=name,
-                    email=email,
-                    course=course,
-                    institute=institute,
-                    subjects=subjects,
-                )
+                    return await self._crawl_with_browser(browser, n_usp, password)
+                finally:
+                    await browser.close()
         except Exception as exc:
             if "Failed to launch" in str(exc):
+                await asyncio.sleep(LAUNCH_RETRY_BACKOFF_SECONDS * (retry + 1))
                 return await self.crawl_student_schedule(n_usp, password, retry + 1)
             raise
+
+    async def _crawl_with_browser(
+        self, browser: Browser, n_usp: str, password: str
+    ) -> JupiterStudentSchedule:
+        context = await browser.new_context(
+            user_agent=(
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/69.0.3497.100 Safari/537.36"
+            )
+        )
+        page = await context.new_page()
+
+        await page.goto(LOGIN_URL, timeout=15000)
+        await page.locator("input[name='codpes']").fill(n_usp)
+        await page.locator("input[name='senusu']").fill(password)
+        await page.keyboard.press("Enter")
+
+        try:
+            await page.wait_for_selector(
+                "a[href='gradeHoraria?codmnu=4759']",
+                timeout=5000,
+            )
+        except PlaywrightTimeoutError as exc:
+            raise JupiterAuthenticationError(
+                "Erro ao acessar o JupiterWeb. Cheque suas credenciais."
+            ) from exc
+
+        await page.click("a[href='gradeHoraria?codmnu=4759']")
+        await page.wait_for_selector("#codpgm", timeout=15000)
+
+        options = await self._get_program_options(page)
+        if not options:
+            raise RuntimeError("Nenhum programa disponível para seleção no JupiterWeb")
+
+        selected_option = sorted(options, key=int)[-1]
+        await page.select_option("#codpgm", value=selected_option)
+        await page.click("#buscar")
+
+        # Some terms return no classes or use non-sequential row ids.
+        # We only need to wait for the grade page to settle before parsing.
+        try:
+            await page.wait_for_load_state("networkidle", timeout=10000)
+        except PlaywrightTimeoutError:
+            pass
+
+        await self._wait_for_grade_content(page)
+
+        course_raw = await page.locator("#curso").text_content() or ""
+        institute_raw = await page.locator("#unidade").text_content() or ""
+        course = self._extract_course_name(course_raw)
+        institute = self._extract_institute_name(institute_raw)
+
+        subjects_map = await self._extract_subjects(page)
+
+        await page.goto(USER_INFO_URL, wait_until="load")
+
+        fonts_texts: list[str | None] = await page.eval_on_selector_all(
+            "font",
+            "(elements) => elements.map((el) => el.textContent)",
+        )
+        personal_texts: list[str | None] = await page.eval_on_selector_all(
+            "td[width='77%'] font",
+            "(elements) => elements.map((el) => el.textContent)",
+        )
+
+        name = self._clean(personal_texts[1]) if len(personal_texts) > 1 else ""
+        name = name or "Estudante USP"
+
+        emails = [
+            self._clean(text) for text in fonts_texts if text and "@" in text
+        ]
+        preferred_email = next(
+            (email for email in emails if "usp.br" in email), ""
+        )
+        email = preferred_email or (emails[0] if emails else n_usp)
+
+        subjects = [
+            JupiterStudentSubject(
+                code=code,
+                name=acc.name,
+                class_code=acc.class_code,
+                available_days=acc.slots,
+                observations=acc.observations,
+            )
+            for code, acc in sorted(subjects_map.items())
+        ]
+
+        await context.close()
+
+        return JupiterStudentSchedule(
+            n_usp=n_usp,
+            name=name,
+            email=email,
+            course=course,
+            institute=institute,
+            subjects=subjects,
+        )
 
     async def _extract_subjects(self, page: Page) -> dict[str, _SubjectAccumulator]:
         subjects: dict[str, _SubjectAccumulator] = {}

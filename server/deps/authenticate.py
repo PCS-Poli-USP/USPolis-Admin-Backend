@@ -105,6 +105,8 @@ def authenticate_from_cookie(request: Request, session: SessionDep) -> User:
         raise InvalidSessionCookie()
     if user_session.is_expired():
         raise InvalidSessionCookie()
+    # Same as token_authenticate: lets the access log attribute the request.
+    request.state.current_user = user_session.user
     return user_session.user
 
 

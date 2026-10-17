@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from server.config import CONFIG
 from server.deps.authenticate import AuthenticationClient
+from server.services.auth.authentication_client import AuthProviderUnavailable
 from server.deps.session_dep import SessionDep
 from server.middlewares import get_client_ip
 from server.models.database.user_session_db_model import UserSession
@@ -91,6 +92,9 @@ def refresh_token(
         new_access_token = AuthenticationClient.refresh_access_token(
             refresh_token=refresh_token
         )
+    except AuthProviderUnavailable:
+        # Google is down, not the token: keep the user's session.
+        raise
     except HTTPException:
         session_id = request.cookies.get("session")
         user_session: UserSession | None = None
