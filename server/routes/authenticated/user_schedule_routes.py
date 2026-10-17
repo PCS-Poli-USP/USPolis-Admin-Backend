@@ -20,6 +20,7 @@ from server.services.jupiter_crawler.authenticated_crawler import (
     AuthenticatedJupiterCrawler,
     JupiterAuthenticationError,
 )
+from server.services.jupiter_crawler.crawl_limiter import JupiterCrawlLimitError
 from server.services.jupiter_crawler.models import JupiterStudentSubject
 from server.utils.enums.crawler_enums import CrawlerStatus
 from server.utils.must_be_int import must_be_int
@@ -46,6 +47,8 @@ async def crawl_user_schedule(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=str(exc),
             ) from exc
+        except JupiterCrawlLimitError:
+            raise
         except Exception as exc:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -149,6 +152,10 @@ async def crawl_user_schedule(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(exc),
+        ) from exc
+    except JupiterCrawlLimitError as exc:
+        raise HTTPException(
+            status_code=exc.status_code, detail=str(exc), headers=exc.headers()
         ) from exc
     except Exception as exc:
         raise HTTPException(
