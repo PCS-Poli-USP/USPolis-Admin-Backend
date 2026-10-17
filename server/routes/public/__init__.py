@@ -21,6 +21,7 @@ from server.routes.public.course_routes import router as CourseRouter
 from server.routes.public.curriculum_routes import router as CurriculumRouter
 from server.routes.public.curriculum_subject_routes import router as CurriculumSubjectRouter
 from server.routes.public.static_routes import router as StaticRouter
+from server.routes.public.api_key_link_routes import router as ApiKeyLinkRouter
 
 
 
@@ -43,3 +44,4 @@ router.include_router(CourseRouter)
 router.include_router(CurriculumRouter)
 router.include_router(CurriculumSubjectRouter)
 router.include_router(StaticRouter)
+router.include_router(ApiKeyLinkRouter)

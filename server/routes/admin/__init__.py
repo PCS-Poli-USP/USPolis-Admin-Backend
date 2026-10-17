@@ -29,6 +29,7 @@ from server.routes.admin.permissions_admin_routes import (
     router as AdminPermissionRouter,
 )
 from server.routes.admin.roles_admin_routes import router as AdminRoleRouter
+from server.routes.admin.api_key_admin_routes import router as AdminApiKeyRouter
 
 router = APIRouter(
     prefix="/admin", tags=["Admin"], dependencies=[Depends(admin_authenticate)]
@@ -49,3 +50,4 @@ router.include_router(AdminCurriculumRouter)
 router.include_router(AdminCurriculumSubjectRouter)
 router.include_router(AdminApiAccessLogRouter)
 router.include_router(AdminApiIncidentReportRouter)
+router.include_router(AdminApiKeyRouter)

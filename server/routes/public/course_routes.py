@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Body
 
-from server.models.database.course_options_db_model import CourseOptions
 from server.models.http.responses.course_response_models import CourseResponse
 
 from server.deps.session_dep import SessionDep
@@ -40,27 +39,4 @@ def list_cached_course_options(session: SessionDep) -> list[CourseOption]:
     return [
         CourseOption(codcur=o.codcur, codhab=o.codhab, name=o.name)
         for o in options
-    ]
-
-@router.post("/options/sync")
-async def sync_course_options(session: SessionDep, codcg: int = 3) -> list[CourseOption]:
-    active = await JupiterCoursesCrawler(codcg=codcg, tipo="N").crawl()
-    inactive = await JupiterCoursesOldCrawler(codcg=codcg, tipo="V").crawl()
-
-    all_courses = active + inactive
-
-    repo = CourseOptionRepository(session)
-
-    db_models = [
-        CourseOptions(codcur=c.codcur, codhab=c.codhab, name=c.name)
-        for c in all_courses
-    ]
-
-    repo.upsert_many(db_models)
-
-    # retorna o que foi salvo
-    saved = repo.list_all()
-    return [
-        CourseOption(codcur=o.codcur, codhab=o.codhab, name=o.name)
-        for o in saved
     ]

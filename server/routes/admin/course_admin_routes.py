@@ -8,7 +8,16 @@ from server.models.http.requests.course_request_models import (
     CourseRegister,
     CourseUpdate,
 )
+from server.models.database.course_options_db_model import CourseOptions
+from server.repositories.course_options_repository import CourseOptionRepository
 from server.repositories.course_repository import CourseRepository
+from server.services.jupiter_crawler.active_courses_crawler.crawler import (
+    JupiterCoursesCrawler,
+)
+from server.services.jupiter_crawler.course_models import CourseOption
+from server.services.jupiter_crawler.inactive_courses_crawler.crawler import (
+    JupiterCoursesOldCrawler,
+)
 
 embed = Body(..., embed=True)
 
@@ -144,3 +153,30 @@ def delete_course(
             "detail": "Curso removido com sucesso",
         },
     )
+
+
+@router.post("/options/sync")
+async def sync_course_options(session: SessionDep, codcg: int = 3) -> list[CourseOption]:
+    """Refresh the cached course options by crawling Júpiter (two crawls).
+    Admin-only: it used to be public, letting anyone trigger crawls against
+    USP's systems and writes to our database."""
+    active = await JupiterCoursesCrawler(codcg=codcg, tipo="N").crawl()
+    inactive = await JupiterCoursesOldCrawler(codcg=codcg, tipo="V").crawl()
+
+    all_courses = active + inactive
+
+    repo = CourseOptionRepository(session)
+
+    db_models = [
+        CourseOptions(codcur=c.codcur, codhab=c.codhab, name=c.name)
+        for c in all_courses
+    ]
+
+    repo.upsert_many(db_models)
+
+    # retorna o que foi salvo
+    saved = repo.list_all()
+    return [
+        CourseOption(codcur=o.codcur, codhab=o.codhab, name=o.name)
+        for o in saved
+    ]
