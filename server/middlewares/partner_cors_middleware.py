@@ -15,7 +15,7 @@ import time
 from collections.abc import Callable
 from typing import Any
 
-import anyio
+from anyio import to_thread
 from starlette.datastructures import Headers, MutableHeaders
 from starlette.responses import Response
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
@@ -127,7 +127,7 @@ class PartnerCorsMiddleware:
             self.__session_provider(scope)
         )
         try:
-            origins = await anyio.to_thread.run_sync(loader)
+            origins = await to_thread.run_sync(loader)
         except Exception as e:  # fail closed for CORS: no partner origins
             logger.error(f"Failed to load partner CORS origins: {e}")
             return set()

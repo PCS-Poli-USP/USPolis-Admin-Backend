@@ -4,7 +4,7 @@ from typing import Any
 from collections.abc import Callable
 from fastapi import status
 from fastapi.responses import JSONResponse
-import anyio
+from anyio import to_thread
 from redis.asyncio import Redis
 from redis.exceptions import RedisError
 from starlette.datastructures import Headers
@@ -173,7 +173,7 @@ class ApiKeyMiddleware:
             return
         writer = self.last_used_writer or db_last_used_writer(provider)
         try:
-            await anyio.to_thread.run_sync(writer, key_id)
+            await to_thread.run_sync(writer, key_id)
         except Exception as e:  # never fail the request over a metric
             logger.error(f"Failed to update API key last_used_at: {e}")
 
