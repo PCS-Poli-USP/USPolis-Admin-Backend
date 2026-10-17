@@ -21,7 +21,7 @@ app (no shipping config lives in this repo).
 
 ## What `LoggerMiddleware` writes
 
-`LoggerMiddleware` in `server/middlewares.py` wraps every request:
+`LoggerMiddleware` in `server/middlewares/logger_middleware.py` wraps every request:
 
 - It always logs a request entry and a response entry to `app_logger`
   (method, path, status, duration, user email, and — for certain
@@ -32,8 +32,14 @@ app (no shipping config lives in this repo).
   `grep 'status="409"'` (or any other error status) surfaces the payload
   that caused it, not just a separate, harder-to-correlate request line.
   To make a new route's body show up this way, add its method/path to
-  `LOG_BODY_RULES` in `server/middlewares.py` — that one table drives both
+  `LOG_BODY_RULES` in `server/middlewares/logger_middleware.py` — that one table drives both
   the request-line logging and the error-response-line logging.
+- Before any body is logged or persisted, keys listed in
+  `SENSITIVE_BODY_KEYS` are replaced with `***REDACTED***` at any depth
+  (case-insensitive): `password` (the user's Júpiter password) and `token`
+  (the secret of a one-time API key delivery link, posted to
+  `/api-key-links/.../reveal` and to the admin share-link email route). Add
+  a key there whenever a new request body carries a secret.
 - After the response, unless the method is `OPTIONS` or the path starts with
   one of `LOKI_EXCLUDED_PATHS` (`/health`, `/analytics`, `/api/docs`,
   `/api/openapi.json`), it also emits one line to `loki_access`:

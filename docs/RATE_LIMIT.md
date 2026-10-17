@@ -14,7 +14,7 @@ implemented yet.
    deliberately **looser** than the app limits (10 req/s with a burst of 40).
    Example config: `nginx/uspolis-api.conf.example` in the `USPolis-Admin`
    repo.
-2. **`RateLimitMiddleware`** (`server/middlewares.py`). It applies precise
+2. **`RateLimitMiddleware`** (`server/middlewares/rate_limit_middleware.py`). It applies precise
    per-IP fixed windows, with counters kept in Redis so all Gunicorn workers
    share them. It is a pure ASGI middleware that runs **before routing and
    authentication**. A rejected request therefore costs one Redis round trip
@@ -60,6 +60,27 @@ otherwise rotate addresses to get around the limit.
 Not counted:
 - `OPTIONS` requests (CORS preflight);
 - `/health`, `/docs`, `/redoc` and `/openapi.json`.
+
+## Requests with an API key
+
+A request with a valid `X-API-Key` (see `API_KEYS.md`) is counted against
+**the key's own limits**, in the bucket `rl:key:<id>:...`, instead of the
+per-IP ones. **Browser keys** are public, so each visitor **also** keeps the
+per-IP limit: one client reusing a visible key can't burn the partner's
+quota. Invalid keys never reach the limiter. `ApiKeyMiddleware` rejects them
+first and cuts an IP off with 429 after 20 failures a minute.
+
+## Request cost caps
+
+Counting requests isn't enough: one unbounded request can cost more than
+thousands of small ones. Date ranges are therefore capped, both ends
+included, with **400** over the cap:
+
+- **`/allocations/events`: 31 days.** It expands occurrences per day, and
+  production traffic never asked for more than 14.
+- **Every route using `QueryInterval`: 366 days.** Semester views of
+  classes and reservations by building legitimately ask for about 365.
+- Also rejected: `end` before `start`.
 
 ## Responses
 

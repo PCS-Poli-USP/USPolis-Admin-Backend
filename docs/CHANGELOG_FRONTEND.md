@@ -1,6 +1,31 @@
 # Frontend migration changelog
 
-Backend API contract changes on `feature/role-based-permissions` that the frontend needs to account for. Newest changes first.
+Backend API contract changes that the frontend needs to account for (the branch is noted when it isn't `feature/role-based-permissions`). Newest changes first.
+
+## API keys can be delivered by one-time link (`feature/api-keys`)
+
+New endpoints so the "Link de visualização única" option in the key modal works for real (no longer simulated). Full design in `docs/API_KEYS.md`, "Delivery by one-time link".
+
+**`POST /admin/api-clients/{client_id}/keys/via-link`** (201): same body as `POST /admin/api-clients/{client_id}/keys` plus `link_ttl_hours` (`1`, `24` or `72`; default `24`; anything else is a `422`). Response:
+- `key`: the usual `ApiKeyResponse` (masked, **no plaintext key**: in link mode the admin never sees it);
+- `link`: `ApiKeyDeliveryLinkResponse` (`id`, `link_id`, `status`, `expires_at`, `consumed_at`, `consumed_ip`, `invalidated_at`, `invalidated_by_id`, `emailed_at`, `emailed_to`, ...);
+- `token` and `url` (`<FRONTEND_URL>/api-key/<link_id>#<token>`): the **only** time the token exists; the server never stores it.
+
+**`PATCH /admin/api-key-delivery-links/{id}/invalidate`**: kills a link nobody opened yet and **revokes its key**. `410` if it was already used or invalidated.
+
+**`POST /admin/api-keys/{key_id}/share-link/email`**, body `{"token": "...", "message": "..." | null}` (message up to 1000 chars): emails the link (never the key) to the client's `contact_email`. Returns the updated `ApiKeyDeliveryLinkResponse`. `404` wrong token or key without a link, `410` link no longer pending, `502` SMTP failure (nothing recorded; safe to retry).
+
+**`ApiKeyResponse`** (every key endpoint) gains `delivery_link: ApiKeyDeliveryLinkResponse | null`. `status` is one of `pending`, `consumed`, `invalidated`, `expired`.
+
+**Public, for the partner's page:**
+- `GET /api-key-links/{link_id}`: `{status, available, expires_at, client_name, key_name}`. Never consumes the link. `404` unknown, `422` malformed id.
+- `POST /api-key-links/{link_id}/reveal`, body `{"token": "..."}`: `{key, key_name, client_name, expires_at, allowed_path_prefixes, allowed_origins}`, **once**. `404` wrong token (the link stays usable), `410` used, expired, invalidated, key revoked or client inactive.
+
+**Action items for frontend:**
+- Modal, link mode: call `/keys/via-link`, show `url` with "Copiar link", `link.expires_at` and "Invalidar link" (`link.id`). Don't show a key field.
+- "Enviar por e-mail": call `share-link/email` with the `token` held **in memory** from the creation response, show `emailed_to` or the `502` error. Once the modal closes the token is gone; resending then means invalidating and issuing a new link. Never persist the token (no localStorage).
+- Key list: show `delivery_link.status` ("aguardando abertura", "entregue em `consumed_at`", "expirado", "invalidado").
+- New public route **`/api-key/:linkId`**: on load read `location.hash` (the token), then immediately remove it with `history.replaceState`; call the GET for the status; show "Revelar chave" only if `available`; on click POST the token; show the key with a copy button and a "esta é a única vez" warning. Handle `410` ("já foi aberto, expirou ou foi invalidado; se não foi você, avise a equipe") and `404`. Send `Referrer-Policy: no-referrer` on that page too.
 
 ## `Role`/`Permission` now actually grant access at request time
 

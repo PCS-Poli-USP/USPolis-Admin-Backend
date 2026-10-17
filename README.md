@@ -4,6 +4,8 @@
 [![Static Badge](https://img.shields.io/badge/SQLModel-7c2ea3)](https://sqlmodel.tiangolo.com/)
 [![Static Badge](https://img.shields.io/badge/SQLAlchemy-edc309)](https://www.sqlalchemy.org/)
 [![Static Badge](https://img.shields.io/badge/PostgreSQL-1965c2)](https://www.postgresql.org/)
+[![Static Badge](https://img.shields.io/badge/Redis-dc382d)](https://redis.io/)
+[![Static Badge](https://img.shields.io/badge/Docker-2496ed)](https://www.docker.com/)
 [![Static Badge](https://img.shields.io/badge/Pydantic-c22141)](https://docs.pydantic.dev/latest/)
 [![Static Badge](https://img.shields.io/badge/mypy-gray)](https://www.mypy-lang.org)
 [![Static Badge](https://img.shields.io/badge/Ruff-6c09ed)](https://docs.astral.sh/ruff/)
@@ -24,12 +26,14 @@ Here we have the tecnologies used on backend:
 - [FastAPI](https://fastapi.tiangolo.com/) - Python async micro framework built on [Starlette](https://www.starlette.io/) and [PyDantic](https://docs.pydantic.dev/latest/).
 - [SQL Model](https://sqlmodel.tiangolo.com/) - Python library for interacting with SQL databases, powered by [PyDantic](https://docs.pydantic.dev/latest/) and [SQLAlchemy](https://sqlalchemy.org/).
 - [PostgreSQL](https://www.postgresql.org/) - Open source object-relational database. 
+- [Redis](https://redis.io/) - In-memory store used for rate limiting counters and the partner API key cache (optional locally: without `REDIS_URL` both are skipped, failing open).
+- [Docker](https://www.docker.com/) - The `Dockerfile` builds the backend image; the full stack (PostgreSQL, Redis, backend, frontend) runs with Docker Compose from the [USPolis-Admin](https://github.com/PCS-Poli-USP/USPolis-Admin) repo.
 
 ## Docs
 
 You can see a complete documentation at [USPolis-Admin Wiki](https://github.com/PCS-Poli-USP/USPolis-Admin/wiki), there you will find our architecture, diagrams, bussiness rules, descriptions and more.
 
-Repo-local docs: [TESTS.md](docs/TESTS.md) (test suite structure and coverage), [SESSION_MANAGEMENT.md](docs/SESSION_MANAGEMENT.md) (login/session cookie lifecycle and expiration rules), [LOGGING.md](docs/LOGGING.md) (request logging, the Loki access log, and file rotation), [PERMISSIONS.md](docs/PERMISSIONS.md) (role-based permission model, the `Group`→`Role` migration, and how `PermissionIndex` is wired into route dependencies), [RATE_LIMIT.md](docs/RATE_LIMIT.md) (per-IP rate limiting: Nginx + Redis-backed middleware, limits, rollout and Redis setup), [API_KEYS.md](docs/API_KEYS.md) (partner API keys: data model, key format, hashing and the rules for issuing them).
+Repo-local docs: [TESTS.md](docs/TESTS.md) (test suite structure and coverage), [SESSION_MANAGEMENT.md](docs/SESSION_MANAGEMENT.md) (login/session cookie lifecycle and expiration rules), [LOGGING.md](docs/LOGGING.md) (request logging, the Loki access log, and file rotation), [PERMISSIONS.md](docs/PERMISSIONS.md) (role-based permission model, the `Group`→`Role` migration, and how `PermissionIndex` is wired into route dependencies), [RATE_LIMIT.md](docs/RATE_LIMIT.md) (per-IP rate limiting: Nginx + Redis-backed middleware, limits, rollout and Redis setup), [API_KEYS.md](docs/API_KEYS.md) (partner API keys: data model, key format, hashing, the rules for issuing them, and delivery by one-time link or email), [PARTNER_API.md](docs/PARTNER_API.md) (guide for partners consuming the API, in Portuguese).
 
 ## Setup
 
@@ -48,7 +52,7 @@ poetry install --without test,dev
 
 There are other settings in `server/config.py` and the included `.env` file, you can see all enviroment variables used at `.env.example` file. 
 
-Assuming you've created and setted the '.env' file, everything should run as-is if there is a local [PostgreSQL](https://www.postgresql.org/) instance running (see the [docs](https://github.com/PCS-Poli-USP/USPolis-Admin/wiki) for a complete step by step to how set the enviroment).
+Assuming you've created and setted the '.env' file, everything should run as-is if there is a local [PostgreSQL](https://www.postgresql.org/) instance running (and, for rate limiting and the API key cache, a [Redis](https://redis.io/) one: see [RATE_LIMIT.md](docs/RATE_LIMIT.md)) (see the [docs](https://github.com/PCS-Poli-USP/USPolis-Admin/wiki) for a complete step by step to how set the enviroment).
 
 ## Run
 
@@ -59,6 +63,10 @@ uvicorn server.main:app --reload --port 8080
 ```
 
 Your API should now be available at http://localhost:8080
+
+### With Docker
+
+The `Dockerfile` here has `dev` and `prod` targets (Playwright's base image, since the Júpiter crawler needs a real browser). To run the whole stack (PostgreSQL, Redis, backend and frontend), use Docker Compose from the [USPolis-Admin](https://github.com/PCS-Poli-USP/USPolis-Admin) repo, which builds this backend and wires `REDIS_URL` for you.
 
 ## Develop
 
