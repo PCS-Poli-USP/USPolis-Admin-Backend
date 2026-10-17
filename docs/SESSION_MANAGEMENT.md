@@ -6,12 +6,13 @@ authenticates.
 
 ## The cookie
 
-Set by `/auth/get-tokens` and `/auth/refresh-token` (`server/routes/public/auth_routes.py`):
+Set by `/auth/get-tokens` and `/auth/refresh-token` (`server/routes/public/auth_routes.py`,
+`_set_session_cookie`):
 
 ```python
 response.set_cookie(
     key="session",
-    value=user_session.id,
+    value=token,  # secrets.token_urlsafe(32), see below
     httponly=True,
     secure=True,
     samesite="none" if CONFIG.development else "lax",
@@ -20,9 +21,33 @@ response.set_cookie(
 )
 ```
 
-The cookie value is the `UserSession.id` (a UUID hex). It's opaque to the
-browser — it's only meaningful as a lookup key against the `UserSession`
-table server-side. `httponly` keeps it invisible to JS (XSS can't read it
+The cookie value is a random token (`secrets.token_urlsafe(32)`). The
+database **never stores it**: `UserSession.token_hash` holds its SHA-256, and
+every cookie lookup hashes the incoming value
+(`UserSessionRepository.get_by_token`). A database dump or backup therefore
+can't be replayed as live sessions, and `UserSession.id` — shown and used by
+the admin sessions screen — is just an identifier, not a credential.
+
+Token lifecycle:
+
+- **Created** with the session (`create_session` returns an `IssuedSession`
+  with the plaintext token; it can't be recovered afterwards).
+- **Rotated** (`rotate_token`) on every interactive login, and whenever
+  `/auth/refresh-token` adopts a session found by `(user_id, user_agent)`
+  instead of by its cookie. A token planted or leaked before a login never
+  survives it. Side effect: two devices with an identical user-agent no
+  longer share one cookie — a fresh login on one logs the other out of that
+  row (it gets a new session on its next login).
+- **Kept** when `/auth/refresh-token` finds the session by the browser's own
+  cookie: it re-sends the same token to refresh the cookie's `max_age`.
+
+Sessions created before migration `2c1f0a7d9e34` had `id == cookie`; the
+migration backfilled `token_hash = sha256(id)`, so those cookies kept working
+without anyone being logged out. Until they expire (90 days at most, see
+below), those legacy rows still have a credential in their `id`.
+
+It's opaque to the browser — it's only meaningful as a lookup key against
+the `UserSession` table server-side. `httponly` keeps it invisible to JS (XSS can't read it
 directly); `secure` requires a real HTTPS connection to be stored at all.
 
 This app assumes **same-origin deployment**: the frontend and the API are
@@ -39,7 +64,7 @@ cookie in production/staging.
 - `authenticate()` (required) / `public_authenticate()` (optional) both try a
   bearer token first, then fall back to the cookie via
   `authenticate_from_cookie()` / `public_authenticate_from_cookie()`.
-- Both cookie-auth functions look up the `UserSession` row by id and reject
+- Both cookie-auth functions look up the `UserSession` row by the cookie's hash and reject
   it (treat as unauthenticated) if `UserSession.is_expired()` is `True` —
   i.e. `expires_at < now`.
 
@@ -52,7 +77,7 @@ valid exactly as long as `expires_at` is in the future.
 `/auth/get-tokens` (a real interactive login) first checks whether the
 browser already sent a live `session` cookie for the user who just
 authenticated with Google — `UserSessionRepository.get_valid_session_for_renewal()`
-looks the cookie's id up by primary key, and only accepts it if it belongs to
+looks the cookie up by its hash, and only accepts it if it belongs to
 this `user_id`, isn't expired, and hasn't hit the absolute max age. That's
 the common case (same browser, cookie still valid) and needs no heuristics
 at all.
