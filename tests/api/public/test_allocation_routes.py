@@ -1,4 +1,5 @@
 from collections.abc import Generator
+from datetime import date, datetime, timedelta
 
 import pytest
 from fastapi import status
@@ -20,6 +21,16 @@ def _clear_response_cache() -> Generator[None, None, None]:
     clear_cache()
     yield
     clear_cache()
+
+
+def first_month(class_: Class) -> dict[str, str]:
+    """The class's first 31 days: /allocations/events caps the range there
+    (the frontend asks for a day or a week)."""
+    start = class_.start_date
+    return {
+        "start": start.isoformat(),
+        "end": (start + timedelta(days=30)).isoformat(),
+    }
 
 
 class TestGetAllAllocationResources:
@@ -57,10 +68,7 @@ class TestGetAllAllocationEvents:
     ) -> None:
         response = public_client.get(
             f"{URL_PREFIX}/events",
-            params={
-                "start": class_.start_date.isoformat(),
-                "end": class_.end_date.isoformat(),
-            },
+            params=first_month(class_),
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -82,12 +90,51 @@ class TestGetAllAllocationEvents:
 
         response = public_client.get(
             f"{URL_PREFIX}/events",
-            params={
-                "start": class_.start_date.isoformat(),
-                "end": class_.end_date.isoformat(),
-            },
+            params=first_month(class_),
         )
 
         assert response.status_code == status.HTTP_200_OK
         classrooms = [e["classroom"] for e in response.json()]
         assert allocated_classroom.name in classrooms
+
+
+class TestAllocationEventsInterval:
+    @pytest.mark.parametrize(
+        ("start", "end", "expected"),
+        [
+            ("2026-03-01", "2026-03-31", status.HTTP_200_OK),
+            ("2026-03-01", "2026-04-01", status.HTTP_400_BAD_REQUEST),
+            ("2026-03-02", "2026-03-01", status.HTTP_400_BAD_REQUEST),
+        ],
+        ids=["31-days", "32-days", "end-before-start"],
+    )
+    def test_range_is_capped_at_31_days(
+        self, public_client: TestClient, start: str, end: str, expected: int
+    ) -> None:
+        response = public_client.get(
+            f"{URL_PREFIX}/events", params={"start": start, "end": end}
+        )
+
+        assert response.status_code == expected
+
+    def test_without_dates_it_uses_todays_date_at_request_time(
+        self, public_client: TestClient, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        # Regression: `date.today()` as a parameter default froze "today" at
+        # import time.
+        seen: list[tuple[object, object]] = []
+        monkeypatch.setattr(
+            "server.routes.public.allocation_routes.OccurrenceRepository."
+            "get_all_on_interval_for_allocation",
+            lambda start, end, session: seen.append((start, end)) or [],
+        )
+        frozen_today = datetime(2031, 5, 20, 10, 0)
+        monkeypatch.setattr(
+            "server.routes.public.allocation_routes.BrazilDatetime.now_utc",
+            lambda: frozen_today,
+        )
+
+        response = public_client.get(f"{URL_PREFIX}/events")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert seen == [(date(2031, 5, 20), date(2031, 5, 20))]

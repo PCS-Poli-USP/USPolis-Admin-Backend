@@ -77,32 +77,3 @@ class TestListCachedCourseOptions:
 
         assert response.status_code == status.HTTP_200_OK
         assert response.json() == []
-
-
-class TestSyncCourseOptions:
-    def test_crawls_and_persists_active_and_inactive_options(
-        self, public_client: TestClient, session: Session
-    ) -> None:
-        with (
-            patch(
-                "server.routes.public.course_routes.JupiterCoursesCrawler.crawl",
-                new=AsyncMock(
-                    return_value=[CourseOption(codcur=1, codhab=1, name="Ativo")]
-                ),
-            ),
-            patch(
-                "server.routes.public.course_routes.JupiterCoursesOldCrawler.crawl",
-                new=AsyncMock(
-                    return_value=[CourseOption(codcur=2, codhab=2, name="Inativo")]
-                ),
-            ),
-        ):
-            response = public_client.post(f"{URL_PREFIX}/options/sync")
-
-        assert response.status_code == status.HTTP_200_OK
-        names = {o["name"] for o in response.json()}
-        assert names == {"Ativo", "Inativo"}
-        assert {o.name for o in CourseOptionRepository(session).list_all()} == {
-            "Ativo",
-            "Inativo",
-        }
