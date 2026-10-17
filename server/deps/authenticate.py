@@ -81,11 +81,11 @@ def token_authenticate(
 
 # -- cookie authentications :
 def public_authenticate_from_cookie(request: Request, session: SessionDep) -> None:
-    session_id = request.cookies.get("session")
-    if session_id:
+    session_token = request.cookies.get("session")
+    if session_token:
         try:
-            user_session = UserSessionRepository.get_session_by_id(
-                id=session_id, session=session
+            user_session = UserSessionRepository.get_by_token(
+                token=session_token, session=session
             )
             if not user_session.is_expired():
                 request.state.current_user = user_session.user
@@ -94,12 +94,12 @@ def public_authenticate_from_cookie(request: Request, session: SessionDep) -> No
 
 
 def authenticate_from_cookie(request: Request, session: SessionDep) -> User:
-    session_id = request.cookies.get("session")
-    if not session_id:
+    session_token = request.cookies.get("session")
+    if not session_token:
         raise InvalidSessionCookie()
     try:
-        user_session = UserSessionRepository.get_session_by_id(
-            id=session_id, session=session
+        user_session = UserSessionRepository.get_by_token(
+            token=session_token, session=session
         )
     except UserSessionNotFound:
         raise InvalidSessionCookie()

@@ -1,4 +1,8 @@
+import hashlib
+import secrets
 from datetime import datetime, timedelta
+from typing import NamedTuple
+
 from fastapi import HTTPException, status
 from sqlmodel import Session, col, select
 from sqlalchemy.exc import NoResultFound
@@ -12,8 +16,51 @@ SESSION_DURATION_DAYS = 30
 # renewals. See docs/SESSION_MANAGEMENT.md for the full rationale.
 SESSION_MAX_AGE_DAYS = 90
 
+SESSION_TOKEN_BYTES = 32
+
+
+def hash_session_token(token: str) -> str:
+    """Plain SHA-256 is enough: the token is 256 random bits (legacy
+    uuid4 cookies: 122), so there is nothing to brute-force."""
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+class IssuedSession(NamedTuple):
+    """A session plus the plaintext token for its cookie. The token exists
+    only here and in the browser; it can't be recovered from the row."""
+
+    user_session: UserSession
+    token: str
+
 
 class UserSessionRepository:
+    @staticmethod
+    def get_by_token(*, token: str, session: Session) -> UserSession:
+        """The session a `session` cookie value belongs to."""
+        user_session = UserSessionRepository.get_by_token_opt(
+            token=token, session=session
+        )
+        if user_session is None:
+            raise UserSessionNotFound()
+        return user_session
+
+    @staticmethod
+    def get_by_token_opt(*, token: str, session: Session) -> UserSession | None:
+        statement = select(UserSession).where(
+            col(UserSession.token_hash) == hash_session_token(token)
+        )
+        return session.exec(statement).first()
+
+    @staticmethod
+    def rotate_token(*, user_session: UserSession, session: Session) -> str:
+        """Issues a new cookie token for the session, invalidating the old
+        one. Done on every login, so a token planted or leaked before it
+        never survives a real authentication."""
+        token = secrets.token_urlsafe(SESSION_TOKEN_BYTES)
+        user_session.token_hash = hash_session_token(token)
+        session.add(user_session)
+        return token
+
     @staticmethod
     def get_session_by_id(*, id: str, session: Session) -> UserSession:
         statement = select(UserSession).where(col(UserSession.id) == id)
@@ -46,17 +93,19 @@ class UserSessionRepository:
         user_agent: str,
         ip_address: str,
         session: Session,
-    ) -> UserSession:
+    ) -> IssuedSession:
         now = BrazilDatetime.now_utc()
+        token = secrets.token_urlsafe(SESSION_TOKEN_BYTES)
         user_session = UserSession(
             user_id=user_id,
             user_agent=user_agent,
             ip_address=ip_address,
             created_at=now,
             expires_at=UserSessionRepository._capped_expiry(created_at=now),
+            token_hash=hash_session_token(token),
         )
         session.add(user_session)
-        return user_session
+        return IssuedSession(user_session=user_session, token=token)
 
     @staticmethod
     def get_session(
@@ -76,7 +125,9 @@ class UserSessionRepository:
 
     @staticmethod
     def _capped_expiry(*, created_at: datetime) -> datetime:
-        sliding_expiry = BrazilDatetime.now_utc() + timedelta(days=SESSION_DURATION_DAYS)
+        sliding_expiry = BrazilDatetime.now_utc() + timedelta(
+            days=SESSION_DURATION_DAYS
+        )
         hard_cap = created_at + timedelta(days=SESSION_MAX_AGE_DAYS)
         return min(sliding_expiry, hard_cap)
 
@@ -100,11 +151,12 @@ class UserSessionRepository:
         user_agent: str,
         ip_address: str,
         session: Session,
-    ) -> UserSession:
+    ) -> IssuedSession:
         """Used only by the interactive login flow (`/auth/get-tokens`). A
         session that already `has_reached_max_age` is discarded and replaced
         with a fresh one instead of extended - see docs/SESSION_MANAGEMENT.md for
-        why this is the only path allowed to reset the absolute cap."""
+        why this is the only path allowed to reset the absolute cap. A reused
+        session gets a new token (see `rotate_token`)."""
         existing = UserSessionRepository.get_session(
             user_id=user_id,
             user_agent=user_agent,
@@ -118,7 +170,10 @@ class UserSessionRepository:
 
         if existing:
             UserSessionRepository.extend_session(user_session=existing, session=session)
-            return existing
+            token = UserSessionRepository.rotate_token(
+                user_session=existing, session=session
+            )
+            return IssuedSession(user_session=existing, token=token)
 
         return UserSessionRepository.create_session(
             user_id=user_id,
@@ -129,7 +184,7 @@ class UserSessionRepository:
 
     @staticmethod
     def get_valid_session_for_renewal(
-        *, session_id: str, user_id: int, session: Session
+        *, token: str, user_id: int, session: Session
     ) -> UserSession | None:
         """Used by the interactive login flow (`/auth/get-tokens`) to check
         whether the browser already carries a live session cookie for this
@@ -139,8 +194,8 @@ class UserSessionRepository:
         one, or one that has reached the absolute max age is not reusable -
         the max-age case is deleted outright, matching the reset-on-real-login
         behavior documented in docs/SESSION_MANAGEMENT.md."""
-        user_session = UserSessionRepository.get_session_opt(
-            id=session_id, session=session
+        user_session = UserSessionRepository.get_by_token_opt(
+            token=token, session=session
         )
         if user_session is None or user_session.user_id != user_id:
             return None

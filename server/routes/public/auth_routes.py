@@ -10,7 +10,10 @@ from server.deps.session_dep import SessionDep
 from server.middlewares import get_client_ip
 from server.models.database.user_session_db_model import UserSession
 from server.repositories.user_repository import UserRepository
-from server.repositories.user_session_repository import UserSessionRepository
+from server.repositories.user_session_repository import (
+    IssuedSession,
+    UserSessionRepository,
+)
 from server.utils.must_be_int import must_be_int
 
 embed = Body(..., embed=True)
@@ -30,6 +33,18 @@ class RefreshTokenResponse(BaseModel):
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 dias
 
 
+def _set_session_cookie(response: Response, token: str) -> None:
+    response.set_cookie(
+        key="session",
+        value=token,
+        httponly=True,
+        secure=True,
+        samesite="none" if CONFIG.development else "lax",
+        max_age=SESSION_COOKIE_AGE,
+        path="/",
+    )
+
+
 @router.get("/get-tokens")
 def get_tokens(
     auth_code: str, request: Request, response: Response, session: SessionDep
@@ -47,37 +62,33 @@ def get_tokens(
     ip_address = get_client_ip(request)
     user_id = must_be_int(user.id)
 
-    user_session: UserSession | None = None
-    session_id = request.cookies.get("session")
-    if session_id:
-        user_session = UserSessionRepository.get_valid_session_for_renewal(
-            session_id=session_id, user_id=user_id, session=session
+    issued: IssuedSession | None = None
+    session_token = request.cookies.get("session")
+    if session_token:
+        current = UserSessionRepository.get_valid_session_for_renewal(
+            token=session_token, user_id=user_id, session=session
         )
-        if user_session is not None:
-            UserSessionRepository.extend_session(
-                user_session=user_session, session=session
+        if current is not None:
+            UserSessionRepository.extend_session(user_session=current, session=session)
+            # A real login always gets a new token (no session fixation).
+            issued = IssuedSession(
+                user_session=current,
+                token=UserSessionRepository.rotate_token(
+                    user_session=current, session=session
+                ),
             )
 
-    if user_session is None and user_agent is not None and ip_address is not None:
-        user_session = UserSessionRepository.start_or_renew_session(
+    if issued is None and user_agent is not None and ip_address is not None:
+        issued = UserSessionRepository.start_or_renew_session(
             user_id=user_id,
             user_agent=user_agent,
             ip_address=ip_address,
             session=session,
         )
 
-    if user_session is not None:
-        response.set_cookie(
-            key="session",
-            value=user_session.id,
-            httponly=True,
-            secure=True,
-            samesite="none" if CONFIG.development else "lax",
-            max_age=SESSION_COOKIE_AGE,
-            path="/",
-        )
-
-    if user_session is None:
+    if issued is not None:
+        _set_session_cookie(response, issued.token)
+    else:
         response.delete_cookie("session")
 
     session.commit()
@@ -96,23 +107,28 @@ def refresh_token(
         # Google is down, not the token: keep the user's session.
         raise
     except HTTPException:
-        session_id = request.cookies.get("session")
-        user_session: UserSession | None = None
-        if session_id:
-            user_session = UserSessionRepository.get_session_by_id(
-                id=session_id, session=session
+        session_token = request.cookies.get("session")
+        if session_token:
+            stale = UserSessionRepository.get_by_token_opt(
+                token=session_token, session=session
             )
-            session.delete(user_session)
-            session.commit()
+            if stale is not None:
+                session.delete(stale)
+                session.commit()
 
         raise InvalidRefreshToken()
 
-    session_id = request.cookies.get("session")
-    user_session = None
-    if session_id:
-        user_session = UserSessionRepository.get_session_opt(
-            id=session_id, session=session
+    session_token = request.cookies.get("session")
+    user_session: UserSession | None = None
+    # The cookie value to (re)send: the browser's own token when its session
+    # is found, a new one when a session is adopted or created below.
+    cookie_token: str | None = None
+    if session_token:
+        user_session = UserSessionRepository.get_by_token_opt(
+            token=session_token, session=session
         )
+        if user_session is not None:
+            cookie_token = session_token
 
     if user_session:
         UserSessionRepository.extend_session(user_session=user_session, session=session)
@@ -130,9 +146,14 @@ def refresh_token(
                 user_agent=user_agent,
                 session=session,
             )
+            if user_session is not None:
+                # Its current token is unknown (only the hash is stored).
+                cookie_token = UserSessionRepository.rotate_token(
+                    user_session=user_session, session=session
+                )
 
         if not user_session and user_agent is not None and ip_address is not None:
-            user_session = UserSessionRepository.create_session(
+            user_session, cookie_token = UserSessionRepository.create_session(
                 user_id=must_be_int(user.id),
                 user_agent=user_agent,
                 ip_address=ip_address,
@@ -140,18 +161,9 @@ def refresh_token(
             )
         session.commit()
 
-    if user_session is not None:
-        response.set_cookie(
-            key="session",
-            value=user_session.id,
-            httponly=True,
-            secure=True,
-            samesite="none" if CONFIG.development else "lax",
-            max_age=SESSION_COOKIE_AGE,
-            path="/",
-        )
-
-    if user_session is None:
+    if cookie_token is not None:
+        _set_session_cookie(response, cookie_token)
+    else:
         response.delete_cookie("session")
 
     return RefreshTokenResponse(access_token=new_access_token)
@@ -159,9 +171,11 @@ def refresh_token(
 
 @router.post("/logout")
 def logout(db: SessionDep, request: Request, response: Response) -> JSONResponse:
-    session_id = request.cookies.get("session")
-    if session_id:
-        user_session = UserSessionRepository.get_session_opt(id=session_id, session=db)
+    session_token = request.cookies.get("session")
+    if session_token:
+        user_session = UserSessionRepository.get_by_token_opt(
+            token=session_token, session=db
+        )
         if user_session:
             db.delete(user_session)
             db.commit()
