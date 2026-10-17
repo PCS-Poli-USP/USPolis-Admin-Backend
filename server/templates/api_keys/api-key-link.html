@@ -1,0 +1,40 @@
+{% extends "_layout/base_email.html" %}
+
+{% block title %}Sua chave da API do USPolis{% endblock %}
+
+{% block status %}
+<tr>
+    <td class="status-ribbon" style="background-color: #eaf2f2; color: #2f6666;">
+        &#128273; CHAVE DA API
+    </td>
+</tr>
+{% endblock %}
+
+{% block content %}
+<p>Olá, {{ data.contact_name|e }}.</p>
+
+<p>Uma chave da API do USPolis foi emitida para <strong>{{ data.client_name|e }}</strong>.
+Por segurança, ela não vai neste e-mail: abra o link abaixo e clique em
+<strong>Revelar chave</strong>.</p>
+
+<div class="section-title">Detalhes</div>
+<table class="detail-table" role="presentation" cellpadding="0" cellspacing="0">
+    <tr><td class="detail-label">Chave</td><td class="detail-value">{{ data.key_name|e }}</td></tr>
+    <tr><td class="detail-label">Link válido até</td><td class="detail-value">{{ data.link_expires_at }}</td></tr>
+</table>
+
+{% if data.message %}
+<div class="section-title">Mensagem</div>
+<div class="quote-block">{{ data.message|e }}</div>
+{% endif %}
+
+<p style="margin-top: 24px;">
+    <a href="{{ data.url|e }}" class="btn">Abrir link da chave</a>
+</p>
+
+<p><strong>O link funciona uma única vez.</strong> Copie a chave assim que ela
+aparecer e guarde-a em um local seguro, como um gerenciador de segredos.</p>
+
+<p>Se o link disser que já foi aberto e não foi você, avise-nos respondendo
+a este e-mail: a chave será revogada e uma nova será emitida.</p>
+{% endblock %}

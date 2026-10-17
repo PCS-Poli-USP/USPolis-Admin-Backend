@@ -20,6 +20,7 @@ class ApiAccessLogResponse(BaseModel):
     tags: list[str]
     user_id: int | None
     user_email: str | None = None
+    api_key_id: int | None = None
     detail: str | None
     request_body: str | None
 
@@ -38,6 +39,7 @@ class ApiAccessLogResponse(BaseModel):
             tags=access_log.tags,
             user_id=access_log.user_id,
             user_email=access_log.user.email if access_log.user_id else None,
+            api_key_id=access_log.api_key_id,
             detail=access_log.detail,
             request_body=access_log.request_body,
         )

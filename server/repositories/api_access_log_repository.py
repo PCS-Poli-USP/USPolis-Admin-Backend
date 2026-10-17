@@ -26,6 +26,7 @@ class ApiAccessLogRepository:
         detail: str | None,
         request_body: str | None,
         session: Session,
+        api_key_id: int | None = None,
     ) -> ApiAccessLog:
         access_log = ApiAccessLog(
             security_level=security_level,
@@ -37,6 +38,7 @@ class ApiAccessLogRepository:
             response_time_ms=response_time_ms,
             tags=tags,
             user_id=user_id,
+            api_key_id=api_key_id,
             detail=detail[:500] if detail else None,
             request_body=request_body[:2000] if request_body else None,
         )
@@ -80,9 +82,7 @@ class ApiAccessLogRepository:
         return Page.paginate(statement, pagination, session)
 
     @staticmethod
-    def get_summary(
-        *, since: datetime, session: Session
-    ) -> list[tuple[int, int]]:
+    def get_summary(*, since: datetime, session: Session) -> list[tuple[int, int]]:
         """Returns (status_code, count) pairs for rows created since `since`."""
         statement = (
             select(ApiAccessLog.status_code, func.count())
