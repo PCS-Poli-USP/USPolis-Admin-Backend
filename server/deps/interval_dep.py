@@ -28,8 +28,29 @@ class QueryInterval(BaseModel):
             raise InvalidQueryInterval(
                 detail="Erro ao realizar a consulta: para usar o filtro de datas por intervalo, tanto 'Início' como 'Fim' devem ser passados."
             )
+        if self.start and self.end:
+            ensure_valid_span(self.start, self.end, max_days=MAX_INTERVAL_DAYS)
 
         return self
+
+
+# Bounds the cost of a single request (an unbounded range is the cheapest DoS).
+# One year covers every legitimate use seen in production: semester views of
+# classes/reservations by building ask for up to ~365 days.
+MAX_INTERVAL_DAYS = 366
+
+
+def ensure_valid_span(start: date, end: date, *, max_days: int) -> None:
+    """Raise InvalidQueryInterval unless start <= end and the interval, counting
+    both ends, spans at most `max_days` days."""
+    if end < start:
+        raise InvalidQueryInterval(
+            detail="Erro ao realizar a consulta: a data de fim deve ser igual ou posterior à de início."
+        )
+    if (end - start).days + 1 > max_days:
+        raise InvalidQueryInterval(
+            detail=f"Erro ao realizar a consulta: o intervalo de datas pode ter no máximo {max_days} dias."
+        )
 
 
 class InvalidQueryInterval(HTTPException):
