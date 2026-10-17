@@ -18,6 +18,7 @@ from server.models.http.requests.solicitation_request_models import (
     SolicitationUpdated,
 )
 from server.models.http.requests.email_request_models import (
+    ApiKeyLinkMail,
     BCCMailSend,
     BugReportMail,
     FeedbackMail,
@@ -49,6 +50,9 @@ FEEDBACK_SUBJECT = "Feedback - USPolis"
 BUG_REPORT_SUBJECT = "BUG RELATADO - USPolis"
 SYSTEM_LIST = ["uspolis@usp.br"]
 SYSTEM_MODE = CONFIG.environment.lower() != "production"
+API_KEY_LINK_SUBJECT = "Sua chave da API - USPolis"
+# Without it a hung SMTP server would hold the worker thread forever.
+SMTP_TIMEOUT_SECONDS = 15
 
 
 class EmailService:
@@ -69,19 +73,24 @@ class EmailService:
             logger.error(f"Error sending BCC email: {e}")
 
     @staticmethod
+    def send_email_or_raise(context: MailSend) -> None:
+        """Send now; on failure raise, for callers that must report it."""
+        msg = MIMEMultipart()
+        msg["Subject"] = context.subject
+        msg["From"] = f"{CONFIG.mail_address}"
+        msg["Reply-To"] = f"no-reply-{CONFIG.mail_address}"
+        msg["To"] = ",".join(context.to)
+        msg.attach(MIMEText(context.body, "html"))
+        with SMTP_SSL(
+            CONFIG.mail_host, CONFIG.mail_port, timeout=SMTP_TIMEOUT_SECONDS
+        ) as smtp:
+            smtp.login(CONFIG.mail_address, CONFIG.mail_password)
+            smtp.send_message(msg)
+
+    @staticmethod
     def send_email_sync(context: MailSend) -> None:
         try:
-            # create email
-            msg = MIMEMultipart()
-            msg["Subject"] = context.subject
-            msg["From"] = f"{CONFIG.mail_address}"
-            msg["Reply-To"] = f"no-reply-{CONFIG.mail_address}"
-            msg["To"] = ",".join(context.to)
-            msg.attach(MIMEText(context.body, "html"))
-            with SMTP_SSL(CONFIG.mail_host, CONFIG.mail_port) as smtp:
-                smtp.login(CONFIG.mail_address, CONFIG.mail_password)
-                smtp.send_message(msg)
-
+            EmailService.send_email_or_raise(context)
         except Exception as e:
             logger.error(f"Error sending email: {e}")
 
@@ -228,3 +237,17 @@ class EmailService:
             body=body,
         )
         await EmailService.send_bcc_email(context)
+
+    @staticmethod
+    def send_api_key_link_email(to: list[str], data: ApiKeyLinkMail) -> list[str]:
+        """Send the one-time link (never the key) and return who it went to.
+        Synchronous and raising, unlike the notifications above: the admin
+        must know whether the partner actually got the link."""
+        if SYSTEM_MODE:
+            to = SYSTEM_LIST
+        template = env.get_template("/api_keys/api-key-link.html")
+        body = template.render(data=data)
+        EmailService.send_email_or_raise(
+            MailSend(to=to, subject=API_KEY_LINK_SUBJECT, body=body)
+        )
+        return to
