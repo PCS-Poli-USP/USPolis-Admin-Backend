@@ -52,6 +52,8 @@ from tests.factories.model.user_model_factory import UserModelFactory
 from tests.factories.base.base_factory import shared_faker
 
 CONFIG.testing = True
+# Fixed so API key hashes don't depend on whoever runs the suite.
+CONFIG.api_key_secret = "test-only-api-key-secret-0123456789abcdef"
 
 test_db_url = f"{CONFIG.test_db_uri}/{CONFIG.test_db_database}"
 engine = create_engine(test_db_url)
