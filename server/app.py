@@ -5,7 +5,12 @@ from starlette.middleware.cors import CORSMiddleware
 
 from server.deps_overrides import DepsOverrides
 from server.exception_handlers import add_exception_handlers
-from server.middlewares import LoggerMiddleware, RateLimitMiddleware
+from server.middlewares import (
+    ApiKeyMiddleware,
+    LoggerMiddleware,
+    PartnerCorsMiddleware,
+    RateLimitMiddleware,
+)
 from server.routes.admin import router as AdminRouter
 from server.routes.public import router as PublicRouter
 from server.routes.authenticated import router as AuthenticatedRouter
@@ -26,10 +31,16 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Middlewares run outermost-last-added: Logger -> CORS -> RateLimit -> app.
-# RateLimit sits inside CORS so a 429 still carries CORS headers (otherwise
-# the browser reports a CORS error instead of the 429).
+# Middlewares run outermost-last-added:
+#   Logger -> PartnerCors -> CORS -> ApiKey -> RateLimit -> app.
+# ApiKey and RateLimit sit inside CORS so their 401/403/429 still carry CORS
+# headers (otherwise the browser reports a CORS error instead). ApiKey runs
+# before RateLimit so a valid key is counted against its own limits.
+# PartnerCors sits outside CORS because CORSMiddleware rejects the preflight
+# of any origin not in ALLOWED_ORIGINS; it serves browser-key origins
+# (GET/HEAD on public routes, no credentials).
 app.add_middleware(RateLimitMiddleware)
+app.add_middleware(ApiKeyMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
@@ -45,6 +56,8 @@ app.add_middleware(
     ],
 )
 
+
+app.add_middleware(PartnerCorsMiddleware)
 
 app.add_middleware(LoggerMiddleware)
 

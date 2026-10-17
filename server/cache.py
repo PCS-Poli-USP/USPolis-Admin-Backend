@@ -5,6 +5,7 @@ from collections.abc import Callable
 import inspect
 
 from pydantic import BaseModel
+from sqlmodel import Session
 
 from server.utils.brazil_datetime import BrazilDatetime
 
@@ -15,47 +16,83 @@ _expired_map: dict[str, int] = {}
 T = TypeVar("T")
 
 
+# Arguments that never belong in a cache key: per-request objects.
+_UNCACHEABLE_ARG_NAMES = frozenset({"session", "request", "response"})
+# simple_cache keys include the arguments, so distinct inputs (e.g. date
+# ranges) could otherwise grow the store without bound between cleanups.
+MAX_CACHE_ENTRIES = 1024
+
+
+def _arg_key(value: Any) -> str:
+    if isinstance(value, BaseModel):
+        return value.model_dump_json()
+    return repr(value)
+
+
+def _args_cache_key(name: str, args: tuple[Any, ...], kwargs: dict[str, Any]) -> str:
+    """Cache key from the function name and its arguments, skipping
+    per-request objects (DB sessions, requests) that differ every call."""
+    parts = [_arg_key(arg) for arg in args if not isinstance(arg, Session)]
+    parts += [
+        f"{key}={_arg_key(value)}"
+        for key, value in sorted(kwargs.items())
+        if key not in _UNCACHEABLE_ARG_NAMES and not isinstance(value, Session)
+    ]
+    base = f"cache:{name}"
+    return f"{base}:{'|'.join(parts)}" if parts else base
+
+
+def _get_cached(cache_key: str, expire_seconds: int) -> tuple[bool, Any]:
+    if cache_key in _cache_store:
+        cached_data, cached_time = _cache_store[cache_key]
+        if BrazilDatetime.now_utc() - cached_time < timedelta(seconds=expire_seconds):
+            return True, cached_data
+        del _cache_store[cache_key]
+    return False, None
+
+
+def _store(cache_key: str, value: Any, expire_seconds: int) -> None:
+    if cache_key not in _cache_store and len(_cache_store) >= MAX_CACHE_ENTRIES:
+        clear_expired_cache()
+        if len(_cache_store) >= MAX_CACHE_ENTRIES:
+            oldest = min(_cache_store, key=lambda key: _cache_store[key][1])
+            del _cache_store[oldest]
+            _expired_map.pop(oldest, None)
+    _cache_store[cache_key] = (value, BrazilDatetime.now_utc())
+    _expired_map[cache_key] = expire_seconds
+
+
 def simple_cache(
     expire_seconds: int = 600,
 ) -> Callable[[Callable[..., T]], Callable[..., T]]:
-    """Cache que funciona com funções sync e async"""
+    """Cache que funciona com funções sync e async. A chave inclui os
+    argumentos (exceto sessão/request), então entradas diferentes - por
+    exemplo, intervalos de datas diferentes - não compartilham resultado."""
 
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
-        cache_key = f"cache:{func.__name__}"
-        _expired_map[cache_key] = expire_seconds
         if inspect.iscoroutinefunction(func):
 
             @wraps(func)
             async def async_wrapper(*args: Any, **kwargs: Any) -> T:
-                if cache_key in _cache_store:
-                    cached_data, cached_time = _cache_store[cache_key]
-                    if BrazilDatetime.now_utc() - cached_time < timedelta(
-                        seconds=expire_seconds
-                    ):
-                        return cached_data  # type: ignore
-                    else:
-                        del _cache_store[cache_key]
-
+                cache_key = _args_cache_key(func.__name__, args, kwargs)
+                hit, cached = _get_cached(cache_key, expire_seconds)
+                if hit:
+                    return cached  # type: ignore[no-any-return]
                 result = await func(*args, **kwargs)
-                _cache_store[cache_key] = (result, BrazilDatetime.now_utc())
-                return result  # type: ignore
+                _store(cache_key, result, expire_seconds)
+                return result  # type: ignore[no-any-return]
 
             return async_wrapper  # type: ignore
         else:
 
             @wraps(func)
             def sync_wrapper(*args: Any, **kwargs: Any) -> T:
-                if cache_key in _cache_store:
-                    cached_data, cached_time = _cache_store[cache_key]
-                    if BrazilDatetime.now_utc() - cached_time < timedelta(
-                        seconds=expire_seconds
-                    ):
-                        return cached_data  # type: ignore
-                    else:
-                        del _cache_store[cache_key]
-
+                cache_key = _args_cache_key(func.__name__, args, kwargs)
+                hit, cached = _get_cached(cache_key, expire_seconds)
+                if hit:
+                    return cached  # type: ignore[no-any-return]
                 result = func(*args, **kwargs)
-                _cache_store[cache_key] = (result, BrazilDatetime.now_utc())
+                _store(cache_key, result, expire_seconds)
                 return result
 
             return sync_wrapper
