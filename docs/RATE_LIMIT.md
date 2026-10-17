@@ -57,6 +57,37 @@ pipeline (a single round trip for all rules). IPv6 clients are grouped by
 their **/64**, because one subscriber usually controls a whole /64 and could
 otherwise rotate addresses to get around the limit.
 
+### Worked example
+
+`now // window` is the **window number**: how many windows of that size fit
+since 1970-01-01 (Unix time). Every request in the same slice of time gets
+the same number, so the same key and the same counter; when the slice ends
+the number goes up by one, which is a new key whose count starts at 1. The
+old key just expires. `now % window` is how far into the window we are, so
+`window - now % window` is what's left of it (the `X-RateLimit-Reset` value).
+
+At 2026-10-17 16:00:15 UTC (`now = 1792252815`), an anonymous request from
+`203.0.113.7` with the default rules runs `INCR` + `EXPIRE` on three keys:
+
+| Key | Value (count) | TTL | Window (UTC) | Reset in |
+|---|---|---|---|---|
+| `rl:ip:203.0.113.7:10:179225281` | `3` | 10 s | 16:00:10–16:00:19 | `10 - 15 % 10` = 5 s |
+| `rl:ip:203.0.113.7:60:29870880` | `12` | 60 s | 16:00:00–16:00:59 | 45 s |
+| `rl:ip:203.0.113.7:86400:20743` | `340` | 1 day | all of 2026-10-17 | 28785 s |
+
+Key = `rl` : `ip:<ip>` (who) : `<window seconds>` : `<window number>`. The
+window size has to be in the key: numbers of different-sized windows can be
+equal. The request is blocked if **any** count goes over its max: the 41st
+request between 16:00:10 and 16:00:19 gets a 429 with `Retry-After: 5`.
+
+Why number the windows instead of one `rl:ip:<ip>:10` key with a TTL: the
+update is always the same `INCR` + `EXPIRE`, with no "set the TTL only on the
+first hit" read-then-write race between workers, and every worker agrees on
+where a window starts and ends. The known cost of a fixed window: a client
+can send a full window's worth at the end of one window and again at the
+start of the next (up to 2x for a few seconds), which is fine for protecting
+CPU.
+
 Not counted:
 - `OPTIONS` requests (CORS preflight);
 - `/health`, `/docs`, `/redoc` and `/openapi.json`.
@@ -65,10 +96,21 @@ Not counted:
 
 A request with a valid `X-API-Key` (see `API_KEYS.md`) is counted against
 **the key's own limits**, in the bucket `rl:key:<id>:...`, instead of the
-per-IP ones. **Browser keys** are public, so each visitor **also** keeps the
+per-IP ones. `<id>` is the key's database id (`apikey.id`), never its
+`public_id` or the key itself; the rules are its `apikeyratelimit` rows, or
+`API_KEY_DEFAULT_LIMITS` / `API_KEY_BROWSER_DEFAULT_LIMITS` without any.
+For key 42 with `120/60,10000/86400`, at the same instant as above:
+
+| Key | Value |
+|---|---|
+| `rl:key:42:60:29870880` | `87` |
+| `rl:key:42:86400:20743` | `4031` |
+
+A server key only counts there (its traffic may come from several IPs). **Browser keys** are public, so each visitor **also** keeps the
 per-IP limit: one client reusing a visible key can't burn the partner's
 quota. Invalid keys never reach the limiter. `ApiKeyMiddleware` rejects them
-first and cuts an IP off with 429 after 20 failures a minute.
+first and cuts an IP off with 429 after 20 failures a minute, counted in its
+own key `apikey:fail:<ip>:<now // 60>` (same window-number idea).
 
 ## Request cost caps
 
