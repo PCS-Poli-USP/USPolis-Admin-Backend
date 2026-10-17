@@ -7,7 +7,9 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from starlette.middleware.cors import CORSMiddleware
 
-from server.middlewares import LoggerMiddleware, RateLimitMiddleware, app_path
+from server.middlewares.logger_middleware import LoggerMiddleware
+from server.middlewares.rate_limit_middleware import RateLimitMiddleware
+from server.middlewares.request_utils import app_path
 from server.services.rate_limiter import (
     FixedWindowRateLimiter,
     RateLimitMode,
@@ -103,7 +105,9 @@ class TestShadowMode:
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         fake_warning = MagicMock()
-        monkeypatch.setattr("server.middlewares.logger.warning", fake_warning)
+        monkeypatch.setattr(
+            "server.middlewares.rate_limit_middleware.logger.warning", fake_warning
+        )
         client = make_client(RateLimitMode.SHADOW)
         statuses = [client.get("/classrooms").status_code for _ in range(5)]
 
@@ -136,11 +140,19 @@ class TestOffAndFailOpen:
     def test_invalid_config_fails_open_instead_of_breaking_requests(
         self, monkeypatch: pytest.MonkeyPatch, mode: str, limits: str
     ) -> None:
-        monkeypatch.setattr("server.middlewares.CONFIG.testing", False)
-        monkeypatch.setattr("server.middlewares.CONFIG.rate_limit_mode", mode)
-        monkeypatch.setattr("server.middlewares.CONFIG.anon_rate_limits", limits)
+        monkeypatch.setattr(
+            "server.middlewares.rate_limit_middleware.CONFIG.testing", False
+        )
+        monkeypatch.setattr(
+            "server.middlewares.rate_limit_middleware.CONFIG.rate_limit_mode", mode
+        )
+        monkeypatch.setattr(
+            "server.middlewares.rate_limit_middleware.CONFIG.anon_rate_limits", limits
+        )
         fake_error = MagicMock()
-        monkeypatch.setattr("server.middlewares.logger.error", fake_error)
+        monkeypatch.setattr(
+            "server.middlewares.rate_limit_middleware.logger.error", fake_error
+        )
         app = FastAPI()
 
         @app.get("/classrooms")
@@ -158,9 +170,15 @@ class TestOffAndFailOpen:
     ) -> None:
         # A developer's .env with RATE_LIMIT_MODE=enforce must not turn the
         # API tests into 429s.
-        monkeypatch.setattr("server.middlewares.CONFIG.testing", True)
-        monkeypatch.setattr("server.middlewares.CONFIG.rate_limit_mode", "enforce")
-        monkeypatch.setattr("server.middlewares.CONFIG.anon_rate_limits", "1/60")
+        monkeypatch.setattr(
+            "server.middlewares.rate_limit_middleware.CONFIG.testing", True
+        )
+        monkeypatch.setattr(
+            "server.middlewares.rate_limit_middleware.CONFIG.rate_limit_mode", "enforce"
+        )
+        monkeypatch.setattr(
+            "server.middlewares.rate_limit_middleware.CONFIG.anon_rate_limits", "1/60"
+        )
         app = FastAPI()
 
         @app.get("/classrooms")
@@ -176,11 +194,12 @@ class TestOffAndFailOpen:
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         monkeypatch.setattr(
-            "server.middlewares.get_redis", MagicMock(return_value=FakeAsyncRedis())
+            "server.middlewares.rate_limit_middleware.get_redis",
+            MagicMock(return_value=FakeAsyncRedis()),
         )
         # Same class, fixed clock: the window can't roll over mid-test.
         monkeypatch.setattr(
-            "server.middlewares.FixedWindowRateLimiter",
+            "server.middlewares.rate_limit_middleware.FixedWindowRateLimiter",
             lambda redis: FixedWindowRateLimiter(redis, clock=lambda: NOW),
         )
         app = FastAPI()
@@ -199,7 +218,8 @@ class TestOffAndFailOpen:
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         monkeypatch.setattr(
-            "server.middlewares.get_redis", MagicMock(return_value=None)
+            "server.middlewares.rate_limit_middleware.get_redis",
+            MagicMock(return_value=None),
         )
         app = FastAPI()
 
@@ -272,12 +292,20 @@ class TestRateLimitEventPersistence:
 
     @pytest.fixture
     def create_log(self, monkeypatch: pytest.MonkeyPatch) -> MagicMock:
-        monkeypatch.setattr("server.middlewares.CONFIG.testing", False)
-        monkeypatch.setattr("server.middlewares.Session", MagicMock())
-        monkeypatch.setattr("server.middlewares.logger.info", MagicMock())
-        monkeypatch.setattr("server.middlewares.loki_access_logger.info", MagicMock())
+        monkeypatch.setattr(
+            "server.middlewares.logger_middleware.CONFIG.testing", False
+        )
+        monkeypatch.setattr("server.middlewares.logger_middleware.Session", MagicMock())
+        monkeypatch.setattr(
+            "server.middlewares.logger_middleware.logger.info", MagicMock()
+        )
+        monkeypatch.setattr(
+            "server.middlewares.logger_middleware.loki_access_logger.info", MagicMock()
+        )
         create = MagicMock()
-        monkeypatch.setattr("server.middlewares.ApiAccessLogRepository.create", create)
+        monkeypatch.setattr(
+            "server.middlewares.logger_middleware.ApiAccessLogRepository.create", create
+        )
         return create
 
     def make_logged_client(self, mode: RateLimitMode) -> TestClient:

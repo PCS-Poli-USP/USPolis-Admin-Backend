@@ -7,13 +7,13 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
-from server.middlewares import (
+from server.middlewares.logger_middleware import (
     LoggerMessage,
     LoggerMiddleware,
-    get_client_ip,
     redact_json_body,
     redact_sensitive_fields,
 )
+from server.middlewares.request_utils import get_client_ip
 
 
 def make_request(
@@ -70,6 +70,14 @@ class TestRedactSensitiveFields:
             {"password": "***REDACTED***"},
             {"password": "***REDACTED***"},
         ]
+
+    def test_redacts_an_api_key_link_token(self) -> None:
+        """Posted to /api-key-links/.../reveal and the share-link email
+        route; a wrong one is a 404, whose body gets persisted."""
+        assert redact_sensitive_fields({"token": "abc", "message": "oi"}) == {
+            "token": "***REDACTED***",
+            "message": "oi",
+        }
 
     def test_is_case_insensitive(self) -> None:
         assert redact_sensitive_fields({"Password": "hunter2"}) == {
@@ -150,14 +158,16 @@ def client() -> Iterator[TestClient]:
 @pytest.fixture
 def captured_logs(monkeypatch: pytest.MonkeyPatch) -> MagicMock:
     fake_info = MagicMock()
-    monkeypatch.setattr("server.middlewares.logger.info", fake_info)
+    monkeypatch.setattr("server.middlewares.logger_middleware.logger.info", fake_info)
     return fake_info
 
 
 @pytest.fixture
 def captured_loki_logs(monkeypatch: pytest.MonkeyPatch) -> MagicMock:
     fake_info = MagicMock()
-    monkeypatch.setattr("server.middlewares.loki_access_logger.info", fake_info)
+    monkeypatch.setattr(
+        "server.middlewares.logger_middleware.loki_access_logger.info", fake_info
+    )
     return fake_info
 
 
