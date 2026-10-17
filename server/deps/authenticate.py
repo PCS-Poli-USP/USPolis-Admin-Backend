@@ -27,7 +27,13 @@ security = HTTPBearer(auto_error=False)
 
 
 def health_token_authenticate(x_api_key: str = Header(...)) -> None:
-    if not secrets.compare_digest(x_api_key, CONFIG.health_api_key):
+    # An unset HEALTH_API_KEY must not turn an empty header into a match
+    # (compare_digest("", "") is True): with no key configured, nobody gets in.
+    if (
+        not CONFIG.health_api_key
+        or not x_api_key
+        or not secrets.compare_digest(x_api_key, CONFIG.health_api_key)
+    ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid API Key",
