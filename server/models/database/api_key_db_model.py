@@ -11,6 +11,9 @@ from server.models.database.base_db_model import BaseModel
 from server.utils.brazil_datetime import BrazilDatetime
 
 if TYPE_CHECKING:
+    from server.models.database.api_key_delivery_link_db_model import (
+        ApiKeyDeliveryLink,
+    )
     from server.models.database.user_db_model import User
 
 
@@ -74,6 +77,11 @@ class ApiKey(BaseModel, table=True):
     )
     revoked_by: Optional["User"] = Relationship(
         sa_relationship_kwargs={"foreign_keys": "[ApiKey.revoked_by_id]"}
+    )
+    # Set when the key was issued for delivery by a one-time link.
+    delivery_link: Optional["ApiKeyDeliveryLink"] = Relationship(
+        back_populates="api_key",
+        sa_relationship_kwargs={"uselist": False, "cascade": "all, delete-orphan"},
     )
 
     @property

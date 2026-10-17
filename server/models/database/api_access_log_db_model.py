@@ -25,10 +25,18 @@ class ApiAccessLog(BaseModel, table=True):
     user_agent: str | None = Field(default=None, nullable=True)
     response_time_ms: int | None = Field(default=None, nullable=True)
     tags: list[str] = Field(
-        sa_column=Column(postgresql.ARRAY(String()), nullable=False, server_default="{}")
+        sa_column=Column(
+            postgresql.ARRAY(String()), nullable=False, server_default="{}"
+        )
     )
     user_id: int | None = Field(default=None, foreign_key="user.id", nullable=True)
+    # The partner API key that made the request, if any (see docs/API_KEYS.md).
+    api_key_id: int | None = Field(
+        default=None, foreign_key="apikey.id", ondelete="SET NULL", index=True
+    )
     detail: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
-    request_body: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
+    request_body: str | None = Field(
+        default=None, sa_column=Column(Text, nullable=True)
+    )
 
     user: "User" = Relationship()

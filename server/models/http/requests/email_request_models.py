@@ -1,6 +1,7 @@
 from typing import Self
 from pydantic import BaseModel
 
+from server.models.database.api_key_delivery_link_db_model import ApiKeyDeliveryLink
 from server.models.database.bug_report_db_model import BugReport
 from server.models.database.feedback_db_model import Feedback
 from server.models.database.solicitation_db_model import (
@@ -165,4 +166,29 @@ class BugReportMail(BaseModel):
             type=BugType.to_ptBr(bug_report.type),
             priority=BugPriority.to_ptBr(bug_report.priority),
             description=bug_report.description,
+        )
+
+
+class ApiKeyLinkMail(BaseModel):
+    """Carries the one-time link, never the key itself."""
+
+    contact_name: str
+    client_name: str
+    key_name: str
+    url: str
+    link_expires_at: str
+    message: str | None
+
+    @classmethod
+    def from_link(
+        cls, link: ApiKeyDeliveryLink, url: str, message: str | None
+    ) -> "ApiKeyLinkMail":
+        client = link.api_key.client
+        return cls(
+            contact_name=client.contact_name,
+            client_name=client.name,
+            key_name=link.api_key.name,
+            url=url,
+            link_expires_at=link.expires_at.strftime("%d/%m/%Y às %H:%M"),
+            message=message,
         )

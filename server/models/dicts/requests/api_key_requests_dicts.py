@@ -20,3 +20,9 @@ class ApiKeyRegisterDict(ApiKeyUpdateDict, total=False):
     """API key register dictionary."""
 
     rate_limits: list[RateLimitRegister]
+
+
+class ApiKeyViaLinkRegisterDict(ApiKeyRegisterDict, total=False):
+    """API key register-by-link dictionary."""
+
+    link_ttl_hours: int

@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Literal
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
@@ -86,6 +87,25 @@ class ApiKeyRateLimitsUpdate(BaseModel):
 
 class ApiKeyRegister(ApiKeyUpdate, ApiKeyRateLimitsUpdate):
     pass
+
+
+# How long a one-time delivery link stays open (see docs/API_KEYS.md).
+ApiKeyLinkTtlHours = Literal[1, 24, 72]
+
+
+class ApiKeyViaLinkRegister(ApiKeyRegister):
+    link_ttl_hours: ApiKeyLinkTtlHours = 24
+
+
+class ApiKeyLinkEmailSend(BaseModel):
+    # The link's token, which only the admin's screen holds: the server
+    # never stores it, so it can't rebuild the link on its own.
+    token: str = Field(min_length=1, max_length=128)
+    message: str | None = Field(default=None, max_length=1000)
+
+
+class ApiKeyLinkReveal(BaseModel):
+    token: str = Field(min_length=1, max_length=128)
 
 
 class ApiKeyRevoke(BaseModel):
