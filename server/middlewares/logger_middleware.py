@@ -3,6 +3,7 @@ import time
 import traceback
 from typing import Any
 from collections.abc import Callable
+from urllib.parse import unquote_plus
 from fastapi import Request, Response, status
 from pydantic import BaseModel
 from sqlmodel import Session
@@ -73,14 +74,51 @@ LOKI_EXCLUDED_PATHS = (
 # case that trips the error-response body persistence below.
 # `token` is the secret of a one-time API key delivery link (posted to
 # /api-key-links/.../reveal and to the admin share-link email route).
-SENSITIVE_BODY_KEYS = frozenset({"password", "token"})
+# `code` is deliberately absent: it is a subject/course code in most bodies.
+SENSITIVE_BODY_KEYS = frozenset(
+    {
+        "password",
+        "token",
+        "refresh_token",
+        "access_token",
+        "id_token",
+        "auth_code",
+        "client_secret",
+        "secret",
+        "api_key",
+    }
+)
+
+# Query parameter names (case-insensitive) whose values are redacted from the
+# logged URL. GET /auth/refresh-token takes the user's Google refresh token
+# in the query string, and /auth/get-tokens takes the OAuth `auth_code`.
+SENSITIVE_QUERY_KEYS = SENSITIVE_BODY_KEYS | frozenset(
+    {"code", "key", "apikey", "x-api-key", "x_api_key"}
+)
+
+REDACTED = "***REDACTED***"
+
+
+def redact_query(query: str) -> str:
+    """Redact `SENSITIVE_QUERY_KEYS` values from a raw query string, keeping
+    every other parameter byte-for-byte as it was received."""
+    if not query:
+        return query
+    parts = []
+    for part in query.split("&"):
+        name, sep, _ = part.partition("=")
+        if sep and unquote_plus(name).lower() in SENSITIVE_QUERY_KEYS:
+            parts.append(f"{name}={REDACTED}")
+        else:
+            parts.append(part)
+    return "&".join(parts)
 
 
 def redact_sensitive_fields(data: Any) -> Any:
     """Recursively redact `SENSITIVE_BODY_KEYS` from a parsed JSON body."""
     if isinstance(data, dict):
         return {
-            key: "***REDACTED***"
+            key: REDACTED
             if key.lower() in SENSITIVE_BODY_KEYS
             else redact_sensitive_fields(value)
             for key, value in data.items()
@@ -122,7 +160,7 @@ class LoggerMessage(BaseModel):
     def __str__(self) -> str:
         short_url = self.url.path
         if self.url.query:
-            short_url += "?" + self.url.query
+            short_url += "?" + redact_query(self.url.query)
         # A key sent in the URL (rejected, but still logged) must not leak.
         short_url = API_KEY_PATTERN.sub("[REDACTED_API_KEY]", short_url)
 
@@ -142,9 +180,11 @@ class LoggerMessage(BaseModel):
 
 
 class LoggerMiddleware(BaseHTTPMiddleware):
+    # One instance serves every concurrent request of the worker, so all
+    # per-request state (e.g. the response detail) must stay in locals or in
+    # `request.state`, never on `self`.
     def __init__(self, app: ASGIApp) -> None:
         super().__init__(app)
-        self.detail: Any | None = None
 
     def __get_user_info_from_request(self, request: Request) -> AuthUserInfo | None:
         if hasattr(request.state, "user_info") and isinstance(
@@ -211,9 +251,13 @@ class LoggerMiddleware(BaseHTTPMiddleware):
 
         request.state.access_log_request_body = decoded
 
-    async def __get_response_detail(self, response: Response) -> Response:
+    async def __get_response_detail(
+        self, response: Response
+    ) -> tuple[Response, str | None]:
+        """Reads the body to extract its `message`, returning a copy of the
+        response (reading consumes the original) and that detail."""
         if not hasattr(response, "body_iterator"):
-            return response
+            return response, None
 
         body = b""
         async for chunk in response.body_iterator:  # pyright: ignore[reportAttributeAccessIssue]
@@ -225,14 +269,14 @@ class LoggerMiddleware(BaseHTTPMiddleware):
             detail = json_data.get("message")
         except Exception:
             pass
-        self.detail = detail
 
-        return Response(
+        new_response = Response(
             content=body,
             status_code=response.status_code,
             headers=dict(response.headers),
             media_type=response.media_type,
         )
+        return new_response, detail
 
     def __load_user_info_in_message(
         self, message: LoggerMessage, user_info: AuthUserInfo | None
@@ -245,7 +289,11 @@ class LoggerMiddleware(BaseHTTPMiddleware):
         logger.info(str(message))
 
     def __persist_access_log(
-        self, request: Request, response: Response, process_time: float
+        self,
+        request: Request,
+        response: Response,
+        process_time: float,
+        detail: str | None,
     ) -> None:
         """Persist a single error-response row (see `__write_access_log`)."""
         if response.status_code < 400:
@@ -262,7 +310,7 @@ class LoggerMiddleware(BaseHTTPMiddleware):
             request,
             status_code=response.status_code,
             extra_tags=[],
-            detail=self.detail,
+            detail=detail,
             process_time=process_time,
         )
 
@@ -366,9 +414,9 @@ class LoggerMiddleware(BaseHTTPMiddleware):
         )
         info = self.__get_user_info_from_request(request)
         self.__load_user_info_in_message(msg, info)
-        new_response = await self.__get_response_detail(response)
-        msg.response_detail = self.detail
-        self.__persist_access_log(request, response, process_time)
+        new_response, detail = await self.__get_response_detail(response)
+        msg.response_detail = detail
+        self.__persist_access_log(request, response, process_time, detail)
         self.__persist_rate_limit_event(request, process_time)
         if response.status_code >= 400 and hasattr(request.state, "request_body"):
             msg.request_body = request.state.request_body
@@ -390,13 +438,14 @@ class LoggerMiddleware(BaseHTTPMiddleware):
             logger.error(
                 f"Unhandled exception in {request.method} {request.url.path}:\n{tb}"
             )
-            self.detail = truncate_keeping_tail(tb, 500)
             response = Response(
                 content=json.dumps({"detail": "Internal Server Error"}),
                 media_type="application/json",
                 status_code=500,
             )
-            self.__persist_access_log(request, response, process_time)
+            self.__persist_access_log(
+                request, response, process_time, truncate_keeping_tail(tb, 500)
+            )
             return response
         process_time = time.time() - start_time
 
