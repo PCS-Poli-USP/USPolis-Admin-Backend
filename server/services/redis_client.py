@@ -1,5 +1,6 @@
 from urllib.parse import urlsplit, urlunsplit
 
+from redis import Redis as SyncRedis
 from redis.asyncio import Redis
 from redis.exceptions import RedisError
 
@@ -13,6 +14,7 @@ from server.services.rate_limiter import RateLimitMode, resolve_rate_limit_confi
 REDIS_SOCKET_TIMEOUT_SECONDS = 0.2
 
 _redis: Redis | None = None
+_sync_redis: SyncRedis | None = None
 
 
 def get_redis() -> Redis | None:
@@ -29,6 +31,21 @@ def get_redis() -> Redis | None:
             health_check_interval=30,
         )
     return _redis
+
+
+def get_sync_redis() -> SyncRedis | None:
+    """Blocking client for sync code paths (e.g. admin routes invalidating
+    cached API keys). Same timeouts; None without `REDIS_URL`."""
+    global _sync_redis
+    if not CONFIG.redis_url:
+        return None
+    if _sync_redis is None:
+        _sync_redis = SyncRedis.from_url(
+            CONFIG.redis_url,
+            socket_timeout=REDIS_SOCKET_TIMEOUT_SECONDS,
+            socket_connect_timeout=REDIS_SOCKET_TIMEOUT_SECONDS,
+        )
+    return _sync_redis
 
 
 def redact_url(url: str) -> str:
