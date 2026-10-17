@@ -59,7 +59,17 @@ from server.models.database import (  # noqa
     api_key_delivery_link_db_model,
 )
 
-engine = create_engine(f"{CONFIG.db_uri}/{CONFIG.db_database}")
+# Every gunicorn worker gets its own pool: workers x (size + overflow) must
+# stay under Postgres' max_connections. pre_ping/recycle drop connections
+# Postgres or the network closed (restarts, idle timeouts) instead of
+# failing the next request that picks one up.
+engine = create_engine(
+    f"{CONFIG.db_uri}/{CONFIG.db_database}",
+    pool_size=CONFIG.db_pool_size,
+    max_overflow=CONFIG.db_max_overflow,
+    pool_pre_ping=True,
+    pool_recycle=CONFIG.db_pool_recycle_seconds,
+)
 
 
 def get_db() -> Generator[Session, None, None]:

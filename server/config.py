@@ -49,6 +49,12 @@ class Settings(BaseModel):
     # SQLAlchemy settings
     db_uri: str = config("DATABASE_URI")  # pyright: ignore[reportAssignmentType]
     db_database: str = config("DATABASE_NAME")  # pyright: ignore[reportAssignmentType]
+    # SQLAlchemy pool, per worker process (see server/db.py).
+    db_pool_size: int = config("DB_POOL_SIZE", default=5, cast=int)  # pyright: ignore[reportAssignmentType]
+    db_max_overflow: int = config("DB_MAX_OVERFLOW", default=10, cast=int)  # pyright: ignore[reportAssignmentType]
+    db_pool_recycle_seconds: int = config(
+        "DB_POOL_RECYCLE_SECONDS", default=1800, cast=int
+    )  # pyright: ignore[reportAssignmentType]
     alembic_url: str = config("ALEMBIC_URL")  # pyright: ignore[reportAssignmentType]
 
     first_superuser_email: str = config("FIRST_SUPERUSER_EMAIL", "amdmin@uspolis.com")  # pyright: ignore[reportAssignmentType]
