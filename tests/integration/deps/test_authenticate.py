@@ -27,12 +27,35 @@ _GET_USER_INFO_TARGET = "server.deps.authenticate.AuthenticationClient.get_user_
 
 
 class TestHealthTokenAuthenticate:
-    def test_accepts_the_configured_api_key(self) -> None:
-        health_token_authenticate(x_api_key=CONFIG.health_api_key)
+    @pytest.fixture(autouse=True)
+    def health_key(self, monkeypatch: pytest.MonkeyPatch) -> str:
+        key = "health-key-for-tests"
+        monkeypatch.setattr(CONFIG, "health_api_key", key)
+        return key
+
+    def test_accepts_the_configured_api_key(self, health_key: str) -> None:
+        health_token_authenticate(x_api_key=health_key)
 
     def test_rejects_a_wrong_api_key(self) -> None:
         with pytest.raises(HTTPException) as exc_info:
             health_token_authenticate(x_api_key="wrong-key")
+
+        assert exc_info.value.status_code == 401
+
+    def test_rejects_an_empty_header(self) -> None:
+        with pytest.raises(HTTPException) as exc_info:
+            health_token_authenticate(x_api_key="")
+
+        assert exc_info.value.status_code == 401
+
+    def test_unset_key_locks_everyone_out(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        # Before: compare_digest("", "") made an empty header pass.
+        monkeypatch.setattr(CONFIG, "health_api_key", "")
+
+        with pytest.raises(HTTPException) as exc_info:
+            health_token_authenticate(x_api_key="")
 
         assert exc_info.value.status_code == 401
 
@@ -49,9 +72,13 @@ class TestGoogleTokenAuthenticate:
             google_token_authenticate(credentials=credentials)
 
     def test_returns_authentication_client_result(self) -> None:
-        credentials = HTTPAuthorizationCredentials(scheme="Bearer", credentials="a-token")
+        credentials = HTTPAuthorizationCredentials(
+            scheme="Bearer", credentials="a-token"
+        )
 
-        with patch(_GET_USER_INFO_TARGET, return_value="user-info") as mock_get_user_info:
+        with patch(
+            _GET_USER_INFO_TARGET, return_value="user-info"
+        ) as mock_get_user_info:
             result = google_token_authenticate(credentials=credentials)
 
         mock_get_user_info.assert_called_once_with("a-token")

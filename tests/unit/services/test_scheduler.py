@@ -48,9 +48,7 @@ async def test_cancel_task_cancels_a_running_task() -> None:
 @pytest.mark.asyncio
 async def test_periodic_cache_cleanup_clears_cache_on_each_tick() -> None:
     with (
-        patch(
-            "server.services.cron.scheduler.asyncio.sleep", side_effect=_fast_sleep
-        ),
+        patch("server.services.cron.scheduler.asyncio.sleep", side_effect=_fast_sleep),
         patch(
             "server.services.cron.scheduler.clear_expired_cache", return_value=3
         ) as mock_clear,
@@ -66,9 +64,7 @@ async def test_periodic_cache_cleanup_clears_cache_on_each_tick() -> None:
 @pytest.mark.asyncio
 async def test_periodic_daily_tasks_runs_run_daily_tasks_on_each_tick() -> None:
     with (
-        patch(
-            "server.services.cron.scheduler.asyncio.sleep", side_effect=_fast_sleep
-        ),
+        patch("server.services.cron.scheduler.asyncio.sleep", side_effect=_fast_sleep),
         patch("server.services.cron.scheduler.run_daily_tasks") as mock_run,
     ):
         task = asyncio.create_task(periodic_daily_tasks())
@@ -81,8 +77,13 @@ async def test_periodic_daily_tasks_runs_run_daily_tasks_on_each_tick() -> None:
 
 @pytest.mark.asyncio
 async def test_lifespan_starts_and_stops_background_tasks_cleanly() -> None:
-    with patch(
-        "server.services.cron.scheduler.asyncio.sleep", side_effect=_fast_sleep
+    # With the fast sleep the daily loop really fires, so its work must be
+    # stubbed: the real run_daily_tasks opens Session(engine) on the
+    # configured (dev) database and purges its access logs.
+    with (
+        patch("server.services.cron.scheduler.asyncio.sleep", side_effect=_fast_sleep),
+        patch("server.services.cron.scheduler.run_daily_tasks"),
+        patch("server.services.cron.scheduler.clear_expired_cache", return_value=0),
     ):
         app = MagicMock(spec=FastAPI)
         async with lifespan(app):

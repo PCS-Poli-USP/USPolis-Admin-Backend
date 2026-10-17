@@ -8,6 +8,7 @@ from server.services import redis_client
 from server.services.redis_client import (
     check_rate_limit_setup,
     get_redis,
+    get_sync_redis,
     redact_url,
 )
 
@@ -54,6 +55,22 @@ class TestGetRedis:
         monkeypatch.setattr("server.services.redis_client.CONFIG.redis_url", "")
 
         assert get_redis() is None
+
+    def test_sync_client_is_none_without_url(
+        self, config: None, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr("server.services.redis_client.CONFIG.redis_url", "")
+
+        assert get_sync_redis() is None
+
+    def test_sync_client_is_built_once(
+        self, config: None, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(redis_client, "_sync_redis", None)
+        first = get_sync_redis()
+
+        assert first is not None
+        assert get_sync_redis() is first
 
     def test_builds_one_client_per_process(self, config: None) -> None:
         # Building the client doesn't connect, so no Redis is needed here.
