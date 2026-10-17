@@ -1,5 +1,8 @@
 """FastAPI server configuration."""
 
+import os
+import tempfile
+
 from decouple import config, RepositoryEnv, Config as DConfig, Csv  # type: ignore
 from pydantic import BaseModel
 
@@ -98,6 +101,25 @@ class Settings(BaseModel):
     )  # pyright: ignore[reportAssignmentType]
     api_key_browser_default_limits: str = config(
         "API_KEY_BROWSER_DEFAULT_LIMITS", default="60/10,300/60,20000/86400"
+    )  # pyright: ignore[reportAssignmentType]
+
+    # JupiterWeb schedule import (see server/services/jupiter_crawler/crawl_limiter.py).
+    # Each crawl runs a headless Chromium (200-500 MB): this caps them per host.
+    jupiter_crawl_max_concurrent: int = config(
+        "JUPITER_CRAWL_MAX_CONCURRENT", default=2, cast=int
+    )
+    # How long a request waits for a free slot before getting a 503.
+    jupiter_crawl_queue_seconds: float = config(
+        "JUPITER_CRAWL_QUEUE_SECONDS", default=15, cast=float
+    )
+    # Hard cap on one crawl, browser launch included (504 when exceeded).
+    jupiter_crawl_timeout_seconds: float = config(
+        "JUPITER_CRAWL_TIMEOUT_SECONDS", default=60, cast=float
+    )
+    # Must be shared by every worker of the host (same machine/container).
+    jupiter_crawl_lock_dir: str = config(
+        "JUPITER_CRAWL_LOCK_DIR",
+        default=os.path.join(tempfile.gettempdir(), "uspolis-jupiter-crawl"),
     )  # pyright: ignore[reportAssignmentType]
 
     # Testing / Development:
