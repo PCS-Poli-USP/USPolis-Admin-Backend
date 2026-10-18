@@ -11,6 +11,7 @@ from server.middlewares.logger_middleware import (
     LoggerMessage,
     LoggerMiddleware,
     redact_json_body,
+    redact_query,
     redact_sensitive_fields,
 )
 from server.middlewares.request_utils import get_client_ip
@@ -89,6 +90,37 @@ class TestRedactSensitiveFields:
         assert redact_sensitive_fields(data) == data
 
 
+class TestRedactQuery:
+    def test_redacts_a_refresh_token(self) -> None:
+        assert redact_query("refresh_token=1//0abc") == "refresh_token=***REDACTED***"
+
+    def test_keeps_other_params_as_received(self) -> None:
+        query = "start=2026-10-01&auth_code=4%2F0Ab&name=a+b"
+        assert (
+            redact_query(query) == "start=2026-10-01&auth_code=***REDACTED***&name=a+b"
+        )
+
+    def test_matches_names_case_insensitively_and_percent_encoded(self) -> None:
+        assert redact_query("Access_Token=x") == "Access_Token=***REDACTED***"
+        assert redact_query("refresh%5Ftoken=x") == "refresh%5Ftoken=***REDACTED***"
+
+    def test_redacts_repeated_params(self) -> None:
+        assert (
+            redact_query("token=a&token=b")
+            == "token=***REDACTED***&token=***REDACTED***"
+        )
+
+    def test_leaves_flags_and_empty_query_untouched(self) -> None:
+        assert redact_query("") == ""
+        assert redact_query("refresh_token") == "refresh_token"
+
+
+class TestRedactSensitiveBodyTokens:
+    def test_redacts_oauth_tokens(self) -> None:
+        data = {"refresh_token": "r", "access_token": "a", "id_token": "i"}
+        assert redact_sensitive_fields(data) == {key: "***REDACTED***" for key in data}
+
+
 class TestRedactJsonBody:
     def test_redacts_password_in_valid_json(self) -> None:
         result = redact_json_body('{"n_usp":"123","password":"hunter2"}')
@@ -118,6 +150,15 @@ class TestLoggerMessageFormat:
         assert 'response_detail="Integrity error"' in text
         assert 'request_body="{"code":"MAC0110"}"' in text
 
+    def test_redacts_sensitive_query_params(self) -> None:
+        message = LoggerMessage(
+            method="GET",
+            url=MagicMock(path="/auth/refresh-token", query="refresh_token=1//0abc"),
+        )
+        text = str(message)
+        assert "1//0abc" not in text
+        assert 'path="/auth/refresh-token?refresh_token=***REDACTED***"' in text
+
     def test_defaults_to_na_when_fields_missing(self) -> None:
         message = LoggerMessage(method="GET", url=MagicMock(path="/health", query=""))
         text = str(message)
@@ -141,6 +182,10 @@ def build_app() -> FastAPI:
     @app.post("/other")
     async def create_other() -> JSONResponse:
         return JSONResponse(status_code=409, content={"message": "Other conflict"})
+
+    @app.get("/auth/refresh-token")
+    async def refresh(refresh_token: str) -> JSONResponse:
+        return JSONResponse(status_code=401, content={"message": "Invalid"})
 
     @app.get("/health")
     async def health() -> JSONResponse:
@@ -243,6 +288,17 @@ class TestRequestBodyRedaction:
         assert len(lines) == 1
         assert "hunter2" not in lines[0]
         assert "***REDACTED***" in lines[0]
+
+
+class TestQueryRedaction:
+    def test_refresh_token_never_reaches_the_log(
+        self, client: TestClient, captured_logs: MagicMock
+    ) -> None:
+        client.get("/auth/refresh-token", params={"refresh_token": "1//0secret"})
+
+        lines = [call.args[0] for call in captured_logs.call_args_list]
+        assert len(lines) == 2  # Request + Response
+        assert all("1//0secret" not in line for line in lines)
 
 
 class TestLokiAccessLog:

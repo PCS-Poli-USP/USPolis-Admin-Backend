@@ -16,7 +16,7 @@ response.set_cookie(
     httponly=True,
     secure=True,
     samesite="none" if CONFIG.development else "lax",
-    max_age=SESSION_COOKIE_AGE,  # 30 days
+    max_age=SESSION_COOKIE_AGE,  # SESSION_MAX_AGE_DAYS (90 days)
     path="/",
 )
 ```
@@ -56,6 +56,22 @@ this backend and everything else to the frontend. That's why `samesite="lax"`
 outside of development is fine — there's no cross-site request involved, so
 CORS and SameSite cross-site restrictions never come into play for this
 cookie in production/staging.
+
+## CSRF: the cookie only authenticates trusted origins
+
+The browser sends the cookie on every request to the API, whichever page
+issued it. `SameSite=Lax` keeps it off cross-*site* POST/PUT/PATCH/DELETE,
+but every `*.uspolis.com.br` page is the same site, and development uses
+`SameSite=None`. So `server/services/security/csrf.py` adds an `Origin`
+check: a non-GET/HEAD/OPTIONS request authenticated by the cookie must carry
+an `Origin` (or, failing that, a `Referer`) that is in `ALLOWED_ORIGINS` or
+equal to the request's own `Host`. Otherwise `authenticate_from_cookie` and
+`/auth/logout` answer 403 and `public_authenticate_from_cookie` serves the
+request anonymously. Bearer tokens and API keys skip this: a third-party
+page can't set those headers.
+
+Consequence: **GET routes must never change state**, since `SameSite=Lax`
+still sends the cookie on top-level cross-site GET navigations.
 
 ## Authentication from the cookie
 
@@ -111,11 +127,17 @@ admin action via `GET/DELETE /admin/sessions/users`).
 
 ### 1. Sliding window — `SESSION_DURATION_DAYS` (30 days)
 
-Every time a session is renewed — via a fresh login (`/auth/get-tokens`) or a
-silent token refresh (`/auth/refresh-token`) — `UserSessionRepository.extend_session()`
-pushes `expires_at` to `now + 30 days`. As long as the session keeps getting
-renewed, it never expires. This is what makes "stay logged in while you keep
-using the app" work.
+Every time a session is renewed — via a fresh login (`/auth/get-tokens`), a
+silent token refresh (`/auth/refresh-token`, legacy), or **simply using the
+cookie** (`authenticate_from_cookie` → `UserSessionRepository.slide_on_use()`,
+which writes at most once a day per session) — `expires_at` moves to
+`now + 30 days`. As long as the session keeps being used, it never expires.
+This is what makes "stay logged in while you keep using the app" work, now
+that the frontend authenticates with the cookie alone.
+
+The browser keeps the cookie itself up to the absolute cap (`max_age` = 90
+days): the server, not the cookie's lifetime, decides whether the session is
+still valid.
 
 ### 2. Absolute cap — `SESSION_MAX_AGE_DAYS` (90 days)
 
