@@ -11,8 +11,13 @@ from server.middlewares import get_client_ip
 from server.models.database.user_session_db_model import UserSession
 from server.repositories.user_repository import UserRepository
 from server.repositories.user_session_repository import (
+    SESSION_MAX_AGE_DAYS,
     IssuedSession,
     UserSessionRepository,
+)
+from server.services.security.csrf import (
+    UntrustedOriginForCookie,
+    is_trusted_cookie_request,
 )
 from server.utils.must_be_int import must_be_int
 
@@ -30,7 +35,9 @@ class RefreshTokenResponse(BaseModel):
     access_token: str
 
 
-SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 dias
+# The browser keeps the cookie up to the absolute cap; the server decides
+# whether the session is still valid (expires_at, slid on every use).
+SESSION_COOKIE_AGE = 60 * 60 * 24 * SESSION_MAX_AGE_DAYS
 
 
 def _set_session_cookie(response: Response, token: str) -> None:
@@ -173,6 +180,9 @@ def refresh_token(
 def logout(db: SessionDep, request: Request, response: Response) -> JSONResponse:
     session_token = request.cookies.get("session")
     if session_token:
+        # Otherwise any page could log users out with a cross-site POST.
+        if not is_trusted_cookie_request(request):
+            raise UntrustedOriginForCookie()
         user_session = UserSessionRepository.get_by_token_opt(
             token=session_token, session=db
         )

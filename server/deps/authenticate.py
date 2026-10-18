@@ -11,6 +11,10 @@ from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.user_repository import UserRepository
+from server.services.security.csrf import (
+    UntrustedOriginForCookie,
+    is_trusted_cookie_request,
+)
 from server.repositories.user_session_repository import (
     UserSessionNotFound,
     UserSessionRepository,
@@ -82,7 +86,8 @@ def token_authenticate(
 # -- cookie authentications :
 def public_authenticate_from_cookie(request: Request, session: SessionDep) -> None:
     session_token = request.cookies.get("session")
-    if session_token:
+    # A cross-origin state-changing request is served anonymously.
+    if session_token and is_trusted_cookie_request(request):
         try:
             user_session = UserSessionRepository.get_by_token(
                 token=session_token, session=session
@@ -97,6 +102,8 @@ def authenticate_from_cookie(request: Request, session: SessionDep) -> User:
     session_token = request.cookies.get("session")
     if not session_token:
         raise InvalidSessionCookie()
+    if not is_trusted_cookie_request(request):
+        raise UntrustedOriginForCookie()
     try:
         user_session = UserSessionRepository.get_by_token(
             token=session_token, session=session
@@ -105,6 +112,10 @@ def authenticate_from_cookie(request: Request, session: SessionDep) -> User:
         raise InvalidSessionCookie()
     if user_session.is_expired():
         raise InvalidSessionCookie()
+    # The cookie is the only credential the frontend uses: using it is what
+    # keeps the session alive (see docs/SESSION_MANAGEMENT.md).
+    if UserSessionRepository.slide_on_use(user_session=user_session, session=session):
+        session.commit()
     # Same as token_authenticate: lets the access log attribute the request.
     request.state.current_user = user_session.user
     return user_session.user

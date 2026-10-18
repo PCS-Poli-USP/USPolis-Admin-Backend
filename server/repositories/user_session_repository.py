@@ -18,6 +18,10 @@ SESSION_MAX_AGE_DAYS = 90
 
 SESSION_TOKEN_BYTES = 32
 
+# Cookie-authenticated requests slide the window, but write at most this
+# often per session instead of on every request.
+SESSION_SLIDE_MIN_INTERVAL = timedelta(days=1)
+
 
 def hash_session_token(token: str) -> str:
     """Plain SHA-256 is enough: the token is 256 random bits (legacy
@@ -143,6 +147,20 @@ class UserSessionRepository:
             created_at=user_session.created_at
         )
         session.add(user_session)
+
+    @staticmethod
+    def slide_on_use(*, user_session: UserSession, session: Session) -> bool:
+        """Keeps an actively used session alive (sliding window, still
+        capped at SESSION_MAX_AGE_DAYS). Returns whether it was extended;
+        the caller commits."""
+        target = UserSessionRepository._capped_expiry(
+            created_at=user_session.created_at
+        )
+        if user_session.expires_at >= target - SESSION_SLIDE_MIN_INTERVAL:
+            return False
+        user_session.expires_at = target
+        session.add(user_session)
+        return True
 
     @staticmethod
     def start_or_renew_session(
