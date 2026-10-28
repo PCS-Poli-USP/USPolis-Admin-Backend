@@ -17,7 +17,13 @@ writing to its own rotating file under `logs/`:
 
 Neither logger calls Loki's HTTP API directly — both just write structured
 lines to a local file. Shipping those files into Loki is external to this
-app (no shipping config lives in this repo).
+app: Promtail and Loki (binaries + configs) live in the local, non-git folder
+`../USPolis-Analytics`. Its `promtail-config.yaml` parses the `loki_access`
+line with a regex, so **changing the line format in `server/logger.py`
+requires updating that regex** — a line that doesn't match reaches Loki with
+no extracted labels. Only `method` and `status` are labels (low
+cardinality); `path`, `email` and `client_ip` are queried from the line
+content in LogQL.
 
 ## What `LoggerMiddleware` writes
 
