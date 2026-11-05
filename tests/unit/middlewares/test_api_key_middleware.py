@@ -42,7 +42,6 @@ def make_record(**overrides: object) -> tuple[ApiKeyRecord, str]:
         key_hash=generated.key_hash,
         hash_version=generated.hash_version,
         allowed_path_prefixes=["/buildings"],
-        allowed_origins=[],
         expires_at=BrazilDatetime.now_utc() + timedelta(days=30),
         revoked=False,
         client_active=True,
@@ -191,38 +190,14 @@ class TestInvalidKey:
         assert codes[AUTH_FAILURE_LIMIT:] == [429, 429]
 
 
-class TestBrowserKey:
-    def test_needs_an_allowed_origin(self) -> None:
-        record, plaintext = make_record(allowed_origins=[ORIGIN])
+class TestKeyFromABrowser:
+    def test_is_rejected_whatever_the_origin(self) -> None:
+        record, plaintext = make_record()
         harness = Harness(record)
 
-        ok = harness.get(**{"X-API-Key": plaintext, "Origin": ORIGIN})
-        other = harness.get(**{"X-API-Key": plaintext, "Origin": "https://evil.com"})
+        response = harness.get(**{"X-API-Key": plaintext, "Origin": ORIGIN})
 
-        assert ok.status_code == 200  # type: ignore[attr-defined]
-        assert other.status_code == 403  # type: ignore[attr-defined]
-
-    def test_the_keys_own_limit_applies_first(self) -> None:
-        record, plaintext = make_record(
-            allowed_origins=[ORIGIN], rules=[RateLimitRule(1, 60)]
-        )
-        harness = Harness(record)
-        headers = {"X-API-Key": plaintext, "Origin": ORIGIN}
-
-        harness.get(**headers)
-        blocked = harness.get(**headers)
-
-        assert blocked.status_code == 429  # type: ignore[attr-defined]
-        assert blocked.headers["X-RateLimit-Limit"] == "1"  # type: ignore[attr-defined]
-
-    def test_each_visitor_also_keeps_the_per_ip_limit(self) -> None:
-        # The key allows 5/60s, but one visitor (one IP) still gets 2/60s.
-        record, plaintext = make_record(allowed_origins=[ORIGIN])
-        harness = Harness(record)
-
-        codes = statuses(harness, 3, **{"X-API-Key": plaintext, "Origin": ORIGIN})
-
-        assert codes == [200, 200, 429]
+        assert response.status_code == 403  # type: ignore[attr-defined]
 
 
 def test_options_preflight_passes_untouched() -> None:

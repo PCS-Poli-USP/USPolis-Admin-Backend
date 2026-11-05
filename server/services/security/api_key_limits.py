@@ -9,12 +9,8 @@ from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.api_key_status_enum import ApiKeyStatus
 
 
-def default_rate_limits(*, browser_key: bool) -> list[RateLimitRule]:
-    return parse_rate_limits(
-        CONFIG.api_key_browser_default_limits
-        if browser_key
-        else CONFIG.api_key_default_limits
-    )
+def default_rate_limits() -> list[RateLimitRule]:
+    return parse_rate_limits(CONFIG.api_key_default_limits)
 
 
 def effective_rate_limits(key: ApiKey) -> tuple[list[RateLimitRule], bool]:
@@ -22,7 +18,7 @@ def effective_rate_limits(key: ApiKey) -> tuple[list[RateLimitRule], bool]:
     configured defaults (a key without its own rows is never unlimited)."""
     if key.rate_limits:
         return [limit.to_rule() for limit in key.rate_limits], False
-    return default_rate_limits(browser_key=key.is_browser_key), True
+    return default_rate_limits(), True
 
 
 def api_key_status(key: ApiKey, now: datetime | None = None) -> ApiKeyStatus:

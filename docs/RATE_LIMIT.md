@@ -98,7 +98,7 @@ A request with a valid `X-API-Key` (see `API_KEYS.md`) is counted against
 **the key's own limits**, in the bucket `rl:key:<id>:...`, instead of the
 per-IP ones. `<id>` is the key's database id (`apikey.id`), never its
 `public_id` or the key itself; the rules are its `apikeyratelimit` rows, or
-`API_KEY_DEFAULT_LIMITS` / `API_KEY_BROWSER_DEFAULT_LIMITS` without any.
+`API_KEY_DEFAULT_LIMITS` without any.
 For key 42 with `120/60,10000/86400`, at the same instant as above:
 
 | Key | Value |
@@ -106,9 +106,7 @@ For key 42 with `120/60,10000/86400`, at the same instant as above:
 | `rl:key:42:60:29870880` | `87` |
 | `rl:key:42:86400:20743` | `4031` |
 
-A server key only counts there (its traffic may come from several IPs). **Browser keys** are public, so each visitor **also** keeps the
-per-IP limit: one client reusing a visible key can't burn the partner's
-quota. Invalid keys never reach the limiter. `ApiKeyMiddleware` rejects them
+A key only counts there (its traffic may come from several IPs). Invalid keys never reach the limiter. `ApiKeyMiddleware` rejects them
 first and cuts an IP off with 429 after 20 failures a minute, counted in its
 own key `apikey:fail:<ip>:<now // 60>` (same window-number idea).
 

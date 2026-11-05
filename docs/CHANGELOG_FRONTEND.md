@@ -2,6 +2,17 @@
 
 Backend API contract changes that the frontend needs to account for (the branch is noted when it isn't `feature/role-based-permissions`). Newest changes first.
 
+## Browser keys removed (`feature/api-keys`)
+
+Every key is a server key now. See `docs/API_KEYS.md`, "Server keys only".
+
+- Key requests (`POST .../keys`, `POST .../keys/via-link`, `PUT /admin/api-keys/{id}`): `allowed_origins` is gone. A non-empty list is a `422`; an empty list is still accepted.
+- `ApiKeyResponse` loses `key_type` and `allowed_origins`; the reveal response (`POST /api-key-links/{link_id}/reveal`) loses `allowed_origins`.
+- `API_KEY_BROWSER_DEFAULT_LIMITS` is gone: keys without their own limits get `API_KEY_DEFAULT_LIMITS`.
+- Existing browser keys were revoked by the migration (`revoked_reason = "Chaves de navegador foram descontinuadas"`), and their pending links invalidated.
+
+**Action items for frontend:** remove the "Origens" field, the "Tipo" (servidor/navegador) column and the browser default limits; stop sending `allowed_origins`.
+
 ## API keys can be delivered by one-time link (`feature/api-keys`)
 
 New endpoints so the "Link de visualização única" option in the key modal works for real (no longer simulated). Full design in `docs/API_KEYS.md`, "Delivery by one-time link".
@@ -19,7 +30,7 @@ New endpoints so the "Link de visualização única" option in the key modal wor
 
 **Public, for the partner's page:**
 - `GET /api-key-links/{link_id}`: `{status, available, expires_at, client_name, key_name}`. Never consumes the link. `404` unknown, `422` malformed id.
-- `POST /api-key-links/{link_id}/reveal`, body `{"token": "..."}`: `{key, key_name, client_name, expires_at, allowed_path_prefixes, allowed_origins}`, **once**. `404` wrong token (the link stays usable), `410` used, expired, invalidated, key revoked or client inactive.
+- `POST /api-key-links/{link_id}/reveal`, body `{"token": "..."}`: `{key, key_name, client_name, expires_at, allowed_path_prefixes}` (`allowed_origins` was removed later, see above), **once**. `404` wrong token (the link stays usable), `410` used, expired, invalidated, key revoked or client inactive.
 
 **Action items for frontend:**
 - Modal, link mode: call `/keys/via-link`, show `url` with "Copiar link", `link.expires_at` and "Invalidar link" (`link.id`). Don't show a key field.

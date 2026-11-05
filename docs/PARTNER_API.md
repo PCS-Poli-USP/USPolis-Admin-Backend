@@ -10,15 +10,18 @@ regras de uso, que são parte do acordo para receber a chave.
 | Seu caso | Precisa de chave? |
 |---|---|
 | Consultar poucas vezes, para testar | **Não.** As rotas públicas aceitam acesso anônimo, com limite por IP. |
-| Um **servidor/backend** que consulta a API e serve o seu site | **Sim, chave de servidor.** É o caminho recomendado. |
-| Um **site estático** (só HTML/JS) que chama a API direto do navegador | **Sim, chave de navegador**, presa ao domínio do seu site. |
+| Um **servidor/backend** que consulta a API e serve o seu site | **Sim.** A chave fica no seu servidor. |
+| Um **site estático** (só HTML/JS), sem servidor | **Sim, mas nunca no navegador.** Coloque uma função serverless (Vercel, Netlify, Cloudflare Workers...) entre o site e o USPolis, guardando a chave nela. |
+
+Não existe chave para usar direto no navegador: qualquer chave em código de
+front-end fica visível para os visitantes, e uma requisição feita do
+navegador (com o header `Origin`) é recusada com **403**.
 
 Para pedir uma chave, fale com a equipe do USPolis. Informe:
 - nome da entidade;
 - nome e e-mail de quem é o contato técnico;
 - quais dados você precisa (por exemplo, só alocações);
-- se a chave vai ser de servidor ou de navegador e, nesse caso, o domínio do
-  site (`https://...`).
+- o ambiente (produção ou homologação) e o volume esperado de requisições.
 
 Você recebe a chave **uma única vez**, normalmente por um **link de uso
 único** enviado ao e-mail de contato (`https://uspolis.com.br/api-key/...`):
@@ -76,10 +79,8 @@ Uma chave só funciona no ambiente que a emitiu.
   equipe emite a nova antes de desativar a antiga.
 
 **Limites de consumo:**
-- Cada chave tem os seus limites. O padrão para chave de servidor é 30
-  requisições a cada 10 s, 120 por minuto e 10.000 por dia.
-- **Chave de navegador:** além do limite da chave, cada visitante do seu site
-  também tem o próprio limite por IP.
+- Cada chave tem os seus limites. O padrão é 30 requisições a cada 10 s, 120
+  por minuto e 10.000 por dia.
 
 **Intervalos de datas:**
 - `/allocations/events` aceita no máximo **31 dias** por requisição.
@@ -92,7 +93,7 @@ Uma chave só funciona no ambiente que a emitiu.
 |---|---|---|
 | 400 | Chave na URL, ou intervalo de datas inválido ou longo demais | Mande a chave no header e respeite os tetos de datas |
 | 401 | Chave inválida, expirada ou revogada | Confira a chave; se ela vazou ou venceu, peça outra |
-| 403 | A chave não tem permissão para esta requisição (rota fora do escopo, método diferente de GET, ou site não autorizado) | Peça o acesso de que precisa |
+| 403 | A chave não tem permissão para esta requisição (rota fora do escopo, método diferente de GET, ou chamada feita do navegador) | Peça o acesso de que precisa |
 | 429 | Limite de requisições excedido | Espere o tempo do header `Retry-After` antes de tentar de novo |
 | 503 | Chaves temporariamente indisponíveis do nosso lado | Tente mais tarde e avise a equipe se persistir |
 
@@ -108,29 +109,26 @@ As respostas trazem os headers `X-RateLimit-Limit`, `X-RateLimit-Remaining`
 São parte do acordo. Descumpri-las pode levar à suspensão ou revogação da
 chave, sem aviso em caso de abuso.
 
-1. **Chave de servidor fica no servidor.**
+1. **A chave fica no servidor.**
    - Nunca coloque em código de front-end, app mobile, repositório,
      print ou ticket.
    - Carregue de uma variável de ambiente ou de um cofre de segredos.
    - Se ela aparecer em um navegador, é recusada (403) e deve ser
      considerada vazada.
-2. **Chave de navegador funciona só no domínio cadastrado.** Ela fica visível
-   para quem abrir o DevTools, então trate-a como pública e não a use em
-   outro lugar.
-3. **Faça cache do seu lado.** As alocações mudam pouco. Guarde as respostas
+2. **Faça cache do seu lado.** As alocações mudam pouco. Guarde as respostas
    por pelo menos 5 a 15 minutos e peça intervalos curtos. Melhor ainda: o seu
    backend busca, guarda e serve o seu site.
-4. **Respeite o 429.** Espere o `Retry-After`, tente de novo com espera
+3. **Respeite o 429.** Espere o `Retry-After`, tente de novo com espera
    exponencial e um pouco de aleatoriedade, e nunca em loop.
-5. **Identifique-se:** use um `User-Agent` com o nome da sua aplicação e um
+4. **Identifique-se:** use um `User-Agent` com o nome da sua aplicação e um
    contato, por exemplo `site-gremio/1.0 (contato@gremio.org)`.
-6. **Uma chave por aplicação e por ambiente.** Não compartilhe com outras
+5. **Uma chave por aplicação e por ambiente.** Não compartilhe com outras
    entidades.
-7. **Vazou? Avise na hora.** A equipe revoga a chave em segundos e emite
+6. **Vazou? Avise na hora.** A equipe revoga a chave em segundos e emite
    outra.
-8. **Use só o que foi liberado.** Não sonde outras rotas e não raspe dados
+7. **Use só o que foi liberado.** Não sonde outras rotas e não raspe dados
    além do escopo combinado.
-9. **Dados e LGPD.** Não revenda nem republique dados pessoais. Use os dados
+8. **Dados e LGPD.** Não revenda nem republique dados pessoais. Use os dados
    conforme a LGPD e as políticas da USP.
 
 ## 6. Proteja-se contra vazamentos

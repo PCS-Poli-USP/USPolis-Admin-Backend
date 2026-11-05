@@ -8,5 +8,4 @@ class ApiKeyBaseDict(BaseDict, total=False):
 
     name: str
     allowed_path_prefixes: list[str]
-    allowed_origins: list[str]
     expires_at: datetime

@@ -1,13 +1,9 @@
 from datetime import datetime, timedelta
-from typing import Literal
+from typing import Any, Literal
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
-from server.config import CONFIG
-from server.services.security.api_key_scope import (
-    validate_origin,
-    validate_path_prefix,
-)
+from server.services.security.api_key_scope import validate_path_prefix
 from server.utils.brazil_datetime import BrazilDatetime
 
 MAX_KEY_LIFETIME = timedelta(days=365)
@@ -33,25 +29,25 @@ class RateLimitRegister(BaseModel):
 class ApiKeyUpdate(BaseModel):
     name: str = Field(min_length=1, max_length=256)
     allowed_path_prefixes: list[str] = Field(min_length=1)
-    allowed_origins: list[str] = Field(default_factory=list)
     expires_at: datetime
+
+    @model_validator(mode="before")
+    @classmethod
+    def reject_origins(cls, data: Any) -> Any:
+        # Browser keys were dropped: a key in front-end code is public, so
+        # every key is a server key. Fail loudly instead of ignoring origins
+        # a caller expects to be enforced; an empty list is still accepted.
+        if isinstance(data, dict) and data.get("allowed_origins"):
+            raise ValueError(
+                "Chaves de navegador não são emitidas: a chave deve ficar no "
+                "servidor do parceiro"
+            )
+        return data
 
     @field_validator("allowed_path_prefixes")
     @classmethod
     def validate_prefixes(cls, prefixes: list[str]) -> list[str]:
         return list(dict.fromkeys(validate_path_prefix(p) for p in prefixes))
-
-    @field_validator("allowed_origins")
-    @classmethod
-    def validate_origins(cls, origins: list[str]) -> list[str]:
-        # http://localhost is only for testing a partner site locally.
-        allow_local = CONFIG.environment.strip().lower() != "production"
-        return list(
-            dict.fromkeys(
-                validate_origin(o, allow_insecure_localhost=allow_local)
-                for o in origins
-            )
-        )
 
     @field_validator("expires_at")
     @classmethod
@@ -70,8 +66,8 @@ class ApiKeyUpdate(BaseModel):
 
 
 class ApiKeyRateLimitsUpdate(BaseModel):
-    # Empty = the configured defaults (API_KEY_DEFAULT_LIMITS or
-    # API_KEY_BROWSER_DEFAULT_LIMITS), never unlimited.
+    # Empty = the configured defaults (API_KEY_DEFAULT_LIMITS), never
+    # unlimited.
     rate_limits: list[RateLimitRegister] = Field(default_factory=list)
 
     @field_validator("rate_limits")

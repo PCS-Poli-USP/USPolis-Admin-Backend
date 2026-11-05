@@ -27,11 +27,13 @@ if [[ "$environment_lower" == "development" || "$environment_lower" == "staging"
 fi
 
 # Wait for Postgres to accept connections (tenacity retry inside the script,
-# up to 5 minutes), then a create_all() fallback for anything Alembic hasn't
-# covered yet.
+# up to 5 minutes). On a fresh database (no alembic_version table) it also
+# creates the schema via create_all() and stamps it at head, since the
+# migration history can't build it from empty.
 python -m server.scripts.pre_start
 
-# The only schema-creation path actually used in practice.
+# Applies pending migrations to an existing database; a no-op right after the
+# fresh-database stamp above.
 python -m alembic upgrade head
 
 # Idempotent — only creates the user if FIRST_SUPERUSER_EMAIL doesn't already

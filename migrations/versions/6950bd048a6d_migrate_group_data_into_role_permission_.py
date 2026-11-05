@@ -15,6 +15,7 @@ from server.config import CONFIG
 from server.models.database.building_db_model import Building
 from server.models.database.building_permission_db_model import BuildingPermission
 from server.models.database.classroom_permission_db_model import ClassroomPermission
+from server.models.database.group_classroom_link import GroupClassroomLink
 from server.models.database.group_db_model import Group
 from server.models.database.role_db_model import Role
 from server.models.database.user_db_model import User
@@ -145,11 +146,19 @@ def upgrade() -> None:
             )
             session.add(group_role)
             session.flush()
-            for classroom in group.classrooms:
+            # Only the ids are needed: loading Classroom rows would select
+            # columns from the current model (e.g. `restricted`, renamed
+            # from `remote` only in 299a3408e676) that don't exist yet here.
+            classroom_ids = session.exec(
+                select(GroupClassroomLink.classroom_id).where(
+                    GroupClassroomLink.group_id == group.id
+                )
+            ).all()
+            for classroom_id in classroom_ids:
                 session.add(
                     ClassroomPermission(
                         role_id=must_be_int(group_role.id),
-                        classroom_id=must_be_int(classroom.id),
+                        classroom_id=must_be_int(classroom_id),
                         actions=list(MIGRATED_CLASSROOM_ACTIONS),
                         granted_by_id=admin_id,
                     )

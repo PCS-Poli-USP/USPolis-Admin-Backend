@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Literal
 
 from pydantic import BaseModel
 
@@ -73,10 +72,8 @@ class ApiKeyResponse(BaseModel):
     name: str
     public_id: str
     masked_key: str
-    key_type: Literal["browser", "server"]
     status: ApiKeyStatus
     allowed_path_prefixes: list[str]
-    allowed_origins: list[str]
     expires_at: datetime
     # What's actually enforced; `uses_default_limits` = the key has no rows
     # of its own and gets the configured defaults.
@@ -101,10 +98,8 @@ class ApiKeyResponse(BaseModel):
             name=key.name,
             public_id=key.public_id,
             masked_key=masked_key(key.public_id),
-            key_type="browser" if key.is_browser_key else "server",
             status=api_key_status(key),
             allowed_path_prefixes=key.allowed_path_prefixes,
-            allowed_origins=key.allowed_origins,
             expires_at=key.expires_at,
             rate_limits=[RateLimitResponse.from_rule(rule) for rule in rules],
             uses_default_limits=uses_defaults,
@@ -189,7 +184,6 @@ class ApiKeyRevealedResponse(BaseModel):
     client_name: str
     expires_at: datetime
     allowed_path_prefixes: list[str]
-    allowed_origins: list[str]
 
     @classmethod
     def from_revealed(
@@ -202,7 +196,6 @@ class ApiKeyRevealedResponse(BaseModel):
             client_name=key.client.name,
             expires_at=key.expires_at,
             allowed_path_prefixes=key.allowed_path_prefixes,
-            allowed_origins=key.allowed_origins,
         )
 
 

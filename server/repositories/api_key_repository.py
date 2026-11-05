@@ -1,8 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import selectinload
-from sqlmodel import Session, col, func, select
+from sqlmodel import Session, col, select
 
-from server.models.database.api_client_db_model import ApiClient
 from server.models.database.api_key_db_model import ApiKey
 from server.models.database.api_key_rate_limit_db_model import ApiKeyRateLimit
 from server.models.database.user_db_model import User
@@ -50,22 +49,6 @@ class ApiKeyRepository:
         return list(session.exec(statement).all())
 
     @classmethod
-    def get_active_browser_origins(cls, *, session: Session) -> set[str]:
-        """Origins of every usable browser key (not revoked, not expired,
-        active client): the partner sites allowed to call us from a browser."""
-        statement = (
-            select(ApiKey.allowed_origins)
-            .join(ApiClient, col(ApiClient.id) == col(ApiKey.client_id))
-            .where(
-                col(ApiKey.revoked_at).is_(None),
-                col(ApiKey.expires_at) > BrazilDatetime.now_utc(),
-                col(ApiClient.is_active).is_(True),
-                func.cardinality(col(ApiKey.allowed_origins)) > 0,
-            )
-        )
-        return {origin for origins in session.exec(statement) for origin in origins}
-
-    @classmethod
     def create(
         cls,
         *,
@@ -85,7 +68,6 @@ class ApiKeyRepository:
             key_hash=generated.key_hash,
             hash_version=generated.hash_version,
             allowed_path_prefixes=input.allowed_path_prefixes,
-            allowed_origins=input.allowed_origins,
             expires_at=input.expires_at,
             created_by_id=must_be_int(user.id),
         )
@@ -101,7 +83,6 @@ class ApiKeyRepository:
         key = cls.__get_not_revoked(id=id, session=session)
         key.name = input.name
         key.allowed_path_prefixes = input.allowed_path_prefixes
-        key.allowed_origins = input.allowed_origins
         key.expires_at = input.expires_at
         key.updated_at = BrazilDatetime.now_utc()
         session.add(key)

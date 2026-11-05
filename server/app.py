@@ -8,7 +8,6 @@ from server.exception_handlers import add_exception_handlers
 from server.middlewares import (
     ApiKeyMiddleware,
     LoggerMiddleware,
-    PartnerCorsMiddleware,
     RateLimitMiddleware,
 )
 from server.routes.admin import router as AdminRouter
@@ -32,13 +31,12 @@ app = FastAPI(
 )
 
 # Middlewares run outermost-last-added:
-#   Logger -> PartnerCors -> CORS -> ApiKey -> RateLimit -> app.
+#   Logger -> CORS -> ApiKey -> RateLimit -> app.
 # ApiKey and RateLimit sit inside CORS so their 401/403/429 still carry CORS
 # headers (otherwise the browser reports a CORS error instead). ApiKey runs
 # before RateLimit so a valid key is counted against its own limits.
-# PartnerCors sits outside CORS because CORSMiddleware rejects the preflight
-# of any origin not in ALLOWED_ORIGINS; it serves browser-key origins
-# (GET/HEAD on public routes, no credentials).
+# Partner keys are server-side only, so partner sites get no CORS: only the
+# first-party ALLOWED_ORIGINS do.
 app.add_middleware(RateLimitMiddleware)
 app.add_middleware(ApiKeyMiddleware)
 
@@ -56,8 +54,6 @@ app.add_middleware(
     ],
 )
 
-
-app.add_middleware(PartnerCorsMiddleware)
 
 app.add_middleware(LoggerMiddleware)
 

@@ -53,10 +53,3 @@ class TestIsUsable:
         key.client = client
 
         assert not key.is_usable(NOW)
-
-
-def test_browser_key_is_one_with_allowed_origins() -> None:
-    factory = build_key_factory(build_client())
-
-    assert not factory.build(allowed_origins=[]).is_browser_key
-    assert factory.build(allowed_origins=["https://site.com"]).is_browser_key

@@ -33,7 +33,6 @@ def make_record(**overrides: object) -> tuple[ApiKeyRecord, str]:
         key_hash=generated.key_hash,
         hash_version=generated.hash_version,
         allowed_path_prefixes=["/buildings"],
-        allowed_origins=[],
         expires_at=NOW + timedelta(days=30),
         revoked=False,
         client_active=True,
@@ -98,7 +97,6 @@ class TestValidKey:
             public_id=record.public_id,
             client_id=3,
             rules=RULES,
-            is_browser_key=False,
         )
 
     async def test_unmatched_route_in_scope_is_left_to_the_app_404(self) -> None:
@@ -191,45 +189,18 @@ class TestPermissions:
             authenticator(FakeLoader(record)), plaintext, path="/allocations/events"
         )
 
-    async def test_server_key_used_from_a_browser_is_rejected(self) -> None:
+    @pytest.mark.parametrize(
+        "origin", ["https://evil.com", "https://gremio.poli.usp.br"]
+    )
+    async def test_key_used_from_a_browser_is_rejected(self, origin: str) -> None:
+        # Keys are server-side only: any Origin means a page is holding it.
         record, plaintext = make_record()
-
-        error = await rejection(
-            authenticator(FakeLoader(record)), plaintext, origin="https://evil.com"
-        )
-
-        assert (error.status_code, error.reason) == (
-            403,
-            "server key sent from a browser",
-        )
-
-
-@pytest.mark.asyncio
-class TestBrowserKeys:
-    ORIGIN = "https://gremio.poli.usp.br"
-
-    async def test_allowed_origin_passes_case_insensitively(self) -> None:
-        record, plaintext = make_record(allowed_origins=[self.ORIGIN])
-
-        identity = await authenticate(
-            authenticator(FakeLoader(record)),
-            plaintext,
-            origin="https://Gremio.Poli.USP.br",
-        )
-
-        assert identity.is_browser_key  # type: ignore[attr-defined]
-
-    @pytest.mark.parametrize("origin", ["https://evil.com", None])
-    async def test_other_or_missing_origin_is_rejected(
-        self, origin: str | None
-    ) -> None:
-        record, plaintext = make_record(allowed_origins=[self.ORIGIN])
 
         error = await rejection(
             authenticator(FakeLoader(record)), plaintext, origin=origin
         )
 
-        assert error.status_code == 403
+        assert (error.status_code, error.reason) == (403, "key sent from a browser")
 
 
 @pytest.mark.asyncio
@@ -277,7 +248,7 @@ class TestCache:
 
 
 def test_record_survives_a_json_round_trip() -> None:
-    record, _ = make_record(allowed_origins=["https://site.com"])
+    record, _ = make_record()
 
     assert ApiKeyRecord.from_json(record.to_json()) == record
 

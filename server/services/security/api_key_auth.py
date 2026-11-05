@@ -43,7 +43,8 @@ API_KEY_HEADER = "x-api-key"
 # Request-state key holding the ApiKeyIdentity of an authenticated request.
 API_KEY_IDENTITY_STATE_KEY = "api_key_identity"
 RECORD_CACHE_SECONDS = 60
-CACHE_PREFIX = "apikey:"
+# v2: records no longer carry allowed_origins; old entries are ignored.
+CACHE_PREFIX = "apikey:v2:"
 # last_used_at is written at most once per window per key, not per request.
 LAST_USED_PREFIX = "apikey:used:"
 LAST_USED_WRITE_SECONDS = 60
@@ -65,7 +66,6 @@ class ApiKeyRecord:
     key_hash: str
     hash_version: int
     allowed_path_prefixes: list[str]
-    allowed_origins: list[str]
     expires_at: datetime
     revoked: bool
     client_active: bool
@@ -82,16 +82,11 @@ class ApiKeyRecord:
             key_hash=key.key_hash,
             hash_version=key.hash_version,
             allowed_path_prefixes=list(key.allowed_path_prefixes),
-            allowed_origins=list(key.allowed_origins),
             expires_at=key.expires_at,
             revoked=key.revoked_at is not None,
             client_active=key.client.is_active,
             rules=rules,
         )
-
-    @property
-    def is_browser_key(self) -> bool:
-        return bool(self.allowed_origins)
 
     def to_json(self) -> str:
         data = asdict(self)
@@ -115,7 +110,6 @@ class ApiKeyIdentity:
     public_id: str
     client_id: int
     rules: list[RateLimitRule]
-    is_browser_key: bool
 
 
 class ApiKeyRejection(Exception):
@@ -189,31 +183,17 @@ class ApiKeyAuthenticator:
             raise ApiKeyRejection(403, "not a public route", public_id)
         if not path_allowed(path, record.allowed_path_prefixes):
             raise ApiKeyRejection(403, f"path {path} out of scope", public_id)
-        self.__check_origin(record, origin)
+        if origin is not None:
+            # Keys must stay on servers: one used from a page is leaked.
+            # Browsers always send Origin on cross-origin requests.
+            raise ApiKeyRejection(403, "key sent from a browser", public_id)
 
         return ApiKeyIdentity(
             key_id=record.id,
             public_id=record.public_id,
             client_id=record.client_id,
             rules=record.rules,
-            is_browser_key=record.is_browser_key,
         )
-
-    @staticmethod
-    def __check_origin(record: ApiKeyRecord, origin: str | None) -> None:
-        if record.is_browser_key:
-            # Browsers always send Origin on cross-origin requests and don't
-            # let pages change it. A script can forge it, which is why
-            # browser keys are never treated as secret.
-            if origin is None or origin.lower() not in record.allowed_origins:
-                raise ApiKeyRejection(
-                    403, f"origin {origin} not allowed", record.public_id
-                )
-        elif origin is not None:
-            # Server keys must stay on servers: one used from a page is leaked.
-            raise ApiKeyRejection(
-                403, "server key sent from a browser", record.public_id
-            )
 
     async def __get_record(self, public_id: str) -> ApiKeyRecord | None:
         cache_key = CACHE_PREFIX + public_id
@@ -299,18 +279,6 @@ def db_last_used_writer(provider: SessionProvider) -> Callable[[int], None]:
         _with_session(provider, work)
 
     return write
-
-
-def db_partner_origins_loader(provider: SessionProvider) -> Callable[[], set[str]]:
-    def load() -> set[str]:
-        return _with_session(  # type: ignore[no-any-return]
-            provider,
-            lambda session: ApiKeyRepository.get_active_browser_origins(
-                session=session
-            ),
-        )
-
-    return load
 
 
 async def should_write_last_used(redis: Redis | None, key_id: int) -> bool:

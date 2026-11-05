@@ -150,7 +150,6 @@ class TestUpdate:
     def test_changes_scope_and_expiry(self, session: Session, api_key: ApiKey) -> None:
         input = ApiKeyRequestFactory().update_input(
             allowed_path_prefixes=["/allocations", "/buildings"],
-            allowed_origins=["https://gremio.poli.usp.br"],
         )
 
         key = ApiKeyRepository.update(id=api_key.id or 0, input=input, session=session)
@@ -158,7 +157,6 @@ class TestUpdate:
         session.refresh(key)
 
         assert key.allowed_path_prefixes == ["/allocations", "/buildings"]
-        assert key.is_browser_key
         assert key.expires_at == input.expires_at
 
     def test_set_rate_limits_replaces_them_even_when_a_window_is_kept(
@@ -318,33 +316,3 @@ class TestDatabaseConstraints:
             **overrides
         )
         self.assert_rejected(session, constraint)
-
-
-class TestActiveBrowserOrigins:
-    def test_only_usable_browser_keys_count(
-        self, admin_user: User, session: Session, api_client: ApiClient
-    ) -> None:
-        factory = ApiKeyModelFactory(
-            client=api_client, creator=admin_user, session=session
-        )
-        now = BrazilDatetime.now_utc()
-        factory.create_and_refresh(allowed_origins=["https://ativo.usp.br"])
-        factory.create_and_refresh(allowed_origins=[])  # server key
-        factory.create_and_refresh(
-            allowed_origins=["https://revogado.usp.br"], revoked_at=now
-        )
-        factory.create_and_refresh(
-            allowed_origins=["https://expirado.usp.br"],
-            created_at=now - timedelta(days=10),
-            expires_at=now - timedelta(days=1),
-        )
-        inactive = ApiClientModelFactory(
-            creator=admin_user, session=session
-        ).create_and_refresh(is_active=False)
-        ApiKeyModelFactory(
-            client=inactive, creator=admin_user, session=session
-        ).create_and_refresh(allowed_origins=["https://inativo.usp.br"])
-
-        origins = ApiKeyRepository.get_active_browser_origins(session=session)
-
-        assert origins == {"https://ativo.usp.br"}

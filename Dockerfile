@@ -47,8 +47,13 @@ COPY server/ server/
 COPY migrations/ migrations/
 COPY asgi.py wsgi.py alembic.ini ./
 COPY docker/entrypoint.sh /entrypoint.sh
+# /app/logs is where server/logger.py writes (it opens the file at import time).
+# A named volume mounted there inherits this directory's owner on first use;
+# if the directory weren't in the image it'd be root's and the app wouldn't start.
 RUN chmod +x /entrypoint.sh \
-    && chown -R pwuser:pwuser /app/backend
+    && chown -R pwuser:pwuser /app/backend \
+    && mkdir -p /app/logs \
+    && chown pwuser:pwuser /app/logs
 
 # `pwuser` is pre-created by the Playwright base image specifically for
 # running browsers as non-root, with correct permissions already set up on

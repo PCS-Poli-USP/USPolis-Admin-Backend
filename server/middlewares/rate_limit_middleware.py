@@ -133,24 +133,13 @@ class RateLimitMiddleware:
         self, limiter: FixedWindowRateLimiter, scope: Scope, host: str
     ) -> RateLimitResult | None:
         """Requests with a valid API key count against the key's limits
-        instead of the anonymous per-IP ones. Browser keys are public, so
-        their visitors also keep the per-IP limit: one client reusing a
-        visible key can't burn the partner's whole quota."""
-        ip_bucket = f"ip:{client_identity(host)}"
+        instead of the anonymous per-IP ones."""
         identity: ApiKeyIdentity | None = (scope.get("state") or {}).get(
             API_KEY_IDENTITY_STATE_KEY
         )
         if identity is None:
-            return await limiter.hit(ip_bucket, self.rules)
-        key_result = await limiter.hit(f"key:{identity.key_id}", identity.rules)
-        if not identity.is_browser_key or key_result is None:
-            return key_result
-        if not key_result.allowed:
-            return key_result
-        ip_result = await limiter.hit(ip_bucket, self.rules)
-        if ip_result is not None and not ip_result.allowed:
-            return ip_result
-        return key_result
+            return await limiter.hit(f"ip:{client_identity(host)}", self.rules)
+        return await limiter.hit(f"key:{identity.key_id}", identity.rules)
 
     def __applies_to(self, scope: Scope) -> bool:
         return (

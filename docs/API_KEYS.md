@@ -8,7 +8,8 @@ follows when issuing and handling keys.
 - Phase 1: tables, key format, repositories.
 - Phase 2: admin routes.
 - Phase 4: keys accepted on public routes, with their own limits.
-- Phase 5: CORS for browser-key origins; date-range caps.
+- Phase 5: date-range caps. (Browser keys and their CORS shipped here too,
+  and were later removed: see "Server keys only".)
 
 The guide to hand to partners is [`PARTNER_API.md`](PARTNER_API.md)
 (Portuguese).
@@ -32,18 +33,13 @@ apiclient ─< apikey ─< apikeyratelimit
   - `public_id` identifies the key without revealing it.
   - `key_hash` is the HMAC of the key, the only thing stored.
   - `allowed_path_prefixes` sets the scope.
-  - `allowed_origins`, when non-empty, makes it a browser key.
   - `expires_at` is required, at most 365 days out.
   - `revoked_at` / `revoked_by_id` / `revoked_reason`: revocation is final.
     The row stays for the audit trail.
 - **`ApiKeyRateLimit`** (`apikeyratelimit`) holds 0..N
   `max_requests/window_seconds` rules per key, all enforced together. With
-  none, the defaults apply, so a key is never unlimited:
-  - `API_KEY_DEFAULT_LIMITS=30/10,120/60,10000/86400` for server keys;
-  - `API_KEY_BROWSER_DEFAULT_LIMITS=60/10,300/60,20000/86400` for browser
-    keys. This is higher because one browser key is shared by every visitor
-    of the partner's site. The per-IP anonymous limit still applies to each
-    visitor, so a single client can't exhaust it.
+  none, the defaults apply (`API_KEY_DEFAULT_LIMITS=30/10,120/60,10000/86400`),
+  so a key is never unlimited.
 
 The database enforces the invariants, even if code skips the request
 validators:
@@ -113,7 +109,6 @@ deactivate a client or revoke a key instead, so the audit trail is kept.
 
 Key responses never include the key or its hash. They include:
 - `masked_key`: `up_<env>_<public_id>_****`;
-- `key_type`: `server` or `browser`;
 - `status`: `active`, `expired`, `revoked` or `client_inactive`, in that
   precedence: `revoked` beats `client_inactive`, which beats `expired`;
 - the limits **actually enforced**, with `uses_default_limits` saying whether
@@ -221,11 +216,10 @@ curl -H "X-API-Key: up_live_..." https://uspolis.com.br/api/allocations/events?s
    - hash (constant time);
    - revoked, client inactive, expired → **401**;
    - not GET/HEAD, not a public route, outside `allowed_path_prefixes`, or
-     wrong `Origin` → **403**.
+     any `Origin` header (sent from a browser) → **403**.
    A bad key **never** falls back to anonymous.
 5. A valid key is counted against **its own limits** instead of the per-IP
-   one. Browser keys also keep the per-IP limit for each visitor. Limits are
-   enforced only when `RATE_LIMIT_MODE=enforce`; `shadow` only logs.
+   one. Limits are enforced only when `RATE_LIMIT_MODE=enforce`; `shadow` only logs.
 
 **What the client sees:**
 
@@ -262,30 +256,30 @@ errors (≥400 except 401/429) and the first 429 of each window. Key
 rejections themselves (401/403) go to `api.log`, capped by the per-IP failure
 limit.
 
-## Browser keys and CORS
+## Server keys only
 
-`PartnerCorsMiddleware` (`server/middlewares/partner_cors_middleware.py`)
-serves the CORS of partner sites. It sits **outside** Starlette's
-`CORSMiddleware`, because that one rejects any preflight from an origin not in
-`ALLOWED_ORIGINS`. The full chain is Logger → PartnerCors → CORS → ApiKey →
-RateLimit.
+Keys used to come in two kinds: server keys and **browser keys**, which had
+`allowed_origins` and were served CORS for those sites by a
+`PartnerCorsMiddleware`. Browser keys were removed (migration
+`d4b7e2a91c50`): a key in a partner's front-end code is readable by every
+visitor, so the "key" was only an origin check that any script can forge,
+and the partner CORS layer was extra attack surface next to our
+credentialed first-party CORS.
 
-- **Who gets it:** the origins of **usable browser keys** (not revoked, not
-  expired, active client), and only for **GET/HEAD on public routes**.
-- **No credentials, ever.** The inner `CORSMiddleware` adds
-  `Access-Control-Allow-Credentials: true` to every response, even for
-  origins it doesn't allow. PartnerCors strips it from partner responses;
-  otherwise a partner page could send our users' session cookie. A test
-  covers this.
-- **First-party origins** (`ALLOWED_ORIGINS`) behave exactly as before,
-  credentials included.
-- **Origins cache:** the list is cached **in memory, per worker, for 30 s**,
-  so random `Origin` headers can't trigger a DB query per request. A new or
-  revoked browser key's site is picked up within 30 s. CORS only lets the
-  browser read the response; the real gate is `ApiKeyMiddleware`, which
-  checks the `Origin` against the key itself on every request, immediately.
-- **If loading the origins fails**, the middleware fails closed: no partner
-  CORS, and an error is logged.
+Now:
+- every key is a server key; a request with a key **and** an `Origin`
+  header (which every browser sends on cross-origin requests) is a **403**,
+  logged as `reason="key sent from a browser"`;
+- partner sites get no CORS: only `ALLOWED_ORIGINS` do. A partner without a
+  backend puts a small serverless function between its site and us (see the
+  frontend docs page "API Keys");
+- a key request with a non-empty `allowed_origins` is a **422**; an empty
+  list is still accepted so older clients don't break;
+- the migration revoked every browser key that wasn't revoked yet
+  (`revoked_reason = "Chaves de navegador foram descontinuadas"`,
+  `revoked_by_id` NULL) and invalidated and wiped its pending delivery link,
+  then dropped the column. Downgrading re-adds the column but doesn't undo
+  the revocations.
 
 ## Rules USPolis follows
 
@@ -325,13 +319,10 @@ RateLimit.
    - ✅ A key without limit rows falls back to the defaults.
    - 📋 Review keys every quarter; revoke any unused for 90+ days
      (`last_used_at`).
-6. **Browser keys are public by nature.**
-   - ✅ Origins must be HTTPS (`http://localhost` only outside production),
-     with no wildcards or paths.
-   - ✅ The request's `Origin` must be in the key's list.
-   - ✅ The per-IP anonymous limit also applies to them.
-   - ✅ Server keys (no origins) are rejected when an `Origin` header is
-     present.
+6. **Keys stay on servers.**
+   - ✅ A request with a key and an `Origin` header is rejected (403): no
+     browser keys, and no CORS for partner sites (see "Server keys only").
+   - ✅ Key requests with `allowed_origins` are rejected (422).
 7. **Leaks.**
    - 📋 Revoke immediately, notify `contact_email`, then reissue.
    - ✅ Revocation is final, and `is_active=false` disables all of a
@@ -358,7 +349,7 @@ RateLimit.
 | Tables | `server/models/database/api_{client,key,key_rate_limit,key_delivery_link}_db_model.py` |
 | Key generation, parsing, hashing | `server/services/security/api_key_crypto.py` |
 | Sealing keys for delivery links | `server/services/security/api_key_link_crypto.py` |
-| Prefix and origin rules | `server/services/security/api_key_scope.py` |
+| Prefix rules | `server/services/security/api_key_scope.py` |
 | Request validation | `server/models/http/requests/api_key_request_models.py` |
 | Repositories | `server/repositories/api_{client,key,key_delivery_link}_repository.py` |
 | Admin routes | `server/routes/admin/api_key_admin_routes.py` |
@@ -367,5 +358,5 @@ RateLimit.
 | Expiring unopened links | `expire_api_key_links` in `server/services/cron/daily_tasks.py` |
 | Request authentication, cache, `last_used_at` | `server/services/security/api_key_auth.py`, `ApiKeyMiddleware` in `server/middlewares/api_key_middleware.py` |
 | Responses, status, effective limits | `server/models/http/responses/api_key_response_models.py`, `server/services/security/api_key_limits.py` |
-| Migrations | `migrations/versions/563e00883007_create_api_client_key_and_rate_limit_.py`, `migrations/versions/8feb53242f11_add_api_key_delivery_link.py` |
+| Migrations | `migrations/versions/563e00883007_create_api_client_key_and_rate_limit_.py`, `migrations/versions/8feb53242f11_add_api_key_delivery_link.py`, `migrations/versions/d4b7e2a91c50_drop_api_key_allowed_origins.py` |
 | Tests | `tests/unit/services/security/test_api_key_*.py`, `tests/unit/models/**/test_api_key_*.py`, `tests/integration/repositories/test_api_{client,key}_repository.py`, `tests/api/admin/test_api_key_admin_routes.py`; links: `tests/unit/services/security/test_api_key_link_crypto.py`, `tests/integration/repositories/test_api_key_delivery_link_repository.py`, `tests/api/{admin,public}/test_api_key_link*_routes.py`, `tests/integration/services/test_expire_api_key_links.py` |

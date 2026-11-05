@@ -21,21 +21,18 @@ class TestApiKeyRegister:
 
         assert payload.allowed_path_prefixes == ["/allocations"]
 
-    def test_duplicate_prefixes_and_origins_are_collapsed(self) -> None:
+    def test_duplicate_prefixes_are_collapsed(self) -> None:
         payload = ApiKeyRequestFactory().create_input(
             allowed_path_prefixes=["/allocations", "/allocations"],
-            allowed_origins=["https://site.com", "https://SITE.com/"],
         )
 
         assert payload.allowed_path_prefixes == ["/allocations"]
-        assert payload.allowed_origins == ["https://site.com"]
 
     @pytest.mark.parametrize(
         "overrides",
         [
             {"allowed_path_prefixes": []},
             {"allowed_path_prefixes": ["/allocations/../admin"]},
-            {"allowed_origins": ["https://*.usp.br"]},
             {"expires_at": BrazilDatetime.now_utc() + timedelta(days=2 * 365)},
             {"expires_at": BrazilDatetime.now_utc() - timedelta(minutes=1)},
             {
@@ -48,7 +45,6 @@ class TestApiKeyRegister:
         ids=[
             "no-prefix",
             "dot-dot-prefix",
-            "wildcard-origin",
             "two-year-expiry",
             "already-expired",
             "duplicate-window",
@@ -58,31 +54,16 @@ class TestApiKeyRegister:
         with pytest.raises(ValidationError):
             ApiKeyRequestFactory().create_input(**overrides)
 
-    def test_http_origin_is_rejected_in_production(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        monkeypatch.setattr(
-            "server.models.http.requests.api_key_request_models.CONFIG.environment",
-            "production",
-        )
-
-        with pytest.raises(ValidationError):
+    def test_origins_are_rejected_since_browser_keys_are_gone(self) -> None:
+        with pytest.raises(ValidationError, match="navegador"):
             ApiKeyRequestFactory().create_input(
-                allowed_origins=["http://localhost:3000"]
+                allowed_origins=["https://gremio.poli.usp.br"]
             )
 
-    def test_http_localhost_origin_is_allowed_outside_production(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        monkeypatch.setattr(
-            "server.models.http.requests.api_key_request_models.CONFIG.environment",
-            "development",
-        )
+    def test_empty_origins_from_older_clients_are_ignored(self) -> None:
+        payload = ApiKeyRequestFactory().create_input(allowed_origins=[])
 
-        payload = ApiKeyRequestFactory().create_input(
-            allowed_origins=["http://localhost:3000"]
-        )
-        assert payload.allowed_origins == ["http://localhost:3000"]
+        assert not hasattr(payload, "allowed_origins")
 
     def test_timezone_aware_expiry_is_stored_as_naive_brazil_time(self) -> None:
         in_utc = (

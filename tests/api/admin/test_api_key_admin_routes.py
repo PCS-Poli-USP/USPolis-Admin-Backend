@@ -197,7 +197,7 @@ class TestCreateKey:
             f"{CLIENTS}/{api_client.id}/keys", json=key_payload(rate_limits=[])
         ).json()
 
-        assert data["key_type"] == "server"
+        assert "key_type" not in data and "allowed_origins" not in data
         assert data["uses_default_limits"] is True
         assert data["rate_limits"] == [
             {"max_requests": 30, "window_seconds": 10},
@@ -205,27 +205,14 @@ class TestCreateKey:
             {"max_requests": 10000, "window_seconds": 86400},
         ]
 
-    def test_browser_key_without_limits_gets_the_browser_defaults(
-        self, client: TestClient, api_client: ApiClient
-    ) -> None:
-        data = client.post(
-            f"{CLIENTS}/{api_client.id}/keys",
-            json=key_payload(
-                rate_limits=[], allowed_origins=["https://gremio.poli.usp.br"]
-            ),
-        ).json()
-
-        assert data["key_type"] == "browser"
-        assert data["rate_limits"][0] == {"max_requests": 60, "window_seconds": 10}
-
     @pytest.mark.parametrize(
         "overrides",
         [
             {"allowed_path_prefixes": []},
-            {"allowed_origins": ["https://*.usp.br"]},
+            {"allowed_origins": ["https://gremio.poli.usp.br"]},
             {"expires_at": BrazilDatetime.now_utc() + timedelta(days=400)},
         ],
-        ids=["no-prefix", "wildcard-origin", "too-long"],
+        ids=["no-prefix", "browser-origin", "too-long"],
     )
     def test_invalid_payload_is_422(
         self, client: TestClient, api_client: ApiClient, overrides: dict[str, Any]

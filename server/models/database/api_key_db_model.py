@@ -48,11 +48,6 @@ class ApiKey(BaseModel, table=True):
     allowed_path_prefixes: list[str] = Field(
         sa_column=Column(ARRAY(String()), nullable=False)
     )
-    # Non-empty = browser key. Empty = server key: rejected if an Origin is sent.
-    allowed_origins: list[str] = Field(
-        default_factory=list,
-        sa_column=Column(ARRAY(String()), nullable=False, server_default="{}"),
-    )
     expires_at: datetime
     revoked_at: datetime | None = Field(default=None)
     revoked_by_id: int | None = Field(
@@ -83,10 +78,6 @@ class ApiKey(BaseModel, table=True):
         back_populates="api_key",
         sa_relationship_kwargs={"uselist": False, "cascade": "all, delete-orphan"},
     )
-
-    @property
-    def is_browser_key(self) -> bool:
-        return bool(self.allowed_origins)
 
     def is_usable(self, now: datetime | None = None) -> bool:
         """Not revoked, not expired, and its client is active."""
