@@ -98,6 +98,11 @@
         font-style: italic;
         color: #3a4a49;
     }
+    .link {
+        color: #408080;
+        font-weight: 600;
+        text-decoration: underline;
+    }
     .btn {
         display: inline-block;
         background-color: #408080;
@@ -155,7 +160,7 @@
                     <tr>
                         <td class="footer">
                             <p style="margin: 0;">Atenciosamente,<br><strong>Equipe USPolis</strong></p>
-                            <p class="disclaimer">Este e-mail é apenas informativo, não é necessário respondê-lo.</p>
+                            <p class="disclaimer">{% block disclaimer %}Este e-mail é apenas informativo, não é necessário respondê-lo.{% endblock %}</p>
                         </td>
                     </tr>
                 </table>

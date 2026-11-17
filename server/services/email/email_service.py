@@ -18,6 +18,7 @@ from server.models.http.requests.solicitation_request_models import (
     SolicitationUpdated,
 )
 from server.models.http.requests.email_request_models import (
+    ApiKeyExpiringMail,
     ApiKeyLinkMail,
     BCCMailSend,
     BugReportMail,
@@ -51,6 +52,7 @@ BUG_REPORT_SUBJECT = "BUG RELATADO - USPolis"
 SYSTEM_LIST = ["uspolis@usp.br"]
 SYSTEM_MODE = CONFIG.environment.lower() != "production"
 API_KEY_LINK_SUBJECT = "Sua chave da API - USPolis"
+API_KEY_EXPIRING_SUBJECT = "Sua chave da API expira {expires_in} - USPolis"
 # Without it a hung SMTP server would hold the worker thread forever.
 SMTP_TIMEOUT_SECONDS = 15
 
@@ -80,6 +82,8 @@ class EmailService:
         msg["From"] = f"{CONFIG.mail_address}"
         msg["Reply-To"] = f"no-reply-{CONFIG.mail_address}"
         msg["To"] = ",".join(context.to)
+        if context.cc:
+            msg["Cc"] = ",".join(context.cc)
         msg.attach(MIMEText(context.body, "html"))
         with SMTP_SSL(
             CONFIG.mail_host, CONFIG.mail_port, timeout=SMTP_TIMEOUT_SECONDS
@@ -251,3 +255,22 @@ class EmailService:
             MailSend(to=to, subject=API_KEY_LINK_SUBJECT, body=body)
         )
         return to
+
+    @staticmethod
+    def send_api_key_expiring_email(to: list[str], data: ApiKeyExpiringMail) -> None:
+        """Warn the partner that a key is about to expire, with the USPolis
+        team in copy. Raises, so the caller only records the warning as sent
+        when it really was."""
+        cc = SYSTEM_LIST
+        if SYSTEM_MODE:
+            to, cc = SYSTEM_LIST, []
+        template = env.get_template("/api_keys/api-key-expiring.html")
+        body = template.render(data=data)
+        EmailService.send_email_or_raise(
+            MailSend(
+                to=to,
+                cc=cc,
+                subject=API_KEY_EXPIRING_SUBJECT.format(expires_in=data.expires_in),
+                body=body,
+            )
+        )

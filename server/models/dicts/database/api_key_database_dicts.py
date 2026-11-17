@@ -18,6 +18,7 @@ class ApiKeyModelDict(ApiKeyBaseDict, BaseModelDict, total=False):
     revoked_by_id: int | None
     revoked_reason: str | None
     last_used_at: datetime | None
+    expiry_warning_days: int | None
     created_by_id: int
     created_at: datetime
     updated_at: datetime

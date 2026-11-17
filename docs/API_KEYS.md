@@ -34,6 +34,8 @@ apiclient ─< apikey ─< apikeyratelimit
   - `key_hash` is the HMAC of the key, the only thing stored.
   - `allowed_path_prefixes` sets the scope.
   - `expires_at` is required, at most 365 days out.
+  - `expiry_warning_days`: the expiry warning already emailed for the
+    current `expires_at` (see "Expiry warnings"); reset when it changes.
   - `revoked_at` / `revoked_by_id` / `revoked_reason`: revocation is final.
     The row stays for the audit trail.
 - **`ApiKeyRateLimit`** (`apikeyratelimit`) holds 0..N
@@ -115,6 +117,27 @@ Key responses never include the key or its hash. They include:
   they're the configured defaults.
 
 A test asserts that issuing a key never writes it to the logs.
+
+## Expiry warnings
+
+The daily task `warn_expiring_api_keys` emails the client's `contact_email`,
+with `uspolis@usp.br` in copy, **30, 7 and 1 day** before a usable key (not
+revoked, client active) expires (`API_KEY_EXPIRY_WARNING_DAYS` in
+`server/services/cron/daily_tasks.py`). The email names the key, its
+`public_id` and the expiry date, and asks the partner to request a new key.
+Outside production it goes only to `uspolis@usp.br`, like every other email.
+
+- **No repeats.** `apikey.expiry_warning_days` stores the window already
+  warned, and each key is locked (`FOR UPDATE SKIP LOCKED`), rechecked,
+  emailed, marked and committed on its own. Running the task again, after a
+  restart or on two workers at once, sends nothing new.
+- **Catch-up.** Each run sends the smallest window the key is already in, so
+  a missed day isn't lost, and a key issued with 5 days left gets only the
+  7-day and 1-day warnings.
+- **Failures.** A failed email leaves the key unmarked, and the next run
+  retries it. Other keys are still processed.
+- **Extending a key.** Changing `expires_at` (`PUT /admin/api-keys/{id}`)
+  resets `expiry_warning_days`, so the new date gets its own warnings.
 
 ## Delivery by one-time link ("Entrega por link")
 
@@ -317,6 +340,8 @@ Now:
 5. **Every key has a lifetime and a limit.**
    - ✅ `expires_at` is required, at most 365 days.
    - ✅ A key without limit rows falls back to the defaults.
+   - ✅ The partner contact is emailed 30, 7 and 1 day before expiry, with
+     `uspolis@usp.br` in copy (see "Expiry warnings").
    - 📋 Review keys every quarter; revoke any unused for 90+ days
      (`last_used_at`).
 6. **Keys stay on servers.**
@@ -356,7 +381,8 @@ Now:
 | Public delivery-link routes | `server/routes/public/api_key_link_routes.py` |
 | Link email | `EmailService.send_api_key_link_email`, `server/templates/api_keys/api-key-link.html` |
 | Expiring unopened links | `expire_api_key_links` in `server/services/cron/daily_tasks.py` |
+| Expiry warnings | `warn_expiring_api_keys` in `server/services/cron/daily_tasks.py`, `EmailService.send_api_key_expiring_email`, `server/templates/api_keys/api-key-expiring.html` |
 | Request authentication, cache, `last_used_at` | `server/services/security/api_key_auth.py`, `ApiKeyMiddleware` in `server/middlewares/api_key_middleware.py` |
 | Responses, status, effective limits | `server/models/http/responses/api_key_response_models.py`, `server/services/security/api_key_limits.py` |
-| Migrations | `migrations/versions/563e00883007_create_api_client_key_and_rate_limit_.py`, `migrations/versions/8feb53242f11_add_api_key_delivery_link.py`, `migrations/versions/d4b7e2a91c50_drop_api_key_allowed_origins.py` |
-| Tests | `tests/unit/services/security/test_api_key_*.py`, `tests/unit/models/**/test_api_key_*.py`, `tests/integration/repositories/test_api_{client,key}_repository.py`, `tests/api/admin/test_api_key_admin_routes.py`; links: `tests/unit/services/security/test_api_key_link_crypto.py`, `tests/integration/repositories/test_api_key_delivery_link_repository.py`, `tests/api/{admin,public}/test_api_key_link*_routes.py`, `tests/integration/services/test_expire_api_key_links.py` |
+| Migrations | `migrations/versions/563e00883007_create_api_client_key_and_rate_limit_.py`, `migrations/versions/8feb53242f11_add_api_key_delivery_link.py`, `migrations/versions/d4b7e2a91c50_drop_api_key_allowed_origins.py`, `migrations/versions/7a3e9c1d5b20_add_api_key_expiry_warning_days.py` |
+| Tests | `tests/unit/services/security/test_api_key_*.py`, `tests/unit/models/**/test_api_key_*.py`, `tests/integration/repositories/test_api_{client,key}_repository.py`, `tests/api/admin/test_api_key_admin_routes.py`; links: `tests/unit/services/security/test_api_key_link_crypto.py`, `tests/integration/repositories/test_api_key_delivery_link_repository.py`, `tests/api/{admin,public}/test_api_key_link*_routes.py`, `tests/integration/services/test_expire_api_key_links.py`; expiry warnings: `tests/integration/services/test_warn_expiring_api_keys.py`, `tests/unit/services/test_api_key_expiring_email.py` |

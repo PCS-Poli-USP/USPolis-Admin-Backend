@@ -41,6 +41,7 @@ class ApiKeyModelFactory(BaseModelFactory[ApiKey]):
             "revoked_by_id": None,
             "revoked_reason": None,
             "last_used_at": None,
+            "expiry_warning_days": None,
             "created_by_id": must_be_int(self.creator.id),
             "created_at": datetime.now(),
             "updated_at": datetime.now(),

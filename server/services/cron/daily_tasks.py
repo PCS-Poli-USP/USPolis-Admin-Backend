@@ -1,19 +1,25 @@
 import logging
 from collections.abc import Callable
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from sqlmodel import Session
 
 from server.config import CONFIG
 from server.db import engine
+from server.models.http.requests.email_request_models import ApiKeyExpiringMail
 from server.repositories.api_access_log_repository import ApiAccessLogRepository
 from server.repositories.api_key_delivery_link_repository import (
     ApiKeyDeliveryLinkRepository,
 )
+from server.repositories.api_key_repository import ApiKeyRepository
+from server.services.email.email_service import EmailService
 from server.services.security.api_key_auth import invalidate_api_key_cache
 from server.utils.brazil_datetime import BrazilDatetime
 
 logger = logging.getLogger(__name__)
+
+# Days before expires_at when the partner contact is warned, one email each.
+API_KEY_EXPIRY_WARNING_DAYS = (30, 7, 1)
 
 
 def purge_old_access_logs(session: Session) -> None:
@@ -36,9 +42,65 @@ def expire_api_key_links(session: Session) -> None:
     logger.info("Expired %d unopened API key delivery link(s)", len(links))
 
 
+def _due_expiry_warning(expires_at: datetime, now: datetime) -> int:
+    """The smallest warning window the key is already inside, e.g. 7 for a
+    key expiring in 5 days. A missed day is caught up by the next run."""
+    left = expires_at - now
+    return min(d for d in API_KEY_EXPIRY_WARNING_DAYS if left <= timedelta(days=d))
+
+
+def warn_expiring_api_keys(session: Session) -> None:
+    """Email the contact of each client whose key expires within
+    API_KEY_EXPIRY_WARNING_DAYS, with uspolis@usp.br in copy.
+
+    `apikey.expiry_warning_days` records the warning already sent, so a run
+    after a restart, or on a second worker at the same time, never repeats
+    it: each key is locked (skipping keys another worker holds), rechecked,
+    emailed, marked and committed on its own. A failed email leaves the key
+    unmarked and is retried on the next run; a commit failing right after a
+    successful email is the only way to get a duplicate."""
+    now = BrazilDatetime.now_utc()
+    # Commit what earlier tasks did, so per-key commits below stay small.
+    session.commit()
+    ids = ApiKeyRepository.get_ids_expiring_before(
+        now=now,
+        until=now + timedelta(days=max(API_KEY_EXPIRY_WARNING_DAYS)),
+        session=session,
+    )
+    sent = 0
+    for id in ids:
+        key = ApiKeyRepository.lock_for_expiry_warning(id=id, session=session)
+        if key is None or not key.is_usable(now):
+            session.rollback()
+            continue
+        due = _due_expiry_warning(key.expires_at, now)
+        if key.expiry_warning_days is not None and key.expiry_warning_days <= due:
+            session.rollback()
+            continue
+        public_id = key.public_id
+        try:
+            EmailService.send_api_key_expiring_email(
+                to=[key.client.contact_email],
+                data=ApiKeyExpiringMail.from_key(key, now),
+            )
+        except Exception:
+            session.rollback()
+            logger.exception(
+                "Failed to send the expiry warning of API key %s", public_id
+            )
+            continue
+        key.expiry_warning_days = due
+        session.add(key)
+        session.commit()
+        sent += 1
+    logger.info("Sent %d API key expiry warning(s)", sent)
+
+
 DAILY_TASKS: list[Callable[[Session], None]] = [
     purge_old_access_logs,
     expire_api_key_links,
+    # Last: it commits on its own, key by key.
+    warn_expiring_api_keys,
 ]
 
 

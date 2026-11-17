@@ -28,7 +28,9 @@ async def periodic_daily_tasks() -> None:
             hour=0, minute=0, second=0, microsecond=0
         )
         await asyncio.sleep((next_midnight - now).total_seconds())
-        run_daily_tasks()
+        # In a thread: the tasks hit the DB and SMTP, which would otherwise
+        # block the event loop (and every request) while they run.
+        await asyncio.to_thread(run_daily_tasks)
         print("Daily tasks ran")
 
 

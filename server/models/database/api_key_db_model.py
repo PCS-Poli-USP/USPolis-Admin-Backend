@@ -55,6 +55,10 @@ class ApiKey(BaseModel, table=True):
     )
     revoked_reason: str | None = Field(default=None)
     last_used_at: datetime | None = Field(default=None)
+    # Smallest expiry warning (in days before expires_at) already emailed for
+    # the current expires_at, so the daily task never sends it twice; reset
+    # when expires_at changes. See warn_expiring_api_keys.
+    expiry_warning_days: int | None = Field(default=None)
     created_by_id: int = Field(foreign_key="user.id")
     created_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
     updated_at: datetime = Field(default_factory=BrazilDatetime.now_utc)

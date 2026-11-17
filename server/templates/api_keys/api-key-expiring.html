@@ -1,0 +1,37 @@
+{% extends "_layout/base_email.html" %}
+
+{% block title %}Sua chave da API do USPolis vai expirar{% endblock %}
+
+{% block status %}
+<tr>
+    <td class="status-ribbon" style="background-color: #fdf3e1; color: #8a5a00;">
+        &#9203; CHAVE DA API EXPIRANDO
+    </td>
+</tr>
+{% endblock %}
+
+{% block content %}
+<p>Olá, {{ data.contact_name|e }}.</p>
+
+<p>A chave da API do USPolis <strong>{{ data.key_name|e }}</strong>, emitida para
+<strong>{{ data.client_name|e }}</strong>, expira <strong>{{ data.expires_in|e }}</strong>.
+Depois disso, as requisições feitas com ela serão recusadas.</p>
+
+<div class="section-title">Detalhes</div>
+<table class="detail-table" role="presentation" cellpadding="0" cellspacing="0">
+    <tr><td class="detail-label">Chave</td><td class="detail-value">{{ data.key_name|e }}</td></tr>
+    <tr><td class="detail-label">Identificador</td><td class="detail-value">{{ data.public_id|e }}</td></tr>
+    <tr><td class="detail-label">Expira em</td><td class="detail-value">{{ data.expires_at }}</td></tr>
+</table>
+
+<p style="margin-top: 24px;">Para continuar usando a API, peça uma nova chave à
+equipe do USPolis pelo e-mail <a href="mailto:uspolis@usp.br" class="link">uspolis@usp.br</a>
+(em cópia nesta mensagem). Troque a chave no seu sistema antes da data acima
+para não ter interrupção.</p>
+
+<p>O identificador acima é público e serve só para reconhecer a chave: nunca
+envie a chave em si por e-mail.</p>
+{% endblock %}
+
+{% block disclaimer %}Dúvidas ou pedido de nova chave: escreva para
+<a href="mailto:uspolis@usp.br" class="link">uspolis@usp.br</a>.{% endblock %}

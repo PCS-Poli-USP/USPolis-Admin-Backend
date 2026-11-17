@@ -1,6 +1,8 @@
+from datetime import datetime
 from typing import Self
 from pydantic import BaseModel
 
+from server.models.database.api_key_db_model import ApiKey
 from server.models.database.api_key_delivery_link_db_model import ApiKeyDeliveryLink
 from server.models.database.bug_report_db_model import BugReport
 from server.models.database.feedback_db_model import Feedback
@@ -23,6 +25,7 @@ class MailSend(BaseModel):
     to: list[str]
     subject: str
     body: str
+    cc: list[str] = []
 
 
 class BCCMailSend(BaseModel):
@@ -192,3 +195,35 @@ class ApiKeyLinkMail(BaseModel):
             link_expires_at=link.expires_at.strftime("%d/%m/%Y às %H:%M"),
             message=message,
         )
+
+
+class ApiKeyExpiringMail(BaseModel):
+    """Warns the partner contact that a key is about to stop working."""
+
+    contact_name: str
+    client_name: str
+    key_name: str
+    public_id: str
+    expires_at: str
+    # "hoje", "amanhã" or "em N dias", in calendar days (Brazil time).
+    expires_in: str
+
+    @classmethod
+    def from_key(cls, key: ApiKey, now: datetime) -> "ApiKeyExpiringMail":
+        client = key.client
+        return cls(
+            contact_name=client.contact_name,
+            client_name=client.name,
+            key_name=key.name,
+            public_id=key.public_id,
+            expires_at=key.expires_at.strftime("%d/%m/%Y às %H:%M"),
+            expires_in=cls.__expires_in((key.expires_at.date() - now.date()).days),
+        )
+
+    @staticmethod
+    def __expires_in(days: int) -> str:
+        if days <= 0:
+            return "hoje"
+        if days == 1:
+            return "amanhã"
+        return f"em {days} dias"

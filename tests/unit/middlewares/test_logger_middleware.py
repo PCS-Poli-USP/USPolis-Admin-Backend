@@ -1,4 +1,5 @@
 from collections.abc import Iterator
+from types import SimpleNamespace
 from typing import Any
 from unittest.mock import MagicMock
 
@@ -15,6 +16,7 @@ from server.middlewares.logger_middleware import (
     redact_sensitive_fields,
 )
 from server.middlewares.request_utils import get_client_ip
+from server.services.auth.auth_user_info import AuthUserInfo
 
 
 def make_request(
@@ -191,7 +193,34 @@ def build_app() -> FastAPI:
     async def health() -> JSONResponse:
         return JSONResponse(status_code=200, content={"status": "ok"})
 
+    # What the authenticators leave on request.state (server/deps/authenticate.py).
+    @app.get("/as-cookie-user")
+    async def as_cookie_user(request: Request) -> JSONResponse:
+        request.state.current_user = SimpleNamespace(id=1, email="cookie@usp.br")
+        return JSONResponse(status_code=200, content={})
+
+    @app.get("/as-token-user")
+    async def as_token_user(request: Request) -> JSONResponse:
+        request.state.current_user = SimpleNamespace(id=1, email="db@usp.br")
+        request.state.user_info = AuthUserInfo.monitor_auth_info()
+        return JSONResponse(status_code=200, content={})
+
+    @app.get("/as-broken-user")
+    async def as_broken_user(request: Request) -> JSONResponse:
+        request.state.current_user = _ExpiredUser()
+        return JSONResponse(status_code=200, content={})
+
     return app
+
+
+class _ExpiredUser:
+    """Stands in for a detached ORM instance whose attributes can't load."""
+
+    id = None
+
+    @property
+    def email(self) -> str:
+        raise RuntimeError("DetachedInstanceError")
 
 
 @pytest.fixture
@@ -325,3 +354,45 @@ class TestLokiAccessLog:
     ) -> None:
         client.options("/subjects")
         captured_loki_logs.assert_not_called()
+
+    def test_email_comes_from_the_cookie_session_user(
+        self, client: TestClient, captured_loki_logs: MagicMock
+    ) -> None:
+        client.get("/as-cookie-user")
+
+        _, kwargs = captured_loki_logs.call_args
+        assert kwargs["extra"]["email"] == "cookie@usp.br"
+
+    def test_token_user_info_wins_over_current_user(
+        self, client: TestClient, captured_loki_logs: MagicMock
+    ) -> None:
+        client.get("/as-token-user")
+
+        _, kwargs = captured_loki_logs.call_args
+        assert kwargs["extra"]["email"] == "uspolis@usp.br"
+
+    def test_anonymous_request_logs_na(
+        self, client: TestClient, captured_loki_logs: MagicMock
+    ) -> None:
+        client.post("/subjects", content=b"{}")
+
+        _, kwargs = captured_loki_logs.call_args
+        assert kwargs["extra"]["email"] == "N/A"
+
+    def test_unreadable_user_does_not_break_logging(
+        self, client: TestClient, captured_loki_logs: MagicMock
+    ) -> None:
+        response = client.get("/as-broken-user")
+
+        assert response.status_code == 200
+        _, kwargs = captured_loki_logs.call_args
+        assert kwargs["extra"]["email"] == "N/A"
+
+
+class TestAppLogEmail:
+    def test_response_line_has_the_cookie_session_email(
+        self, client: TestClient, captured_logs: MagicMock
+    ) -> None:
+        client.get("/as-cookie-user")
+
+        assert 'email="cookie@usp.br"' in response_lines(captured_logs)[0]

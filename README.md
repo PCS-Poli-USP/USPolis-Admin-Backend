@@ -66,7 +66,7 @@ Your API should now be available at http://localhost:8080
 
 ### With Docker
 
-The `Dockerfile` here has `dev` and `prod` targets (Playwright's base image, since the Júpiter crawler needs a real browser). To run the whole stack (PostgreSQL, Redis, backend and frontend), use Docker Compose from the [USPolis-Admin](https://github.com/PCS-Poli-USP/USPolis-Admin) repo, which builds this backend and wires `REDIS_URL` for you.
+The `Dockerfile` here has `dev` and `prod` targets (Playwright's base image, since the Júpiter crawler needs a real browser). To run the whole stack (PostgreSQL, Redis, backend and frontend), use Docker Compose from the [USPolis-Admin](https://github.com/PCS-Poli-USP/USPolis-Admin) repo, which builds this backend and wires `REDIS_URL` for you. What the image and its entrypoint do is in [`docker/README.md`](docker/README.md).
 
 ## Develop
 

@@ -186,12 +186,23 @@ class LoggerMiddleware(BaseHTTPMiddleware):
     def __init__(self, app: ASGIApp) -> None:
         super().__init__(app)
 
-    def __get_user_info_from_request(self, request: Request) -> AuthUserInfo | None:
-        if hasattr(request.state, "user_info") and isinstance(
-            request.state.user_info, AuthUserInfo
-        ):
-            return request.state.user_info
-        return None
+    def __get_user_email(self, request: Request) -> str | None:
+        """Who made the request, for the log lines.
+
+        `user_info` is only set by the Bearer-token flow. `current_user` is
+        set by every authenticator (session cookie, token, the OVERRIDE_AUTH
+        mock), and the cookie is the frontend's only credential, so without
+        this fallback almost every line would say email="N/A".
+        """
+        user_info = getattr(request.state, "user_info", None)
+        if isinstance(user_info, AuthUserInfo):
+            return user_info.email
+        try:
+            email = getattr(getattr(request.state, "current_user", None), "email", None)
+        except Exception:
+            # A detached/expired ORM instance must never break logging.
+            return None
+        return email if isinstance(email, str) else None
 
     async def __get_request_body(self, request: Request) -> str | None:
         method = request.method
@@ -277,13 +288,6 @@ class LoggerMiddleware(BaseHTTPMiddleware):
             media_type=response.media_type,
         )
         return new_response, detail
-
-    def __load_user_info_in_message(
-        self, message: LoggerMessage, user_info: AuthUserInfo | None
-    ) -> None:
-        if not user_info:
-            return
-        message.user_email = user_info.email
 
     def write_log(self, message: LoggerMessage) -> None:
         logger.info(str(message))
@@ -393,8 +397,7 @@ class LoggerMiddleware(BaseHTTPMiddleware):
             host=get_client_ip(request),
             duration=request.scope.get("process_time", None),
         )
-        info = self.__get_user_info_from_request(request)
-        self.__load_user_info_in_message(msg, info)
+        msg.user_email = self.__get_user_email(request)
         msg.request_body = await self.__get_request_body(request)
         self.write_log(msg)
 
@@ -412,8 +415,7 @@ class LoggerMiddleware(BaseHTTPMiddleware):
             status_code=response.status_code,
             duration=process_time,
         )
-        info = self.__get_user_info_from_request(request)
-        self.__load_user_info_in_message(msg, info)
+        msg.user_email = self.__get_user_email(request)
         new_response, detail = await self.__get_response_detail(response)
         msg.response_detail = detail
         self.__persist_access_log(request, response, process_time, detail)
@@ -457,7 +459,7 @@ class LoggerMiddleware(BaseHTTPMiddleware):
 
         path = request.url.path
         if not any(path.startswith(p) for p in LOKI_EXCLUDED_PATHS):
-            user_info = self.__get_user_info_from_request(request)
+            email = self.__get_user_email(request)
             client_ip = get_client_ip(request)
             loki_access_logger.info(
                 "Access Log",
@@ -467,7 +469,7 @@ class LoggerMiddleware(BaseHTTPMiddleware):
                     "path": path,
                     "status_code": response.status_code,
                     "duration": process_time * 1000,  # ms
-                    "email": user_info.email if user_info else "N/A",
+                    "email": email or "N/A",
                 },
             )
 

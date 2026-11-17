@@ -159,6 +159,38 @@ class TestUpdate:
         assert key.allowed_path_prefixes == ["/allocations", "/buildings"]
         assert key.expires_at == input.expires_at
 
+    def test_a_new_expiry_date_resets_the_expiry_warnings(
+        self, session: Session, api_key: ApiKey
+    ) -> None:
+        api_key.expiry_warning_days = 7
+        session.add(api_key)
+        session.commit()
+        input = ApiKeyRequestFactory().update_input(
+            expires_at=api_key.expires_at + timedelta(days=90)
+        )
+
+        key = ApiKeyRepository.update(id=api_key.id or 0, input=input, session=session)
+        session.commit()
+        session.refresh(key)
+
+        assert key.expiry_warning_days is None
+
+    def test_keeping_the_expiry_date_keeps_the_expiry_warnings(
+        self, session: Session, api_key: ApiKey
+    ) -> None:
+        api_key.expiry_warning_days = 7
+        session.add(api_key)
+        session.commit()
+        input = ApiKeyRequestFactory().update_input(
+            name="Renamed", expires_at=api_key.expires_at
+        )
+
+        key = ApiKeyRepository.update(id=api_key.id or 0, input=input, session=session)
+        session.commit()
+        session.refresh(key)
+
+        assert key.expiry_warning_days == 7
+
     def test_set_rate_limits_replaces_them_even_when_a_window_is_kept(
         self, session: Session, api_key: ApiKey
     ) -> None:

@@ -1,7 +1,10 @@
+from datetime import datetime
+
 from fastapi import HTTPException, status
 from sqlalchemy.orm import selectinload
 from sqlmodel import Session, col, select
 
+from server.models.database.api_client_db_model import ApiClient
 from server.models.database.api_key_db_model import ApiKey
 from server.models.database.api_key_rate_limit_db_model import ApiKeyRateLimit
 from server.models.database.user_db_model import User
@@ -79,10 +82,44 @@ class ApiKeyRepository:
         return key, generated.plaintext
 
     @classmethod
+    def get_ids_expiring_before(
+        cls, *, now: datetime, until: datetime, session: Session
+    ) -> list[int]:
+        """Ids of usable keys (not revoked, client active) that expire in
+        (now, until], soonest first."""
+        statement = (
+            select(ApiKey.id)
+            .join(ApiClient)
+            .where(
+                col(ApiKey.revoked_at).is_(None),
+                col(ApiClient.is_active).is_(True),
+                col(ApiKey.expires_at) > now,
+                col(ApiKey.expires_at) <= until,
+            )
+            .order_by(col(ApiKey.expires_at))
+        )
+        return [must_be_int(id) for id in session.exec(statement).all()]
+
+    @classmethod
+    def lock_for_expiry_warning(cls, *, id: int, session: Session) -> ApiKey | None:
+        """Lock the key row until commit and reload it, or None if another
+        worker holds it (it is sending that warning right now)."""
+        statement = (
+            select(ApiKey)
+            .where(col(ApiKey.id) == id)
+            .with_for_update(skip_locked=True)
+            .execution_options(populate_existing=True)
+        )
+        return session.exec(statement).first()
+
+    @classmethod
     def update(cls, *, id: int, input: ApiKeyUpdate, session: Session) -> ApiKey:
         key = cls.__get_not_revoked(id=id, session=session)
         key.name = input.name
         key.allowed_path_prefixes = input.allowed_path_prefixes
+        if input.expires_at != key.expires_at:
+            # A new expiry date starts a new round of warnings.
+            key.expiry_warning_days = None
         key.expires_at = input.expires_at
         key.updated_at = BrazilDatetime.now_utc()
         session.add(key)
