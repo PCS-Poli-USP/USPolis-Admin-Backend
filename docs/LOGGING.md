@@ -10,20 +10,33 @@ writing to its own rotating file under `logs/`:
 
 - `app_logger` (`logs/api.log`) — general request/response logging plus
   anything else the app logs via `from server.logger import logger`.
-- `loki_access` (`logs/loki-access-api.log`) — a dedicated access log meant to
-  be scraped/shipped (e.g. by Promtail/Grafana Agent) into Grafana Loki. It
-  has `propagate = False` so its records never also end up in `app_logger`'s
-  handlers.
+- `loki_access` (`logs/loki-access-api.log`) — a dedicated access log that
+  Grafana Alloy ships into Grafana Loki. It has `propagate = False` so its
+  records never also end up in `app_logger`'s handlers.
 
 Neither logger calls Loki's HTTP API directly — both just write structured
-lines to a local file. Shipping those files into Loki is external to this
-app: Promtail and Loki (binaries + configs) live in the local, non-git folder
-`../USPolis-Analytics`. Its `promtail-config.yaml` parses the `loki_access`
-line with a regex, so **changing the line format in `server/logger.py`
-requires updating that regex** — a line that doesn't match reaches Loki with
-no extracted labels. Only `method` and `status` are labels (low
-cardinality); `path`, `email` and `client_ip` are queried from the line
-content in LogQL.
+lines to a local file. Shipping is external to this app: the `analytics`
+Compose profile in the `USPolis-Admin` repo runs Loki, Alloy and Grafana
+(see `analytics/README.md` there). Alloy reads `loki-access-api.log` from the
+backend's log volume, read-only. Only that file is shipped: `api.log` keeps
+query strings, and `/auth/refresh-token` carries a Google refresh token in
+its URL.
+
+Alloy parses the `loki_access` line with a regex in
+`analytics/alloy/config.alloy`, so **changing the line format in
+`server/logger.py` requires updating that regex** — a line that doesn't
+match still reaches Loki, but with no labels or metadata extracted. Only
+`method` and `status` are labels (low cardinality). `route` (the path with
+ids replaced by `:id`), `path`, `client_ip`, `email` and `duration` are
+structured metadata, filterable in LogQL without a parser:
+
+```logql
+{app="uspolis-backend-api", status=~"5.."} | route="/classrooms/full/:id"
+```
+
+This replaced a host install (Loki and Promtail binaries in a local,
+non-git `../USPolis-Analytics` folder). Promtail reached end of life in
+March 2026.
 
 ## What `LoggerMiddleware` writes
 
@@ -58,8 +71,12 @@ content in LogQL.
   which Uvicorn resolves from `X-Forwarded-For` only for proxies listed in
   `--forwarded-allow-ips` (the raw header is never trusted; see
   `RATE_LIMIT.md`).
-  `email` comes from `request.state.user_info` when the request is
-  authenticated, otherwise `"N/A"`. `duration` is in milliseconds.
+  `email` is the authenticated user's email, whichever way they
+  authenticated: `request.state.user_info` (Bearer token) or, failing that,
+  `request.state.current_user`, which every authenticator sets (session
+  cookie, token, the `OVERRIDE_AUTH` mock). Anonymous requests get `"N/A"`.
+  The same lookup fills the `user_email` of the `api.log` lines.
+  `duration` is in milliseconds.
 
 ## Rotation
 

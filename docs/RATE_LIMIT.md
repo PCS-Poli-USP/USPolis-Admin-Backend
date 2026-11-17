@@ -4,16 +4,17 @@ How the API limits request rates per client IP: the two layers (Nginx and the
 backend middleware), how the limits were chosen, how to configure and roll it
 out, and how to run the Redis it depends on.
 
-API keys for partners (per-key limits) build on top of this and are not
-implemented yet.
+API keys for partners build on top of this: a request with a valid
+`X-API-Key` is counted against that key's own limits instead of the per-IP
+ones. See [API_KEYS.md](API_KEYS.md).
 
 ## Two layers
 
 1. **Nginx `limit_req` / `limit_conn`.** These run in C and cost almost
    nothing, so they reject floods before they reach Python. They are
    deliberately **looser** than the app limits (10 req/s with a burst of 40).
-   Example config: `nginx/uspolis-api.conf.example` in the `USPolis-Admin`
-   repo.
+   Config: `nginx/templates/uspolis.conf.template` in the `USPolis-Admin`
+   repo (the stack's `nginx` service).
 2. **`RateLimitMiddleware`** (`server/middlewares/rate_limit_middleware.py`). It applies precise
    per-IP fixed windows, with counters kept in Redis so all Gunicorn workers
    share them. It is a pure ASGI middleware that runs **before routing and
