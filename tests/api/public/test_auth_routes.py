@@ -122,6 +122,59 @@ class TestGetTokens:
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
+    def _login(self, client: TestClient, info: AuthUserInfo) -> None:
+        with (
+            patch(
+                f"{_PATCH_TARGET}.exchange_auth_code_for_tokens",
+                return_value=("access-tok", "refresh-tok"),
+            ),
+            patch(f"{_PATCH_TARGET}.get_user_info", return_value=info),
+        ):
+            response = client.get(
+                f"{URL_PREFIX}/get-tokens", params={"auth_code": "irrelevant"}
+            )
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_login_stores_the_picture_of_a_user_without_one(
+        self, public_client: TestClient, admin_user: User, session: Session
+    ) -> None:
+        # Users created by an admin start without a picture, and the cookie
+        # flow never asks Google again: login is the only chance to store it.
+        admin_user.picture_url = None
+        session.add(admin_user)
+        session.commit()
+
+        self._login(public_client, _auth_info_for(admin_user))
+
+        session.refresh(admin_user)
+        assert admin_user.picture_url == "https://example.com/pic.png"
+
+    def test_login_updates_a_changed_picture(
+        self, public_client: TestClient, admin_user: User, session: Session
+    ) -> None:
+        admin_user.picture_url = "https://example.com/old.png"
+        session.add(admin_user)
+        session.commit()
+
+        self._login(public_client, _auth_info_for(admin_user))
+
+        session.refresh(admin_user)
+        assert admin_user.picture_url == "https://example.com/pic.png"
+
+    def test_login_keeps_the_picture_when_google_sends_none(
+        self, public_client: TestClient, admin_user: User, session: Session
+    ) -> None:
+        admin_user.picture_url = "https://example.com/old.png"
+        session.add(admin_user)
+        session.commit()
+
+        info = _auth_info_for(admin_user)
+        info.picture = ""
+        self._login(public_client, info)
+
+        session.refresh(admin_user)
+        assert admin_user.picture_url == "https://example.com/old.png"
+
 
 class TestRefreshToken:
     def test_returns_a_new_access_token_and_sets_a_session_cookie(

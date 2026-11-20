@@ -1,11 +1,9 @@
 from fastapi import APIRouter, Body, HTTPException, Request, Response, status
-
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from server.config import CONFIG
 from server.deps.authenticate import AuthenticationClient
-from server.services.auth.authentication_client import AuthProviderUnavailable
 from server.deps.session_dep import SessionDep
 from server.middlewares import get_client_ip
 from server.models.database.user_session_db_model import UserSession
@@ -15,6 +13,7 @@ from server.repositories.user_session_repository import (
     IssuedSession,
     UserSessionRepository,
 )
+from server.services.auth.authentication_client import AuthProviderUnavailable
 from server.services.security.csrf import (
     UntrustedOriginForCookie,
     is_trusted_cookie_request,
@@ -65,6 +64,7 @@ def get_tokens(
         )
     user_info = AuthenticationClient.get_user_info(access_token)
     user = UserRepository.get_from_auth(user_info=user_info, session=session)
+    UserRepository.sync_picture(user=user, picture=user_info.picture, session=session)
     user_agent = request.headers.get("user-agent")
     ip_address = get_client_ip(request)
     user_id = must_be_int(user.id)
@@ -144,6 +144,9 @@ def refresh_token(
     if not user_session:
         user_info = AuthenticationClient.get_user_info(new_access_token)
         user = UserRepository.get_by_email(email=user_info.email, session=session)
+        UserRepository.sync_picture(
+            user=user, picture=user_info.picture, session=session
+        )
         user_agent = request.headers.get("user-agent")
         ip_address = get_client_ip(request)
 

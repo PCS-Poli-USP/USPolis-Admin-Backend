@@ -1,5 +1,4 @@
 import secrets
-
 from typing import Annotated
 
 from fastapi import Depends, Header, HTTPException, Request, status
@@ -11,10 +10,6 @@ from server.models.database.building_db_model import Building
 from server.models.database.user_db_model import User
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.user_repository import UserRepository
-from server.services.security.csrf import (
-    UntrustedOriginForCookie,
-    is_trusted_cookie_request,
-)
 from server.repositories.user_session_repository import (
     UserSessionNotFound,
     UserSessionRepository,
@@ -22,6 +17,10 @@ from server.repositories.user_session_repository import (
 from server.services.auth.auth_user_info import AuthUserInfo
 from server.services.auth.authentication_client import (
     AuthenticationClient,
+)
+from server.services.security.csrf import (
+    UntrustedOriginForCookie,
+    is_trusted_cookie_request,
 )
 
 security = HTTPBearer(auto_error=False)
@@ -63,7 +62,7 @@ def public_token_authenticate(
         try:
             user_info = AuthenticationClient.get_user_info(access_token)
             request.state.user_info = user_info
-        except Exception:
+        except HTTPException:
             pass
 
 
@@ -73,9 +72,9 @@ def token_authenticate(
     session: SessionDep,
 ) -> User:
     user = UserRepository.get_from_auth(user_info=user_info, session=session)
-    if not user.picture_url:
-        user.picture_url = user_info.picture
-        session.add(user)
+    if UserRepository.sync_picture(
+        user=user, picture=user_info.picture, session=session
+    ):
         session.commit()
 
     request.state.current_user = user

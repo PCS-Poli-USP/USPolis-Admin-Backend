@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
-from sqlmodel import Session, col, select
-from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy.orm import selectinload
+from sqlmodel import Session, col, select
 
 from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
@@ -159,12 +159,11 @@ class UserRepository:
     ) -> User:
         user_to_update = UserRepository.get_by_id(user_id=id, session=session)
 
-        if id == requester.id:
-            if requester.is_admin != input.is_admin:
-                raise HTTPException(
-                    status.HTTP_400_BAD_REQUEST,
-                    "Não pode editar seu próprio status de admin",
-                )
+        if id == requester.id and requester.is_admin != input.is_admin:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "Não pode editar seu próprio status de admin",
+            )
 
         UserRepository.__update_user_groups(
             user=user_to_update,
@@ -185,6 +184,22 @@ class UserRepository:
         user.updated_at = BrazilDatetime.now_utc()
         session.add(user)
         return user
+
+    @staticmethod
+    def sync_picture(*, user: User, picture: str | None, session: Session) -> bool:
+        """Store the Google profile picture seen at login, when it changed.
+
+        `picture_url` is the only place the photo survives: `GET /users` gets
+        `user_info` from Google only in the legacy Bearer flow, so a
+        cookie-authenticated user's avatar comes from here. Without updating it
+        on login, users created by an admin (no picture) never got one, and a
+        photo changed on Google never showed up. Returns whether it changed;
+        the caller commits."""
+        if not picture or user.picture_url == picture:
+            return False
+        user.picture_url = picture
+        session.add(user)
+        return True
 
     @staticmethod
     def visit_user(
