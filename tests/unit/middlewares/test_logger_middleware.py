@@ -189,6 +189,16 @@ def build_app() -> FastAPI:
     async def refresh(refresh_token: str) -> JSONResponse:
         return JSONResponse(status_code=401, content={"message": "Invalid"})
 
+    @app.post("/subjects/echo-size")
+    async def echo_size(request: Request) -> JSONResponse:
+        return JSONResponse(
+            status_code=409, content={"size": len(await request.body())}
+        )
+
+    @app.get("/big-error")
+    async def big_error() -> JSONResponse:
+        return JSONResponse(status_code=500, content={"message": "x" * 5000})
+
     @app.get("/health")
     async def health() -> JSONResponse:
         return JSONResponse(status_code=200, content={"status": "ok"})
@@ -396,3 +406,98 @@ class TestAppLogEmail:
         client.get("/as-cookie-user")
 
         assert 'email="cookie@usp.br"' in response_lines(captured_logs)[0]
+
+
+class TestBoundedBodyHandling:
+    """The middleware no longer buffers or parses bodies it won't log."""
+
+    def test_success_response_is_not_parsed_for_a_detail(
+        self, client: TestClient, captured_logs: MagicMock
+    ) -> None:
+        response = client.post("/subjects", content=b'{"code":"MAC0110"}')
+
+        assert response.json() == {"message": "created"}
+        assert 'response_detail="N/A"' in response_lines(captured_logs)[0]
+
+    def test_error_response_over_the_limit_passes_through_unparsed(
+        self,
+        client: TestClient,
+        captured_logs: MagicMock,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setattr(
+            "server.middlewares.logger_middleware.CONFIG.log_body_max_bytes", 1000
+        )
+        response = client.get("/big-error")
+
+        assert response.status_code == 500
+        assert response.json() == {"message": "x" * 5000}
+        assert 'response_detail="N/A"' in response_lines(captured_logs)[0]
+
+    def test_request_body_over_the_limit_is_not_logged_but_reaches_the_endpoint(
+        self,
+        client: TestClient,
+        captured_logs: MagicMock,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setattr(
+            "server.middlewares.logger_middleware.CONFIG.log_body_max_bytes", 10
+        )
+        payload = b'{"code":"MAC0110","name":"Introducao"}'
+
+        response = client.post("/subjects/echo-size", content=payload)
+
+        assert response.json() == {"size": len(payload)}
+        assert 'request_body="N/A"' in request_lines(captured_logs)[0]
+        assert 'request_body="N/A"' in response_lines(captured_logs)[0]
+
+
+class TestAccessLogQueueing:
+    @pytest.fixture
+    def enqueue(self, monkeypatch: pytest.MonkeyPatch) -> MagicMock:
+        monkeypatch.setattr(
+            "server.middlewares.logger_middleware.CONFIG.testing", False
+        )
+        fake = MagicMock()
+        monkeypatch.setattr(
+            "server.middlewares.logger_middleware.ACCESS_LOG_WRITER.enqueue", fake
+        )
+        return fake
+
+    def test_error_response_queues_a_row_instead_of_writing_it(
+        self, client: TestClient, captured_logs: MagicMock, enqueue: MagicMock
+    ) -> None:
+        client.post(
+            "/other",
+            content=b'{"code":"MAC0110","password":"hunter2"}',
+            headers={"content-type": "application/json"},
+        )
+
+        enqueue.assert_called_once()
+        row = enqueue.call_args.args[0]
+        assert row.status_code == 409
+        assert row.endpoint == "/other"
+        assert row.detail == "Other conflict"
+        assert enqueue.call_args.kwargs["capped"] is True
+        # The body is read lazily, and redacted, only if the writer keeps it.
+        body = enqueue.call_args.kwargs["request_body"]()
+        assert "hunter2" not in body
+        assert "MAC0110" in body
+
+    def test_success_response_queues_nothing(
+        self, client: TestClient, captured_logs: MagicMock, enqueue: MagicMock
+    ) -> None:
+        client.post("/subjects", content=b"{}")
+
+        enqueue.assert_not_called()
+
+    def test_binary_bodies_are_never_persisted(
+        self, client: TestClient, captured_logs: MagicMock, enqueue: MagicMock
+    ) -> None:
+        client.post(
+            "/subjects/duplicate",
+            content=b"%PDF-1.7 binary",
+            headers={"content-type": "application/pdf"},
+        )
+
+        assert enqueue.call_args.kwargs["request_body"]() is None

@@ -6,15 +6,14 @@ from collections.abc import Callable
 from urllib.parse import unquote_plus
 from fastapi import Request, Response, status
 from pydantic import BaseModel
-from sqlmodel import Session
+from starlette.datastructures import Headers
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 
 from server.config import CONFIG
-from server.db import engine
 from server.logger import logger, loki_access_logger
 from server.middlewares.request_utils import get_client_ip
-from server.repositories.api_access_log_repository import ApiAccessLogRepository
+from server.services.access_log_writer import ACCESS_LOG_WRITER, AccessLogRow
 from server.services.auth.auth_user_info import AuthUserInfo
 from server.services.rate_limiter import (
     RATE_LIMIT_EVENT_STATE_KEY,
@@ -26,6 +25,7 @@ from server.services.security.api_key_auth import (
     ApiKeyIdentity,
 )
 from server.services.security.api_key_crypto import API_KEY_PATTERN
+from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.api_security_level_enum import APISecurityLevel
 
 
@@ -146,6 +146,30 @@ def truncate_keeping_tail(text: str, limit: int) -> str:
     return text if len(text) <= limit else text[-limit:]
 
 
+def _matches_log_body_rules(request: Request) -> bool:
+    rules = LOG_BODY_RULES.get(request.method)
+    if rules is None:
+        return False
+    url_path = request.url.path
+    return any(url_path.startswith(prefix) for prefix in rules["start_with"]) and any(
+        url_path.endswith(suffix) for suffix in rules["end_with"]
+    )
+
+
+def _is_text_content(headers: Headers) -> bool:
+    content_type = headers.get("content-type", "")
+    return content_type.startswith("application/json") or content_type.startswith(
+        "text/"
+    )
+
+
+def _content_length(headers: Headers | Any) -> int | None:
+    try:
+        return int(headers["content-length"])
+    except (KeyError, ValueError, TypeError):
+        return None
+
+
 class LoggerMessage(BaseModel):
     method: str
     url: Any
@@ -204,75 +228,87 @@ class LoggerMiddleware(BaseHTTPMiddleware):
             return None
         return email if isinstance(email, str) else None
 
-    async def __get_request_body(self, request: Request) -> str | None:
-        method = request.method
-        if method not in LOG_BODY_RULES:
-            return None
+    async def __capture_request_body(self, request: Request) -> None:
+        """Reads the raw request body once, when some log line or the
+        ApiAccessLog row could use it, and keeps it in
+        `request.state.raw_request_body`. Nothing is decoded or parsed here:
+        that happens only for a matched LOG_BODY_RULES route or an error
+        row (see `__decoded_request_body`), never on every request.
 
-        start_with = LOG_BODY_RULES[method]["start_with"]
-        end_with = LOG_BODY_RULES[method]["end_with"]
-        url_path = request.url.path
-        if not (
-            any(url_path.startswith(prefix) for prefix in start_with)
-            and any(url_path.endswith(suffix) for suffix in end_with)
-        ):
-            return None
+        Bodies over LOG_BODY_MAX_BYTES are never buffered here: when the
+        Content-Length says so, the body is left for the endpoint to read."""
+        request.state.raw_request_body = None
+        if not (_matches_log_body_rules(request) or _is_text_content(request.headers)):
+            return
+        length = _content_length(request.headers)
+        if length is not None and length > CONFIG.log_body_max_bytes:
+            return
 
         try:
             body = await request.body()
-
-            async def receive() -> dict[str, Any]:
-                return {"type": "http.request", "body": body}
-
-            request._receive = receive
-            decoded = redact_json_body(body.decode("utf-8"))
         except Exception as e:
             logger.error(f"Error reading request body: {e}")
-            return None
+            return
 
-        # Cached so `log_response` can attach it to the error-response log
-        # line too, not just this (separate) "Request" log line.
-        request.state.request_body = decoded
+        async def receive() -> dict[str, Any]:
+            return {"type": "http.request", "body": body}
+
+        # The body was consumed: the endpoint gets it from here.
+        request._receive = receive
+        if len(body) <= CONFIG.log_body_max_bytes:
+            request.state.raw_request_body = body
+
+    def __decoded_request_body(self, request: Request) -> str | None:
+        """The captured body as redacted text, decoded at most once."""
+        if hasattr(request.state, "decoded_request_body"):
+            cached: str | None = request.state.decoded_request_body
+            return cached
+        raw: bytes | None = getattr(request.state, "raw_request_body", None)
+        decoded = None
+        if raw is not None:
+            try:
+                decoded = redact_json_body(raw.decode("utf-8"))
+            except Exception as e:
+                logger.error(f"Error decoding request body: {e}")
+        request.state.decoded_request_body = decoded
         return decoded
 
-    async def __cache_request_body_for_persistence(self, request: Request) -> None:
-        """Bounded, unconditional-but-content-type-gated body capture used
-        only for the ApiAccessLog DB row - independent of LOG_BODY_RULES,
-        which stays scoped to the text log line above. Skips non-JSON/
-        non-text bodies (e.g. file uploads) so binary payloads are never
-        buffered in memory."""
-        content_type = request.headers.get("content-type", "")
-        if not (
-            content_type.startswith("application/json")
-            or content_type.startswith("text/")
-        ):
-            return
+    def __get_request_body(self, request: Request) -> str | None:
+        """Body for the "Request" log line, and for the "Response" one when
+        it is an error, for LOG_BODY_RULES routes only."""
+        if not _matches_log_body_rules(request):
+            return None
+        return self.__decoded_request_body(request)
 
-        try:
-            body = await request.body()
-
-            async def receive() -> dict[str, Any]:
-                return {"type": "http.request", "body": body}
-
-            request._receive = receive
-            decoded = redact_json_body(body.decode("utf-8"))
-        except Exception as e:
-            logger.error(f"Error reading request body for persistence: {e}")
-            return
-
-        request.state.access_log_request_body = decoded
+    def __persisted_request_body(self, request: Request) -> str | None:
+        """Body for the ApiAccessLog row: JSON/text bodies only, so binary
+        payloads (e.g. file uploads) are never stored."""
+        if not _is_text_content(request.headers):
+            return None
+        return self.__decoded_request_body(request)
 
     async def __get_response_detail(
         self, response: Response
     ) -> tuple[Response, str | None]:
-        """Reads the body to extract its `message`, returning a copy of the
-        response (reading consumes the original) and that detail."""
+        """For a JSON error response, reads the body to extract its
+        `message`, returning a copy of the response (reading consumes the
+        original) and that detail. Any other response is passed through
+        untouched (and still streamed): buffering and parsing every 2xx
+        body just to look for an error message cost CPU on every request."""
         if not hasattr(response, "body_iterator"):
             return response, None
+        if response.status_code < 400:
+            return response, None
+        if not response.headers.get("content-type", "").startswith("application/json"):
+            return response, None
+        length = _content_length(response.headers)
+        if length is not None and length > CONFIG.log_body_max_bytes:
+            return response, None
 
-        body = b""
+        chunks: list[bytes] = []
         async for chunk in response.body_iterator:  # pyright: ignore[reportAttributeAccessIssue]
-            body += chunk
+            chunks.append(chunk if isinstance(chunk, bytes) else chunk.encode())
+        body = b"".join(chunks)
 
         detail = None
         try:
@@ -337,6 +373,7 @@ class LoggerMiddleware(BaseHTTPMiddleware):
             extra_tags=["RateLimit", f"RateLimit:{event.mode}"],
             detail=detail,
             process_time=process_time,
+            capped=False,
         )
 
     def __write_access_log(
@@ -347,48 +384,50 @@ class LoggerMiddleware(BaseHTTPMiddleware):
         extra_tags: list[str],
         detail: str | None,
         process_time: float,
+        capped: bool = True,
     ) -> None:
-        """Best-effort DB write of a single `ApiAccessLog` row. Must never
-        raise - a metrics-write failure must not affect the real response.
-        Opens a short-lived Session for just this insert+commit (matching
-        the per-request pattern in server/db.py's get_db()), NOT a shared
-        long-lived session.
+        """Queues one `ApiAccessLog` row for the batched writer
+        (server/services/access_log_writer.py), which saves it off the event
+        loop. Must never raise - a metrics failure must not affect the real
+        response. `capped=False` skips the writer's per-client cap.
 
-        Skipped entirely when CONFIG.testing is set: this always writes via
+        Skipped entirely when CONFIG.testing is set: the writer always uses
         server.db.engine directly (the real configured database), not
-        through get_db()/dependency_overrides, so it can't be redirected to
-        a test database the way route handlers can - running it during the
-        test suite would silently write real rows into the dev/prod
-        database on every 4xx/5xx a test happens to trigger."""
+        get_db()/dependency_overrides, so it can't be redirected to a test
+        database the way route handlers can - running it during the test
+        suite would silently write real rows into the dev/prod database on
+        every 4xx/5xx a test happens to trigger."""
         if CONFIG.testing:
             return
         try:
             route = request.scope.get("route")
             tags = list(route.tags) if route is not None and route.tags else []
             current_user = getattr(request.state, "current_user", None)
-            request_body = getattr(request.state, "access_log_request_body", None)
             identity: ApiKeyIdentity | None = getattr(
                 request.state, API_KEY_IDENTITY_STATE_KEY, None
             )
-            with Session(engine) as session:
-                ApiAccessLogRepository.create(
-                    security_level=APISecurityLevel.get_from_tags(tags),
-                    endpoint=request.url.path,
-                    method=request.method,
-                    status_code=status_code,
-                    ip_address=get_client_ip(request),
-                    user_agent=request.headers.get("user-agent"),
-                    response_time_ms=round(process_time * 1000),
-                    tags=[*tags, *extra_tags],
-                    user_id=current_user.id if current_user else None,
-                    detail=detail,
-                    request_body=request_body,
-                    session=session,
-                    api_key_id=identity.key_id if identity else None,
-                )
-                session.commit()
+            row = AccessLogRow(
+                security_level=APISecurityLevel.get_from_tags(tags),
+                endpoint=request.url.path,
+                method=request.method,
+                status_code=status_code,
+                ip_address=get_client_ip(request),
+                user_agent=request.headers.get("user-agent"),
+                response_time_ms=round(process_time * 1000),
+                tags=[*tags, *extra_tags],
+                user_id=current_user.id if current_user else None,
+                detail=detail,
+                request_body=None,
+                api_key_id=identity.key_id if identity else None,
+                timestamp=BrazilDatetime.now_utc(),
+            )
+            ACCESS_LOG_WRITER.enqueue(
+                row,
+                capped=capped,
+                request_body=lambda: self.__persisted_request_body(request),
+            )
         except Exception as e:
-            logger.error(f"Failed to persist API access log: {e}")
+            logger.error(f"Failed to queue API access log: {e}")
 
     async def log_request(self, request: Request) -> None:
         msg = LoggerMessage(
@@ -398,7 +437,7 @@ class LoggerMiddleware(BaseHTTPMiddleware):
             duration=request.scope.get("process_time", None),
         )
         msg.user_email = self.__get_user_email(request)
-        msg.request_body = await self.__get_request_body(request)
+        msg.request_body = self.__get_request_body(request)
         self.write_log(msg)
 
     async def log_response(
@@ -420,14 +459,14 @@ class LoggerMiddleware(BaseHTTPMiddleware):
         msg.response_detail = detail
         self.__persist_access_log(request, response, process_time, detail)
         self.__persist_rate_limit_event(request, process_time)
-        if response.status_code >= 400 and hasattr(request.state, "request_body"):
-            msg.request_body = request.state.request_body
+        if response.status_code >= 400:
+            msg.request_body = self.__get_request_body(request)
         self.write_log(msg)
         return new_response
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         start_time = time.time()
-        await self.__cache_request_body_for_persistence(request)
+        await self.__capture_request_body(request)
         # Log the request details
         await self.log_request(request)
 

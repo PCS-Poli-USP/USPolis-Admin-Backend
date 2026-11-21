@@ -27,6 +27,7 @@ class ApiAccessLogRepository:
         request_body: str | None,
         session: Session,
         api_key_id: int | None = None,
+        timestamp: datetime | None = None,
     ) -> ApiAccessLog:
         access_log = ApiAccessLog(
             security_level=security_level,
@@ -42,6 +43,10 @@ class ApiAccessLogRepository:
             detail=detail[:500] if detail else None,
             request_body=request_body[:2000] if request_body else None,
         )
+        # Rows are written in batches (server/services/access_log_writer.py):
+        # the timestamp is when the response happened, not when it was saved.
+        if timestamp is not None:
+            access_log.timestamp = timestamp
         session.add(access_log)
         return access_log
 

@@ -78,10 +78,60 @@ March 2026.
   The same lookup fills the `user_email` of the `api.log` lines.
   `duration` is in milliseconds.
 
+## Nothing is written on the request's path
+
+A request never waits for a log write or for the database:
+
+- **Log lines go through a bounded queue.** Each logger has a
+  `DroppingQueueHandler`: the request only puts the record on a queue of
+  `LOG_QUEUE_MAX_SIZE` records (default 10 000, per logger and worker), and a
+  `QueueListener` thread writes it to the file. When the queue is full the
+  record is **dropped** rather than blocking, and the next record that fits is
+  followed by `WARNING Log queue full: N records dropped` (at most once a
+  minute). The listener is stopped with `atexit`, which writes what is still
+  queued, and restarted in a forked child (`os.register_at_fork`), since
+  threads don't survive `fork`.
+- **`apiaccesslog` rows are written in batches.** The middleware only queues
+  the row (`ACCESS_LOG_WRITER.enqueue`, in
+  `server/services/access_log_writer.py`). A task started by the app
+  lifespan saves what accumulated in **one transaction**, in a thread, every
+  `ACCESS_LOG_FLUSH_SECONDS` (2 s), or right away once
+  `ACCESS_LOG_FLUSH_BATCH` (200) rows are waiting. On shutdown the task is
+  cancelled and a final flush saves the rest. `timestamp` is when the
+  response happened, not when the row was saved. A failed batch is logged
+  and discarded (no retry, so rows don't pile up while the database is down).
+- **Error floods are capped.** At most `ACCESS_LOG_MAX_PER_IP_PER_MINUTE` (30)
+  error rows per client (IPv6 grouped by /64, as in the rate limiter) per
+  minute are saved. The rest of that minute becomes **one** summary row,
+  tagged `ErrorFlood`, copied from the last suppressed request, whose
+  `detail` says how many were left out. It counts as one row in the
+  status-code summary. At most `ACCESS_LOG_BUFFER_MAX` (5 000) rows wait to be
+  saved; past it rows are dropped and
+  `WARNING API access log buffer full: N rows dropped` is logged. The first
+  429 per IP and window (see `RATE_LIMIT.md`) skips the per-client cap.
+- **Bodies are only parsed when they will be used.** The request body is
+  read once, raw, when the route matches `LOG_BODY_RULES` or the body is
+  JSON/text. It is decoded and redacted only for a `LOG_BODY_RULES` log line
+  or an `apiaccesslog` row that was actually kept. The response body is
+  buffered only for a **JSON error** (status >= 400) to read its `message`.
+  Any other response passes through untouched and still streams, so the
+  `api.log` Response line of a 2xx has `response_detail="N/A"`. Bodies over
+  `LOG_BODY_MAX_BYTES` (64 KB) are never buffered, parsed or logged.
+
 ## Rotation
 
-Both loggers use the standard library's `RotatingFileHandler`, which rotates
-by **file size**, not on a schedule:
+Both loggers rotate by **file size**, not on a schedule, with
+`LockedRotatingFileHandler` (in `server/logger.py`), a `RotatingFileHandler`
+that is safe with several gunicorn workers on the same file. The stock
+handler rotates per process: when one worker renames `api.log` to
+`api.log.1`, the others keep writing to their old descriptor (now the `.1`)
+and measure size with their own offset, so rotations repeat, `rename` fails
+and lines are lost (about 9% of the lines with 4 processes in a local test).
+Each write now takes an exclusive `flock` on `<file>.lock`, reopens the file
+if another worker rotated it, decides from the real size on disk, and
+rotates/writes before releasing. The waiting happens on the listener thread,
+never on the event loop, and the kernel drops the lock if a worker dies.
+Linux/Unix only (`fcntl`).
 
 | Logger | File | `maxBytes` | `backupCount` |
 |---|---|---|---|

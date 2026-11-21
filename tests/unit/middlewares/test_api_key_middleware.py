@@ -258,7 +258,6 @@ class TestLogging:
         monkeypatch.setattr(
             "server.middlewares.logger_middleware.CONFIG.testing", False
         )
-        monkeypatch.setattr("server.middlewares.logger_middleware.Session", MagicMock())
         monkeypatch.setattr(
             "server.middlewares.logger_middleware.logger.info", MagicMock()
         )
@@ -266,7 +265,7 @@ class TestLogging:
             "server.middlewares.logger_middleware.loki_access_logger.info", MagicMock()
         )
         monkeypatch.setattr(
-            "server.middlewares.logger_middleware.ApiAccessLogRepository.create", create
+            "server.middlewares.logger_middleware.ACCESS_LOG_WRITER.enqueue", create
         )
         app = FastAPI()
         public = APIRouter(tags=["Public"])
@@ -286,4 +285,4 @@ class TestLogging:
 
         assert response.status_code == 409
         create.assert_called_once()
-        assert create.call_args.kwargs["api_key_id"] == 7
+        assert create.call_args.args[0].api_key_id == 7

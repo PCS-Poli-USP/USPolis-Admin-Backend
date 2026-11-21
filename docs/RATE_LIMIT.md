@@ -173,7 +173,7 @@ Rows are removed by the daily purge after `ERROR_METRICS_RETENTION_DAYS`
 | Variable | Default | Meaning |
 |---|---|---|
 | `REDIS_URL` | empty | e.g. `redis://:<password>@127.0.0.1:6379/0`. Empty disables rate limiting, and an error is logged at startup if the mode is not `off`. |
-| `RATE_LIMIT_MODE` | `off` | `off` \| `shadow` \| `enforce` |
+| `RATE_LIMIT_MODE` | `enforce` | `off` \| `shadow` \| `enforce`. On by default since 2026-11; set `off` to disable it. |
 | `ANON_RATE_LIMITS` | `40/10,150/60,5000/86400` | `max/window_seconds` rules, comma separated |
 
 **Startup check:** each worker reports the rate-limit setup once at startup,
@@ -215,6 +215,12 @@ value. The raw header is never read, since a client could forge it.
 reasons to roll out in `shadow` mode first.
 
 ## Rollout
+
+The default is `enforce`, so a new environment limits from the first request
+once `REDIS_URL` is set. Check the client IP first (previous section): with
+it wrong, every request shares the proxy's IP and the limit blocks everyone.
+For a cautious rollout, set `RATE_LIMIT_MODE=shadow` explicitly and follow
+the steps below.
 
 1. **Redis** on the VM (see below) and `REDIS_URL` in `.env.prod`.
 2. **`RATE_LIMIT_MODE=shadow`** for 1–2 weeks, including a busy period if

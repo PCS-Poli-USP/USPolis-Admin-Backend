@@ -25,8 +25,31 @@ class Settings(BaseModel):
     environment: str = config("ENVIRONMENT", default="DEVELOPMENT", cast=str)  # pyright: ignore[reportAssignmentType]
     log_max_size: int = config("LOG_MAX_SIZE", default=1_073_741_824, cast=int)  # pyright: ignore[reportAssignmentType]
     log_backup_count: int = config("LOG_BACKUP_COUNT", default=2, cast=int)  # pyright: ignore[reportAssignmentType]
+    # Request logging (see docs/LOGGING.md). Records waiting for the log
+    # writer thread, per logger and worker; past it new records are dropped.
+    log_queue_max_size: int = config("LOG_QUEUE_MAX_SIZE", default=10_000, cast=int)  # pyright: ignore[reportAssignmentType]
+    # Request bodies larger than this are never buffered, parsed or logged.
+    log_body_max_bytes: int = config("LOG_BODY_MAX_BYTES", default=65_536, cast=int)  # pyright: ignore[reportAssignmentType]
+    # ApiAccessLog rows (error responses) are buffered and written in batches.
+    access_log_buffer_max: int = config(
+        "ACCESS_LOG_BUFFER_MAX", default=5_000, cast=int
+    )  # pyright: ignore[reportAssignmentType]
+    access_log_flush_seconds: float = config(
+        "ACCESS_LOG_FLUSH_SECONDS", default=2.0, cast=float
+    )  # pyright: ignore[reportAssignmentType]
+    access_log_flush_batch: int = config(
+        "ACCESS_LOG_FLUSH_BATCH", default=200, cast=int
+    )  # pyright: ignore[reportAssignmentType]
+    # Error rows kept per client IP per minute; the rest become one summary row.
+    access_log_max_per_ip_per_minute: int = config(
+        "ACCESS_LOG_MAX_PER_IP_PER_MINUTE", default=30, cast=int
+    )  # pyright: ignore[reportAssignmentType]
     error_metrics_retention_days: int = config(
         "ERROR_METRICS_RETENTION_DAYS", default=31, cast=int
+    )  # pyright: ignore[reportAssignmentType]
+    # How often the public search index (search_document view) is rebuilt.
+    search_index_refresh_seconds: int = config(
+        "SEARCH_INDEX_REFRESH_SECONDS", default=600, cast=int
     )  # pyright: ignore[reportAssignmentType]
     # CORS
     allowed_origins: list[str] = config(
@@ -89,7 +112,9 @@ class Settings(BaseModel):
 
     # Rate limiting (see docs/RATE_LIMIT.md)
     redis_url: str = config("REDIS_URL", default="")  # pyright: ignore[reportAssignmentType]
-    rate_limit_mode: str = config("RATE_LIMIT_MODE", default="off")  # pyright: ignore[reportAssignmentType]
+    # On by default: set RATE_LIMIT_MODE=off (or shadow) to disable it. The
+    # test suite always runs with it off (see resolve_rate_limit_config).
+    rate_limit_mode: str = config("RATE_LIMIT_MODE", default="enforce")  # pyright: ignore[reportAssignmentType]
     # "max/window_seconds" rules, all enforced together, per client IP.
     # Defaults come from the 2025-12 → 2026-10 production traffic analysis.
     anon_rate_limits: str = config(

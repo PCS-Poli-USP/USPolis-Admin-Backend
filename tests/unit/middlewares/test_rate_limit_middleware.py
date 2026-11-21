@@ -295,18 +295,17 @@ class TestRateLimitEventPersistence:
         monkeypatch.setattr(
             "server.middlewares.logger_middleware.CONFIG.testing", False
         )
-        monkeypatch.setattr("server.middlewares.logger_middleware.Session", MagicMock())
         monkeypatch.setattr(
             "server.middlewares.logger_middleware.logger.info", MagicMock()
         )
         monkeypatch.setattr(
             "server.middlewares.logger_middleware.loki_access_logger.info", MagicMock()
         )
-        create = MagicMock()
+        enqueue = MagicMock()
         monkeypatch.setattr(
-            "server.middlewares.logger_middleware.ApiAccessLogRepository.create", create
+            "server.middlewares.logger_middleware.ACCESS_LOG_WRITER.enqueue", enqueue
         )
-        return create
+        return enqueue
 
     def make_logged_client(self, mode: RateLimitMode) -> TestClient:
         app = FastAPI()
@@ -326,12 +325,14 @@ class TestRateLimitEventPersistence:
 
         assert statuses == [200, 200, 429, 429, 429, 429]
         create_log.assert_called_once()
-        row = create_log.call_args.kwargs
-        assert row["status_code"] == 429
-        assert row["endpoint"] == "/classrooms"
-        assert row["ip_address"] == "143.107.1.1"
-        assert "RateLimit" in row["tags"] and "RateLimit:enforce" in row["tags"]
-        assert "regra 2/60" in row["detail"]
+        row = create_log.call_args.args[0]
+        assert row.status_code == 429
+        assert row.endpoint == "/classrooms"
+        assert row.ip_address == "143.107.1.1"
+        assert "RateLimit" in row.tags and "RateLimit:enforce" in row.tags
+        assert "regra 2/60" in row.detail
+        # Already one per IP and window: not subject to the error-row cap.
+        assert create_log.call_args.kwargs["capped"] is False
 
     def test_shadow_persists_the_would_be_429_once(self, create_log: MagicMock) -> None:
         client = self.make_logged_client(RateLimitMode.SHADOW)
@@ -339,11 +340,11 @@ class TestRateLimitEventPersistence:
 
         assert statuses == [200] * 6
         create_log.assert_called_once()
-        row = create_log.call_args.kwargs
-        assert row["status_code"] == 429
-        assert "RateLimit:shadow" in row["tags"]
-        assert "Public" in row["tags"]  # route matched, since nothing was blocked
-        assert "não bloqueada" in row["detail"]
+        row = create_log.call_args.args[0]
+        assert row.status_code == 429
+        assert "RateLimit:shadow" in row.tags
+        assert "Public" in row.tags  # route matched, since nothing was blocked
+        assert "não bloqueada" in row.detail
 
     def test_requests_within_the_limit_are_not_persisted(
         self, create_log: MagicMock
