@@ -23,6 +23,7 @@ class UserModelFactory(BaseModelFactory[User]):
             **core,
             "name": self.core_factory.get_random_name(),
             "email": self.core_factory.get_random_email(),
+            "receive_emails": True,
             "updated_at": datetime.now(),
             "last_visited": datetime.now(),
             "created_by_id": None,

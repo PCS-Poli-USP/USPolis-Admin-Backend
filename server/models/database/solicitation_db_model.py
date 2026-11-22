@@ -79,14 +79,21 @@ class Solicitation(BaseModel, table=True):
 
     def get_administrative_users_for_email(self) -> list["User"]:
         """
-        Get the list of users who have administrative access to this solicitation. That means users who can approve, deny, or update the solicitation.
-
-        If the solicitation is associated with a classroom, it returns the users that have access to the classroom.
-
-        Otherwise, it returns the users that have access to the building.
+        The users to email about this solicitation: whoever can approve or deny
+        it, through a role (RESERVE on its classroom, or on its building or any
+        classroom of it when it has none) or a legacy group, with emails on.
+        See server/services/security/solicitation_recipients.py.
 
         Returns:
             List of User objects.
         """
-        users = self.get_administrative_users()
-        return [user for user in users if user.receive_emails]
+        from sqlalchemy.orm import object_session
+
+        from server.services.security.solicitation_recipients import (
+            solicitation_email_recipients,
+        )
+
+        session = object_session(self)
+        if session is None:
+            raise RuntimeError("Solicitation is not attached to a session")
+        return solicitation_email_recipients(self, session)  # type: ignore[arg-type]
