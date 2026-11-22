@@ -4,6 +4,12 @@ How the role-based permission system works: the data model, the one-time
 migration from the older `Group` model, and how a request gets from a route
 dependency to an allow/deny decision.
 
+The developer reference at https://www.uspolis.com.br/docs/dev/backend/permissions
+(pt-BR, source in the frontend repo at `docs/dev/backend/permissions.md`)
+explains every rule with examples. This file is the backend-side summary; keep
+both in sync, and add a test in `tests/api/roles/` (a user with roles only, no
+group) for every rule.
+
 ## The model
 
 A `Role` (`server/models/database/role_db_model.py`) groups a set of
@@ -41,6 +47,65 @@ stored as `NULL`) meaning "every instance of that resource".
 - `Resource.COURSE` / `CoursePermission` exist in the data model but have no
   wired permission checker yet — no route enforces them today.
 
+### Implied actions
+
+Some actions make no sense alone, so granting one grants what it depends on
+(`IMPLIED_ACTIONS`, applied by `build_permission_index`, so existing roles
+follow it with no data migration):
+
+| Granted | Also grants, on the same resource |
+|---|---|
+| `CREATE`, `UPDATE`, `ALLOCATE`, `RESERVE`, `REQUEST` | `READ` |
+| `DELETE` | `UPDATE`, `READ` |
+
+Nothing else is implied (`UPDATE` does not imply `ALLOCATE` or `DELETE`). A
+wildcard for an admin-only action is ignored for non-admins, and so is the
+`READ`-on-everything it would imply.
+
+### Belonging to a building, and the access scope
+
+A user **belongs to a building** when they can read it, or read at least one
+classroom in it (role, group or cascade). That gives visibility (the building
+in filters, the classes of its subjects), not actions.
+
+`AccessScope` (`server/services/security/access_scope.py`, injected as
+`AccessScopeDep`, one per request) resolves per action the buildings and
+classrooms a user can act on: `building_grant`, `classroom_grant` (direct
+grants, cascade from buildings, legacy groups) and `visible_building_grant`
+(the action on the building or on any of its classrooms);
+`readable_building_ids()` is the buildings the user belongs to. Every listing
+scopes with it (`READ`; the solicitation inbox uses `RESERVE`), and
+`GET /users/my-access` returns it already resolved for the frontend. Legacy
+groups are added only in its `_legacy_group_*` methods.
+
+### Class and subject visibility
+
+A class has no building of its own: its subject is linked to one or more
+buildings. Whoever belongs to one of the subject's buildings **reads every
+class of that subject**, allocated or not, wherever its schedules are (e.g.
+Calculus I is offered in several buildings, and a class can have one schedule
+in each). Everything else (`UPDATE`, ...) goes through the schedules: the
+action on the classroom of an allocated schedule, or on one of the subject's
+buildings for an unallocated one (`ClassPermissionChecker`). Subjects follow
+the same read rule (`SubjectPermissionChecker`). Deleting a class takes
+`UPDATE` on the class and on **every** schedule.
+
+### Allocation
+
+`OccurrenceRepositoryAdapter.check_can_allocate`, used by every allocation
+path (`allocate-schedule`, `allocate-schedule-many`,
+`remove-schedule-allocation`, `PATCH /allocations/events`,
+`allocate-allocation-map`):
+
+1. `ALLOCATE` on the target classroom and, when the schedule or occurrence is
+   already allocated, on the classroom it leaves. Deallocating takes
+   `ALLOCATE` on the current classroom.
+2. Nothing on the class or its building: a classroom-level role allocates in
+   its own classrooms.
+3. A class only goes into classrooms of its subject's buildings — 400 for
+   everyone, admins included, since the class would otherwise be invisible
+   to that building's users. Add the subject to the building first.
+
 Manage roles and permissions via `/admin/roles`
 (`server/routes/admin/roles_admin_routes.py`: `GET`/`POST`/`PUT`/`DELETE`
 `/admin/roles`, `GET /admin/roles/{role_id}`) and `/admin/permissions`
@@ -75,22 +140,73 @@ fallback — see below). Two design rules keep this mapping predictable:
 | Read a building | `BUILDING` | `READ` | |
 | Update a building | `BUILDING` | `UPDATE` | |
 | Delete a building | `BUILDING` | `DELETE` | Wildcard grant is admin-only |
-| Create a classroom | `BUILDING` | `CREATE` | Checked on the classroom's building |
+| Create a classroom | `BUILDING` | `CREATE` | Checked on the classroom's building. Groups are optional (`group_ids` may be empty) |
 | Read a classroom | `CLASSROOM` | `READ` | |
 | Update a classroom | `CLASSROOM` | `UPDATE` | |
 | Delete a classroom | `CLASSROOM` | `DELETE` | Wildcard grant is admin-only |
-| Allocate/reallocate a classroom to a class's weekly schedule | `CLASSROOM` | `ALLOCATE` | Also requires `UPDATE` on the `Class` that owns the `Schedule` |
+| Allocate, reallocate or deallocate a schedule (or a single occurrence) | `CLASSROOM` | `ALLOCATE` | On the classroom it leaves **and** on the one it goes to; nothing on the `Class` or its building. A class only goes into classrooms of its subject's buildings (400, admins included). See [Allocation](#allocation) |
 | Create/update/cancel a `Reservation`, `Meeting`, `Event`, or `Exam` | `CLASSROOM` (or `BUILDING` if the booking has no classroom yet) | `RESERVE` | Covers the entire booking lifecycle, including deletion |
 | Approve/deny a `Solicitation` | `CLASSROOM` | `RESERVE` | Approving/denying is fundamentally creating-or-refusing a `Reservation` |
 | Create/update a `Solicitation` targeting a `restricted` classroom | `CLASSROOM` | `REQUEST` | Only checked when the targeted classroom has `restricted=True`; unrestricted classrooms or solicitations with no classroom chosen yet need no check here |
 | Create a subject ("disciplina") | `BUILDING` | `CREATE` | |
-| Read a subject | `BUILDING` | `READ` | |
+| Read a subject | `BUILDING` | belong to one of its buildings | See [Class and subject visibility](#class-and-subject-visibility) |
 | Update a subject | `BUILDING` | `UPDATE` | |
-| Delete a subject | `BUILDING` | `UPDATE` | Not `DELETE` — see rule 2 above |
+| Delete a subject | `BUILDING` | `UPDATE` | Not `DELETE` — see rule 2 above (a `DELETE` grant implies `UPDATE`, so it also deletes subjects) |
 | Create a class ("turma") | `BUILDING` | `CREATE` | Checked via the class's subject/building |
-| Read a class | `CLASSROOM` | `READ` | |
-| Update a class | `CLASSROOM` | `UPDATE` | |
-| Delete a class | `CLASSROOM` | `UPDATE` | Not `DELETE` — see rule 2 above |
+| Read a class | — | belong to one of its subject's buildings, or read the classroom of one of its schedules | See [Class and subject visibility](#class-and-subject-visibility) |
+| Update a class | `CLASSROOM` | `UPDATE` | On the classroom of an allocated schedule, or `BUILDING` `UPDATE` for an unallocated one |
+| Delete a class | `CLASSROOM` | `UPDATE` | Not `DELETE` — see rule 2 above. On the class and on every schedule |
+| Re-crawl subjects (`PATCH /subjects/crawl`) | `BUILDING` | `UPDATE` | On **every** subject asked for; one of another building refuses the whole request |
+| Create schedules for a class, edit a schedule's occurrences | `CLASSROOM` | `UPDATE` | As updating the class; a new schedule that comes with a classroom also takes `ALLOCATE` on it |
+| Allocation reuse options | — | `READ` on every class asked for | |
+| Conflict count per classroom (`/classrooms/with-conflict-count`, `GET` and `POST`) | `BUILDING` | belong to the building | Lists only the classrooms the user can read |
+| Users of a building (`GET /users/{building_id}`) | `BUILDING` | belong to the building | Returns id, name and email only |
+
+### Owner routes, global entities and the mobile app
+
+- **User schedules** (`/users/schedules`): only their owner edits or deletes
+  one, admins included (personal data).
+- **Solicitations**: only the requester edits one (admins included); the
+  requester or an admin cancels it.
+- **Holiday categories, holidays, calendars, institutional events**: any
+  user of the `restricted` tier creates one; only its creator or an admin
+  edits or deletes it. `InstitutionalEvent.created_by_id` (migration
+  `5c2e8a7f9d14`) is NULL for events created before it, which only admins
+  change. A like from the app is not an edit (`save_likes`).
+- **Solicitation emails** (new and cancelled): sent to whoever can approve
+  it, with emails on (`server/services/security/solicitation_recipients.py`):
+  RESERVE on its classroom (directly or through the building), or, with no
+  classroom, RESERVE on its building or any classroom of it (the inbox rule);
+  plus the matching legacy group members. Admins only through a role or a
+  group; a RESERVE wildcard does not count (ignored).
+- **Mobile app writes** (`/mobile/*`: post, reply, like, report, "Fale
+  conosco"): the app user comes from the Google ID token in `Authorization`
+  (`MobileUserDep`, `server/deps/google_auth_dep.py`), never from the body;
+  a body `user_id` must match it (`check_acting_as`, 403). Deleting a post is
+  for its author only; listing the "Fale conosco" messages
+  (`GET /mobile/comments`) is admin-only.
+
+## How the rules are tested
+
+Every route has a class in `tests/api/roles/route_registry.py`
+(`ROUTE_REGISTRY`: `PUBLIC`, `HEALTH`, `MOBILE`, `SELF`, `GLOBAL_READ`,
+`RESTRICTED_ANY`, `OWNER`, `OBJECT(resource, action)`, `ADMIN`; everything
+under `/admin` is `ADMIN` by prefix). Table-driven suites in
+`tests/api/roles/`, as a user with roles only:
+
+| File | Checks |
+|---|---|
+| `test_route_guard.py` | the registry matches `app.routes`; each route's authentication matches its class (read from its dependency tree); 401 without credentials, 403 at the restricted gate, 403 on admin routes even for the broadest role |
+| `test_permission_matrix.py` | every `OBJECT` route under up to seven variants: exact grant, none, other building, read only, building cascade, wildcard, legacy group |
+| `test_listings.py` | every listing, an object of building A against one of building B |
+| `test_owner_routes.py` | every `OWNER` route as the owner, another user and an admin |
+| `test_implications.py` | every pair of `IMPLIED_ACTIONS`, plus what is not implied |
+
+**A new route fails the suite until it is classified**: add its line to
+`ROUTE_REGISTRY` and, by class, to the matrix (`OPERATIONS`), listing
+(`LISTINGS`) or owner (`OWNER_OPERATIONS`) table; each table has a coverage
+test naming the missing line. The variants of each table are spelled out in
+the developer reference (section "Como cada rota é classificada").
 
 ## `PermissionIndex`: how a check actually resolves
 

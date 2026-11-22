@@ -31,6 +31,7 @@ There is no `--cov-fail-under` gate yet — this round only established a baseli
 | `tests/api/authenticated` | HTTP tests for routes requiring any logged-in user | Yes |
 | `tests/api/public` | HTTP tests for no-auth/optional-auth routes — every `server/routes/public/*.py` file now has a matching test file | Yes |
 | `tests/api/restricted` | HTTP tests for routes requiring admin-or-group-member | Yes |
+| `tests/api/roles` | HTTP tests of every permission rule as a user with **roles only** (no group): `role_user`, `role_client`, `grant`, `world`. Table-driven: the route guard (`route_registry.py`, every route classified), the permission matrix, listings, owner routes and implications. See `docs/PERMISSIONS.md`, "How the rules are tested" | Yes |
 | `tests/integration/repositories` | DB-backed repository tests, no HTTP layer | Yes (DB only) |
 | `tests/integration/deps/repository_adapters` | DB-backed tests for the FastAPI-DI "repository adapter" layer (`server/deps/repository_adapters/*.py`), constructed directly (bypassing FastAPI's DI) via the same dependency-provider functions the framework would call | Yes (DB only) |
 | `tests/integration/services` | DB-backed service-layer tests, plus `tests/integration/services/security/` mirroring `server/services/security/` (one file per checker) | Yes |
@@ -41,7 +42,7 @@ There is no `--cov-fail-under` gate yet — this round only established a baseli
 | `tests/unit/middlewares` | Logger, API key and rate limit middlewares, with fake Redis | No |
 | `tests/unit/enums` | Enum values and translations | No |
 | `tests/unit/cache` | `server/cache.py` decorators | No |
-| `tests/integration/deps` | DB-backed dependency providers (`authenticate`, `owned_building_ids`, `permission_index_dep`, `session_dep`) | Yes (DB only) |
+| `tests/integration/deps` | DB-backed dependency providers (`authenticate`, `permission_index_dep`, `session_dep`) | Yes (DB only) |
 | `tests/e2e` | End-to-end tests | — |
 | `tests/performance` | Performance-oriented tests, separate from correctness suite | Yes |
 | `tests/services/jupiter_crawler` | Regression tests for the Júpiter course-data crawler, replayed against a cached HTML+JSON snapshot (`tests/data/jupiter/`) | No (replay only — see below) |
@@ -151,6 +152,9 @@ Recommended next priority: `ConflictChecker` (highest business-risk, zero covera
 - No-DB, pure-logic test → `tests/unit/{models,services,utils}/`. See `tests/unit/models/test_occurrence_model.py` for the `make_x()`-helper + module-docstring pattern.
 - DB-backed but no HTTP layer → `tests/integration/{repositories,services}/`, using the `session` fixture directly.
 - Full HTTP route test → `tests/api/{admin,authenticated,public,restricted}/`, using the matching `*_client` fixture for the route's auth tier.
+- A permission rule → `tests/api/roles/`, as `role_client` (roles only), with the grant and without it. A **new route** needs a line in `tests/api/roles/route_registry.py` (the route guard fails until it has one) and, by its class, in the permission matrix, listing or owner table.
+- A mobile app write → sign the request with `signed_in_as(mobile_user)` and send `APP_TOKEN_HEADER` (`tests/utils/mobile_user_test_utils.py`); no `Bearer`, which would go to the web login first.
+- A factory's `update(id, **overrides)` re-applies **every** default, not only the overrides (it renames, resets relationships...). To change one field, create the object with it instead.
 - **When `server/` groups a set of files into a subpackage** (e.g. `server/services/security/*`), mirror that as a subfolder under the matching test tier — `tests/integration/services/security/`, `tests/unit/services/security/` — rather than flattening everything under `tests/integration/services/`. Pick the subfolder's tier (`integration` vs `unit`) per file the normal way (does it touch `session`/the DB or not), so a subpackage can legitimately end up split across both, as `server/services/security/` currently is.
 - Reuse existing fixtures/factories (§4, §5) before adding new ones.
 
