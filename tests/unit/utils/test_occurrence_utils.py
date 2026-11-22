@@ -215,8 +215,12 @@ class TestGenerateDates:
             end_date=date(2025, 1, 31),
         )
         schedule.occurrences = [
-            Occurrence(date=date(2025, 1, 3), start_time=time(8, 0), end_time=time(9, 0)),
-            Occurrence(date=date(2025, 1, 10), start_time=time(8, 0), end_time=time(9, 0)),
+            Occurrence(
+                date=date(2025, 1, 3), start_time=time(8, 0), end_time=time(9, 0)
+            ),
+            Occurrence(
+                date=date(2025, 1, 10), start_time=time(8, 0), end_time=time(9, 0)
+            ),
         ]
         assert OccurrenceUtils.generate_dates(schedule) == [
             date(2025, 1, 3),
@@ -291,7 +295,9 @@ class TestGenerateOccurrences:
             end_date=date(2025, 1, 31),
         )
         schedule.occurrences = [
-            Occurrence(date=date(2025, 1, 3), start_time=time(8, 0), end_time=time(9, 0)),
+            Occurrence(
+                date=date(2025, 1, 3), start_time=time(8, 0), end_time=time(9, 0)
+            ),
         ]
         occurrences = OccurrenceUtils.generate_occurrences(schedule)
         assert len(occurrences) == 1

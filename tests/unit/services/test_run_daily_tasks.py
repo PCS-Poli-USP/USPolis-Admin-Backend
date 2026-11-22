@@ -16,9 +16,7 @@ def test_run_daily_tasks_runs_each_task_and_commits() -> None:
     fake_task = MagicMock()
 
     with (
-        patch(
-            "server.services.cron.daily_tasks.Session", return_value=mock_session_cm
-        ),
+        patch("server.services.cron.daily_tasks.Session", return_value=mock_session_cm),
         patch("server.services.cron.daily_tasks.DAILY_TASKS", [fake_task]),
     ):
         run_daily_tasks()

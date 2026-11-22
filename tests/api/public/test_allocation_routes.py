@@ -123,10 +123,15 @@ class TestAllocationEventsInterval:
         # Regression: `date.today()` as a parameter default froze "today" at
         # import time.
         seen: list[tuple[object, object]] = []
+
+        def fake_get_all(start: object, end: object, session: object) -> list[object]:
+            seen.append((start, end))
+            return []
+
         monkeypatch.setattr(
             "server.routes.public.allocation_routes.OccurrenceRepository."
             "get_all_on_interval_for_allocation",
-            lambda start, end, session: seen.append((start, end)) or [],
+            fake_get_all,
         )
         frozen_today = datetime(2031, 5, 20, 10, 0)
         monkeypatch.setattr(

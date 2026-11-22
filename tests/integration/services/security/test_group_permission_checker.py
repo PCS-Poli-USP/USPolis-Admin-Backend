@@ -65,7 +65,9 @@ def test_group_checker_denies_list_when_missing_one_group(
     member_group = GroupModelFactory(
         building=building, session=session
     ).create_and_refresh(users=[common_user])
-    other_group = GroupModelFactory(building=building, session=session).create_and_refresh()
+    other_group = GroupModelFactory(
+        building=building, session=session
+    ).create_and_refresh()
     session.refresh(common_user)
 
     checker = GroupPermissionChecker(user=common_user, session=session)

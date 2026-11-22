@@ -56,7 +56,7 @@ class PermissionResponse(BaseModel):
 
         if resource == Resource.BUILDING:
             return cls.from_building_permissions(permissions)  # type: ignore
-        
+
         raise ValueError("Invalid permission type")
 
     @classmethod

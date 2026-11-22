@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class CurriculumGeneralInfo(BaseModel):
     course_name: str
     minimal_duration: int

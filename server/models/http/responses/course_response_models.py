@@ -5,6 +5,7 @@ from server.models.database.course_db_model import Course
 from server.utils.enums.course_period_type_enum import CoursePeriodType
 from server.utils.must_be_int import must_be_int
 
+
 class CourseResponse(BaseModel):
     id: int
     name: str
@@ -35,4 +36,3 @@ class CourseResponse(BaseModel):
     @classmethod
     def from_course_list(cls, courses: list[Course]) -> list["CourseResponse"]:
         return [cls.from_course(course) for course in courses]
-

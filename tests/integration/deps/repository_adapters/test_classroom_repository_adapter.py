@@ -50,7 +50,11 @@ class TestGetAll:
         assert classroom.id in [c.id for c in classrooms]
 
     def test_restricted_user_sees_classrooms_via_main_group(
-        self, restricted_user: User, group: Group, classroom: Classroom, session: Session
+        self,
+        restricted_user: User,
+        group: Group,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         adapter = _adapter(user=restricted_user, session=session)
 
@@ -118,7 +122,11 @@ class TestGetById:
             adapter.get_by_id(must_be_int(classroom.id))
 
     def test_allows_via_granted_permission(
-        self, admin_user: User, common_user: User, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        common_user: User,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         RolePermissionTestHelper.grant_classroom_permission(
             user=common_user,
@@ -146,7 +154,11 @@ class TestGetByIds:
 
 class TestGetByNameAndBuilding:
     def test_denies_without_permission(
-        self, common_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        common_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         adapter = _adapter(user=common_user, session=session)
 
@@ -216,7 +228,12 @@ class TestCreate:
         assert created.building_id == building.id
 
     def test_raises_on_duplicate_name_in_the_same_building(
-        self, admin_user: User, building: Building, group: Group, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        group: Group,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         adapter = _adapter(user=admin_user, session=session)
         input = ClassroomRequestFactory(group=group).create_input(name=classroom.name)

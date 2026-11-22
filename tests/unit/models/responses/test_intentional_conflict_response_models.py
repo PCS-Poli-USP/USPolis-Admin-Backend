@@ -130,7 +130,9 @@ class TestBuildingIntentionalConflictMap:
         with pytest.raises(InvalidIntentionalConflict):
             BuildingIntentionalConflictMap.from_intentional_conflicts([conflict])
 
-    def test_groups_a_second_conflict_into_the_same_building_and_classroom(self) -> None:
+    def test_groups_a_second_conflict_into_the_same_building_and_classroom(
+        self,
+    ) -> None:
         building = make_building(name="Bloco A")
         classroom = make_classroom(building=building, name="Sala 1")
         subject = make_subject()

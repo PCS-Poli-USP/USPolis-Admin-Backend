@@ -64,7 +64,9 @@ class TestExamEventResponse:
             schedule=schedule, type_=ReservationType.EXAM, title="Prova"
         )
         exam = make_exam(reservation=reservation, subject=subject, classes=[class_])
-        occurrence = make_occurrence(schedule=schedule, occurrence_date=date(2025, 3, 1))
+        occurrence = make_occurrence(
+            schedule=schedule, occurrence_date=date(2025, 3, 1)
+        )
         schedule.occurrences = [occurrence]
 
         events = ExamEventResponse.from_exam(exam)

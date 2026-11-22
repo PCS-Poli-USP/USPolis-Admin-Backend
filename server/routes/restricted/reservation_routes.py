@@ -34,6 +34,7 @@ router.include_router(ExamRouter)
 router.include_router(EventRouter)
 router.include_router(MeetingRouter)
 
+
 @router.get("/{reservation_id}/full", response_model=ReservationFullResponse)
 def get_reservation_full(
     reservation_id: int,
@@ -42,6 +43,7 @@ def get_reservation_full(
     reservation = repository.get_by_id(id=reservation_id)
     return ReservationFullResponse.from_reservation(reservation)
 
+
 @router.get("/{reservation_id}", response_model=ReservationResponse)
 def get_reservation(
     reservation_id: int,
@@ -49,6 +51,7 @@ def get_reservation(
 ) -> ReservationResponse:
     reservation = repository.get_by_id(id=reservation_id)
     return ReservationResponse.from_reservation(reservation)
+
 
 @router.patch("/{reservation_id}/edit-occurrences")
 def update_reservation_occurrences(
@@ -67,6 +70,7 @@ def update_reservation_occurrences(
     )
     session.commit()
     return ReservationFullResponse.from_reservation(reservation)
+
 
 @router.delete("/{reservation_id}")
 async def delete_reservation(

@@ -68,9 +68,7 @@ class TestAuthenticateUser:
         self, public_client: TestClient
     ) -> None:
         with patch(_PATCH_TARGET, side_effect=ValueError("Wrong domain name.")):
-            response = public_client.post(
-                URL_PREFIX, headers={"idToken": "some-token"}
-            )
+            response = public_client.post(URL_PREFIX, headers={"idToken": "some-token"})
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 

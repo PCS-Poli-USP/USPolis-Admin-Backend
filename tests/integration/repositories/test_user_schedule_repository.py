@@ -319,9 +319,10 @@ class TestDelete:
         UserScheduleRepository.delete(user_schedule=user_schedule, session=session)
         session.commit()
 
-        assert UserScheduleRepository.get_by_id(
-            id=user_schedule_id, session=session
-        ) is None
+        assert (
+            UserScheduleRepository.get_by_id(id=user_schedule_id, session=session)
+            is None
+        )
         remaining_entries = session.exec(
             select(UserScheduleEntry).where(
                 UserScheduleEntry.user_schedule_id == user_schedule_id

@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from server.models.database.curriculum_db_model import Curriculum
 from server.utils.must_be_int import must_be_int
 
+
 class CurriculumResponse(BaseModel):
     id: int
     course_id: int
@@ -36,6 +37,7 @@ class CurriculumResponse(BaseModel):
         )
 
     @classmethod
-    def from_curriculum_list(cls, curriculums: list[Curriculum]) -> list["CurriculumResponse"]:
+    def from_curriculum_list(
+        cls, curriculums: list[Curriculum]
+    ) -> list["CurriculumResponse"]:
         return [cls.from_curriculum(curriculum) for curriculum in curriculums]
-

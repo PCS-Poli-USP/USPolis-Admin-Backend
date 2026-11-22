@@ -139,7 +139,7 @@ class JupiterCurriculumCrawler:
         text = re.sub(r"[ \t]+", " ", text)
 
         return text.strip()
-    
+
     def __is_valid_subject_code(self, code: str) -> bool:
         valid_alpha = re.match(r"^[A-Z]{3}[0-9]{4}$", code)
         valid_numeric = re.match(r"^[0-9]{7}$", code)
@@ -173,11 +173,19 @@ class JupiterCurriculumCrawler:
                     current_section = "mandatory"
                     continue
 
-                if "Disciplinas" in title and "Optativas" in title and "Livres" in title:
+                if (
+                    "Disciplinas" in title
+                    and "Optativas" in title
+                    and "Livres" in title
+                ):
                     current_section = "free"
                     continue
 
-                if "Disciplinas" in title and "Optativas" in title and "Eletivas" in title:
+                if (
+                    "Disciplinas" in title
+                    and "Optativas" in title
+                    and "Eletivas" in title
+                ):
                     current_section = "elective"
                     continue
 
@@ -215,7 +223,9 @@ class JupiterCurriculumCrawler:
             elif current_section == "elective":
                 elective.append(subj)
 
-        def unique_list(items: list[CurriculumSubjectInfo]) -> list[CurriculumSubjectInfo]:
+        def unique_list(
+            items: list[CurriculumSubjectInfo],
+        ) -> list[CurriculumSubjectInfo]:
             unique = {}
             for s in items:
                 unique[s.subject_code] = s

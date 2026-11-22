@@ -181,8 +181,12 @@ class TestHasScheduleDiff:
             end_date=date(2025, 1, 31),
         )
         schedule.occurrences = [
-            Occurrence(date=date(2025, 1, 3), start_time=time(8, 0), end_time=time(9, 0)),
-            Occurrence(date=date(2025, 1, 10), start_time=time(8, 0), end_time=time(9, 0)),
+            Occurrence(
+                date=date(2025, 1, 3), start_time=time(8, 0), end_time=time(9, 0)
+            ),
+            Occurrence(
+                date=date(2025, 1, 10), start_time=time(8, 0), end_time=time(9, 0)
+            ),
         ]
         schedule_input = make_schedule_update(
             recurrence=Recurrence.CUSTOM,
@@ -197,7 +201,9 @@ class TestHasScheduleDiff:
             end_date=date(2025, 1, 31),
         )
         schedule.occurrences = [
-            Occurrence(date=date(2025, 1, 3), start_time=time(8, 0), end_time=time(9, 0)),
+            Occurrence(
+                date=date(2025, 1, 3), start_time=time(8, 0), end_time=time(9, 0)
+            ),
         ]
         schedule_input = make_schedule_update(
             recurrence=Recurrence.CUSTOM,
@@ -212,7 +218,9 @@ class TestHasScheduleDiff:
             end_date=date(2025, 1, 31),
         )
         schedule.occurrences = [
-            Occurrence(date=date(2025, 1, 3), start_time=time(8, 0), end_time=time(9, 0)),
+            Occurrence(
+                date=date(2025, 1, 3), start_time=time(8, 0), end_time=time(9, 0)
+            ),
         ]
         schedule_input = make_schedule_update(
             recurrence=Recurrence.CUSTOM,

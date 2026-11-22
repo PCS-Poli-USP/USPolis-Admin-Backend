@@ -56,9 +56,7 @@ def get_api_access_log_summary(
     return ApiAccessLogSummaryResponse(
         since_days=days,
         total_errors=sum(c for _, c in counts),
-        by_status_code=[
-            StatusCodeCount(status_code=sc, count=c) for sc, c in counts
-        ],
+        by_status_code=[StatusCodeCount(status_code=sc, count=c) for sc, c in counts],
     )
 
 

@@ -205,9 +205,7 @@ class TestGetAllAllocatedBySubjects:
 
 
 class TestGetById:
-    def test_returns_the_matching_class(
-        self, class_: Class, session: Session
-    ) -> None:
+    def test_returns_the_matching_class(self, class_: Class, session: Session) -> None:
         found = ClassRepository.get_by_id(id=must_be_int(class_.id), session=session)
 
         assert found.id == class_.id
@@ -304,9 +302,12 @@ class TestGetBySubjectCodesAndClassCodes:
         assert [c.id for c in found] == [class_.id]
 
     def test_returns_empty_for_an_empty_list_of_pairs(self, session: Session) -> None:
-        assert ClassRepository.get_by_subject_codes_and_class_codes(
-            pairs=[], session=session
-        ) == []
+        assert (
+            ClassRepository.get_by_subject_codes_and_class_codes(
+                pairs=[], session=session
+            )
+            == []
+        )
 
 
 class TestGetComming:

@@ -32,11 +32,15 @@ class ExamPermissionChecker(PermissionChecker[Exam]):
         elif isinstance(object, list):
             self.__exam_list_permission_checker(object, action)
 
-    def __exam_id_permission_checker(self, exam_id: int, action: ClassroomAction) -> None:
+    def __exam_id_permission_checker(
+        self, exam_id: int, action: ClassroomAction
+    ) -> None:
         exam = ExamRepository.get_by_id(id=exam_id, session=self.session)
         self.reservation_checker.check_permission(exam.reservation, action)
 
-    def __exam_obj_permission_checker(self, exam: Exam, action: ClassroomAction) -> None:
+    def __exam_obj_permission_checker(
+        self, exam: Exam, action: ClassroomAction
+    ) -> None:
         self.reservation_checker.check_permission(exam.reservation, action)
 
     def __exam_list_permission_checker(

@@ -19,11 +19,12 @@ from server.routes.public.allocation_routes import router as AllocationRouter
 from server.routes.public.auth_routes import router as AuthRouter
 from server.routes.public.course_routes import router as CourseRouter
 from server.routes.public.curriculum_routes import router as CurriculumRouter
-from server.routes.public.curriculum_subject_routes import router as CurriculumSubjectRouter
+from server.routes.public.curriculum_subject_routes import (
+    router as CurriculumSubjectRouter,
+)
 from server.routes.public.static_routes import router as StaticRouter
 from server.routes.public.api_key_link_routes import router as ApiKeyLinkRouter
 from server.routes.public.search_routes import router as SearchRouter
-
 
 
 router = APIRouter(tags=["Public"], dependencies=[Depends(public_authenticate)])

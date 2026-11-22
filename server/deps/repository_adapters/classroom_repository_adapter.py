@@ -78,9 +78,7 @@ class ClassroomRepositoryAdapter:
         classroom = ClassroomRepository.get_by_name_and_building(
             name, building, self.session
         )
-        self.classroom_checker.check_permission(
-            classroom, action=ClassroomAction.READ
-        )
+        self.classroom_checker.check_permission(classroom, action=ClassroomAction.READ)
         return classroom
 
     def __update_groups_classrooms(

@@ -35,14 +35,14 @@ class BuildingPermissionModelFactory(BaseModelFactory[BuildingPermission]):
             "granted_by_id": must_be_int(self.granted_by.id),
         }
 
-    def create(
+    def create(  # type: ignore[override]
         self, **overrides: Unpack[BuildingPermissionModelDict]
-    ) -> BuildingPermission:  # type: ignore
+    ) -> BuildingPermission:
         """Create a building permission instance with default values."""
         return super().create(**overrides)
 
-    def create_and_refresh(
+    def create_and_refresh(  # type: ignore[override]
         self, **overrides: Unpack[BuildingPermissionModelDict]
-    ) -> BuildingPermission:  # type: ignore
+    ) -> BuildingPermission:
         """Create a building permission instance with default values, commit and refresh it."""
         return super().create_and_refresh(**overrides)

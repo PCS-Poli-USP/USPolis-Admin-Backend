@@ -33,7 +33,10 @@ def _create_reservation(
         reservation_type=ReservationType.MEETING, classroom=classroom
     ).create_input()
     reservation = ReservationRepository.create(
-        creator=admin_user, input=input, classroom=classroom, session=session,
+        creator=admin_user,
+        input=input,
+        classroom=classroom,
+        session=session,
         allocate=allocate,
     )
     session.commit()
@@ -361,14 +364,20 @@ class TestDelete:
         )
         reservation_id = must_be_int(reservation.id)
 
-        ReservationRepository.delete(id=reservation_id, user=admin_user, session=session)
+        ReservationRepository.delete(
+            id=reservation_id, user=admin_user, session=session
+        )
         session.commit()
 
         with pytest.raises(ReservationNotFound):
             ReservationRepository.get_by_id(id=reservation_id, session=session)
 
     def test_soft_deletes_a_reservation_with_a_solicitation(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         reservation = _create_reservation(
             admin_user=admin_user, classroom=classroom, session=session
@@ -386,7 +395,9 @@ class TestDelete:
         session.commit()
         reservation_id = must_be_int(reservation.id)
 
-        ReservationRepository.delete(id=reservation_id, user=admin_user, session=session)
+        ReservationRepository.delete(
+            id=reservation_id, user=admin_user, session=session
+        )
         session.commit()
 
         still_there = ReservationRepository.get_by_id(
@@ -397,7 +408,11 @@ class TestDelete:
         assert still_there.solicitation.deleted_by == admin_user.name
 
     def test_raises_when_the_solicitation_is_already_deleted(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         reservation = _create_reservation(
             admin_user=admin_user, classroom=classroom, session=session

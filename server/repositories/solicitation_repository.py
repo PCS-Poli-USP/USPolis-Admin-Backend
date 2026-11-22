@@ -174,7 +174,7 @@ class SolicitationRepository:
         )  # pyright: ignore[reportCallIssue]
         session.add(solicitation)
         return solicitation
-    
+
     @staticmethod
     def update(
         id: int,
@@ -193,9 +193,7 @@ class SolicitationRepository:
             )
 
         if solicitation.get_status() != ReservationStatus.PENDING:
-            raise SolicitationAlreadyClosed(
-                "A solicitação não pode mais ser editada."
-            )
+            raise SolicitationAlreadyClosed("A solicitação não pode mais ser editada.")
 
         building = BuildingRepository.get_by_id(
             id=input.building_id,

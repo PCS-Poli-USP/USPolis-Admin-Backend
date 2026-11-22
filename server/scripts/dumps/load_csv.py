@@ -32,8 +32,9 @@ engine = create_engine(f"{CONFIG.db_uri}/{CONFIG.db_database}")
 
 def load_user_csv_to_db(csv_file: str) -> None:
     try:
-        with open(csv_file, encoding="utf-8") as file:
-            reader = csv.DictReader(file)
+        # Importação de usuários ainda não implementada: só valida o arquivo.
+        with open(csv_file, encoding="utf-8"):
+            pass
 
     except Exception as e:
         print(f"Erro ao carregar os dados do CSV (Usuários): {e}")
@@ -51,8 +52,8 @@ def load_building_csv_to_db(csv_file: str) -> None:
                     total += 1
                     building = building_db_model.Building(
                         name=row["name"],
-                        created_by_id=row["created_by_id"],  # type: ignore
-                        updated_at=row["updated_at"],  # type: ignore
+                        created_by_id=row["created_by_id"],
+                        updated_at=row["updated_at"],
                     )
                     try:
                         session.add(building)
@@ -79,20 +80,20 @@ def load_classroom_csv_to_db(csv_file: str) -> None:
                 for row in reader:
                     total += 1
                     classroom = classroom_db_model.Classroom(
-                        name=row["name"],  # type: ignore
-                        capacity=row["capacity"],  # type: ignore
-                        floor=row["floor"],  # type: ignore
+                        name=row["name"],
+                        capacity=row["capacity"],
+                        floor=row["floor"],
                         ignore_to_allocate=True
                         if row["ignore_to_allocate"] == "t"
-                        else False,  # type: ignore
-                        accessibility=True if row["accessibility"] == "t" else False,  # type: ignore
-                        projector=True if row["projector"] == "t" else False,  # type: ignore
+                        else False,
+                        accessibility=True if row["accessibility"] == "t" else False,
+                        projector=True if row["projector"] == "t" else False,
                         air_conditioning=True
                         if row["air_conditioning"] == "t"
-                        else False,  # type: ignore
-                        updated_at=row["updated_at"],  # type: ignore
-                        created_by_id=row["created_by_id"],  # type: ignore
-                        building_id=row["building_id"],  # type: ignore
+                        else False,
+                        updated_at=row["updated_at"],
+                        created_by_id=row["created_by_id"],
+                        building_id=row["building_id"],
                     )
                     try:
                         session.add(classroom)

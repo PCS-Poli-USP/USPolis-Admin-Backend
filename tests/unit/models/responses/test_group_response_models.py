@@ -1,5 +1,10 @@
 from server.models.http.responses.group_response_models import GroupResponse
-from tests.utils.academic_test_utils import make_building, make_classroom, make_group, make_user
+from tests.utils.academic_test_utils import (
+    make_building,
+    make_classroom,
+    make_group,
+    make_user,
+)
 
 
 class TestGroupResponse:

@@ -1,7 +1,10 @@
 from server.models.http.responses.user_schedule_response import UserScheduleResponse
 from tests.utils.academic_test_utils import make_user
 from tests.utils.time_test_utils import make_schedule
-from tests.utils.user_schedule_test_utils import make_user_schedule, make_user_schedule_entry
+from tests.utils.user_schedule_test_utils import (
+    make_user_schedule,
+    make_user_schedule_entry,
+)
 
 
 class TestUserScheduleResponse:

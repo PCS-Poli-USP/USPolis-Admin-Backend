@@ -5,7 +5,11 @@ from server.models.database.building_permission_db_model import BuildingPermissi
 from server.models.database.classroom_permission_db_model import ClassroomPermission
 from server.models.database.course_permission_db_model import CoursePermission
 from server.models.database.user_db_model import User
-from server.utils.enums.actions_enums import BaseAction, ClassroomAction, PermissionAction
+from server.utils.enums.actions_enums import (
+    BaseAction,
+    ClassroomAction,
+    PermissionAction,
+)
 from server.utils.enums.resources_enums import Resource
 from server.utils.permissions_types import Permission
 
@@ -64,10 +68,16 @@ class PermissionIndex:
         key = (resource, action)
         if resource_id is not None and resource_id in self._exact.get(key, _EMPTY_IDS):
             return True
-        return key in self._wildcard and action not in GLOBAL_WILDCARD_ADMIN_ONLY_ACTIONS
+        return (
+            key in self._wildcard and action not in GLOBAL_WILDCARD_ADMIN_ONLY_ACTIONS
+        )
 
     def has_classroom_permission(
-        self, *, action: ClassroomAction, classroom_id: int | None, building_id: int | None
+        self,
+        *,
+        action: ClassroomAction,
+        classroom_id: int | None,
+        building_id: int | None,
     ) -> bool:
         """Whether this user can perform `action` on a classroom, either through a
         direct ClassroomPermission or a cascading BuildingPermission for its building."""

@@ -93,7 +93,10 @@ def test_get_classroom_full_with_admin_user(
     session: Session,
 ) -> None:
     OccurrenceRepository.allocate_schedule(
-        user=admin_user, classroom=classroom, schedule=class_.schedules[0], session=session
+        user=admin_user,
+        classroom=classroom,
+        schedule=class_.schedules[0],
+        session=session,
     )
     response = client.get(f"{URL_PREFIX}/full/{classroom.id}")
     assert response.status_code == status.HTTP_200_OK
@@ -195,9 +198,9 @@ def test_create_classroom_with_group_in_other_building(
     session: Session,
     restricted_client: TestClient,
 ) -> None:
-    building_B = BuildingModelFactory(creator=admin_user, session=session).create_and_refresh(
-        users=[restricted_user]
-    )
+    building_B = BuildingModelFactory(
+        creator=admin_user, session=session
+    ).create_and_refresh(users=[restricted_user])
     outsider_group = GroupModelFactory(
         building=building_B, session=session
     ).create_and_refresh(users=[restricted_user])
@@ -216,9 +219,9 @@ def test_create_classroom_with_user_in_other_building(
     session: Session,
     restricted_client: TestClient,
 ) -> None:
-    building_B = BuildingModelFactory(creator=admin_user, session=session).create_and_refresh(
-        users=[restricted_user]
-    )
+    building_B = BuildingModelFactory(
+        creator=admin_user, session=session
+    ).create_and_refresh(users=[restricted_user])
     restricted_user.buildings = [building_B]
     session.add(restricted_user)
     session.commit()
@@ -338,9 +341,9 @@ def test_update_classroom_with_user_in_other_building(
     session: Session,
     restricted_client: TestClient,
 ) -> None:
-    building_B = BuildingModelFactory(creator=admin_user, session=session).create_and_refresh(
-        users=[restricted_user]
-    )
+    building_B = BuildingModelFactory(
+        creator=admin_user, session=session
+    ).create_and_refresh(users=[restricted_user])
     restricted_user.buildings = [building_B]
     group.users = []
     session.add_all([group, restricted_user])

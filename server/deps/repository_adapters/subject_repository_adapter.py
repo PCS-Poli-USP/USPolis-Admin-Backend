@@ -57,7 +57,9 @@ class SubjectRepositoryAdapter:
         return subject
 
     def create(self, input: SubjectRegister) -> Subject:
-        self.building_checker.check_permission(input.building_ids, BuildingAction.CREATE)
+        self.building_checker.check_permission(
+            input.building_ids, BuildingAction.CREATE
+        )
         subject = SubjectRepository.create(input=input, session=self.session)
 
         try:

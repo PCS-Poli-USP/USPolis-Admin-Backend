@@ -28,7 +28,9 @@ class CalendarRequestFactory(BaseRequestFactory):
     def get_default_update(self) -> CalendarUpdateDict:
         return self.get_default_create()
 
-    def create_input(self, **overrides: Unpack[CalendarRegisterDict]) -> CalendarRegister:
+    def create_input(
+        self, **overrides: Unpack[CalendarRegisterDict]
+    ) -> CalendarRegister:
         default = self.get_default_create()
         self.override_default_dict(default, overrides)  # type: ignore
         return CalendarRegister(**default)

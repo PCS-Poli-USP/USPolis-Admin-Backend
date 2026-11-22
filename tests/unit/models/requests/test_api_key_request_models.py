@@ -56,12 +56,13 @@ class TestApiKeyRegister:
 
     def test_origins_are_rejected_since_browser_keys_are_gone(self) -> None:
         with pytest.raises(ValidationError, match="navegador"):
+            # The field no longer exists: that is what is being tested.
             ApiKeyRequestFactory().create_input(
-                allowed_origins=["https://gremio.poli.usp.br"]
+                allowed_origins=["https://gremio.poli.usp.br"]  # type: ignore[call-arg]
             )
 
     def test_empty_origins_from_older_clients_are_ignored(self) -> None:
-        payload = ApiKeyRequestFactory().create_input(allowed_origins=[])
+        payload = ApiKeyRequestFactory().create_input(allowed_origins=[])  # type: ignore[call-arg]
 
         assert not hasattr(payload, "allowed_origins")
 

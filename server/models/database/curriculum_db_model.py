@@ -14,7 +14,9 @@ if TYPE_CHECKING:
 class Curriculum(BaseModel, table=True):
     __table_args__ = (
         UniqueConstraint("codcur", "codhab", name="uq_curriculum_codcur_codhab"),
-        UniqueConstraint("course_id", "description", name="uq_curriculum_course_description"),
+        UniqueConstraint(
+            "course_id", "description", name="uq_curriculum_course_description"
+        ),
     )
     course_id: int = Field(foreign_key="course.id")
     codcur: int = Field()
@@ -29,7 +31,8 @@ class Curriculum(BaseModel, table=True):
     course: "Course" = Relationship(back_populates="curriculums")
     subjects: list["CurriculumSubject"] = Relationship(
         back_populates="curriculum", sa_relationship_kwargs={"cascade": "all, delete"}
-        )
+    )
     users: list["User"] = Relationship(
-        back_populates="curriculum", sa_relationship_kwargs={"foreign_keys": "[User.curriculum_id]"}
-        )
+        back_populates="curriculum",
+        sa_relationship_kwargs={"foreign_keys": "[User.curriculum_id]"},
+    )

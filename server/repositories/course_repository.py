@@ -11,8 +11,8 @@ from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.must_be_int import must_be_int
 from sqlalchemy import func
 
-class CourseRepository:
 
+class CourseRepository:
     @staticmethod
     def create(
         input: CourseRegister,
@@ -37,9 +37,7 @@ class CourseRepository:
         name: str,
         session: Session,
     ) -> Course | None:
-        statement = select(Course).where(
-            func.lower(Course.name) == name.lower()
-        )
+        statement = select(Course).where(func.lower(Course.name) == name.lower())
 
         return session.exec(statement).first()
 
@@ -48,12 +46,10 @@ class CourseRepository:
         statement = select(Course).where(Course.id == id)
         return session.exec(statement).first()
 
-
     @staticmethod
     def get_all(session: Session) -> list[Course]:
         statement = select(Course)
         return list(session.exec(statement).all())
-
 
     @staticmethod
     def update(
@@ -62,7 +58,6 @@ class CourseRepository:
         user: User,
         session: Session,
     ) -> Course:
-
         course = CourseRepository.get_by_id(id=id, session=session)
 
         if not course:
@@ -80,10 +75,8 @@ class CourseRepository:
         session.flush()
         return course
 
-
     @staticmethod
     def delete(id: int, session: Session) -> None:
-
         course = CourseRepository.get_by_id(id=id, session=session)
 
         if not course:

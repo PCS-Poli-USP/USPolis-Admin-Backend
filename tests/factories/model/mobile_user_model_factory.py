@@ -30,6 +30,8 @@ class MobileUserModelFactory(BaseModelFactory[MobileUser]):
         """Create a mobile user instance with default values, commit and refresh it."""
         return super().create_and_refresh(**overrides)
 
-    def update(self, mobile_user_id: int, **overrides: Unpack[MobileUserModelDict]) -> MobileUser:  # type: ignore
+    def update(  # type: ignore[override]
+        self, mobile_user_id: int, **overrides: Unpack[MobileUserModelDict]
+    ) -> MobileUser:
         """Update a mobile user instance with default values."""
         return super().update(model_id=mobile_user_id, **overrides)

@@ -58,7 +58,10 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
-        op.f("ix_apiaccesslog_status_code"), "apiaccesslog", ["status_code"], unique=False
+        op.f("ix_apiaccesslog_status_code"),
+        "apiaccesslog",
+        ["status_code"],
+        unique=False,
     )
     op.create_index(
         op.f("ix_apiaccesslog_timestamp"), "apiaccesslog", ["timestamp"], unique=False
@@ -73,9 +76,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "status",
-            sa.Enum(
-                "OPEN", "INVESTIGATING", "RESOLVED", name="incidentreportstatus"
-            ),
+            sa.Enum("OPEN", "INVESTIGATING", "RESOLVED", name="incidentreportstatus"),
             nullable=False,
         ),
         sa.Column("description", sa.Text(), nullable=False),
@@ -86,7 +87,10 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
-        op.f("ix_apiincidentreport_status"), "apiincidentreport", ["status"], unique=False
+        op.f("ix_apiincidentreport_status"),
+        "apiincidentreport",
+        ["status"],
+        unique=False,
     )
     # ### end Alembic commands ###
 

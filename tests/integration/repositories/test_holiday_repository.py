@@ -22,9 +22,7 @@ from tests.factories.request.holiday_request_factory import HolidayRequestFactor
 
 class TestGetAll:
     def test_returns_every_holiday(self, admin_user: User, session: Session) -> None:
-        category = HolidayCategoryModelFactory(
-            admin_user, session
-        ).create_and_refresh()
+        category = HolidayCategoryModelFactory(admin_user, session).create_and_refresh()
         holiday = HolidayModelFactory(
             admin_user, category, session
         ).create_and_refresh()
@@ -38,9 +36,7 @@ class TestGetById:
     def test_returns_the_matching_holiday(
         self, admin_user: User, session: Session
     ) -> None:
-        category = HolidayCategoryModelFactory(
-            admin_user, session
-        ).create_and_refresh()
+        category = HolidayCategoryModelFactory(admin_user, session).create_and_refresh()
         holiday = HolidayModelFactory(
             admin_user, category, session
         ).create_and_refresh()
@@ -58,9 +54,7 @@ class TestCheckDateIsValid:
     def test_returns_true_when_no_holiday_exists_on_the_date(
         self, admin_user: User, session: Session
     ) -> None:
-        category = HolidayCategoryModelFactory(
-            admin_user, session
-        ).create_and_refresh()
+        category = HolidayCategoryModelFactory(admin_user, session).create_and_refresh()
 
         is_valid = HolidayRepository.check_date_is_valid(
             category_id=must_be_int(category.id),
@@ -73,9 +67,7 @@ class TestCheckDateIsValid:
     def test_returns_false_when_a_holiday_already_exists_on_the_date(
         self, admin_user: User, session: Session
     ) -> None:
-        category = HolidayCategoryModelFactory(
-            admin_user, session
-        ).create_and_refresh()
+        category = HolidayCategoryModelFactory(admin_user, session).create_and_refresh()
         date = BrazilDatetime.now_utc()
         HolidayModelFactory(admin_user, category, session).create_and_refresh(date=date)
 
@@ -88,9 +80,7 @@ class TestCheckDateIsValid:
 
 class TestCreate:
     def test_creates_a_holiday(self, admin_user: User, session: Session) -> None:
-        category = HolidayCategoryModelFactory(
-            admin_user, session
-        ).create_and_refresh()
+        category = HolidayCategoryModelFactory(admin_user, session).create_and_refresh()
         input = HolidayRequestFactory(category=category).create_input()
 
         holiday = HolidayRepository.create(
@@ -117,9 +107,7 @@ class TestCreate:
     def test_denies_a_non_owner_non_admin(
         self, admin_user: User, common_user: User, session: Session
     ) -> None:
-        category = HolidayCategoryModelFactory(
-            admin_user, session
-        ).create_and_refresh()
+        category = HolidayCategoryModelFactory(admin_user, session).create_and_refresh()
         input = HolidayRequestFactory(category=category).create_input()
 
         with pytest.raises(HolidayOperationNotAllowed):
@@ -128,9 +116,7 @@ class TestCreate:
     def test_raises_on_duplicate_date_in_the_same_category(
         self, admin_user: User, session: Session
     ) -> None:
-        category = HolidayCategoryModelFactory(
-            admin_user, session
-        ).create_and_refresh()
+        category = HolidayCategoryModelFactory(admin_user, session).create_and_refresh()
         existing = HolidayModelFactory(
             admin_user, category, session
         ).create_and_refresh()
@@ -146,9 +132,7 @@ class TestCreateMany:
     def test_creates_a_holiday_for_every_date(
         self, admin_user: User, session: Session
     ) -> None:
-        category = HolidayCategoryModelFactory(
-            admin_user, session
-        ).create_and_refresh()
+        category = HolidayCategoryModelFactory(admin_user, session).create_and_refresh()
         input = HolidayRequestFactory(category=category).create_many_input()
 
         holidays = HolidayRepository.create_many(
@@ -197,9 +181,7 @@ class TestUpdate:
     def test_denies_a_non_owner_non_admin(
         self, admin_user: User, common_user: User, session: Session
     ) -> None:
-        category = HolidayCategoryModelFactory(
-            admin_user, session
-        ).create_and_refresh()
+        category = HolidayCategoryModelFactory(admin_user, session).create_and_refresh()
         holiday = HolidayModelFactory(
             admin_user, category, session
         ).create_and_refresh()
@@ -248,9 +230,7 @@ class TestDelete:
     def test_denies_a_non_owner_non_admin(
         self, admin_user: User, common_user: User, session: Session
     ) -> None:
-        category = HolidayCategoryModelFactory(
-            admin_user, session
-        ).create_and_refresh()
+        category = HolidayCategoryModelFactory(admin_user, session).create_and_refresh()
         holiday = HolidayModelFactory(
             admin_user, category, session
         ).create_and_refresh()

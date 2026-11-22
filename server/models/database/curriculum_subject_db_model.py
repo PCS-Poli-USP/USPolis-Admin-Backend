@@ -3,7 +3,9 @@ from typing import TYPE_CHECKING
 from sqlmodel import Field, Enum, Relationship
 from server.models.database.base_db_model import BaseModel
 from sqlalchemy import UniqueConstraint, Column, Enum as SqlEnum
-from server.utils.enums.curriculum_subject_category_enum import CurriculumSubjectCategory
+from server.utils.enums.curriculum_subject_category_enum import (
+    CurriculumSubjectCategory,
+)
 from server.utils.enums.curriculum_subject_type_enum import CurriculumSubjectType
 
 if TYPE_CHECKING:

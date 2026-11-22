@@ -147,6 +147,7 @@ def get_my_solicitaions(
     solicitations = SolicitationRepository.get_by_user(user, session)
     return SolicitationResponse.from_solicitation_list(solicitations)
 
+
 @router.get("/my-course")
 def get_my_course(
     session: SessionDep,
@@ -155,20 +156,15 @@ def get_my_course(
     """Get course for authenticated user if they have one defined"""
 
     if user.curriculum is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Usuário não possui curso definido"
-        )
-    
+        raise HTTPException(status_code=404, detail="Usuário não possui curso definido")
+
     course = user.curriculum.course
 
     if course is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Curso não encontrado"
-        )
-    
+        raise HTTPException(status_code=404, detail="Curso não encontrado")
+
     return CourseResponse.from_course(course)
+
 
 @router.get("/my-curriculum")
 def get_my_curriculum(
@@ -179,11 +175,11 @@ def get_my_curriculum(
 
     if user.curriculum is None:
         raise HTTPException(
-            status_code=404,
-            detail="Usuário não possui currículo definido"
+            status_code=404, detail="Usuário não possui currículo definido"
         )
 
     return CurriculumResponse.from_curriculum(user.curriculum)
+
 
 @router.post("/my-curriculum")
 def set_my_curriculum(
@@ -193,15 +189,15 @@ def set_my_curriculum(
 ) -> JSONResponse:
     """Define curriculum for authenticated user"""
 
-    UserRepository.update_curriculum(user=user, curriculum_id=curriculum_id, session=session)
+    UserRepository.update_curriculum(
+        user=user, curriculum_id=curriculum_id, session=session
+    )
     session.commit()
 
     return JSONResponse(
-        status_code=200,
-        content={
-            "message": "Currículo definido com sucesso"
-        }
+        status_code=200, content={"message": "Currículo definido com sucesso"}
     )
+
 
 @router.get("/my-schedule")
 def get_my_schedule(

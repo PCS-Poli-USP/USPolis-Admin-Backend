@@ -121,7 +121,12 @@ def update_permission(
 ) -> JSONResponse:
     repository = PERMISSION_REPOSITORY_MAP[input.resource]
     permission = repository.get_by_id(id=permission_id, session=session)
-    permission = repository.update(permission=permission, input=input, user=user, session=session)  # type: ignore
+    permission = repository.update(
+        permission=permission,  # type: ignore[arg-type]
+        input=input,
+        user=user,
+        session=session,
+    )
     session.commit()
     session.refresh(permission)
     return JSONResponse(

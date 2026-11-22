@@ -169,9 +169,7 @@ def test_reservation_checker_list_denies_when_any_reservation_disallowed(
         permission_index=build_permission_index(common_user),
     )
     with pytest.raises(ForbiddenClassroomAccess):
-        checker.check_permission(
-            [reservation_a, reservation_b], ClassroomAction.READ
-        )
+        checker.check_permission([reservation_a, reservation_b], ClassroomAction.READ)
 
 
 def _create_reservation_without_classroom(

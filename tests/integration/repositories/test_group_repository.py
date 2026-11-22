@@ -72,9 +72,7 @@ class TestGetByUserId:
 
         assert [g.id for g in found] == [group.id]
 
-    def test_returns_empty_for_a_user_with_no_groups(
-        self, session: Session
-    ) -> None:
+    def test_returns_empty_for_a_user_with_no_groups(self, session: Session) -> None:
         user = UserModelFactory(session=session).create_and_refresh()
 
         found = GroupRepository.get_by_user_id(

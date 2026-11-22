@@ -2,7 +2,11 @@ from server.models.http.responses.mobile_schedule_response_models import (
     MobileScheduleResponse,
 )
 from server.utils.enums.week_day import WeekDay
-from tests.utils.academic_test_utils import make_building, make_classroom, make_occurrence
+from tests.utils.academic_test_utils import (
+    make_building,
+    make_classroom,
+    make_occurrence,
+)
 from tests.utils.time_test_utils import make_schedule
 
 
@@ -54,7 +58,7 @@ class TestGetOccurencesIds:
         # object.__setattr__, since the descriptor's __set__ still runs -
         # write straight into the instance dict to bypass that validation
         # and exercise this defensive branch at all.
-        schedule.__dict__["occurrences"] = None # type: ignore
+        schedule.__dict__["occurrences"] = None
 
         ids = MobileScheduleResponse.get_occurences_ids(schedule)
 

@@ -177,12 +177,12 @@ def upgrade() -> None:
     # creates these same two indexes, so a straight create would collide once
     # both branches are merged into one history.
     op.execute(
-        'CREATE INDEX IF NOT EXISTS ix_userabsence_schedule_id '
-        'ON userabsence (schedule_id)'
+        "CREATE INDEX IF NOT EXISTS ix_userabsence_schedule_id "
+        "ON userabsence (schedule_id)"
     )
     op.execute(
-        'CREATE INDEX IF NOT EXISTS ix_userabsence_user_schedule_id '
-        'ON userabsence (user_schedule_id)'
+        "CREATE INDEX IF NOT EXISTS ix_userabsence_user_schedule_id "
+        "ON userabsence (user_schedule_id)"
     )
     # ### end Alembic commands ###
 

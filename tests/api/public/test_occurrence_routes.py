@@ -31,9 +31,7 @@ class TestGetAllOccurrences:
 
 
 class TestGetScheduleResponse:
-    def test_returns_the_schedule(
-        self, client: TestClient, class_: Class
-    ) -> None:
+    def test_returns_the_schedule(self, client: TestClient, class_: Class) -> None:
         schedule = class_.schedules[0]
 
         response = client.get(f"{URL_PREFIX}/schedule/{schedule.id}")

@@ -8,6 +8,7 @@ embed = Body(..., embed=True)
 
 router = APIRouter(prefix="/curriculums", tags=["Curriculums"])
 
+
 @router.get("")
 async def get_all_curriculums(session: SessionDep) -> list[CurriculumResponse]:
     """Get all curriculums"""

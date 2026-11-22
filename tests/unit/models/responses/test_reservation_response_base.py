@@ -66,7 +66,9 @@ class TestEventResponseBase:
     def test_from_event(self) -> None:
         schedule = make_schedule()
         reservation = make_reservation(schedule=schedule, type_=ReservationType.EVENT)
-        event = make_event(reservation=reservation, link="https://x.com", type_=EventType.TALK)
+        event = make_event(
+            reservation=reservation, link="https://x.com", type_=EventType.TALK
+        )
 
         data = EventResponseBase.from_event(event)
 
@@ -113,7 +115,9 @@ class TestReservationResponseBase:
         assert data.requester is None
         assert data.solicitation_id is None
 
-    def test_from_reservation_without_classroom_falls_back_to_solicitation(self) -> None:
+    def test_from_reservation_without_classroom_falls_back_to_solicitation(
+        self,
+    ) -> None:
         building = make_building(name="Bloco B")
         user = make_user()
         solicitation = make_solicitation(building=building, user=user)

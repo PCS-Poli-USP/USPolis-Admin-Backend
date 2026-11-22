@@ -52,7 +52,9 @@ def test_permission_repository_get_all_by_role_id(
         actions=[BuildingAction.CREATE],
         role_id=must_be_int(role.id),
     )
-    BuildingPermissionRepository.create(input=permission_input, user=admin_user, session=session)
+    BuildingPermissionRepository.create(
+        input=permission_input, user=admin_user, session=session
+    )
     session.commit()
 
     permissions = BuildingPermissionRepository.get_all_by_role_id(
@@ -102,7 +104,9 @@ def test_permission_repository_update_changes_actions_and_role(
     assert set(updated.actions) == {BuildingAction.CREATE, BuildingAction.DELETE}
 
 
-def test_permission_repository_delete(admin_user: User, role: Role, session: Session) -> None:
+def test_permission_repository_delete(
+    admin_user: User, role: Role, session: Session
+) -> None:
     permission = BuildingPermissionRepository.create(
         input=PermissionRegister(
             resource=Resource.BUILDING,

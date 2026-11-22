@@ -21,7 +21,9 @@ from tests.factories.request.user_request_factory import UserRequestFactory
 def test_get_by_id_returns_the_matching_user(
     admin_user: User, session: Session
 ) -> None:
-    found = UserRepository.get_by_id(user_id=must_be_int(admin_user.id), session=session)
+    found = UserRepository.get_by_id(
+        user_id=must_be_int(admin_user.id), session=session
+    )
 
     assert found.id == admin_user.id
     assert found.email == admin_user.email

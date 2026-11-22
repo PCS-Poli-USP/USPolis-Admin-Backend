@@ -48,7 +48,9 @@ class TestCreate:
 
         with pytest.raises(IntentionalConflictSameOccurrence):
             IntentionalConflictRepository.create(
-                first_occurrence=occurrence, second_occurrence=occurrence, session=session
+                first_occurrence=occurrence,
+                second_occurrence=occurrence,
+                session=session,
             )
 
     def test_raises_when_an_occurrence_has_no_classroom(

@@ -1,7 +1,10 @@
 from pydantic import BaseModel
 
-from server.utils.enums.curriculum_subject_category_enum import CurriculumSubjectCategory
+from server.utils.enums.curriculum_subject_category_enum import (
+    CurriculumSubjectCategory,
+)
 from server.utils.enums.curriculum_subject_type_enum import CurriculumSubjectType
+
 
 class CurriculumSubjectRegister(BaseModel):
     curriculum_id: int
@@ -9,6 +12,7 @@ class CurriculumSubjectRegister(BaseModel):
     type: CurriculumSubjectType
     category: CurriculumSubjectCategory
     period: int
+
 
 class CurriculumSubjectUpdate(BaseModel):
     curriculum_id: int

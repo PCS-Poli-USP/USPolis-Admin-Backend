@@ -78,7 +78,9 @@ class TestScheduleResponseBase:
 class TestScheduleResponse:
     def test_custom_recurrence_includes_occurrences(self) -> None:
         schedule = make_schedule(recurrence=Recurrence.CUSTOM)
-        occurrence = make_occurrence(schedule=schedule, occurrence_date=date(2025, 1, 6))
+        occurrence = make_occurrence(
+            schedule=schedule, occurrence_date=date(2025, 1, 6)
+        )
         schedule.occurrences = [occurrence]
         schedule.logs = []
 
@@ -90,7 +92,9 @@ class TestScheduleResponse:
 
     def test_raises_when_an_occurrence_has_no_id(self) -> None:
         schedule = make_schedule(recurrence=Recurrence.CUSTOM)
-        occurrence = make_occurrence(schedule=schedule, occurrence_date=date(2025, 1, 6))
+        occurrence = make_occurrence(
+            schedule=schedule, occurrence_date=date(2025, 1, 6)
+        )
         occurrence.id = None
         schedule.occurrences = [occurrence]
         schedule.logs = []

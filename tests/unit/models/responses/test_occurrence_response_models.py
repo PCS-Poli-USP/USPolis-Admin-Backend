@@ -1,7 +1,11 @@
 from datetime import date
 
 from server.models.http.responses.occurrence_response_models import OccurrenceResponse
-from tests.utils.academic_test_utils import make_building, make_classroom, make_occurrence
+from tests.utils.academic_test_utils import (
+    make_building,
+    make_classroom,
+    make_occurrence,
+)
 from tests.utils.time_test_utils import make_schedule
 
 
@@ -36,8 +40,12 @@ class TestOccurrenceResponse:
 
     def test_from_occurrence_list(self) -> None:
         schedule = make_schedule()
-        occurrence1 = make_occurrence(schedule=schedule, occurrence_date=date(2025, 1, 6))
-        occurrence2 = make_occurrence(schedule=schedule, occurrence_date=date(2025, 1, 13))
+        occurrence1 = make_occurrence(
+            schedule=schedule, occurrence_date=date(2025, 1, 6)
+        )
+        occurrence2 = make_occurrence(
+            schedule=schedule, occurrence_date=date(2025, 1, 13)
+        )
 
         data = OccurrenceResponse.from_occurrence_list([occurrence1, occurrence2])
 

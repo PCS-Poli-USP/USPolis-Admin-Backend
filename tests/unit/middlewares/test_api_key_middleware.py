@@ -172,7 +172,7 @@ class TestInvalidKey:
 
         app.add_middleware(
             ApiKeyMiddleware,
-            authenticator=ApiKeyAuthenticator({}.get, None),
+            authenticator=ApiKeyAuthenticator(lambda public_id: None, None),
             redis=FakeAsyncRedis(server=server),
         )
         client = TestClient(app)

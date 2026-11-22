@@ -49,8 +49,6 @@ from tests.factories.model.role_model_factory import RoleModelFactory
 from tests.factories.model.subject_model_factory import SubjectModelFactory
 from tests.factories.model.user_model_factory import UserModelFactory
 
-from tests.factories.base.base_factory import shared_faker
-
 CONFIG.testing = True
 # Fixed so API key hashes don't depend on whoever runs the suite.
 CONFIG.api_key_secret = "test-only-api-key-secret-0123456789abcdef"
@@ -302,7 +300,9 @@ def class_fixture(subject: Subject, session: Session) -> Class:
 
 
 @pytest.fixture(name="meeting")
-def meeting_fixture(admin_user: User, classroom: Classroom, session: Session) -> Meeting:
+def meeting_fixture(
+    admin_user: User, classroom: Classroom, session: Session
+) -> Meeting:
     """Fixture to create a standard meeting."""
     return MeetingModelFactory(
         classroom=classroom, creator=admin_user, session=session

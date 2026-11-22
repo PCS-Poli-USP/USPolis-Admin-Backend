@@ -35,8 +35,12 @@ class TestUserScheduleEntryResponse:
         user_schedule = make_user_schedule(user=user)
         schedule1 = make_schedule()
         schedule2 = make_schedule()
-        entry1 = make_user_schedule_entry(user_schedule=user_schedule, schedule=schedule1)
-        entry2 = make_user_schedule_entry(user_schedule=user_schedule, schedule=schedule2)
+        entry1 = make_user_schedule_entry(
+            user_schedule=user_schedule, schedule=schedule1
+        )
+        entry2 = make_user_schedule_entry(
+            user_schedule=user_schedule, schedule=schedule2
+        )
 
         data = UserScheduleEntryResponse.from_user_schedule_entries([entry1, entry2])
 

@@ -1,4 +1,5 @@
 import asyncio
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -131,7 +132,11 @@ class TestOffAndFailOpen:
         client = make_client(RateLimitMode.OFF, redis)
 
         assert all(client.get("/classrooms").status_code == 200 for _ in range(5))
-        assert asyncio.run(redis.keys("*")) == []
+
+        async def stored_keys() -> Any:
+            return await redis.keys("*")
+
+        assert asyncio.run(stored_keys()) == []
 
     @pytest.mark.parametrize(
         ("mode", "limits"),

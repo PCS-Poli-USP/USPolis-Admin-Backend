@@ -162,12 +162,8 @@ class AuthenticatedJupiterCrawler:
         name = self._clean(personal_texts[1]) if len(personal_texts) > 1 else ""
         name = name or "Estudante USP"
 
-        emails = [
-            self._clean(text) for text in fonts_texts if text and "@" in text
-        ]
-        preferred_email = next(
-            (email for email in emails if "usp.br" in email), ""
-        )
+        emails = [self._clean(text) for text in fonts_texts if text and "@" in text]
+        preferred_email = next((email for email in emails if "usp.br" in email), "")
         email = preferred_email or (emails[0] if emails else n_usp)
 
         subjects = [

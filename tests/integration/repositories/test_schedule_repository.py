@@ -65,7 +65,9 @@ class TestGetById:
     ) -> None:
         schedule = class_.schedules[0]
 
-        found = ScheduleRepository.get_by_id(id=must_be_int(schedule.id), session=session)
+        found = ScheduleRepository.get_by_id(
+            id=must_be_int(schedule.id), session=session
+        )
 
         assert found.id == schedule.id
 
@@ -188,7 +190,11 @@ class TestGetByIdOnBuildings:
             )
 
     def test_reservation_based_schedule_matches_its_building(
-        self, admin_user: User, building: Building, classroom: Classroom, session: Session
+        self,
+        admin_user: User,
+        building: Building,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         reservation = _make_reservation_with_classroom(
             creator=admin_user, classroom=classroom, session=session
@@ -498,9 +504,7 @@ class TestUpdateClassSchedules:
     ) -> None:
         factory = ScheduleRequestFactory(classroom=classroom)
         new_input = [
-            factory.update_input(
-                allocated=True, classroom_id=must_be_int(classroom.id)
-            )
+            factory.update_input(allocated=True, classroom_id=must_be_int(classroom.id))
         ]
 
         updated = ScheduleRepository.update_class_schedules(

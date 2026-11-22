@@ -67,6 +67,8 @@ class TestSolicitationResponse:
         reservation2 = make_reservation(schedule=schedule2, solicitation=solicitation2)
         solicitation2.reservation = reservation2
 
-        data = SolicitationResponse.from_solicitation_list([solicitation1, solicitation2])
+        data = SolicitationResponse.from_solicitation_list(
+            [solicitation1, solicitation2]
+        )
 
         assert [d.id for d in data] == [solicitation1.id, solicitation2.id]

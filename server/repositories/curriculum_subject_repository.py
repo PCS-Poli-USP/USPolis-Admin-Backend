@@ -3,17 +3,25 @@ from sqlmodel import Session, select
 
 from server.models.database.curriculum_subject_db_model import CurriculumSubject
 from server.models.database.user_db_model import User
-from server.models.http.requests.curriculum_subject_request_models import CurriculumSubjectRegister, CurriculumSubjectUpdate
+from server.models.http.requests.curriculum_subject_request_models import (
+    CurriculumSubjectRegister,
+    CurriculumSubjectUpdate,
+)
+
 
 class CurriculumSubjectRepository:
     @staticmethod
     def get_by_id(id: int, session: Session) -> CurriculumSubject | None:
         statement = select(CurriculumSubject).where(CurriculumSubject.id == id)
         return session.exec(statement).first()
-    
+
     @staticmethod
-    def get_by_curriculum_id(curriculum_id: int, session: Session) -> list[CurriculumSubject]:
-        statement = select(CurriculumSubject).where(CurriculumSubject.curriculum_id == curriculum_id)
+    def get_by_curriculum_id(
+        curriculum_id: int, session: Session
+    ) -> list[CurriculumSubject]:
+        statement = select(CurriculumSubject).where(
+            CurriculumSubject.curriculum_id == curriculum_id
+        )
         return list(session.exec(statement).all())
 
     @staticmethod
@@ -32,17 +40,15 @@ class CurriculumSubjectRepository:
             subject_id=input.subject_id,
             type=input.type,
             category=input.category,
-            period=input.period 
+            period=input.period,
         )
         session.add(curriculum_subject)
         session.flush()
         return curriculum_subject
-    
+
     @staticmethod
     def get_by_curriculum_and_subject(
-        curriculum_id: int,
-        subject_id: int,
-        session: Session
+        curriculum_id: int, subject_id: int, session: Session
     ) -> CurriculumSubject | None:
         statement = select(CurriculumSubject).where(
             CurriculumSubject.curriculum_id == curriculum_id,
@@ -58,8 +64,9 @@ class CurriculumSubjectRepository:
         user: User,
         session: Session,
     ) -> CurriculumSubject:
-
-        curriculum_subject = CurriculumSubjectRepository.get_by_id(id=id, session=session)
+        curriculum_subject = CurriculumSubjectRepository.get_by_id(
+            id=id, session=session
+        )
 
         if not curriculum_subject:
             raise HTTPException(404, "Disciplina do currículo não encontrada")
@@ -67,18 +74,18 @@ class CurriculumSubjectRepository:
         curriculum_subject.curriculum_id = input.curriculum_id
         curriculum_subject.subject_id = input.subject_id
         curriculum_subject.type = input.type
-        curriculum_subject.category=input.category
+        curriculum_subject.category = input.category
         curriculum_subject.period = input.period
 
         session.add(curriculum_subject)
         session.flush()
         return curriculum_subject
 
-
     @staticmethod
     def delete(id: int, session: Session) -> None:
-
-        curriculum_subject = CurriculumSubjectRepository.get_by_id(id=id, session=session)
+        curriculum_subject = CurriculumSubjectRepository.get_by_id(
+            id=id, session=session
+        )
 
         if not curriculum_subject:
             raise HTTPException(404, "Disciplina do currículo não encontrada")

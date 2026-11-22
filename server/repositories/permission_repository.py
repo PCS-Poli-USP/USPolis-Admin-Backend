@@ -54,9 +54,7 @@ class PermissionRepository(Generic[P, A]):
     @classmethod
     def get_all_by_role_id(cls, *, role_id: int, session: Session) -> list[P]:
         model = TypeGuard.ensure_not_none(cls.model)
-        statement = cls._with_role(
-            select(model).where(model.role_id == role_id), model
-        )
+        statement = cls._with_role(select(model).where(model.role_id == role_id), model)
         return list(session.exec(statement).all())
 
     @classmethod

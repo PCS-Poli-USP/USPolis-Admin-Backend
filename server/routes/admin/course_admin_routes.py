@@ -23,8 +23,10 @@ embed = Body(..., embed=True)
 
 router = APIRouter(prefix="/courses", tags=["Courses"])
 
+
 def normalize_course_name(name: str) -> str:
     return name.strip()
+
 
 @router.post("")
 def create_course(
@@ -46,7 +48,7 @@ def create_course(
             status_code=400,
             detail="Já existe um curso com esse nome",
         )
-    
+
     try:
         CourseRepository.create(
             input=input,
@@ -99,7 +101,7 @@ def update_course(
             status_code=400,
             detail="Já existe um curso com esse nome",
         )
-    
+
     try:
         CourseRepository.update(
             id=course_id,
@@ -116,7 +118,6 @@ def update_course(
                 "detail": "Curso atualizado com sucesso",
             },
         )
-    
 
     except IntegrityError as e:
         session.rollback()
@@ -156,7 +157,9 @@ def delete_course(
 
 
 @router.post("/options/sync")
-async def sync_course_options(session: SessionDep, codcg: int = 3) -> list[CourseOption]:
+async def sync_course_options(
+    session: SessionDep, codcg: int = 3
+) -> list[CourseOption]:
     """Refresh the cached course options by crawling Júpiter (two crawls).
     Admin-only: it used to be public, letting anyone trigger crawls against
     USP's systems and writes to our database."""
@@ -176,7 +179,4 @@ async def sync_course_options(session: SessionDep, codcg: int = 3) -> list[Cours
 
     # retorna o que foi salvo
     saved = repo.list_all()
-    return [
-        CourseOption(codcur=o.codcur, codhab=o.codhab, name=o.name)
-        for o in saved
-    ]
+    return [CourseOption(codcur=o.codcur, codhab=o.codhab, name=o.name) for o in saved]

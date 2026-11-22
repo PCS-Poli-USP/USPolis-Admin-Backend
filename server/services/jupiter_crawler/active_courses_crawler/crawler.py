@@ -1,5 +1,4 @@
 import re
-from typing import Optional
 from urllib.parse import urlparse, parse_qs
 
 from bs4 import BeautifulSoup
@@ -46,7 +45,7 @@ class JupiterCoursesCrawler:
             if codcur is None or codhab is None:
                 continue
 
-            course_name: Optional[str] = None
+            course_name: str | None = None
             row = a.find_parent("tr")
 
             if row:

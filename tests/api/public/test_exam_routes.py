@@ -10,7 +10,9 @@ from server.models.database.subject_db_model import Subject
 URL_PREFIX = "/reservations/exams"
 
 
-def _allocate_exam_classroom(exam: Exam, classroom: Classroom, session: Session) -> None:
+def _allocate_exam_classroom(
+    exam: Exam, classroom: Classroom, session: Session
+) -> None:
     # ExamModelFactory/ReservationModelFactory never actually wire the
     # classroom they're given onto the created schedule, so the fixture
     # exam has no classroom/building - required for get_building() to
@@ -22,7 +24,11 @@ def _allocate_exam_classroom(exam: Exam, classroom: Classroom, session: Session)
 
 class TestGetAllExams:
     def test_returns_exams_active_today_by_default(
-        self, public_client: TestClient, exam: Exam, classroom: Classroom, session: Session
+        self,
+        public_client: TestClient,
+        exam: Exam,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         _allocate_exam_classroom(exam, classroom, session)
 
@@ -32,7 +38,11 @@ class TestGetAllExams:
         assert exam.id in [e["id"] for e in response.json()]
 
     def test_excludes_exams_outside_the_start_end_interval(
-        self, public_client: TestClient, exam: Exam, classroom: Classroom, session: Session
+        self,
+        public_client: TestClient,
+        exam: Exam,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         _allocate_exam_classroom(exam, classroom, session)
 
@@ -46,7 +56,11 @@ class TestGetAllExams:
 
 class TestGetAllExamEvents:
     def test_returns_exam_events(
-        self, public_client: TestClient, exam: Exam, classroom: Classroom, session: Session
+        self,
+        public_client: TestClient,
+        exam: Exam,
+        classroom: Classroom,
+        session: Session,
     ) -> None:
         _allocate_exam_classroom(exam, classroom, session)
 

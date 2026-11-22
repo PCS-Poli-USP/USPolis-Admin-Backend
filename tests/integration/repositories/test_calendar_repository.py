@@ -67,7 +67,9 @@ class TestGetById:
     ) -> None:
         calendar = CalendarModelFactory(admin_user, session).create_and_refresh()
 
-        found = CalendarRepository.get_by_id(id=must_be_int(calendar.id), session=session)
+        found = CalendarRepository.get_by_id(
+            id=must_be_int(calendar.id), session=session
+        )
 
         assert found.id == calendar.id
 
@@ -120,9 +122,7 @@ class TestCreate:
     def test_creates_a_calendar_with_categories(
         self, admin_user: User, session: Session
     ) -> None:
-        category = HolidayCategoryModelFactory(
-            admin_user, session
-        ).create_and_refresh()
+        category = HolidayCategoryModelFactory(admin_user, session).create_and_refresh()
         input = CalendarRequestFactory(
             categories_ids=[must_be_int(category.id)]
         ).create_input()
@@ -173,9 +173,7 @@ class TestUpdate:
     def test_updates_the_linked_categories(
         self, admin_user: User, session: Session
     ) -> None:
-        category = HolidayCategoryModelFactory(
-            admin_user, session
-        ).create_and_refresh()
+        category = HolidayCategoryModelFactory(admin_user, session).create_and_refresh()
         calendar = CalendarModelFactory(admin_user, session).create_and_refresh()
         input = CalendarRequestFactory(
             categories_ids=[must_be_int(category.id)]

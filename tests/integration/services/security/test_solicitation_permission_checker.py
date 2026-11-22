@@ -227,6 +227,4 @@ def test_solicitation_checker_list_denies_when_any_solicitation_disallowed(
         permission_index=build_permission_index(common_user),
     )
     with pytest.raises((ForbiddenClassroomAccess, ForbiddenBuildingAccess)):
-        checker.check_permission(
-            [solicitation_a, solicitation_b], ClassroomAction.READ
-        )
+        checker.check_permission([solicitation_a, solicitation_b], ClassroomAction.READ)

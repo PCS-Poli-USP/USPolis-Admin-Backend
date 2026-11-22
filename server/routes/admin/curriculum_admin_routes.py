@@ -10,10 +10,20 @@ from server.deps.session_dep import SessionDep
 from server.models.database.curriculum_db_model import Curriculum
 from server.models.database.curriculum_subject_db_model import CurriculumSubject
 from server.models.database.subject_db_model import Subject
-from server.models.http.requests.curriculum_request_models import CreateCurriculumByJupiterFinalRequest, CreateCurriculumByJupiterRequest, CurriculumRegister, CurriculumSubjectPreview, CurriculumUpdate
+from server.models.http.requests.curriculum_request_models import (
+    CreateCurriculumByJupiterFinalRequest,
+    CreateCurriculumByJupiterRequest,
+    CurriculumRegister,
+    CurriculumSubjectPreview,
+    CurriculumUpdate,
+)
 from server.repositories.curriculum_repository import CurriculumRepository
-from server.services.jupiter_crawler.curriculum_crawler.crawler import JupiterCurriculumCrawler
-from server.utils.enums.curriculum_subject_category_enum import CurriculumSubjectCategory
+from server.services.jupiter_crawler.curriculum_crawler.crawler import (
+    JupiterCurriculumCrawler,
+)
+from server.utils.enums.curriculum_subject_category_enum import (
+    CurriculumSubjectCategory,
+)
 from server.utils.enums.curriculum_subject_type_enum import CurriculumSubjectType
 
 embed = Body(..., embed=True)
@@ -23,7 +33,9 @@ router = APIRouter(prefix="/curriculums", tags=["Curriculums"])
 
 @router.post("")
 def create_curriculum(
-    input: CurriculumRegister, session: SessionDep, user: UserDep,
+    input: CurriculumRegister,
+    session: SessionDep,
+    user: UserDep,
 ) -> JSONResponse:
     """Create new curriculum"""
 
@@ -55,7 +67,8 @@ def create_curriculum(
             status_code=400,
             detail="Não foi possível criar o currículo",
         )
-    
+
+
 @router.post("/jupiter")
 async def create_curriculum_by_jupiter(
     input: CreateCurriculumByJupiterFinalRequest,
@@ -147,7 +160,8 @@ async def create_curriculum_by_jupiter(
             status_code=400,
             detail="Não foi possível criar o currículo",
         )
-    
+
+
 @router.post("/jupiter/preview")
 async def preview_curriculum_by_jupiter(
     input: CreateCurriculumByJupiterRequest,
@@ -166,14 +180,20 @@ async def preview_curriculum_by_jupiter(
         "elective": [s.model_dump() for s in elective],
     }
 
+
 @router.put("/{curriculum_id}")
 def update_curriculum(
-    curriculum_id: int, input: CurriculumUpdate, session: SessionDep, user: UserDep,
+    curriculum_id: int,
+    input: CurriculumUpdate,
+    session: SessionDep,
+    user: UserDep,
 ) -> JSONResponse:
     """Update a curriculum by id"""
 
     try:
-        CurriculumRepository.update(id=curriculum_id, input=input, user=user, session=session)
+        CurriculumRepository.update(
+            id=curriculum_id, input=input, user=user, session=session
+        )
         session.commit()
         return JSONResponse(
             status_code=status.HTTP_200_OK,
@@ -201,10 +221,9 @@ def update_curriculum(
             detail="Não foi possível atualizar o currículo",
         )
 
+
 @router.delete("/{curriculum_id}")
-def delete_curriculum(
-    curriculum_id: int, session: SessionDep
-) -> JSONResponse:
+def delete_curriculum(curriculum_id: int, session: SessionDep) -> JSONResponse:
     """Delete a curriculum by id"""
     CurriculumRepository.delete(id=curriculum_id, session=session)
     session.commit()

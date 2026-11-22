@@ -36,4 +36,6 @@ def make_curriculum(
     )
     return CurriculumModelFactory(
         course=course, creator=admin_user, session=session
-    ).create_and_refresh(description=description, **_given(codcur=codcur, codhab=codhab))
+    ).create_and_refresh(
+        description=description, **_given(codcur=codcur, codhab=codhab)
+    )

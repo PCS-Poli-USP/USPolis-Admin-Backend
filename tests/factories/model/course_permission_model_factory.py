@@ -29,9 +29,9 @@ class CoursePermissionModelFactory(BaseModelFactory[CoursePermission]):
     def get_defaults(self) -> CoursePermissionModelDict:
         core = self.core_factory.get_base_defaults()
         return {
-            "course_id": None if core["resource_id"] == -1 else core["resource_id"],  # type: ignore
+            "course_id": None if core["resource_id"] == -1 else core["resource_id"],
             "actions": core["actions"],  # type: ignore
-            "role_id": core["role_id"],  # type: ignore
+            "role_id": core["role_id"],
             "granted_by_id": must_be_int(self.granted_by.id),
         }
 

@@ -29,13 +29,17 @@ class TestMeetingResponse:
         schedule1 = make_schedule(classroom=classroom)
         schedule1.occurrences = []
         schedule1.logs = []
-        reservation1 = make_reservation(schedule=schedule1, type_=ReservationType.MEETING)
+        reservation1 = make_reservation(
+            schedule=schedule1, type_=ReservationType.MEETING
+        )
         meeting1 = make_meeting(reservation=reservation1)
 
         schedule2 = make_schedule(classroom=classroom)
         schedule2.occurrences = []
         schedule2.logs = []
-        reservation2 = make_reservation(schedule=schedule2, type_=ReservationType.MEETING)
+        reservation2 = make_reservation(
+            schedule=schedule2, type_=ReservationType.MEETING
+        )
         meeting2 = make_meeting(reservation=reservation2)
 
         data = MeetingResponse.from_meetings([meeting1, meeting2])

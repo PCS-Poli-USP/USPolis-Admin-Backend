@@ -70,7 +70,9 @@ class ApiIncidentReportRepository:
     ) -> ApiIncidentReport:
         incident.status = status
         incident.resolved_at = (
-            BrazilDatetime.now_utc() if status == IncidentReportStatus.RESOLVED else None
+            BrazilDatetime.now_utc()
+            if status == IncidentReportStatus.RESOLVED
+            else None
         )
         session.add(incident)
         return incident

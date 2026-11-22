@@ -110,6 +110,8 @@ class TestReservationFullResponse:
         schedule2.logs = []
         reservation2 = make_reservation(schedule=schedule2)
 
-        data = ReservationFullResponse.from_reservation_list([reservation1, reservation2])
+        data = ReservationFullResponse.from_reservation_list(
+            [reservation1, reservation2]
+        )
 
         assert [d.id for d in data] == [reservation1.id, reservation2.id]

@@ -98,6 +98,7 @@ class User(BaseModel, table=True):
             "secondaryjoin": "Role.id == UserRole.role_id",
         },
     )
+
     def get_user_permissions_map(self) -> dict[Resource, list[Permission]]:
         """
         Get a map of resources to permissions that the user has.

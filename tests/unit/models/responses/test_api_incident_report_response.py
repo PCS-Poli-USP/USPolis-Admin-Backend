@@ -13,9 +13,7 @@ from tests.utils.api_log_test_utils import make_api_access_log
 _next_id = iter(range(1, 1_000_000))
 
 
-def _make_incident(
-    *, access_log: ApiIncidentReport | None = None
-) -> ApiIncidentReport:
+def _make_incident(*, access_log: ApiIncidentReport | None = None) -> ApiIncidentReport:
     log = make_api_access_log(endpoint="/api/classrooms", status_code=500)
     incident = ApiIncidentReport(
         id=next(_next_id),

@@ -3,12 +3,15 @@ from sqlmodel import Session, select
 
 from server.models.database.curriculum_db_model import Curriculum
 from server.models.database.user_db_model import User
-from server.models.http.requests.curriculum_request_models import CurriculumRegister, CurriculumUpdate
+from server.models.http.requests.curriculum_request_models import (
+    CurriculumRegister,
+    CurriculumUpdate,
+)
 from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.must_be_int import must_be_int
 
-class CurriculumRepository:
 
+class CurriculumRepository:
     @staticmethod
     def create(
         input: CurriculumRegister,
@@ -46,7 +49,6 @@ class CurriculumRepository:
         user: User,
         session: Session,
     ) -> Curriculum:
-
         curriculum = CurriculumRepository.get_by_id(id=id, session=session)
 
         if not curriculum:
@@ -65,10 +67,8 @@ class CurriculumRepository:
         session.flush()
         return curriculum
 
-
     @staticmethod
     def delete(id: int, session: Session) -> None:
-
         curriculum = CurriculumRepository.get_by_id(id=id, session=session)
 
         if not curriculum:

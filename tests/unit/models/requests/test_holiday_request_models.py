@@ -32,6 +32,4 @@ class TestHolidayUpdate:
 class TestHolidayManyRegister:
     def test_rejects_an_empty_name(self) -> None:
         with pytest.raises(ValidationError):
-            HolidayManyRegister(
-                category_id=1, name="", dates=[datetime(2025, 9, 7)]
-            )
+            HolidayManyRegister(category_id=1, name="", dates=[datetime(2025, 9, 7)])

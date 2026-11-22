@@ -26,9 +26,9 @@ from tests.utils.permission_test_utils import RolePermissionTestHelper
 def test_schedule_checker_admin_bypasses(
     classroom: Classroom, class_: Class, admin_user: User, session: Session
 ) -> None:
-    schedule = ScheduleModelFactory(
-        session=session, class_=class_
-    ).create_and_refresh(classroom_id=must_be_int(classroom.id), classroom=classroom)
+    schedule = ScheduleModelFactory(session=session, class_=class_).create_and_refresh(
+        classroom_id=must_be_int(classroom.id), classroom=classroom
+    )
     checker = SchedulePermissionChecker(
         user=admin_user,
         session=session,
@@ -40,9 +40,9 @@ def test_schedule_checker_admin_bypasses(
 def test_schedule_checker_with_classroom_denies_without_permission(
     classroom: Classroom, class_: Class, common_user: User, session: Session
 ) -> None:
-    schedule = ScheduleModelFactory(
-        session=session, class_=class_
-    ).create_and_refresh(classroom_id=must_be_int(classroom.id), classroom=classroom)
+    schedule = ScheduleModelFactory(session=session, class_=class_).create_and_refresh(
+        classroom_id=must_be_int(classroom.id), classroom=classroom
+    )
 
     checker = SchedulePermissionChecker(
         user=common_user,
@@ -60,9 +60,9 @@ def test_schedule_checker_with_classroom_allows_via_classroom_permission(
     common_user: User,
     session: Session,
 ) -> None:
-    schedule = ScheduleModelFactory(
-        session=session, class_=class_
-    ).create_and_refresh(classroom_id=must_be_int(classroom.id), classroom=classroom)
+    schedule = ScheduleModelFactory(session=session, class_=class_).create_and_refresh(
+        classroom_id=must_be_int(classroom.id), classroom=classroom
+    )
 
     RolePermissionTestHelper.grant_classroom_permission(
         user=common_user,
@@ -204,9 +204,9 @@ def test_schedule_checker_reservation_based_allows_via_building_permission(
 def test_schedule_checker_id_dispatch_matches_object_dispatch(
     classroom: Classroom, class_: Class, common_user: User, session: Session
 ) -> None:
-    schedule = ScheduleModelFactory(
-        session=session, class_=class_
-    ).create_and_refresh(classroom_id=must_be_int(classroom.id), classroom=classroom)
+    schedule = ScheduleModelFactory(session=session, class_=class_).create_and_refresh(
+        classroom_id=must_be_int(classroom.id), classroom=classroom
+    )
 
     checker = SchedulePermissionChecker(
         user=common_user,
@@ -218,7 +218,11 @@ def test_schedule_checker_id_dispatch_matches_object_dispatch(
 
 
 def test_schedule_checker_list_denies_when_any_schedule_disallowed(
-    classroom: Classroom, class_: Class, admin_user: User, common_user: User, session: Session
+    classroom: Classroom,
+    class_: Class,
+    admin_user: User,
+    common_user: User,
+    session: Session,
 ) -> None:
     """Grants access to `classroom` only, so schedule_a (allocated to it) is
     individually allowed while schedule_b (unallocated, building ungranted)
@@ -227,7 +231,9 @@ def test_schedule_checker_list_denies_when_any_schedule_disallowed(
     schedule_a = ScheduleModelFactory(
         session=session, class_=class_
     ).create_and_refresh(classroom_id=must_be_int(classroom.id), classroom=classroom)
-    schedule_b = ScheduleModelFactory(session=session, class_=class_).create_and_refresh()
+    schedule_b = ScheduleModelFactory(
+        session=session, class_=class_
+    ).create_and_refresh()
 
     RolePermissionTestHelper.grant_classroom_permission(
         user=common_user,

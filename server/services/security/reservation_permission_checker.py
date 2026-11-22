@@ -14,9 +14,7 @@ from server.utils.enums.actions_enums import ClassroomAction
 
 
 class ReservationPermissionChecker(PermissionChecker[Reservation]):
-    def __init__(
-        self, user: User, session: Session, permission_index: PermissionIndex
-    ):
+    def __init__(self, user: User, session: Session, permission_index: PermissionIndex):
         super().__init__(user=user, session=session)
         self.classroom_checker = ClassroomPermissionChecker(
             user=user, session=session, permission_index=permission_index

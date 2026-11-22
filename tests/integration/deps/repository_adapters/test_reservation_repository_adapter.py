@@ -33,7 +33,9 @@ def _adapter(*, user: User, session: Session) -> ReservationRespositoryAdapter:
     )
 
 
-def _with_classroom(meeting: Meeting, classroom: Classroom, session: Session) -> Reservation:
+def _with_classroom(
+    meeting: Meeting, classroom: Classroom, session: Session
+) -> Reservation:
     # MeetingModelFactory/ReservationModelFactory never actually wire the
     # classroom they're given onto the created schedule, so the fixture
     # reservation has no classroom until wired explicitly here.

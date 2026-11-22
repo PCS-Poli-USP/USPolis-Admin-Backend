@@ -43,9 +43,7 @@ class TestGetById:
     def test_returns_the_matching_category(
         self, admin_user: User, session: Session
     ) -> None:
-        category = HolidayCategoryModelFactory(
-            admin_user, session
-        ).create_and_refresh()
+        category = HolidayCategoryModelFactory(admin_user, session).create_and_refresh()
 
         found = HolidayCategoryRepository.get_by_id(
             id=must_be_int(category.id), session=session
@@ -76,9 +74,7 @@ class TestGetByName:
     def test_returns_the_matching_category(
         self, admin_user: User, session: Session
     ) -> None:
-        category = HolidayCategoryModelFactory(
-            admin_user, session
-        ).create_and_refresh()
+        category = HolidayCategoryModelFactory(admin_user, session).create_and_refresh()
 
         found = HolidayCategoryRepository.get_by_name(
             name=category.name, session=session
@@ -108,9 +104,7 @@ class TestCreate:
     def test_raises_on_duplicate_name_and_year(
         self, admin_user: User, session: Session
     ) -> None:
-        existing = HolidayCategoryModelFactory(
-            admin_user, session
-        ).create_and_refresh()
+        existing = HolidayCategoryModelFactory(admin_user, session).create_and_refresh()
         input = HolidayCategoryRequestFactory().create_input(
             name=existing.name, year=existing.year
         )
@@ -153,9 +147,7 @@ class TestUpdate:
     def test_denies_a_non_owner_non_admin(
         self, admin_user: User, common_user: User, session: Session
     ) -> None:
-        category = HolidayCategoryModelFactory(
-            admin_user, session
-        ).create_and_refresh()
+        category = HolidayCategoryModelFactory(admin_user, session).create_and_refresh()
         input = HolidayCategoryRequestFactory().update_input()
 
         with pytest.raises(HolidayCategoryOperationNotAllowed):
@@ -199,9 +191,7 @@ class TestDelete:
     def test_denies_a_non_owner_non_admin(
         self, admin_user: User, common_user: User, session: Session
     ) -> None:
-        category = HolidayCategoryModelFactory(
-            admin_user, session
-        ).create_and_refresh()
+        category = HolidayCategoryModelFactory(admin_user, session).create_and_refresh()
 
         with pytest.raises(HolidayCategoryOperationNotAllowed):
             HolidayCategoryRepository.delete(

@@ -1,7 +1,11 @@
 import pytest
 
 from server.models.http.responses.permissions_response_models import PermissionResponse
-from server.utils.enums.actions_enums import BuildingAction, ClassroomAction, CourseAction
+from server.utils.enums.actions_enums import (
+    BuildingAction,
+    ClassroomAction,
+    CourseAction,
+)
 from server.utils.enums.resources_enums import Resource
 from tests.utils.academic_test_utils import (
     make_building,
@@ -44,7 +48,9 @@ class TestPermissionResponseFromClassroomPermission:
     def test_without_a_classroom_grants_every_classroom(self) -> None:
         role = make_role(resources=[Resource.CLASSROOM])
         granter = make_user()
-        permission = make_classroom_permission(role=role, granted_by=granter, classroom=None)
+        permission = make_classroom_permission(
+            role=role, granted_by=granter, classroom=None
+        )
 
         data = PermissionResponse.from_classroom_permission(permission)
 
@@ -112,7 +118,9 @@ class TestPermissionResponseFromBuildingPermission:
     def test_without_a_building_grants_every_building(self) -> None:
         role = make_role(resources=[Resource.BUILDING])
         granter = make_user()
-        permission = make_building_permission(role=role, granted_by=granter, building=None)
+        permission = make_building_permission(
+            role=role, granted_by=granter, building=None
+        )
 
         data = PermissionResponse.from_building_permission(permission)
 
@@ -134,7 +142,9 @@ class TestPermissionResponseFromPermissionDispatch:
         role = make_role(resources=[Resource.COURSE])
         granter = make_user()
         course = make_course(creator=granter)
-        permission = make_course_permission(role=role, granted_by=granter, course=course)
+        permission = make_course_permission(
+            role=role, granted_by=granter, course=course
+        )
 
         data = PermissionResponse.from_permission(permission, Resource.COURSE)
 

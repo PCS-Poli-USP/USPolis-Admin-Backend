@@ -85,7 +85,9 @@ class TestGetPosts:
         self, public_client: TestClient, subject: Subject, session: Session
     ) -> None:
         user = make_mobile_user(sub="u1", session=session)
-        post = make_forum_post(subject=subject, user=user, session=session, content="root")
+        post = make_forum_post(
+            subject=subject, user=user, session=session, content="root"
+        )
         make_forum_post(
             subject=subject,
             user=user,
@@ -107,7 +109,9 @@ class TestGetPosts:
         make_forum_post(
             subject=subject, user=user, session=session, content="about python"
         )
-        make_forum_post(subject=subject, user=user, session=session, content="about java")
+        make_forum_post(
+            subject=subject, user=user, session=session, content="about java"
+        )
 
         response = public_client.get(
             f"{URL_PREFIX}/posts",
@@ -120,8 +124,12 @@ class TestGetPosts:
         self, public_client: TestClient, subject: Subject, session: Session
     ) -> None:
         user = make_mobile_user(sub="u1", session=session)
-        make_forum_post(subject=subject, user=user, session=session, content="tag2", filter_tags=2)
-        make_forum_post(subject=subject, user=user, session=session, content="tag3", filter_tags=3)
+        make_forum_post(
+            subject=subject, user=user, session=session, content="tag2", filter_tags=2
+        )
+        make_forum_post(
+            subject=subject, user=user, session=session, content="tag3", filter_tags=3
+        )
         make_forum_post(
             subject=subject, user=user, session=session, content="tag6", filter_tags=6
         )
@@ -267,7 +275,11 @@ class TestCreateForumPostReply:
 
         response = public_client.post(
             f"{URL_PREFIX}/posts/{post.id}",
-            json={"user_id": replier.id, "content": "a reply", "subject_id": subject.id},
+            json={
+                "user_id": replier.id,
+                "content": "a reply",
+                "subject_id": subject.id,
+            },
             headers={"authorization": "x"},
         )
 
@@ -283,7 +295,11 @@ class TestCreateForumPostReply:
 
         response = public_client.post(
             f"{URL_PREFIX}/posts/999999",
-            json={"user_id": replier.id, "content": "a reply", "subject_id": subject.id},
+            json={
+                "user_id": replier.id,
+                "content": "a reply",
+                "subject_id": subject.id,
+            },
             headers={"authorization": "x"},
         )
 
@@ -360,7 +376,9 @@ class TestAuthenticationGate:
     ) -> None:
         user = make_mobile_user(sub="u1", session=session)
 
-        with patch(_AUTH_PATCH_TARGET, side_effect=ValueError("Wrong number of segments")):
+        with patch(
+            _AUTH_PATCH_TARGET, side_effect=ValueError("Wrong number of segments")
+        ):
             response = public_client.post(
                 f"{URL_PREFIX}/posts",
                 json={"user_id": user.id, "content": "x", "subject_id": subject.id},
@@ -375,7 +393,9 @@ class TestAuthenticationGate:
         author = make_mobile_user(sub="author", session=session)
         post = make_forum_post(subject=subject, user=author, session=session)
 
-        with patch(_AUTH_PATCH_TARGET, side_effect=ValueError("Wrong number of segments")):
+        with patch(
+            _AUTH_PATCH_TARGET, side_effect=ValueError("Wrong number of segments")
+        ):
             response = public_client.delete(
                 f"{URL_PREFIX}/posts/{post.id}", headers={"authorization": "bad-token"}
             )
@@ -389,7 +409,9 @@ class TestAuthenticationGate:
         post = make_forum_post(subject=subject, user=author, session=session)
         replier = make_mobile_user(sub="replier", session=session)
 
-        with patch(_AUTH_PATCH_TARGET, side_effect=ValueError("Wrong number of segments")):
+        with patch(
+            _AUTH_PATCH_TARGET, side_effect=ValueError("Wrong number of segments")
+        ):
             response = public_client.post(
                 f"{URL_PREFIX}/posts/{post.id}",
                 json={

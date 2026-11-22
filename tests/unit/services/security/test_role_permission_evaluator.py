@@ -6,7 +6,11 @@ from server.models.database.course_permission_db_model import CoursePermission
 from server.models.database.role_db_model import Role
 from server.models.database.user_db_model import User
 from server.services.security.role_permission_evaluator import build_permission_index
-from server.utils.enums.actions_enums import BuildingAction, ClassroomAction, CourseAction
+from server.utils.enums.actions_enums import (
+    BuildingAction,
+    ClassroomAction,
+    CourseAction,
+)
 from server.utils.enums.resources_enums import Resource
 
 
@@ -130,7 +134,9 @@ def test_global_wildcard_grants_update_delete_allocate_reserve_for_admin() -> No
         ClassroomAction.ALLOCATE,
         ClassroomAction.RESERVE,
     ):
-        assert index.has_permission(resource=Resource.CLASSROOM, action=action, resource_id=42)
+        assert index.has_permission(
+            resource=Resource.CLASSROOM, action=action, resource_id=42
+        )
 
 
 def test_permission_missing_action_denies_access() -> None:

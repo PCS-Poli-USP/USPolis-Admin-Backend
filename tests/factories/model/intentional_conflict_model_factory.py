@@ -16,7 +16,10 @@ from tests.factories.model.base_model_factory import BaseModelFactory
 
 class IntentionalConflictModelFactory(BaseModelFactory[IntentionalConflict]):
     def __init__(
-        self, first_occurrence: Occurrence, second_occurrence: Occurrence, session: Session
+        self,
+        first_occurrence: Occurrence,
+        second_occurrence: Occurrence,
+        session: Session,
     ) -> None:
         super().__init__(session)
         self.first_occurrence = first_occurrence
@@ -47,6 +50,8 @@ class IntentionalConflictModelFactory(BaseModelFactory[IntentionalConflict]):
         return super().create_and_refresh(**overrides)
 
     def update(  # type: ignore
-        self, intentional_conflict_id: int, **overrides: Unpack[IntentionalConflictModelDict]
+        self,
+        intentional_conflict_id: int,
+        **overrides: Unpack[IntentionalConflictModelDict],
     ) -> IntentionalConflict:
         return super().update(model_id=intentional_conflict_id, **overrides)

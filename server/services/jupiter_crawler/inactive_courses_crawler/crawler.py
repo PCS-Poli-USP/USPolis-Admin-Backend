@@ -89,6 +89,8 @@ if __name__ == "__main__":
         crawler = JupiterCoursesOldCrawler(codcg=3, tipo="V")
         courses = await crawler.crawl()
 
-        print(json.dumps([c.model_dump() for c in courses], indent=4, ensure_ascii=False))
+        print(
+            json.dumps([c.model_dump() for c in courses], indent=4, ensure_ascii=False)
+        )
 
     asyncio.run(main())

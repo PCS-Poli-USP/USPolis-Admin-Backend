@@ -27,7 +27,11 @@ def _adapter(*, user: User, session: Session) -> MeetingRepositoryAdapter:
 
 class TestGetById:
     def test_denies_without_permission(
-        self, common_user: User, classroom: Classroom, meeting: Meeting, session: Session
+        self,
+        common_user: User,
+        classroom: Classroom,
+        meeting: Meeting,
+        session: Session,
     ) -> None:
         # MeetingModelFactory/ReservationModelFactory never actually wire the
         # classroom they're given onto the created schedule, so the fixture
@@ -100,7 +104,11 @@ class TestCreate:
 
 class TestUpdate:
     def test_denies_without_permission(
-        self, common_user: User, classroom: Classroom, meeting: Meeting, session: Session
+        self,
+        common_user: User,
+        classroom: Classroom,
+        meeting: Meeting,
+        session: Session,
     ) -> None:
         adapter = _adapter(user=common_user, session=session)
         input = MeetingRequestFactory(classroom=classroom).update_input()

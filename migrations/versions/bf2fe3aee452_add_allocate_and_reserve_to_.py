@@ -37,7 +37,9 @@ def downgrade() -> None:
     op.execute("DELETE FROM buildingpermission WHERE actions = '{}'")
 
     op.execute("ALTER TYPE buildingaction RENAME TO buildingaction_old")
-    op.execute("CREATE TYPE buildingaction AS ENUM ('CREATE', 'READ', 'UPDATE', 'DELETE')")
+    op.execute(
+        "CREATE TYPE buildingaction AS ENUM ('CREATE', 'READ', 'UPDATE', 'DELETE')"
+    )
     op.execute(
         "ALTER TABLE buildingpermission "
         "ALTER COLUMN actions TYPE buildingaction[] "

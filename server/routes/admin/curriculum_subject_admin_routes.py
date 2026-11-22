@@ -4,8 +4,13 @@ from sqlalchemy.exc import IntegrityError
 
 from server.deps.authenticate import UserDep
 from server.deps.session_dep import SessionDep
-from server.models.http.requests.curriculum_subject_request_models import CurriculumSubjectRegister, CurriculumSubjectUpdate
-from server.repositories.curriculum_subject_repository import CurriculumSubjectRepository
+from server.models.http.requests.curriculum_subject_request_models import (
+    CurriculumSubjectRegister,
+    CurriculumSubjectUpdate,
+)
+from server.repositories.curriculum_subject_repository import (
+    CurriculumSubjectRepository,
+)
 from server.repositories.subject_repository import SubjectRepository
 
 embed = Body(..., embed=True)
@@ -15,7 +20,9 @@ router = APIRouter(prefix="/curriculum_subjects", tags=["CurriculumSubjects"])
 
 @router.post("")
 def create_curriculum_subject(
-    input: CurriculumSubjectRegister, session: SessionDep, user: UserDep,
+    input: CurriculumSubjectRegister,
+    session: SessionDep,
+    user: UserDep,
 ) -> JSONResponse:
     """Create new curriculum subject"""
 
@@ -50,13 +57,19 @@ def create_curriculum_subject(
             detail="Não foi possível criar a disciplina do currículo",
         )
 
+
 @router.put("/{curriculum_subject_id}")
 def update_curriculum_subject(
-    curriculum_subject_id: int, input: CurriculumSubjectUpdate, session: SessionDep, user: UserDep,
+    curriculum_subject_id: int,
+    input: CurriculumSubjectUpdate,
+    session: SessionDep,
+    user: UserDep,
 ) -> JSONResponse:
     """Update a curriculum subject by id"""
     try:
-        CurriculumSubjectRepository.update(id=curriculum_subject_id, input=input, user=user, session=session)
+        CurriculumSubjectRepository.update(
+            id=curriculum_subject_id, input=input, user=user, session=session
+        )
         session.commit()
         return JSONResponse(
             status_code=status.HTTP_200_OK,
@@ -70,6 +83,7 @@ def update_curriculum_subject(
             status_code=400,
             detail="Não foi possível atualizar a disciplina do currículo",
         )
+
 
 @router.delete("/{curriculum_subject_id}")
 def delete_curriculum_subject(
