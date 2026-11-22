@@ -143,6 +143,9 @@ class UserResponse(UseCoreResponse):
     groups: list["UserGroupResponse"]
     curriculum: CurriculumResponse | None = None
     current_schedule_id: int | None = None
+    # Lets the frontend apply the same restricted-tier gate as the backend
+    # (a group or a role, see restricted_authenticate).
+    role_ids: list[int] = []
 
     @classmethod
     def from_user(cls, user: User) -> "UserResponse":
@@ -163,6 +166,7 @@ class UserResponse(UseCoreResponse):
             if user.curriculum
             else None,
             current_schedule_id=user.current_schedule_id,
+            role_ids=[must_be_int(role.id) for role in user.roles],
         )
 
     @classmethod

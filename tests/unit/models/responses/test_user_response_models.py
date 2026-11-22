@@ -167,6 +167,22 @@ class TestUserResponse:
         assert data.groups == []
         assert data.curriculum is None
         assert data.current_schedule_id is None
+        assert data.role_ids == []
+
+    def test_from_user_lists_the_role_ids(self) -> None:
+        user = make_user()
+        user.buildings = []
+        user.groups = []
+        user.solicitations = []
+        user.created_by = None
+        user.curriculum = None
+        user.current_schedule_id = None
+        role = make_role(resources=[Resource.CLASSROOM])
+        user.roles = [role]
+
+        data = UserResponse.from_user(user)
+
+        assert data.role_ids == [role.id]
 
     def test_from_user_with_buildings_and_curriculum(self) -> None:
         user = make_user()

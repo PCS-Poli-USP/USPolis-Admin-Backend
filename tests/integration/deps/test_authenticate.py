@@ -18,10 +18,12 @@ from server.deps.authenticate import (
 )
 from server.models.database.building_db_model import Building
 from server.models.database.group_db_model import Group
+from server.models.database.role_db_model import Role
 from server.models.database.user_db_model import User
 from server.repositories.building_repository import BuildingNotFound
 from server.utils.must_be_int import must_be_int
 from tests.factories.model.building_model_factory import BuildingModelFactory
+from tests.utils.permission_test_utils import RolePermissionTestHelper
 
 _GET_USER_INFO_TARGET = "server.deps.authenticate.AuthenticationClient.get_user_info"
 
@@ -94,7 +96,18 @@ class TestRestrictedAuthenticate:
     ) -> None:
         assert restricted_authenticate(user=restricted_user) is restricted_user
 
-    def test_denies_a_user_with_no_groups(self, common_user: User) -> None:
+    def test_allows_a_user_with_a_role_and_no_groups(
+        self, common_user: User, admin_user: User, role: Role, session: Session
+    ) -> None:
+        RolePermissionTestHelper.assign_role(
+            user=common_user, role=role, granted_by=admin_user, session=session
+        )
+
+        assert not common_user.groups
+        assert restricted_authenticate(user=common_user) is common_user
+
+    def test_denies_a_user_with_no_groups_and_no_roles(self, common_user: User) -> None:
+        assert not common_user.groups and not common_user.roles
         with pytest.raises(RestrictedAccessRequired):
             restricted_authenticate(user=common_user)
 

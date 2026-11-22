@@ -154,10 +154,15 @@ def authenticate(
 def restricted_authenticate(
     user: Annotated[User, Depends(authenticate)],
 ) -> User:
-    """Authenticate the user and check if they have restricted access."""
+    """Authenticate the user and check if they have restricted access.
+
+    Access comes from either permission model: belonging to a group or having
+    a role (see docs/PERMISSIONS.md). What each user can do inside the tier is
+    still decided per object by the permission checkers.
+    """
     if user.is_admin:
         return user
-    if not user.groups:
+    if not user.groups and not user.roles:
         raise RestrictedAccessRequired()
     return user
 
@@ -218,7 +223,7 @@ class RestrictedAccessRequired(HTTPException):
     def __init__(self) -> None:
         super().__init__(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Usuário deve ter acesso restrito a algum grupo",
+            detail="Usuário deve pertencer a algum grupo ou ter algum papel",
         )
 
 

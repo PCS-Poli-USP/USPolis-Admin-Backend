@@ -14,11 +14,13 @@ from server.repositories.classroom_repository import (
 )
 from server.repositories.group_repository import GroupRepository
 from server.repositories.occurrence_repository import OccurrenceRepository
+from server.utils.enums.actions_enums import ClassroomAction
 from server.utils.must_be_int import must_be_int
 from tests.factories.model.building_model_factory import BuildingModelFactory
 from tests.factories.model.classroom_model_factory import ClassroomModelFactory
 from tests.factories.model.group_model_factory import GroupModelFactory
 from tests.factories.request.classroom_request_factory import ClassroomRequestFactory
+from tests.utils.permission_test_utils import RolePermissionTestHelper
 from tests.utils.validators.classroom.classroom_response_validator import (
     ClassroomResponseAsserts,
 )
@@ -71,6 +73,52 @@ def test_get_classroom_by_id_with_restricted_user_outisder_group(
 def test_get_classroom_by_id_with_common_user(
     classroom: Classroom, common_client: TestClient
 ) -> None:
+    response = common_client.get(f"{URL_PREFIX}/{classroom.id}")
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_get_classroom_by_id_with_role_only_user(
+    classroom: Classroom,
+    common_user: User,
+    admin_user: User,
+    session: Session,
+    common_client: TestClient,
+) -> None:
+    """A role grants restricted access on its own, without any group."""
+    RolePermissionTestHelper.grant_classroom_permission(
+        user=common_user,
+        resource_id=must_be_int(classroom.id),
+        actions=[ClassroomAction.READ],
+        granted_by=admin_user,
+        session=session,
+    )
+    assert not common_user.groups
+
+    response = common_client.get(f"{URL_PREFIX}/{classroom.id}")
+    assert response.status_code == status.HTTP_200_OK
+    ClassroomResponseAsserts.assert_get_classroom_response(response, classroom)
+
+
+def test_get_classroom_by_id_with_role_for_another_classroom(
+    classroom: Classroom,
+    building: Building,
+    common_user: User,
+    admin_user: User,
+    session: Session,
+    common_client: TestClient,
+) -> None:
+    """Passing the tier gate with a role does not open classrooms the role does not cover."""
+    other = ClassroomModelFactory(
+        creator=admin_user, building=building, session=session
+    ).create_and_refresh()
+    RolePermissionTestHelper.grant_classroom_permission(
+        user=common_user,
+        resource_id=must_be_int(other.id),
+        actions=[ClassroomAction.READ],
+        granted_by=admin_user,
+        session=session,
+    )
+
     response = common_client.get(f"{URL_PREFIX}/{classroom.id}")
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
