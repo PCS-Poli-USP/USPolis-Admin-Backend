@@ -1,7 +1,9 @@
 import os
-from collections.abc import Generator
+import sys
+from collections.abc import Callable, Generator
+from contextlib import ExitStack
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from alembic import command
@@ -51,11 +53,82 @@ from tests.factories.model.subject_model_factory import SubjectModelFactory
 from tests.factories.model.user_model_factory import UserModelFactory
 
 CONFIG.testing = True
+# Tests must never send real email. The .env.dev in use may hold real SMTP
+# credentials, so point them nowhere (".invalid" never resolves) and, below,
+# replace the SMTP client for the whole session.
+CONFIG.mail_host = "smtp.uspolis-tests.invalid"
+CONFIG.mail_password = ""
 # Fixed so API key hashes don't depend on whoever runs the suite.
 CONFIG.api_key_secret = "test-only-api-key-secret-0123456789abcdef"
 
 test_db_url = f"{CONFIG.test_db_uri}/{CONFIG.test_db_database}"
 engine = create_engine(test_db_url)
+
+
+# Every real email send a test attempted (see block_real_email).
+_email_attempts: list[tuple[object, ...]] = []
+
+
+class _EmailBlocked(RuntimeError):
+    pass
+
+
+def _blocked_sender(channel: str) -> Callable[..., None]:
+    def blocked(*args: object, **kwargs: object) -> None:
+        _email_attempts.append((channel, *args))
+        raise _EmailBlocked(
+            f"Tests must not send email ({channel}): mock the sender, e.g. "
+            "'server.services.email.email_service.EmailService.send_email' or "
+            "the route module's gmail_send_message."
+        )
+
+    return blocked
+
+
+@pytest.fixture(scope="session", autouse=True)
+def block_real_email() -> Generator[None, None, None]:
+    """Block both ways the server sends email, for the whole session (not per
+    test: emails go out from background tasks that can outlive their test):
+
+    - SMTP (EmailService): replace SMTP_SSL;
+    - the Gmail API (mobile comments, forum reports): replace gmail_login and
+      gmail_send_message everywhere they were imported by name, since routes
+      bind them at import time. gmail_login would also start an interactive
+      browser OAuth flow when there is no token.json.
+    """
+    from server.services import gmail_service
+
+    with ExitStack() as stack:
+        stack.enter_context(
+            patch(
+                "server.services.email.email_service.SMTP_SSL",
+                _blocked_sender("SMTP"),
+            )
+        )
+        for name in ("gmail_login", "gmail_send_message"):
+            original = getattr(gmail_service, name)
+            for module in list(sys.modules.values()):
+                if (
+                    module is not None
+                    and module.__name__.startswith("server.")
+                    and getattr(module, name, None) is original
+                ):
+                    stack.enter_context(
+                        patch.object(module, name, _blocked_sender(f"Gmail {name}"))
+                    )
+        yield
+
+
+@pytest.fixture(autouse=True)
+def fail_on_email_attempt() -> Generator[None, None, None]:
+    """Fail the test that tried to send email (the senders swallow errors in
+    background tasks, so it would otherwise pass silently). Tests that exercise
+    a sender patch it themselves, which wins over this guard."""
+    _email_attempts.clear()
+    yield
+    attempts = list(_email_attempts)
+    _email_attempts.clear()
+    assert not attempts, f"Test tried to send real email: {attempts}"
 
 
 def run_alembic_migrations() -> None:
