@@ -1,16 +1,17 @@
-"""Shared, DB-free helper for building InstitutionalEvent object graphs in
-pure unit tests (no session, nothing persisted).
-
-Constructed directly rather than via a ModelFactory - InstitutionalEvent has
-no relationships or foreign keys and no factory/dict scaffolding exists for
-it yet, so a full base-dict/model-dict/base-factory/model-factory stack
-would be pure overhead for the handful of response-model tests that need
-one. See docs/TESTS.md's "Test data protocol" section before adding a new make_*
-helper here."""
+"""Shared, DB-free helper for building InstitutionalEvent objects in pure unit
+tests (no session, nothing persisted): InstitutionalEventModelFactory.build()
+on an unbound Session(), with an id. DB-backed tests use the factory's
+create()/create_and_refresh() directly. See docs/TESTS.md's "Test data
+protocol" section before adding a new make_* helper here."""
 
 from datetime import datetime
 
+from sqlmodel import Session
+
 from server.models.database.institutional_event_db_model import InstitutionalEvent
+from tests.factories.model.institutional_event_model_factory import (
+    InstitutionalEventModelFactory,
+)
 
 _next_id = iter(range(1, 1_000_000))
 
@@ -28,8 +29,7 @@ def make_institutional_event(
     external_link: str | None = None,
     likes: int = 0,
 ) -> InstitutionalEvent:
-    event = InstitutionalEvent(
-        id=next(_next_id),
+    event = InstitutionalEventModelFactory(session=Session()).build(
         title=title,
         description=description,
         category=category,
@@ -41,4 +41,5 @@ def make_institutional_event(
         external_link=external_link,
         likes=likes,
     )
+    event.id = next(_next_id)
     return event

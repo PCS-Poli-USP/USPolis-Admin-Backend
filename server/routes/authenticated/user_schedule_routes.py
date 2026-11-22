@@ -1,8 +1,11 @@
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
+from sqlmodel import Session
 
 from server.deps.authenticate import UserDep
 from server.deps.session_dep import SessionDep
+from server.models.database.user_db_model import User
+from server.models.database.user_schedule_db_model import UserSchedule
 from server.models.http.requests.jupiter_request_models import JupiterLoginRequest
 from server.models.http.requests.user_schedule_request_models import (
     UserScheduleRegister,
@@ -190,12 +193,9 @@ def update_user_schedule(
     user: UserDep,
     session: SessionDep,
 ) -> JSONResponse:
-    user_schedule = UserScheduleRepository.get_by_id(
-        id=user_schedule_id, session=session
+    user_schedule = _get_own_user_schedule(
+        user_schedule_id, user=user, session=session, verb="editar"
     )
-    if not user_schedule:
-        raise UserScheduleNotFoundError()
-
     schedules = ScheduleRepository.get_by_ids(ids=input.schedule_ids, session=session)
     updated = UserScheduleRepository.update_from_schedules(
         user_schedule=user_schedule, schedules=schedules, session=session
@@ -215,18 +215,9 @@ def delete_user_schedule(
     user: UserDep,
     session: SessionDep,
 ) -> JSONResponse:
-    user_schedule = UserScheduleRepository.get_by_id(
-        id=user_schedule_id, session=session
+    user_schedule = _get_own_user_schedule(
+        user_schedule_id, user=user, session=session, verb="excluir"
     )
-    if not user_schedule:
-        raise UserScheduleNotFoundError()
-
-    if user.id != user_schedule.user_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Você não tem permissão para excluir esta grade horária",
-        )
-
     UserScheduleRepository.delete(user_schedule, session=session)
     user.current_schedule = None
     session.add(user)
@@ -235,6 +226,24 @@ def delete_user_schedule(
         status_code=status.HTTP_200_OK,
         content={"message": "Grade horária excluída com sucesso!"},
     )
+
+
+def _get_own_user_schedule(
+    user_schedule_id: int, *, user: User, session: Session, verb: str
+) -> UserSchedule:
+    """The user schedule, if it belongs to `user`. A schedule is personal: only
+    its owner edits or deletes it, admins included."""
+    user_schedule = UserScheduleRepository.get_by_id(
+        id=user_schedule_id, session=session
+    )
+    if not user_schedule:
+        raise UserScheduleNotFoundError()
+    if user.id != user_schedule.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Você não tem permissão para {verb} esta grade horária",
+        )
+    return user_schedule
 
 
 class UserScheduleNotFoundError(HTTPException):

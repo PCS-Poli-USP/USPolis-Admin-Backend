@@ -18,3 +18,9 @@ class InstitutionalEvent(BaseModel, table=True):
     external_link: str | None = Field()
     likes: int = Field(default=0)
     created_at: datetime = Field(default_factory=BrazilDatetime.now_utc)
+    # Who created the event: only them or an admin edits or deletes it (same
+    # rule as holidays and calendars). NULL for events created before it was
+    # recorded, which only admins can change.
+    created_by_id: int | None = Field(
+        default=None, foreign_key="user.id", ondelete="SET NULL"
+    )
