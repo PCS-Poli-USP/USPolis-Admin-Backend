@@ -1,4 +1,5 @@
 from datetime import date
+
 from pydantic import BaseModel
 
 from server.deps.interval_dep import QueryInterval

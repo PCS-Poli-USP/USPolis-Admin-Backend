@@ -1,4 +1,5 @@
 from datetime import time
+
 from pydantic import BaseModel
 
 from server.services.occupance_reports_service import OccuppanceReportDict

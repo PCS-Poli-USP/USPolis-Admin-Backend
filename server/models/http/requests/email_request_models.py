@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Self
+
 from pydantic import BaseModel
 
 from server.models.database.api_key_db_model import ApiKey

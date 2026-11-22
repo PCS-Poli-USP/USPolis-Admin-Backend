@@ -1,6 +1,7 @@
 from datetime import datetime
-from sqlmodel import Field
 from typing import TYPE_CHECKING
+
+from sqlmodel import Field
 
 from server.models.database.base_db_model import BaseModel
 from server.utils.brazil_datetime import BrazilDatetime

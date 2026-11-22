@@ -5,9 +5,9 @@ from sqlalchemy import Column, ForeignKey, Integer
 from sqlmodel import Field, Relationship, desc
 
 from server.deps.interval_dep import QueryInterval
+from server.models.database.allocation_log_db_model import AllocationLog
 from server.models.database.base_db_model import BaseModel
 from server.models.database.reservation_db_model import Reservation
-from server.models.database.allocation_log_db_model import AllocationLog
 
 if TYPE_CHECKING:
     from server.models.database.class_db_model import Class

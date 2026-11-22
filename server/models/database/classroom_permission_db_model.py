@@ -9,9 +9,9 @@ from server.models.database.base_permission_db_model import BasePermission
 from server.utils.enums.actions_enums import ClassroomAction
 
 if TYPE_CHECKING:
+    from server.models.database.classroom_db_model import Classroom
     from server.models.database.role_db_model import Role
     from server.models.database.user_db_model import User
-    from server.models.database.classroom_db_model import Classroom
 
 
 class ClassroomPermission(BasePermission, table=True):

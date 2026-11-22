@@ -1,4 +1,5 @@
 from typing import Annotated
+
 from fastapi import APIRouter, Body, Query, Response
 
 from server.deps.repository_adapters.class_repository_adapter import (

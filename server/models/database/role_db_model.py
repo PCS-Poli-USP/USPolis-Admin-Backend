@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlmodel import Field, Relationship, Column
+from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.types import Enum as SQLEnum
+from sqlmodel import Column, Field, Relationship
 
 from server.models.database.base_db_model import BaseModel
 from server.models.database.building_permission_db_model import BuildingPermission
@@ -9,10 +11,6 @@ from server.models.database.classroom_permission_db_model import ClassroomPermis
 from server.models.database.course_permission_db_model import CoursePermission
 from server.models.database.user_role_db_model import UserRole
 from server.utils.enums.resources_enums import Resource
-
-from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy.types import Enum as SQLEnum
-
 from server.utils.permissions_types import Permission
 
 if TYPE_CHECKING:

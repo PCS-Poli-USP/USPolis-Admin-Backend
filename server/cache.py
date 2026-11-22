@@ -1,8 +1,8 @@
-from datetime import datetime, timedelta, date
+import inspect
+from collections.abc import Callable
+from datetime import date, datetime, timedelta
 from functools import wraps
 from typing import Any, TypeVar
-from collections.abc import Callable
-import inspect
 
 from pydantic import BaseModel
 from sqlmodel import Session

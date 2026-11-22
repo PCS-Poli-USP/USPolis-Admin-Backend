@@ -1,31 +1,31 @@
 from fastapi import APIRouter, Depends
+
 from server.deps.authenticate import public_authenticate
-from server.routes.public.forum_routes import router as ForumRouter
-from server.routes.public.mobile_classes_routes import router as MobileClassRouter
-from server.routes.public.mobile_institutional_events_routes import (
-    router as MobileInstitutionalEventsRouter,
-)
-from server.routes.public.mobile_comments_routes import router as MobileCommentsRouter
-from server.routes.public.mobile_google_authentication_routes import (
-    router as MobileGAuth,
-)
-from server.routes.public.building_routes import router as BuildingRouter
-from server.routes.public.classroom_routes import router as ClassroomRouter
-from server.routes.public.subject_routes import router as SubjectRouter
-from server.routes.public.class_routes import router as ClassRouter
-from server.routes.public.reservation_routes import router as ReservationRouter
-from server.routes.public.occurrence_routes import router as OccurrenceRouter
 from server.routes.public.allocation_routes import router as AllocationRouter
+from server.routes.public.api_key_link_routes import router as ApiKeyLinkRouter
 from server.routes.public.auth_routes import router as AuthRouter
+from server.routes.public.building_routes import router as BuildingRouter
+from server.routes.public.class_routes import router as ClassRouter
+from server.routes.public.classroom_routes import router as ClassroomRouter
 from server.routes.public.course_routes import router as CourseRouter
 from server.routes.public.curriculum_routes import router as CurriculumRouter
 from server.routes.public.curriculum_subject_routes import (
     router as CurriculumSubjectRouter,
 )
-from server.routes.public.static_routes import router as StaticRouter
-from server.routes.public.api_key_link_routes import router as ApiKeyLinkRouter
+from server.routes.public.forum_routes import router as ForumRouter
+from server.routes.public.mobile_classes_routes import router as MobileClassRouter
+from server.routes.public.mobile_comments_routes import router as MobileCommentsRouter
+from server.routes.public.mobile_google_authentication_routes import (
+    router as MobileGAuth,
+)
+from server.routes.public.mobile_institutional_events_routes import (
+    router as MobileInstitutionalEventsRouter,
+)
+from server.routes.public.occurrence_routes import router as OccurrenceRouter
+from server.routes.public.reservation_routes import router as ReservationRouter
 from server.routes.public.search_routes import router as SearchRouter
-
+from server.routes.public.static_routes import router as StaticRouter
+from server.routes.public.subject_routes import router as SubjectRouter
 
 router = APIRouter(tags=["Public"], dependencies=[Depends(public_authenticate)])
 

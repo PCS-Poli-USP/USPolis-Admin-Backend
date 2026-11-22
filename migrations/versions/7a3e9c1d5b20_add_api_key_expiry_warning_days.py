@@ -12,9 +12,8 @@ even if it runs again after a restart or on more than one worker.
 
 from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "7a3e9c1d5b20"

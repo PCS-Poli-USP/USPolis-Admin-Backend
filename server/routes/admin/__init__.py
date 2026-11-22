@@ -1,35 +1,34 @@
 from fastapi import APIRouter, Depends
 
 from server.deps.authenticate import admin_authenticate
-from server.routes.admin.building_admin_routes import router as AdminBuildingRouter
-from server.routes.admin.user_admin_routes import router as AdminUserRouter
-from server.routes.admin.mobile_admin_routes import router as AdminMobileRouter
-from server.routes.admin.group_admin_routes import router as AdminGroupRouter
-from server.routes.admin.feedback_admin_routes import router as AdminFeedbackRouter
-from server.routes.admin.bug_report_admin_routes import router as AdminBugReportRouter
-from server.routes.admin.bug_report_evidence_admin_routes import (
-    router as AdminBugReportEvidenceRouter,
-)
-from server.routes.admin.user_session_admin_routes import (
-    router as AdminUserSessionRouter,
-)
-from server.routes.admin.course_admin_routes import router as AdminCourseRouter
-
-from server.routes.admin.curriculum_admin_routes import router as AdminCurriculumRouter
-from server.routes.admin.curriculum_subject_admin_routes import (
-    router as AdminCurriculumSubjectRouter,
-)
 from server.routes.admin.api_access_log_admin_routes import (
     router as AdminApiAccessLogRouter,
 )
 from server.routes.admin.api_incident_report_admin_routes import (
     router as AdminApiIncidentReportRouter,
 )
+from server.routes.admin.api_key_admin_routes import router as AdminApiKeyRouter
+from server.routes.admin.bug_report_admin_routes import router as AdminBugReportRouter
+from server.routes.admin.bug_report_evidence_admin_routes import (
+    router as AdminBugReportEvidenceRouter,
+)
+from server.routes.admin.building_admin_routes import router as AdminBuildingRouter
+from server.routes.admin.course_admin_routes import router as AdminCourseRouter
+from server.routes.admin.curriculum_admin_routes import router as AdminCurriculumRouter
+from server.routes.admin.curriculum_subject_admin_routes import (
+    router as AdminCurriculumSubjectRouter,
+)
+from server.routes.admin.feedback_admin_routes import router as AdminFeedbackRouter
+from server.routes.admin.group_admin_routes import router as AdminGroupRouter
+from server.routes.admin.mobile_admin_routes import router as AdminMobileRouter
 from server.routes.admin.permissions_admin_routes import (
     router as AdminPermissionRouter,
 )
 from server.routes.admin.roles_admin_routes import router as AdminRoleRouter
-from server.routes.admin.api_key_admin_routes import router as AdminApiKeyRouter
+from server.routes.admin.user_admin_routes import router as AdminUserRouter
+from server.routes.admin.user_session_admin_routes import (
+    router as AdminUserSessionRouter,
+)
 
 router = APIRouter(
     prefix="/admin", tags=["Admin"], dependencies=[Depends(admin_authenticate)]

@@ -1,12 +1,11 @@
 from typing import Self
+
 from pydantic import BaseModel
 
 from server.models.database.exam_db_model import Exam
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.http.responses.allocation_response_models import RRule
 from server.models.http.responses.class_response_models import ClassResponseBase
-
-
 from server.models.http.responses.reservation_response_base import (
     ExamResponseBase,
     ReservationCoreResponse,

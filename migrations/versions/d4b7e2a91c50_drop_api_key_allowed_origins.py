@@ -16,10 +16,9 @@ The partner has to ask for a new (server) key.
 
 from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
-
 
 # revision identifiers, used by Alembic.
 revision: str = "d4b7e2a91c50"

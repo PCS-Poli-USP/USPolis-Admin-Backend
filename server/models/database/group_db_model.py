@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
+
 from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, Relationship
 
@@ -11,8 +12,8 @@ from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.must_be_int import must_be_int
 
 if TYPE_CHECKING:
-    from server.models.database.user_db_model import User
     from server.models.database.building_db_model import Building
+    from server.models.database.user_db_model import User
 
 
 class Group(BaseModel, table=True):

@@ -1,8 +1,8 @@
 from typing import Any, Generic, TypeVar, cast
 
 from fastapi import HTTPException, status
-from sqlmodel import Session, select
 from sqlalchemy.orm import selectinload
+from sqlmodel import Session, select
 
 from server.models.database.base_permission_db_model import BasePermission
 from server.models.database.user_db_model import User
@@ -12,7 +12,6 @@ from server.models.http.requests.permission_request_models import (
 )
 from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.type_guard import TypeGuard
-
 
 P = TypeVar("P", bound=BasePermission)
 A = TypeVar("A")

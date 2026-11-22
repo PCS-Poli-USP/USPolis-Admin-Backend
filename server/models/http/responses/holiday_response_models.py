@@ -1,4 +1,5 @@
-from datetime import datetime, date
+from datetime import date, datetime
+
 from pydantic import BaseModel
 
 from server.models.database.holiday_db_model import Holiday

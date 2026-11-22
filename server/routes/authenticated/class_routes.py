@@ -6,8 +6,8 @@ from server.deps.repository_adapters.class_repository_adapter import (
 )
 from server.deps.session_dep import SessionDep
 from server.models.http.responses.class_response_models import (
-    ClassResponse,
     ClassFullResponse,
+    ClassResponse,
 )
 from server.repositories.class_repository import ClassRepository
 

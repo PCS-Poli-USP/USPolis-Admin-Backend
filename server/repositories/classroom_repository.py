@@ -11,12 +11,11 @@ from server.models.http.requests.classroom_request_models import (
     ClassroomUpdate,
 )
 from server.models.page_models import Page, PaginationInput
-from server.utils.must_be_int import must_be_int
-
 from server.repositories.classroom_permission_repository import (
     ClassroomPermissionRepository,
 )
 from server.repositories.occurrence_repository import OccurrenceRepository
+from server.utils.must_be_int import must_be_int
 
 
 class ClassroomRepository:

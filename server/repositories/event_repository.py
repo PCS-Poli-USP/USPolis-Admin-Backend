@@ -1,7 +1,9 @@
 from typing import Any
+
 from fastapi import HTTPException, status
 from sqlalchemy import Select
 from sqlmodel import Session, col, select
+
 from server.deps.interval_dep import QueryInterval
 from server.models.database.event_db_model import Event
 from server.models.database.reservation_db_model import Reservation

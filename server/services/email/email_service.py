@@ -3,20 +3,19 @@ import asyncio
 # from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from pathlib import Path
 from smtplib import SMTP_SSL
+
 from jinja2 import Environment, FileSystemLoader
+
 from server.config import CONFIG
+from server.logger import logger
 from server.models.database.bug_report_db_model import BugReport
 from server.models.database.feedback_db_model import Feedback
 from server.models.database.solicitation_db_model import (
     Solicitation,
 )
 from server.models.database.user_db_model import User
-from server.models.http.requests.solicitation_request_models import (
-    SolicitationApprove,
-    SolicitationDeny,
-    SolicitationUpdated,
-)
 from server.models.http.requests.email_request_models import (
     ApiKeyExpiringMail,
     ApiKeyLinkMail,
@@ -30,9 +29,11 @@ from server.models.http.requests.email_request_models import (
     SolicitationDeniedMail,
     SolicitationRequestedMail,
 )
-from server.logger import logger
-from pathlib import Path
-
+from server.models.http.requests.solicitation_request_models import (
+    SolicitationApprove,
+    SolicitationDeny,
+    SolicitationUpdated,
+)
 from server.utils.enums.bug_enums import BugPriority
 
 template_path = Path(__file__).resolve().parent.parent.parent / "templates"

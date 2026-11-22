@@ -1,13 +1,14 @@
 from datetime import date, datetime
 from typing import TYPE_CHECKING
+
 from sqlalchemy import CheckConstraint, Index
 from sqlmodel import Field, Relationship
 
 from server.models.database.base_db_model import BaseModel
 
 if TYPE_CHECKING:
-    from server.models.database.user_schedule_entry_db_model import UserScheduleEntry
     from server.models.database.user_db_model import User
+    from server.models.database.user_schedule_entry_db_model import UserScheduleEntry
 
 from server.utils.brazil_datetime import BrazilDatetime
 

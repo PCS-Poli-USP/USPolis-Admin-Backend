@@ -7,11 +7,11 @@ from server.models.database.api_key_db_model import ApiKey
 from server.models.database.api_key_delivery_link_db_model import ApiKeyDeliveryLink
 from server.services.rate_limiter import RateLimitRule
 from server.services.security.api_key_crypto import KEY_PREFIX, current_env
-from server.services.security.api_key_link_crypto import delivery_link_url
 from server.services.security.api_key_limits import (
     api_key_status,
     effective_rate_limits,
 )
+from server.services.security.api_key_link_crypto import delivery_link_url
 from server.utils.enums.api_key_link_status_enum import ApiKeyLinkStatus
 from server.utils.enums.api_key_status_enum import ApiKeyStatus
 from server.utils.must_be_int import must_be_int

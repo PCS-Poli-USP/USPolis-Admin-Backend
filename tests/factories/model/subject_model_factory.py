@@ -1,7 +1,8 @@
 from typing import Unpack
-from sqlmodel import Session
-from server.models.database.building_db_model import Building
 
+from sqlmodel import Session
+
+from server.models.database.building_db_model import Building
 from server.models.database.subject_db_model import Subject
 from server.models.dicts.database.subject_database_dicts import SubjectModelDict
 from tests.factories.base.subject_base_factory import SubjectBaseFactory

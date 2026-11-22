@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Body
 
 from server.deps.interval_dep import QueryIntervalDep
+from server.deps.session_dep import SessionDep
 from server.models.http.responses.subject_response_models import (
     SubjectResponse,
     SubjectResponseBase,
 )
-
-from server.deps.session_dep import SessionDep
 from server.repositories.subject_repository import SubjectRepository
 
 embed = Body(..., embed=True)

@@ -2,6 +2,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from sqlmodel import Session
+
 from server.models.database.user_db_model import User
 from server.repositories.building_repository import BuildingNotFound, BuildingRepository
 from server.utils.must_be_int import must_be_int

@@ -1,7 +1,8 @@
 from datetime import date
-from sqlmodel import Session, col, select
-from sqlalchemy.orm import selectinload
+
 from sqlalchemy import or_
+from sqlalchemy.orm import selectinload
+from sqlmodel import Session, col, select
 
 from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom

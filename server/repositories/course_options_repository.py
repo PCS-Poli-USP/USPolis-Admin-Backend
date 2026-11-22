@@ -1,4 +1,5 @@
 from sqlmodel import Session, select
+
 from server.models.database.course_options_db_model import CourseOptions
 
 

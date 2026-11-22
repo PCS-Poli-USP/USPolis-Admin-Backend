@@ -3,7 +3,8 @@
 import os
 import tempfile
 
-from decouple import config, RepositoryEnv, Config as DConfig, Csv  # type: ignore
+from decouple import Config as DConfig  # type: ignore[import-untyped]
+from decouple import Csv, RepositoryEnv, config
 from pydantic import BaseModel
 
 # Mapeamento dos arquivos por ambiente

@@ -1,21 +1,20 @@
 from dotenv import load_dotenv
 from fastapi import APIRouter
 
-
 from server.deps.session_dep import SessionDep
 from server.models.database.mobile_user_db_model import MobileUser
 from server.models.database.subject_db_model import Subject
-from server.models.http.requests.forum_request_models import ForumPostRegister
+from server.models.http.requests.forum_request_models import (
+    ForumPostRegister,
+    to_forumpost_model,
+)
 from server.models.http.responses.forum_post_response import ForumPostResponse
-from server.repositories.mobile_user_repository import MobileUserRepository
 from server.models.http.responses.mobile_auth_user_response_models import (
     AuthenticationResponse,
 )
-from server.repositories.subject_repository import SubjectNotFound, SubjectRepository
-from server.models.http.requests.forum_request_models import (
-    to_forumpost_model,
-)
 from server.repositories.forum_repository import ForumRepository
+from server.repositories.mobile_user_repository import MobileUserRepository
+from server.repositories.subject_repository import SubjectNotFound, SubjectRepository
 
 router = APIRouter(prefix="/mobile/authentication", tags=["Mobile", "Authenticate"])
 

@@ -1,6 +1,6 @@
+import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
-import pytest
 from sqlmodel import Session
 
 from server.models.database.role_db_model import Role

@@ -1,5 +1,6 @@
-from datetime import time
 from datetime import date as datetime_date
+from datetime import time
+
 from pydantic import BaseModel
 
 from server.models.database.occurrence_db_model import Occurrence

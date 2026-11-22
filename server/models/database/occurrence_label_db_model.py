@@ -1,4 +1,5 @@
 from sqlmodel import Field, Relationship
+
 from server.models.database.base_db_model import BaseModel
 from server.models.database.occurrence_db_model import Occurrence
 

@@ -2,9 +2,10 @@ from fastapi import HTTPException, status
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, col, select
+
 from server.models.database.forum_db_model import ForumPost
-from server.models.database.forum_post_report_link import ForumPostReportLink
 from server.models.database.forum_post_reacts_link import ForumPostReactsLink
+from server.models.database.forum_post_report_link import ForumPostReportLink
 from server.utils.brazil_datetime import BrazilDatetime
 
 

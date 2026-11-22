@@ -1,4 +1,5 @@
 from datetime import time
+
 from server.models.dicts.base.schedule_base_dict import ScheduleBaseDict
 from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.recurrence import Recurrence

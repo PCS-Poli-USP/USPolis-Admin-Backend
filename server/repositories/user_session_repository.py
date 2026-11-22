@@ -4,12 +4,11 @@ from datetime import datetime, timedelta
 from typing import NamedTuple
 
 from fastapi import HTTPException, status
-from sqlmodel import Session, col, select
 from sqlalchemy.exc import NoResultFound
+from sqlmodel import Session, col, select
 
 from server.models.database.user_session_db_model import UserSession
 from server.utils.brazil_datetime import BrazilDatetime
-
 
 SESSION_DURATION_DAYS = 30
 # Absolute cap on total session lifetime since creation, regardless of

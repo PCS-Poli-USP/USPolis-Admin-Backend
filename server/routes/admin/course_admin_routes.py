@@ -4,11 +4,11 @@ from sqlalchemy.exc import IntegrityError
 
 from server.deps.authenticate import UserDep
 from server.deps.session_dep import SessionDep
+from server.models.database.course_options_db_model import CourseOptions
 from server.models.http.requests.course_request_models import (
     CourseRegister,
     CourseUpdate,
 )
-from server.models.database.course_options_db_model import CourseOptions
 from server.repositories.course_options_repository import CourseOptionRepository
 from server.repositories.course_repository import CourseRepository
 from server.services.jupiter_crawler.active_courses_crawler.crawler import (

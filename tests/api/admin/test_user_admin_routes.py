@@ -2,13 +2,12 @@ from fastapi import status
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
-from server.models.database.user_db_model import User
 from server.models.database.building_db_model import Building
+from server.models.database.user_db_model import User
 from server.utils.must_be_int import must_be_int
 from tests.factories.model.group_model_factory import GroupModelFactory
 from tests.factories.model.user_model_factory import UserModelFactory
 from tests.factories.request.user_request_factory import UserRequestFactory
-
 
 URL_PREFIX = "/admin/users"
 

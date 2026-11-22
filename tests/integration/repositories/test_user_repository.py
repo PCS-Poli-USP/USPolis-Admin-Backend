@@ -1,8 +1,7 @@
 import pytest
+from fastapi import HTTPException
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session
-
-from fastapi import HTTPException
 
 from server.models.database.building_db_model import Building
 from server.models.database.role_db_model import Role

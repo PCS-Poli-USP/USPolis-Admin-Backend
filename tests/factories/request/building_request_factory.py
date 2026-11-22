@@ -1,4 +1,5 @@
 from typing import Unpack
+
 from server.models.dicts.requests.building_requests_dicts import (
     BuildingRegisterDict,
     BuildingUpdateDict,

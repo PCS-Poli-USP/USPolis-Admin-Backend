@@ -7,14 +7,15 @@ Create Date: 2025-08-22 19:22:47.714752
 """
 
 from collections.abc import Sequence
+from datetime import date, datetime, time
 
+import sqlalchemy as sa
 from alembic import op
 from pydantic import BaseModel
-import sqlalchemy as sa
-from datetime import time, date, datetime
+
 from server.utils.brazil_datetime import BrazilDatetime
-from server.utils.enums.reservation_type import ReservationType
 from server.utils.enums.reservation_status import ReservationStatus
+from server.utils.enums.reservation_type import ReservationType
 
 # revision identifiers, used by Alembic.
 revision: str = "0665bcbe2878"

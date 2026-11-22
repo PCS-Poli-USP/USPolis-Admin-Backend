@@ -5,7 +5,6 @@ from server.deps.session_dep import SessionDep
 from server.models.http.responses.meeting_response_models import MeetingResponse
 from server.repositories.meeting_repository import MeetingRepository
 
-
 router = APIRouter(prefix="/meetings", tags=["Reservations", "Meetings"])
 
 

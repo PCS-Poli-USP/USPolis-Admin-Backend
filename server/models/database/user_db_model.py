@@ -14,21 +14,20 @@ from server.models.database.user_schedule_db_model import UserSchedule
 from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.resources_enums import Resource
 from server.utils.must_be_int import must_be_int
-
 from server.utils.permissions_types import Permission
 
 if TYPE_CHECKING:
+    from server.models.database.bug_report_db_model import BugReport
     from server.models.database.building_db_model import Building
     from server.models.database.calendar_db_model import Calendar
+    from server.models.database.feedback_db_model import Feedback
     from server.models.database.holiday_category_db_model import HolidayCategory
     from server.models.database.holiday_db_model import Holiday
     from server.models.database.reservation_db_model import Reservation
+    from server.models.database.role_db_model import Role
     from server.models.database.solicitation_db_model import (
         Solicitation,
     )
-    from server.models.database.feedback_db_model import Feedback
-    from server.models.database.bug_report_db_model import BugReport
-    from server.models.database.role_db_model import Role
 
 
 class User(BaseModel, table=True):

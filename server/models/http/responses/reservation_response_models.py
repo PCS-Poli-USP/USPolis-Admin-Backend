@@ -1,5 +1,4 @@
 from server.models.database.reservation_db_model import Reservation
-
 from server.models.http.responses.event_response_models import EventResponseBase
 from server.models.http.responses.exam_response_models import ExamResponseBase
 from server.models.http.responses.meeting_response_models import MeetingResponseBase
@@ -7,8 +6,8 @@ from server.models.http.responses.reservation_response_base import (
     ReservationResponseBase,
 )
 from server.models.http.responses.schedule_response_models import (
-    ScheduleResponse,
     ScheduleFullResponse,
+    ScheduleResponse,
 )
 
 

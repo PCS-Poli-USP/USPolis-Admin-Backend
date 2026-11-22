@@ -1,7 +1,6 @@
 from typing import Self
 
 from server.models.database.meeting_db_model import Meeting
-
 from server.models.http.responses.reservation_response_base import (
     MeetingResponseBase,
     ReservationCoreResponse,

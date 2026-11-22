@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends
 
 from server.deps.authenticate import authenticate
+from server.routes.authenticated.bug_report_routes import router as BugReportRouter
 from server.routes.authenticated.building_routes import router as BuildingRouter
 from server.routes.authenticated.calendar_routes import router as CalendarRouter
 from server.routes.authenticated.class_routes import router as ClassRouter
 from server.routes.authenticated.classroom_routes import router as ClassroomRouter
+from server.routes.authenticated.feedback_routes import router as FeedbackRouter
 from server.routes.authenticated.holiday_category_routes import (
     router as HolidayCateryRouter,
 )
@@ -12,13 +14,11 @@ from server.routes.authenticated.holiday_routes import router as HolidayRouter
 from server.routes.authenticated.institutional_event_routes import (
     router as InstitutionalEventRouter,
 )
-from server.routes.authenticated.subject_routes import router as SubjectRouter
-from server.routes.authenticated.user_routes import router as UserRouter
 from server.routes.authenticated.solicitation_routes import (
     router as SolicitationRouter,
 )
-from server.routes.authenticated.feedback_routes import router as FeedbackRouter
-from server.routes.authenticated.bug_report_routes import router as BugReportRouter
+from server.routes.authenticated.subject_routes import router as SubjectRouter
+from server.routes.authenticated.user_routes import router as UserRouter
 from server.routes.authenticated.user_schedule_routes import (
     router as UserScheduleRouter,
 )

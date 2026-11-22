@@ -1,5 +1,7 @@
 from datetime import date, time
+
 from pydantic import BaseModel
+
 from server.utils.enums.week_day import WeekDay
 
 

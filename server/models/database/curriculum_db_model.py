@@ -1,14 +1,15 @@
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, UniqueConstraint
-from server.utils.brazil_datetime import BrazilDatetime
+
 from server.models.database.base_db_model import BaseModel
-from datetime import datetime
+from server.utils.brazil_datetime import BrazilDatetime
 
 if TYPE_CHECKING:
-    from server.models.database.user_db_model import User
     from server.models.database.course_db_model import Course
     from server.models.database.curriculum_subject_db_model import CurriculumSubject
+    from server.models.database.user_db_model import User
 
 
 class Curriculum(BaseModel, table=True):

@@ -10,6 +10,7 @@ from fastapi import APIRouter, HTTPException, Response, status
 
 from server.deps.authenticate import UserDep
 from server.deps.session_dep import SessionDep
+from server.logger import logger
 from server.models.http.requests.api_key_request_models import (
     ApiClientActiveUpdate,
     ApiClientRegister,
@@ -37,7 +38,6 @@ from server.repositories.api_key_repository import ApiKeyRepository
 from server.services.email.email_service import EmailService
 from server.services.security.api_key_auth import invalidate_api_key_cache
 from server.services.security.api_key_link_crypto import delivery_link_url
-from server.logger import logger
 
 router = APIRouter(tags=["API Keys"])
 

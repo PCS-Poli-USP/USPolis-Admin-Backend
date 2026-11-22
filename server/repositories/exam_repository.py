@@ -1,7 +1,9 @@
 from typing import Any
+
 from fastapi import HTTPException, status
 from sqlalchemy import Select
 from sqlmodel import Session, col, select
+
 from server.deps.interval_dep import QueryInterval
 from server.models.database.exam_class_link import ExamClassLink
 from server.models.database.exam_db_model import Exam

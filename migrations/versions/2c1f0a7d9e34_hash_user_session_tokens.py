@@ -16,10 +16,9 @@ id == cookie until they expire (at most SESSION_MAX_AGE_DAYS = 90 days).
 
 from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
 import sqlmodel
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "2c1f0a7d9e34"

@@ -5,7 +5,6 @@ from server.deps.authenticate import UserDep
 from server.deps.repository_adapters.event_repository_adapter import EventRepositoryDep
 from server.models.http.requests.event_request_models import EventRegister, EventUpdate
 
-
 router = APIRouter(prefix="/events", tags=["Reservations", "Events"])
 
 

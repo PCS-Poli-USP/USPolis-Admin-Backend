@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status
-from sqlmodel import Session, col, select, desc
 from sqlalchemy.exc import IntegrityError, NoResultFound
+from sqlmodel import Session, col, desc, select
 
 from server.models.database.holiday_category_db_model import HolidayCategory
 from server.models.database.user_db_model import User

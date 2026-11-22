@@ -1,7 +1,8 @@
 import csv
-from sqlmodel import Session, create_engine
-from server.config import CONFIG
 
+from sqlmodel import Session, create_engine
+
+from server.config import CONFIG
 from server.models.database import (  # noqa
     building_db_model,
     calendar_db_model,

@@ -1,12 +1,11 @@
 import asyncio
+import os
 from dataclasses import dataclass
 from datetime import time
 from pathlib import Path
-import os
 
-from playwright.async_api import Browser, Locator, Page
+from playwright.async_api import Browser, Locator, Page, async_playwright
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
-from playwright.async_api import async_playwright
 
 from server.config import CONFIG
 from server.services.jupiter_crawler.crawl_limiter import (

@@ -1,26 +1,26 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlmodel import Relationship, Field, Column, Enum
+from sqlmodel import Column, Enum, Field, Relationship
 
 from server.exceptions.database_exceptions import DatabaseInconsistencyException
 from server.models.database.base_db_model import BaseModel
 from server.models.database.building_db_model import Building
 from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.audiovisual_type_enum import AudiovisualType
-from server.utils.enums.reservation_type import ReservationType
 from server.utils.enums.reservation_status import ReservationStatus
+from server.utils.enums.reservation_type import ReservationType
 
 if TYPE_CHECKING:
     from server.models.database.classroom_db_model import Classroom
+    from server.models.database.event_db_model import Event
+    from server.models.database.exam_db_model import Exam
+    from server.models.database.meeting_db_model import Meeting
     from server.models.database.schedule_db_model import Schedule
-    from server.models.database.user_db_model import User
     from server.models.database.solicitation_db_model import (
         Solicitation,
     )
-    from server.models.database.exam_db_model import Exam
-    from server.models.database.meeting_db_model import Meeting
-    from server.models.database.event_db_model import Event
+    from server.models.database.user_db_model import User
 
 
 class Reservation(BaseModel, table=True):

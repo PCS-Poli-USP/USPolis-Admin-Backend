@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Body
 
-from server.models.http.responses.course_response_models import CourseResponse
-
 from server.deps.session_dep import SessionDep
+from server.models.http.responses.course_response_models import CourseResponse
 from server.repositories.course_options_repository import CourseOptionRepository
 from server.repositories.course_repository import CourseRepository
 from server.services.jupiter_crawler.active_courses_crawler.crawler import (

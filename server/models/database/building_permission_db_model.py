@@ -9,9 +9,9 @@ from server.models.database.base_permission_db_model import BasePermission
 from server.utils.enums.actions_enums import BuildingAction
 
 if TYPE_CHECKING:
+    from server.models.database.building_db_model import Building
     from server.models.database.role_db_model import Role
     from server.models.database.user_db_model import User
-    from server.models.database.building_db_model import Building
 
 
 class BuildingPermission(BasePermission, table=True):

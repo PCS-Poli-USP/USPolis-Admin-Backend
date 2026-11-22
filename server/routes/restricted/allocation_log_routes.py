@@ -5,7 +5,6 @@ from server.deps.repository_adapters.schedule_repository_adapter import (
 )
 from server.models.http.responses.allocation_log_response import AllocationLogResponse
 
-
 router = APIRouter(prefix="/allocations_logs", tags=["AllocationsLogs"])
 
 

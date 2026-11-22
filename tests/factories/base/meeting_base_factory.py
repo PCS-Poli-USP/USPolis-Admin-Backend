@@ -1,4 +1,5 @@
 from random import choice
+
 from server.models.dicts.base.meeting_base_dict import MeetingBaseDict
 from tests.factories.base.base_factory import BaseFactory
 

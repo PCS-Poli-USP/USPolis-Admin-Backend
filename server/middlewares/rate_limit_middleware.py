@@ -1,4 +1,5 @@
 import time
+
 from fastapi.responses import JSONResponse
 from starlette.datastructures import MutableHeaders
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
@@ -21,7 +22,6 @@ from server.services.security.api_key_auth import (
     API_KEY_IDENTITY_STATE_KEY,
     ApiKeyIdentity,
 )
-
 
 # Paths (relative to the /api root path) never counted by the rate limiter:
 # health checks are API-key protected and polled by monitoring.

@@ -1,25 +1,26 @@
-from collections.abc import Generator
 import os
+from collections.abc import Generator
+from pathlib import Path
 from unittest.mock import MagicMock
 
+import pytest
 from alembic import command
 from alembic.config import Config
-from pathlib import Path
-
 from fastapi import Request
-import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlmodel import Session, select
-from server.config import CONFIG
 
+from server.app import app
+from server.config import CONFIG
 
 # Import this to initialize the database
 from server.db import (
     engine as db_engine,  # noqa: F401
+)
+from server.db import (
     get_db,  # noqa: F401
 )
-from server.app import app
 from server.deps.authenticate import authenticate, google_token_authenticate
 from server.deps.session_dep import SessionDep
 from server.models.database.building_db_model import Building
@@ -37,6 +38,7 @@ from server.repositories.occurrence_repository import OccurrenceRepository
 from server.repositories.user_repository import UserRepository
 from server.services.auth.auth_user_info import AuthUserInfo
 from server.utils.enums.resources_enums import Resource
+from tests.factories.base.base_factory import shared_faker
 from tests.factories.model.building_model_factory import BuildingModelFactory
 from tests.factories.model.class_model_factory import ClassModelFactory
 from tests.factories.model.classroom_model_factory import ClassroomModelFactory
@@ -44,7 +46,6 @@ from tests.factories.model.event_model_factory import EventModelFactory
 from tests.factories.model.exam_model_factory import ExamModelFactory
 from tests.factories.model.group_model_factory import GroupModelFactory
 from tests.factories.model.meeting_model_factory import MeetingModelFactory
-from tests.factories.base.base_factory import shared_faker
 from tests.factories.model.role_model_factory import RoleModelFactory
 from tests.factories.model.subject_model_factory import SubjectModelFactory
 from tests.factories.model.user_model_factory import UserModelFactory

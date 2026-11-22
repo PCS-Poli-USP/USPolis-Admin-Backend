@@ -1,5 +1,6 @@
 from datetime import date, datetime, time
 from typing import Self
+
 from pydantic import BaseModel
 
 from server.models.database.event_db_model import Event

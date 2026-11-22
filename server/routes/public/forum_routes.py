@@ -1,4 +1,5 @@
 from typing import Any
+
 from fastapi import APIRouter, Body, Query
 
 from server.deps.google_auth_dep import GoogleAuthorizationDep
@@ -6,11 +7,11 @@ from server.deps.session_dep import SessionDep
 from server.models.database.forum_db_model import ForumPost
 from server.models.database.subject_db_model import Subject
 from server.models.http.requests.forum_request_models import (
-    ForumPostRegister,
-    to_forumpost_model,
-    ForumReportRegister,
-    to_forumreply_model,
     ForumPostLike,
+    ForumPostRegister,
+    ForumReportRegister,
+    to_forumpost_model,
+    to_forumreply_model,
 )
 from server.models.http.responses.forum_post_response import (
     ForumPostReplyResponse,

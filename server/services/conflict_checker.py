@@ -1,6 +1,5 @@
-from datetime import date, time
-
 from collections import defaultdict
+from datetime import date, time
 from typing import Self
 
 from fastapi import HTTPException, status

@@ -20,7 +20,9 @@ if __name__ == "__main__":
 
 from httpx import AsyncClient
 
-from server.db import engine  # noqa: F401  (imported for its side effect: registers models)
+from server.db import (
+    engine,  # noqa: F401  (imported for its side effect: registers models)
+)
 from server.services.janus_crawler.crawler import JanusCrawler
 from tests.services.crawler_snapshot_utils import write_snapshot
 from tests.services.janus_crawler.crawler_test_utils import (

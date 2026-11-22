@@ -1,8 +1,11 @@
+import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
-
-import pytest
 from sqlmodel import Session
+
+from server.models.database.building_db_model import Building
+from server.models.database.group_db_model import Group
+from server.models.database.user_db_model import User
 from server.repositories.group_repository import GroupNotFound, GroupRepository
 from server.repositories.user_repository import UserRepository
 from server.utils.must_be_int import must_be_int
@@ -11,9 +14,6 @@ from tests.factories.model.classroom_model_factory import ClassroomModelFactory
 from tests.factories.model.group_model_factory import GroupModelFactory
 from tests.factories.model.user_model_factory import UserModelFactory
 from tests.factories.request.group_request_factory import GroupRequestFactory
-from server.models.database.user_db_model import User
-from server.models.database.building_db_model import Building
-from server.models.database.group_db_model import Group
 
 URL_PREFIX = "/admin/groups"
 

@@ -1,6 +1,7 @@
 from fastapi import HTTPException, status
-from sqlmodel import Session, col, select
 from sqlalchemy.exc import NoResultFound
+from sqlmodel import Session, col, select
+
 from server.models.database.bug_report_db_model import BugReport
 from server.models.database.bug_report_evidence_db_model import BugReportEvidence
 from server.models.database.user_db_model import User

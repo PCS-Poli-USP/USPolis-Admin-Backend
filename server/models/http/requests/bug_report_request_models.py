@@ -3,7 +3,6 @@ from pydantic import BaseModel
 
 from server.utils.enums.bug_enums import BugPriority, BugStatus, BugType
 
-
 VALID_IMG_MIME_TYPE = ["image/jpeg", "image/png"]
 
 

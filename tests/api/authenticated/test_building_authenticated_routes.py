@@ -1,5 +1,6 @@
 from fastapi import status
 from fastapi.testclient import TestClient
+
 from server.models.database.building_db_model import Building
 from tests.utils.validators.building.building_response_validator import (
     BuildingResponseAsserts,

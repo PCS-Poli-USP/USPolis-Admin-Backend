@@ -8,14 +8,13 @@ Create Date: 2025-05-09 19:59:44.883843
 
 from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
-from sqlmodel import Session, select, col
+from alembic import op
+from sqlmodel import Session, col, select
 
 from server.models.database.building_db_model import Building
 from server.models.database.group_classroom_link import GroupClassroomLink
 from server.models.database.group_db_model import Group
-
 
 # revision identifiers, used by Alembic.
 revision: str = "abcd4d03111f"

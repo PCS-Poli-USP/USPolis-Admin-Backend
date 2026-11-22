@@ -1,11 +1,10 @@
 import re
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
 from bs4 import BeautifulSoup
 from httpx import AsyncClient
 
 from ..course_models import CourseOption
-
 
 BASE_URL = "https://uspdigital.usp.br/jupiterweb/jupCursoLista"
 

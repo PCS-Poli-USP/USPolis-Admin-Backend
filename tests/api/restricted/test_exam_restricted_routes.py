@@ -5,9 +5,9 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
+from server.models.database.classroom_db_model import Classroom
 from server.models.database.exam_db_model import Exam
 from server.models.database.subject_db_model import Subject
-from server.models.database.classroom_db_model import Classroom
 from server.utils.enums.recurrence import Recurrence
 from tests.factories.request.exam_request_factory import ExamRequestFactory
 from tests.utils.validators.exam.exam_model_validator import ExamModelAsserts

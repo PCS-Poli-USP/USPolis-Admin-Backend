@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, Relationship
-from server.models.database.base_db_model import BaseModel
 
+from server.models.database.base_db_model import BaseModel
 from server.models.database.calendar_holiday_category_link import (
     CalendarHolidayCategoryLink,
 )

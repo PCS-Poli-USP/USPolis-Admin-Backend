@@ -1,4 +1,5 @@
 from sqlmodel import Session
+
 from server.models.database.exam_db_model import Exam
 from server.models.database.user_db_model import User
 from server.repositories.exam_repository import ExamRepository

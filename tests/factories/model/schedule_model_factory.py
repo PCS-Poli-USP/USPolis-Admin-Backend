@@ -1,5 +1,7 @@
 from typing import Unpack
+
 from sqlmodel import Session
+
 from server.models.database.class_db_model import Class
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.schedule_db_model import Schedule

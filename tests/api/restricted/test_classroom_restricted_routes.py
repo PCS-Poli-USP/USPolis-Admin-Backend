@@ -1,15 +1,13 @@
+import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
-
-import pytest
 from sqlmodel import Session
 
-from server.models.database.user_db_model import User
 from server.models.database.building_db_model import Building
+from server.models.database.class_db_model import Class
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.group_db_model import Group
-from server.models.database.class_db_model import Class
-
+from server.models.database.user_db_model import User
 from server.repositories.classroom_repository import (
     ClassroomNotFound,
     ClassroomRepository,
@@ -24,7 +22,6 @@ from tests.factories.request.classroom_request_factory import ClassroomRequestFa
 from tests.utils.validators.classroom.classroom_response_validator import (
     ClassroomResponseAsserts,
 )
-
 
 URL_PREFIX = "/classrooms"
 

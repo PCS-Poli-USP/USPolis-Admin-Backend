@@ -1,4 +1,5 @@
 from datetime import date
+
 from fastapi import APIRouter
 
 from server.cache import date_range_cache
@@ -12,7 +13,6 @@ from server.repositories.building_repository import BuildingRepository
 from server.repositories.occurrence_repository import OccurrenceRepository
 from server.repositories.schedule_repository import ScheduleRepository
 from server.utils.brazil_datetime import BrazilDatetime
-
 
 router = APIRouter(prefix="/allocations", tags=["Allocations"])
 

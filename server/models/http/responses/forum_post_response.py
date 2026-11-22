@@ -1,9 +1,10 @@
 from datetime import datetime
+
 from pydantic import BaseModel
-from server.models.database.forum_db_model import ForumPost
-from server.repositories.forum_repository import ForumRepository
 from sqlmodel import Session
 
+from server.models.database.forum_db_model import ForumPost
+from server.repositories.forum_repository import ForumRepository
 from server.utils.must_be_int import must_be_int
 
 

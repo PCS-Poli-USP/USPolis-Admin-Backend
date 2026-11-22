@@ -1,9 +1,9 @@
-import uvicorn
 import os
 
-from server.logger import logger
+import uvicorn
 
 from server.config import CONFIG
+from server.logger import logger
 
 if __name__ == "__main__":
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))

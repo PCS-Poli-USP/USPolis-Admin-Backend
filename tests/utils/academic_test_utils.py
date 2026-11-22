@@ -46,8 +46,8 @@ from server.models.database.user_db_model import User
 from server.utils.enums.action_type_enum import ActionType
 from server.utils.enums.actions_enums import PermissionAction
 from server.utils.enums.event_type_enum import EventType
-from server.utils.enums.resources_enums import Resource
 from server.utils.enums.reservation_type import ReservationType
+from server.utils.enums.resources_enums import Resource
 from server.utils.must_be_int import must_be_int
 from tests.factories.base.event_base_factory import EventBaseFactory
 from tests.factories.base.exam_base_factory import ExamBaseFactory

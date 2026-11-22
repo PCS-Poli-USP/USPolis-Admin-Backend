@@ -3,8 +3,8 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 
 from server.models.database.building_db_model import Building
-from server.models.database.subject_db_model import Subject
 from server.models.database.group_db_model import Group
+from server.models.database.subject_db_model import Subject
 from server.utils.must_be_int import must_be_int
 from tests.factories.model.subject_model_factory import SubjectModelFactory
 from tests.factories.request.subject_request_factory import SubjectRequestFactory

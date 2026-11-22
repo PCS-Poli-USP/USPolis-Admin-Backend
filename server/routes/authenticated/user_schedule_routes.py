@@ -25,7 +25,6 @@ from server.services.jupiter_crawler.models import JupiterStudentSubject
 from server.utils.enums.crawler_enums import CrawlerStatus
 from server.utils.must_be_int import must_be_int
 
-
 router = APIRouter(prefix="/users/schedules", tags=["UserSchedules"])
 
 

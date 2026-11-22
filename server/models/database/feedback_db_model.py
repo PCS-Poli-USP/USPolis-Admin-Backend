@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
-from sqlmodel import Field, Relationship
+
 from sqlalchemy import Column, Text
+from sqlmodel import Field, Relationship
+
 from server.models.database.base_db_model import BaseModel
 from server.utils.brazil_datetime import BrazilDatetime
 

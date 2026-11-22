@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Body
 
+from server.deps.session_dep import SessionDep
 from server.models.http.responses.building_response_models import BuildingResponse
 from server.repositories.building_repository import BuildingRepository
-
-from server.deps.session_dep import SessionDep
 
 embed = Body(..., embed=True)
 

@@ -8,7 +8,6 @@ from server.models.http.responses.role_response_models import RoleResponse
 from server.repositories.role_repository import RoleRepository
 from server.utils.enums.resources_enums import Resource
 
-
 router = APIRouter(prefix="/roles", tags=["Roles"])
 
 

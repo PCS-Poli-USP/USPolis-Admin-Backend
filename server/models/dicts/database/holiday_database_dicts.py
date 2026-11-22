@@ -1,4 +1,6 @@
-from datetime import datetime, date as datetime_date
+from datetime import date as datetime_date
+from datetime import datetime
+
 from server.models.database.holiday_category_db_model import HolidayCategory
 from server.models.database.user_db_model import User
 from server.models.dicts.base.holiday_base_dict import HolidayBaseDict

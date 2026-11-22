@@ -1,5 +1,7 @@
 from typing import Self, TypeVar, Union
+
 from pydantic import BaseModel, model_validator
+
 from server.models.http.requests.reservation_request_models import (
     ReservationRegister,
     ReservationUpdate,

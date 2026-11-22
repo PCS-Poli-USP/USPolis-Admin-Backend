@@ -3,9 +3,9 @@ from datetime import datetime
 from sqlmodel import Field, Relationship
 
 from server.models.database.base_db_model import BaseModel
+from server.models.database.forum_post_reacts_link import ForumPostReactsLink
 from server.models.database.forum_post_report_link import ForumPostReportLink
 from server.models.database.mobile_user_db_model import MobileUser
-from server.models.database.forum_post_reacts_link import ForumPostReactsLink
 from server.utils.brazil_datetime import BrazilDatetime
 
 

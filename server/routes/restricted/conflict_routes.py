@@ -1,4 +1,5 @@
 from datetime import date
+
 from fastapi import APIRouter
 
 from server.deps.conflict_checker import ConflictCheckerDep

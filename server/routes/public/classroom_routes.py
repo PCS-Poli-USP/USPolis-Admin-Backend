@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Body
 
+from server.deps.interval_dep import QueryInterval, QueryIntervalDep
 from server.deps.pagination_dep import PaginationDep
 from server.deps.session_dep import SessionDep
-from server.deps.interval_dep import QueryInterval, QueryIntervalDep
 from server.models.http.responses.classroom_response_models import (
-    ClassroomResponse,
     ClassroomFullResponse,
+    ClassroomResponse,
 )
 from server.models.http.responses.paginated_response_models import PaginatedResponse
 from server.repositories.classroom_repository import ClassroomRepository

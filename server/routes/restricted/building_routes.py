@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Body
+
 from server.deps.authenticate import UserDep
 from server.deps.interval_dep import QueryIntervalDep
 from server.deps.permission_index_dep import PermissionIndexDep

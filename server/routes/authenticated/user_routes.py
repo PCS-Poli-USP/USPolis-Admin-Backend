@@ -2,8 +2,14 @@ from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 
 from server.deps.authenticate import UserDep
+from server.deps.repository_adapters.building_repository_adapter import (
+    BuildingRepositoryDep,
+)
 from server.deps.repository_adapters.class_repository_adapter import (
     ClassRepositoryDep,
+)
+from server.deps.repository_adapters.classroom_repository_adapter import (
+    ClassroomRepositoryDep,
 )
 from server.deps.repository_adapters.reservation_repository_adapter import (
     ReservationRepositoryDep,
@@ -12,35 +18,27 @@ from server.deps.repository_adapters.subject_repository_adapter import (
     SubjectRepositoryDep,
 )
 from server.deps.session_dep import SessionDep
-from server.deps.repository_adapters.building_repository_adapter import (
-    BuildingRepositoryDep,
-)
-from server.deps.repository_adapters.classroom_repository_adapter import (
-    ClassroomRepositoryDep,
-)
-
 from server.models.database.user_db_model import User
+from server.models.http.responses.building_response_models import BuildingResponse
 from server.models.http.responses.class_response_models import ClassResponse
 from server.models.http.responses.classroom_response_models import ClassroomResponse
 from server.models.http.responses.course_response_models import CourseResponse
 from server.models.http.responses.curriculum_response_models import CurriculumResponse
+from server.models.http.responses.group_response_models import GroupResponse
+from server.models.http.responses.reservation_response_models import ReservationResponse
 from server.models.http.responses.solicitation_response_models import (
     SolicitationResponse,
 )
-from server.models.http.responses.group_response_models import GroupResponse
-from server.models.http.responses.reservation_response_models import ReservationResponse
 from server.models.http.responses.subject_response_models import SubjectResponse
 from server.models.http.responses.user_response_models import UserResponse
-from server.models.http.responses.building_response_models import BuildingResponse
 from server.models.http.responses.user_schedule_response import UserScheduleResponse
-from server.repositories.user_schedule_repository import UserScheduleRepository
+from server.repositories.group_repository import GroupRepository
 from server.repositories.solicitation_repository import (
     SolicitationRepository,
 )
-from server.repositories.group_repository import GroupRepository
 from server.repositories.user_repository import UserRepository
+from server.repositories.user_schedule_repository import UserScheduleRepository
 from server.utils.must_be_int import must_be_int
-
 
 router = APIRouter(prefix="/users", tags=["Users"])
 

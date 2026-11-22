@@ -1,10 +1,11 @@
 from typing import Unpack
+
+from server.models.database.classroom_db_model import Classroom
 from server.models.dicts.requests.event_requests_dicts import (
     EventRegisterDict,
     EventUpdateDict,
 )
 from server.models.http.requests.event_request_models import EventRegister, EventUpdate
-from server.models.database.classroom_db_model import Classroom
 from server.utils.enums.event_type_enum import EventType
 from server.utils.enums.reservation_type import ReservationType
 from tests.factories.base.event_base_factory import EventBaseFactory

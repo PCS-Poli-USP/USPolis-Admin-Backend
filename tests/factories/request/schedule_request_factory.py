@@ -1,5 +1,6 @@
 from datetime import date
 from typing import Unpack
+
 from server.models.database.class_db_model import Class
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.reservation_db_model import Reservation

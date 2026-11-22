@@ -1,4 +1,5 @@
 from typing import Annotated
+
 from fastapi import Depends, Query
 
 from server.models.page_models import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, PaginationInput

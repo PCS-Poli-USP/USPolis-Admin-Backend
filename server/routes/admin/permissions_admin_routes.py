@@ -19,7 +19,6 @@ from server.repositories.course_permission_repository import CoursePermissionRep
 from server.utils.enums.resources_enums import Resource
 from server.utils.permissions_types import Permission
 
-
 router = APIRouter(prefix="/permissions", tags=["Permissions"])
 
 PermissionRepositoryType = (

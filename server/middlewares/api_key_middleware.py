@@ -1,10 +1,11 @@
 import time
-from urllib.parse import parse_qs
-from typing import Any
 from collections.abc import Callable
+from typing import Any
+from urllib.parse import parse_qs
+
+from anyio import to_thread
 from fastapi import status
 from fastapi.responses import JSONResponse
-from anyio import to_thread
 from redis.asyncio import Redis
 from redis.exceptions import RedisError
 from starlette.datastructures import Headers
@@ -28,7 +29,6 @@ from server.services.security.api_key_auth import (
     db_record_loader,
     should_write_last_used,
 )
-
 
 # A key in the URL ends up in logs, proxies and browser history.
 API_KEY_QUERY_PARAMS = frozenset({"api_key", "apikey", "x-api-key", "x_api_key"})

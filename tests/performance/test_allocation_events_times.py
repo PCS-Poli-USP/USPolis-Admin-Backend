@@ -1,4 +1,5 @@
 from time import time
+
 import requests
 
 MAX_TRIES = 10

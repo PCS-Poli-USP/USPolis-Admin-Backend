@@ -1,12 +1,13 @@
 from datetime import datetime
+
 from pydantic import BaseModel
 
 from server.models.database.solicitation_db_model import (
     Solicitation,
 )
+from server.models.http.responses.reservation_response_models import ReservationResponse
 from server.utils.enums.reservation_status import ReservationStatus
 from server.utils.must_be_int import must_be_int
-from server.models.http.responses.reservation_response_models import ReservationResponse
 
 
 class SolicitationResponse(BaseModel):

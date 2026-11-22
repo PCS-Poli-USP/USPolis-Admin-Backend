@@ -1,11 +1,11 @@
 from datetime import datetime
 
 from server.models.database.building_db_model import Building
-from server.models.database.solicitation_db_model import Solicitation
 from server.models.database.group_db_model import Group
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.schedule_db_model import Schedule
+from server.models.database.solicitation_db_model import Solicitation
 from server.models.database.user_db_model import User
 from server.models.dicts.base.classroom_base_dict import ClassroomBaseDict
 from server.models.dicts.database.base_database_dicts import BaseModelDict

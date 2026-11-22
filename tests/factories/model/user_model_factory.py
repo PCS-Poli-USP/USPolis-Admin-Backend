@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Unpack
 
 from sqlmodel import Session
+
 from server.models.database.user_db_model import User
 from server.models.dicts.database.user_database_dicts import UserModelDict
 from tests.factories.base.user_base_factory import UserBaseFactory

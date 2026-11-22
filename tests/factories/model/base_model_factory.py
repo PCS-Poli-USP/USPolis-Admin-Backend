@@ -1,10 +1,10 @@
 from abc import ABCMeta, abstractmethod
 from typing import Any, Generic, TypeVar, Unpack
-from sqlmodel import SQLModel, Session
+
 from sqlalchemy.exc import NoResultFound
+from sqlmodel import Session, SQLModel
 
 from server.models.dicts.database.base_database_dicts import BaseModelDict
-
 
 M = TypeVar("M", bound=SQLModel)
 InputType = TypeVar("InputType", bound=BaseModelDict)

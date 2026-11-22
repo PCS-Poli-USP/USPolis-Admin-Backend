@@ -1,11 +1,11 @@
 from datetime import datetime, time
 from typing import TYPE_CHECKING
 
-from sqlalchemy import UniqueConstraint
-from sqlmodel import Field, Relationship, Column, Enum
-from server.models.database.base_db_model import BaseModel
 from pydantic import BaseModel as PydanticBaseModel
+from sqlalchemy import UniqueConstraint
+from sqlmodel import Column, Enum, Field, Relationship
 
+from server.models.database.base_db_model import BaseModel
 from server.models.database.group_classroom_link import GroupClassroomLink
 from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.audiovisual_type_enum import AudiovisualType
@@ -13,11 +13,11 @@ from server.utils.must_be_int import must_be_int
 
 if TYPE_CHECKING:
     from server.models.database.building_db_model import Building
+    from server.models.database.group_db_model import Group
     from server.models.database.occurrence_db_model import Occurrence
     from server.models.database.schedule_db_model import Schedule
-    from server.models.database.user_db_model import User
-    from server.models.database.group_db_model import Group
     from server.models.database.solicitation_db_model import Solicitation
+    from server.models.database.user_db_model import User
 
 
 class ClassroomBase(BaseModel):

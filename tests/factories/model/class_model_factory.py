@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import Unpack
+
 from sqlmodel import Session
+
 from server.models.database.class_db_model import Class
 from server.models.database.subject_db_model import Subject
 from server.models.dicts.database.class_database_dicts import ClassModelDict

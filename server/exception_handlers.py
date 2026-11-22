@@ -1,7 +1,7 @@
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
-from sqlalchemy.exc import IntegrityError, NoResultFound
 from google.auth.exceptions import GoogleAuthError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
 
 async def handle_integrity_error(request, exc: IntegrityError) -> JSONResponse:  # type: ignore [no-untyped-def]

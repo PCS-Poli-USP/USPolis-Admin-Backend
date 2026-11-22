@@ -1,26 +1,26 @@
 from datetime import date
 from typing import cast
+
 from fastapi import HTTPException, status
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
+
 from server.models.database.reservation_db_model import Reservation
 from server.models.database.schedule_db_model import Schedule
 from server.models.database.solicitation_db_model import (
     Solicitation,
 )
 from server.models.database.user_db_model import User
-from server.models.http.requests.exam_request_models import ExamUpdate
 from server.models.http.requests.event_request_models import EventUpdate
+from server.models.http.requests.exam_request_models import ExamUpdate
 from server.models.http.requests.meeting_request_models import MeetingUpdate
 from server.models.http.requests.solicitation_request_models import (
     SolicitationDeny,
     SolicitationRegister,
 )
-
 from server.models.page_models import Page, PaginationInput
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.classroom_repository import ClassroomRepository
-
 from server.repositories.event_repository import EventRepository
 from server.repositories.exam_repository import ExamRepository
 from server.repositories.meeting_repository import MeetingRepository

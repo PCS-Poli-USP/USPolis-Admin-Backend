@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING
+
 from sqlmodel import Field, Relationship
+
 from server.models.database.base_db_model import BaseModel
 
 if TYPE_CHECKING:

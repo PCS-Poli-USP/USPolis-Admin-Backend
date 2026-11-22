@@ -1,6 +1,6 @@
 from typing import Generic, TypeVar
 
-from sqlmodel import SQLModel, Session
+from sqlmodel import Session, SQLModel
 
 from server.models.database.user_db_model import User
 

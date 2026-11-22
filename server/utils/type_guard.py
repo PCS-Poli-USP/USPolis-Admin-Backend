@@ -1,4 +1,5 @@
-from typing import TypeVar, TypeGuard as TypeGuardProtocol
+from typing import TypeGuard as TypeGuardProtocol
+from typing import TypeVar
 
 from fastapi import HTTPException, status
 

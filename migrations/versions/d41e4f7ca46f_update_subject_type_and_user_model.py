@@ -8,11 +8,10 @@ Create Date: 2025-04-02 19:27:34.419064
 
 from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 from server.utils.brazil_datetime import BrazilDatetime
-
 
 # revision identifiers, used by Alembic.
 revision: str = "d41e4f7ca46f"

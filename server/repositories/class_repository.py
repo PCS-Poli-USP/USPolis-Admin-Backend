@@ -1,8 +1,9 @@
 from typing import Any
+
 from fastapi import HTTPException, status
-from sqlalchemy import Select, exists, and_, tuple_
-from sqlalchemy.orm import selectinload
+from sqlalchemy import Select, and_, exists, tuple_
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy.orm import selectinload
 from sqlmodel import Session, col, select
 
 from server.deps.interval_dep import QueryInterval
@@ -14,11 +15,9 @@ from server.models.database.subject_building_link import SubjectBuildingLink
 from server.models.database.subject_db_model import Subject
 from server.models.database.user_db_model import User
 from server.models.http.requests.class_request_models import ClassRegister, ClassUpdate
-
 from server.repositories.calendar_repository import CalendarRepository
 from server.repositories.schedule_repository import ScheduleRepository
 from server.repositories.subject_repository import SubjectRepository
-
 from server.services.security.role_permission_evaluator import PermissionIndex
 from server.services.security.schedule_permission_checker import (
     SchedulePermissionChecker,

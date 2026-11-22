@@ -1,4 +1,5 @@
 import asyncio
+
 from fastapi import APIRouter, Body
 from fastapi.responses import JSONResponse
 
@@ -15,16 +16,15 @@ from server.models.http.responses.reservation_response_models import (
     ReservationFullResponse,
     ReservationResponse,
 )
+from server.repositories.reservation_repository import ReservationRepository
+from server.routes.restricted.event_routes import router as EventRouter
+from server.routes.restricted.exam_routes import router as ExamRouter
+from server.routes.restricted.meeting_routes import router as MeetingRouter
 from server.services.email.email_service import EmailService
 from server.services.security.reservation_permission_checker import (
     ReservationPermissionChecker,
 )
-from server.repositories.reservation_repository import ReservationRepository
 from server.utils.enums.actions_enums import ClassroomAction
-
-from server.routes.restricted.exam_routes import router as ExamRouter
-from server.routes.restricted.event_routes import router as EventRouter
-from server.routes.restricted.meeting_routes import router as MeetingRouter
 
 embed = Body(..., embed=True)
 

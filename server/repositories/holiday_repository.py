@@ -1,8 +1,8 @@
 from datetime import datetime
 
 from fastapi import HTTPException, status
-from sqlmodel import col, select, Session
 from sqlalchemy.exc import IntegrityError, NoResultFound
+from sqlmodel import Session, col, select
 
 from server.models.database.holiday_db_model import Holiday
 from server.models.database.user_db_model import User

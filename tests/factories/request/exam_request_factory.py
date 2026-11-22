@@ -1,16 +1,17 @@
 from typing import Unpack
+
+from server.models.database.class_db_model import Class
+from server.models.database.classroom_db_model import Classroom
+from server.models.database.subject_db_model import Subject
+from server.models.dicts.requests.exam_requests_dicts import (
+    ExamRegisterDict,
+    ExamUpdateDict,
+)
 from server.models.http.requests.exam_request_models import ExamRegister, ExamUpdate
 from server.models.http.requests.schedule_request_models import ScheduleRegister
 from server.utils.enums.recurrence import Recurrence
 from server.utils.enums.reservation_type import ReservationType
 from server.utils.must_be_int import must_be_int
-from server.models.database.class_db_model import Class
-from server.models.database.classroom_db_model import Classroom
-from server.models.database.subject_db_model import Subject
-from server.models.dicts.requests.exam_requests_dicts import (
-    ExamUpdateDict,
-    ExamRegisterDict,
-)
 from tests.factories.base.exam_base_factory import ExamBaseFactory
 from tests.factories.request.base_request_factory import BaseRequestFactory
 from tests.factories.request.reservation_request_factory import (

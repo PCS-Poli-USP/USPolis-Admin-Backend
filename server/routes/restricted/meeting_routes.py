@@ -10,7 +10,6 @@ from server.models.http.requests.meeting_request_models import (
     MeetingUpdate,
 )
 
-
 router = APIRouter(prefix="/meetings", tags=["Reservations", "Meetings"])
 
 

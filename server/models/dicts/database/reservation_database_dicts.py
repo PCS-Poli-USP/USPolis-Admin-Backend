@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from server.models.database.event_db_model import Event
 from server.models.database.exam_db_model import Exam
 from server.models.database.meeting_db_model import Meeting

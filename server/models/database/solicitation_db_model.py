@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
+
 from sqlalchemy import CheckConstraint
 from sqlmodel import Field, Relationship
 
@@ -7,12 +8,11 @@ from server.models.database.base_db_model import BaseModel
 from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.reservation_status import ReservationStatus
 
-
 if TYPE_CHECKING:
-    from server.models.database.user_db_model import User
     from server.models.database.building_db_model import Building
     from server.models.database.classroom_db_model import Classroom
     from server.models.database.reservation_db_model import Reservation
+    from server.models.database.user_db_model import User
 
 
 class Solicitation(BaseModel, table=True):

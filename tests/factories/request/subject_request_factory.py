@@ -1,4 +1,5 @@
 from typing import Unpack, cast
+
 from server.models.dicts.requests.subject_requests_dicts import (
     SubjectRegisterDict,
     SubjectUpdateDict,

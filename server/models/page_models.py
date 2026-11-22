@@ -1,9 +1,9 @@
 from typing import Generic, TypeVar
-from pydantic import BaseModel, Field
 
+from pydantic import BaseModel, Field
+from sqlalchemy.sql import func
 from sqlmodel import Session, select
 from sqlmodel.sql.expression import SelectOfScalar
-from sqlalchemy.sql import func
 
 T = TypeVar("T")
 

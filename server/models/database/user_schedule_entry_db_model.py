@@ -4,11 +4,10 @@ from typing import TYPE_CHECKING
 from sqlalchemy import CheckConstraint
 from sqlmodel import Field, Relationship, SQLModel
 
-
 if TYPE_CHECKING:
     from server.models.database.schedule_db_model import Schedule
-    from server.models.database.user_schedule_db_model import UserSchedule
     from server.models.database.user_absence import UserAbsence
+    from server.models.database.user_schedule_db_model import UserSchedule
 
 from server.utils.brazil_datetime import BrazilDatetime
 

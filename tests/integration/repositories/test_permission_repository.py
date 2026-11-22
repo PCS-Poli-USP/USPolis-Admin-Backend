@@ -4,15 +4,15 @@ from sqlmodel import Session
 
 from server.models.database.role_db_model import Role
 from server.models.database.user_db_model import User
+from server.models.http.requests.permission_request_models import (
+    PermissionRegister,
+    PermissionUpdate,
+)
 from server.repositories.building_permission_repository import (
     BuildingPermissionRepository,
 )
 from server.utils.enums.actions_enums import BuildingAction
 from server.utils.enums.resources_enums import Resource
-from server.models.http.requests.permission_request_models import (
-    PermissionRegister,
-    PermissionUpdate,
-)
 from server.utils.must_be_int import must_be_int
 
 

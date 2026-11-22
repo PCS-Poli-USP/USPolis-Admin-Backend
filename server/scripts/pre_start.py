@@ -3,7 +3,7 @@ import logging
 from alembic import command as alembic_command
 from alembic.config import Config as AlembicConfig
 from sqlalchemy import Engine, inspect
-from sqlmodel import SQLModel, Session, select
+from sqlmodel import Session, SQLModel, select
 from tenacity import after_log, before_log, retry, stop_after_attempt, wait_fixed
 
 from server.db import engine

@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from server.models.database.building_db_model import Building
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.user_db_model import User

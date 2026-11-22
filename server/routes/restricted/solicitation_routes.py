@@ -1,4 +1,6 @@
 import asyncio
+from pathlib import Path
+
 from fastapi import APIRouter, Body, status
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
@@ -11,7 +13,6 @@ from server.models.http.requests.solicitation_request_models import (
     SolicitationDeny,
 )
 from server.services.email.email_service import EmailService
-from pathlib import Path
 
 embed = Body(..., embed=True)
 

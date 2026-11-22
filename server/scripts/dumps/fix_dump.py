@@ -1,5 +1,6 @@
 from sqlalchemy import text
 from sqlmodel import Session, create_engine
+
 from server.config import CONFIG
 
 # Configure sua conexão com o banco de dados

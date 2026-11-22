@@ -1,4 +1,5 @@
 from sqlmodel import Session, desc, select
+
 from server.models.database.allocation_log_db_model import AllocationLog
 from server.models.database.schedule_db_model import Schedule
 from server.models.http.requests.allocation_log_request_models import AllocationLogInput

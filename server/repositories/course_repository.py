@@ -1,15 +1,15 @@
 from fastapi import HTTPException
+from sqlalchemy import func
 from sqlmodel import Session, select
 
 from server.models.database.course_db_model import Course
+from server.models.database.user_db_model import User
 from server.models.http.requests.course_request_models import (
     CourseRegister,
     CourseUpdate,
 )
-from server.models.database.user_db_model import User
 from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.must_be_int import must_be_int
-from sqlalchemy import func
 
 
 class CourseRepository:

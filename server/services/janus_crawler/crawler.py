@@ -1,8 +1,9 @@
 from datetime import datetime
 from io import StringIO
+
+import pandas as pd
 from bs4 import BeautifulSoup
 from httpx import AsyncClient
-import pandas as pd
 
 from server.models.database.calendar_db_model import Calendar
 from server.models.database.class_db_model import Class

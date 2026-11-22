@@ -2,13 +2,13 @@ from fastapi import APIRouter, Body
 
 from server.deps.session_dep import SessionDep
 from server.models.database.institutional_event_db_model import InstitutionalEvent
+from server.models.http.responses.mobile_institutional_event_response_models import (
+    MobileInstitutionalAllocationEventResponse,
+    MobileInstitutionalEventLike,
+    to_event_update,
+)
 from server.repositories.institutional_event_repository import (
     InstitutionalEventRepository,
-)
-from server.models.http.responses.mobile_institutional_event_response_models import (
-    MobileInstitutionalEventLike,
-    MobileInstitutionalAllocationEventResponse,
-    to_event_update,
 )
 from server.utils.must_be_int import must_be_int
 

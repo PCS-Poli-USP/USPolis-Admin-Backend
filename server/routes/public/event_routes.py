@@ -5,7 +5,6 @@ from server.deps.session_dep import SessionDep
 from server.models.http.responses.event_response_models import EventResponse
 from server.repositories.event_repository import EventRepository
 
-
 router = APIRouter(prefix="/events", tags=["Reservations", "Events"])
 
 

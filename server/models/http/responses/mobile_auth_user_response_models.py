@@ -1,4 +1,5 @@
 from typing import Self
+
 from pydantic import BaseModel
 
 from server.models.database.mobile_user_db_model import MobileUser

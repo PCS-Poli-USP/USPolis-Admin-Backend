@@ -1,4 +1,4 @@
-from datetime import timedelta, UTC
+from datetime import UTC, timedelta
 
 import pytest
 from pydantic import ValidationError

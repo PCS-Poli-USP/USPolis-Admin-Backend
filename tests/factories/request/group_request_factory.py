@@ -1,4 +1,5 @@
 from typing import Unpack
+
 from server.models.database.building_db_model import Building
 from server.models.dicts.requests.group_requests_dicts import (
     GroupRegisterDict,

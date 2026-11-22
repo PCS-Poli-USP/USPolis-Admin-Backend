@@ -1,8 +1,9 @@
+from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlmodel import Field, Enum, Relationship
 from sqlalchemy import Column
-from datetime import datetime
+from sqlmodel import Enum, Field, Relationship
+
 from server.models.database.base_db_model import BaseModel
 from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.course_period_type_enum import CoursePeriodType

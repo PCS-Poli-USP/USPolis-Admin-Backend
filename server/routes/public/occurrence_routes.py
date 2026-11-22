@@ -11,7 +11,6 @@ from server.models.http.responses.schedule_response_models import (
 )
 from server.repositories.schedule_repository import ScheduleRepository
 
-
 router = APIRouter(prefix="/occurrences", tags=["Occurrences"])
 
 

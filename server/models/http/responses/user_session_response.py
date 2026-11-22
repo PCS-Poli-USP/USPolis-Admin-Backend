@@ -1,5 +1,6 @@
-from pydantic import BaseModel
 from datetime import datetime
+
+from pydantic import BaseModel
 from user_agents import parse  # type: ignore
 
 from server.models.database.user_session_db_model import UserSession

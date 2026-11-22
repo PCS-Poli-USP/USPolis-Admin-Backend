@@ -1,5 +1,7 @@
-from datetime import time, date as datetime_date
+from datetime import date as datetime_date
+from datetime import time
 from typing import TypedDict
+
 from fastapi import HTTPException, status
 from pydantic import BaseModel
 

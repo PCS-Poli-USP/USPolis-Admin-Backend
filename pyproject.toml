@@ -102,6 +102,7 @@ pythonPlatform = "Linux"
 # https://docs.astral.sh/ruff/configuration/
 [tool.ruff]
 lint.extend-select = [
+    "I",  # import order (isort)
     "UP"
 ]
 lint.ignore = [

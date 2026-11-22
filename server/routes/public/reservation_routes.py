@@ -3,17 +3,15 @@ from fastapi import APIRouter, Body
 from server.deps.interval_dep import QueryIntervalDep
 from server.deps.session_dep import SessionDep
 from server.models.http.responses.reservation_response_models import (
-    ReservationResponse,
     ReservationFullResponse,
+    ReservationResponse,
 )
 from server.repositories.building_repository import BuildingRepository
 from server.repositories.reservation_repository import ReservationRepository
-from server.utils.must_be_int import must_be_int
-
-from server.routes.public.exam_routes import router as ExamRouter
 from server.routes.public.event_routes import router as EventRouter
+from server.routes.public.exam_routes import router as ExamRouter
 from server.routes.public.meeting_routes import router as MeetingRouter
-
+from server.utils.must_be_int import must_be_int
 
 embed = Body(..., embed=True)
 

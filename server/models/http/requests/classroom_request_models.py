@@ -1,7 +1,8 @@
+from datetime import date, time
 from typing import Self
+
 from fastapi import HTTPException, status
 from pydantic import BaseModel, model_validator
-from datetime import time, date
 
 from server.utils.enums.audiovisual_type_enum import AudiovisualType
 

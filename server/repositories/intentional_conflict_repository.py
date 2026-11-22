@@ -1,7 +1,9 @@
 from datetime import date
+
 from fastapi import HTTPException, status
-from sqlmodel import Session, col, select
 from sqlalchemy.orm import aliased
+from sqlmodel import Session, col, select
+
 from server.models.database.intentional_conflict_db_model import IntentionalConflict
 from server.models.database.occurrence_db_model import Occurrence
 from server.utils.must_be_int import must_be_int

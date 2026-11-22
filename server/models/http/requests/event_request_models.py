@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+
 from server.models.http.requests.reservation_request_models import (
     ReservationRegister,
     ReservationUpdate,

@@ -9,9 +9,7 @@ from server.models.database.role_db_model import Role
 from server.models.database.user_db_model import User
 from server.models.database.user_role_db_model import UserRole
 from server.models.http.requests.permission_request_models import PermissionRegister
-from server.models.http.requests.role_request_models import RoleRegister
-from server.models.http.requests.role_request_models import RoleUpdate
-
+from server.models.http.requests.role_request_models import RoleRegister, RoleUpdate
 from server.repositories.building_permission_repository import (
     BuildingPermissionRepository,
 )
@@ -20,12 +18,10 @@ from server.repositories.classroom_permission_repository import (
 )
 from server.repositories.course_permission_repository import CoursePermissionRepository
 from server.repositories.user_repository import UserRepository
-
-from server.utils.enums.resources_enums import Resource
 from server.utils.brazil_datetime import BrazilDatetime
+from server.utils.enums.resources_enums import Resource
 from server.utils.must_be_int import must_be_int
 from server.utils.permissions_types import Permission
-
 
 ROLE_PERMISSION_REPOSITORY_MAP: dict[
     Resource,

@@ -4,10 +4,10 @@ from server.cache import simple_cache
 from server.deps.interval_dep import QueryIntervalDep
 from server.deps.session_dep import SessionDep
 from server.models.database.class_db_model import Class
-from server.repositories.class_repository import ClassRepository
 from server.models.http.responses.mobile_class_response_models import (
     MobileClassResponse,
 )
+from server.repositories.class_repository import ClassRepository
 
 router = APIRouter(prefix="/mobile/classes", tags=["Mobile", "Classes"])
 

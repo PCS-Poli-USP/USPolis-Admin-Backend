@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import Column, String, Text
 from sqlalchemy.dialects import postgresql
-from sqlmodel import Field, Relationship, Enum
+from sqlmodel import Enum, Field, Relationship
 
 from server.models.database.base_db_model import BaseModel
 from server.utils.brazil_datetime import BrazilDatetime

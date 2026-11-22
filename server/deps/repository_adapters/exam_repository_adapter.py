@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import Depends
+
 from server.deps.authenticate import UserDep
 from server.deps.permission_index_dep import PermissionIndexDep
 from server.deps.session_dep import SessionDep

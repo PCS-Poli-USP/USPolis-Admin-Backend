@@ -1,7 +1,7 @@
-from server.models.dicts.base.subject_base_dict import SubjectBaseDict
 from server.models.database.building_db_model import Building
 from server.models.database.class_db_model import Class
 from server.models.database.forum_db_model import ForumPost
+from server.models.dicts.base.subject_base_dict import SubjectBaseDict
 from server.models.dicts.database.base_database_dicts import BaseModelDict
 
 

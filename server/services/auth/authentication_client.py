@@ -1,10 +1,11 @@
 import hashlib
 import json
-import requests
 from typing import Any
-from fastapi import HTTPException
-from fastapi import status
+
+import requests
+from fastapi import HTTPException, status
 from redis.exceptions import RedisError
+
 from server.config import CONFIG
 from server.logger import logger
 from server.services.auth.auth_user_info import AuthUserInfo

@@ -1,7 +1,8 @@
+from datetime import date
+
 from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
-from sqlmodel import Session, col, select, desc
-from datetime import date
+from sqlmodel import Session, col, desc, select
 
 from server.models.database.calendar_db_model import Calendar
 from server.models.database.holiday_category_db_model import HolidayCategory

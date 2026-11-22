@@ -8,7 +8,6 @@ from server.models.http.responses.exam_response_models import (
 )
 from server.repositories.exam_repository import ExamRepository
 
-
 router = APIRouter(prefix="/exams", tags=["Reservations", "Exams"])
 
 

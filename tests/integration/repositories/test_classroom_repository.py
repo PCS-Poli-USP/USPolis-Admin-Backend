@@ -1,8 +1,9 @@
 from unittest.mock import MagicMock
 
 from sqlmodel import Session
-from server.models.database.user_db_model import User
+
 from server.models.database.group_db_model import Group
+from server.models.database.user_db_model import User
 from server.repositories.classroom_repository import ClassroomRepository
 from server.utils.must_be_int import must_be_int
 from tests.factories.model.classroom_model_factory import ClassroomModelFactory

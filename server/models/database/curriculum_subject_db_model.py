@@ -1,8 +1,10 @@
 from typing import TYPE_CHECKING
 
-from sqlmodel import Field, Enum, Relationship
+from sqlalchemy import Column, UniqueConstraint
+from sqlalchemy import Enum as SqlEnum
+from sqlmodel import Enum, Field, Relationship
+
 from server.models.database.base_db_model import BaseModel
-from sqlalchemy import UniqueConstraint, Column, Enum as SqlEnum
 from server.utils.enums.curriculum_subject_category_enum import (
     CurriculumSubjectCategory,
 )

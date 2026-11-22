@@ -3,9 +3,9 @@ import pytest
 from server.models.database.intentional_conflict_db_model import IntentionalConflict
 from server.models.http.responses.intentional_conflict_response_models import (
     BuildingIntentionalConflictMap,
-    InvalidIntentionalConflict,
     IntentionalConflictOccurrenceResponse,
     IntentionalConflictResponse,
+    InvalidIntentionalConflict,
 )
 from tests.utils.academic_test_utils import (
     make_building,

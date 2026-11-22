@@ -1,6 +1,6 @@
-from sqlmodel import Session, col, select
-from sqlalchemy.exc import NoResultFound
 from fastapi import HTTPException, status
+from sqlalchemy.exc import NoResultFound
+from sqlmodel import Session, col, select
 
 from server.models.database.building_db_model import Building
 from server.models.database.group_classroom_link import GroupClassroomLink

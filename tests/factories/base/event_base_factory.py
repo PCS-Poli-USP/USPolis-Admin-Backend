@@ -1,4 +1,5 @@
 from random import choice
+
 from server.models.dicts.base.event_base_dict import EventBaseDict
 from tests.factories.base.base_factory import BaseFactory
 

@@ -11,7 +11,6 @@ from server.models.database.api_client_db_model import ApiClient
 from server.models.database.api_key_db_model import ApiKey
 from server.models.database.api_key_delivery_link_db_model import ApiKeyDeliveryLink
 from server.models.database.user_db_model import User
-from server.repositories.api_key_repository import ApiKeyRepository
 from server.repositories.api_key_delivery_link_repository import (
     EXPIRED_REVOKE_REASON,
     INVALIDATED_REVOKE_REASON,
@@ -19,6 +18,7 @@ from server.repositories.api_key_delivery_link_repository import (
     ApiKeyLinkGone,
     ApiKeyLinkNotFound,
 )
+from server.repositories.api_key_repository import ApiKeyRepository
 from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.api_key_link_status_enum import ApiKeyLinkStatus
 from tests.factories.model.api_client_model_factory import ApiClientModelFactory

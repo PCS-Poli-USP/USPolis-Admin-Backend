@@ -4,8 +4,8 @@ from pydantic import BaseModel
 
 from server.models.database.class_db_model import Class
 from server.models.http.responses.schedule_response_models import (
-    ScheduleResponse,
     ScheduleFullResponse,
+    ScheduleResponse,
     ScheduleResponseBase,
 )
 from server.utils.enums.audiovisual_type_enum import AudiovisualType

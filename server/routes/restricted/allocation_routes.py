@@ -7,9 +7,9 @@ from server.deps.repository_adapters.occurrence_repository_adapter import (
 )
 from server.deps.session_dep import SessionDep
 from server.models.http.requests.allocation_request_models import (
+    AllocationEventUpdate,
     AllocationMapInput,
     AllocationReuseInput,
-    AllocationEventUpdate,
 )
 from server.models.http.responses.allocation_response_models import (
     AllocationClassOptions,
@@ -24,7 +24,6 @@ from server.repositories.occurrence_repository import OccurrenceRepository
 from server.repositories.schedule_repository import ScheduleRepository
 from server.repositories.subject_repository import SubjectRepository
 from server.utils.must_be_int import must_be_int
-
 
 router = APIRouter(prefix="/allocations", tags=["Allocations"])
 

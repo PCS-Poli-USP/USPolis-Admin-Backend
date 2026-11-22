@@ -8,8 +8,8 @@ Create Date: 2025-05-08 01:26:32.429288
 
 from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.orm import Session as SASession
 from sqlmodel import Session, col, select, update
 
@@ -19,7 +19,6 @@ from server.models.database.group_db_model import Group
 from server.models.database.group_user_link import GroupUserLink
 from server.models.database.user_building_link import UserBuildingLink
 from server.models.database.user_db_model import User
-
 
 # revision identifiers, used by Alembic.
 revision: str = "4f74618478b5"

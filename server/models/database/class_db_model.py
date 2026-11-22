@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import Column, String, UniqueConstraint
 from sqlalchemy.dialects import postgresql
-from sqlmodel import Field, Relationship, Enum
-from server.models.database.base_db_model import BaseModel
+from sqlmodel import Enum, Field, Relationship
 
+from server.models.database.base_db_model import BaseModel
 from server.models.database.class_calendar_link import ClassCalendarLink
 from server.models.database.exam_class_link import ExamClassLink
 from server.utils.brazil_datetime import BrazilDatetime
@@ -15,10 +15,10 @@ from server.utils.must_be_int import must_be_int
 
 if TYPE_CHECKING:
     from server.models.database.calendar_db_model import Calendar
+    from server.models.database.exam_db_model import Exam
+    from server.models.database.forum_db_model import ForumPost
     from server.models.database.schedule_db_model import Schedule
     from server.models.database.subject_db_model import Subject
-    from server.models.database.forum_db_model import ForumPost
-    from server.models.database.exam_db_model import Exam
 
 
 class Class(BaseModel, table=True):

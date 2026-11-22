@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from pydantic import BaseModel
 
 from server.models.database.allocation_log_db_model import AllocationLog

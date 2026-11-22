@@ -7,7 +7,6 @@ from server.models.database.schedule_db_model import Schedule
 from server.models.http.requests.allocate_request_models import AllocateSchedule
 from server.models.http.responses.generic_responses import NoContent
 
-
 router = APIRouter(prefix="/occurrences", tags=["Occurrences"])
 
 

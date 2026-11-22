@@ -1,5 +1,6 @@
-from datetime import datetime
 import uuid
+from datetime import datetime
+
 from sqlmodel import Field, Relationship, SQLModel
 
 from server.models.database.user_db_model import User

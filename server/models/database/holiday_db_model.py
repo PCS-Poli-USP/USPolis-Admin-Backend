@@ -3,15 +3,14 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import UniqueConstraint
-from sqlmodel import Relationship, Field
+from sqlmodel import Field, Relationship
 
 from server.models.database.base_db_model import BaseModel
 from server.utils.brazil_datetime import BrazilDatetime
 
-
 if TYPE_CHECKING:
-    from server.models.database.user_db_model import User
     from server.models.database.holiday_category_db_model import HolidayCategory
+    from server.models.database.user_db_model import User
 
 
 class Holiday(BaseModel, table=True):

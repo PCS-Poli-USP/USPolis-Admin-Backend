@@ -3,8 +3,8 @@ from fastapi import APIRouter, Body, Query
 from server.deps.interval_dep import QueryIntervalDep
 from server.deps.session_dep import SessionDep
 from server.models.http.responses.class_response_models import (
-    ClassResponse,
     ClassFullResponse,
+    ClassResponse,
     ClassSchedulingResponse,
 )
 from server.repositories.building_repository import BuildingRepository

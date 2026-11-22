@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+
 from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, Relationship
 
@@ -7,11 +8,10 @@ from server.models.database.calendar_holiday_category_link import (
     CalendarHolidayCategoryLink,
 )
 
-
 if TYPE_CHECKING:
-    from server.models.database.user_db_model import User
-    from server.models.database.holiday_db_model import Holiday
     from server.models.database.calendar_db_model import Calendar
+    from server.models.database.holiday_db_model import Holiday
+    from server.models.database.user_db_model import User
 
 
 class HolidayCategory(BaseModel, table=True):

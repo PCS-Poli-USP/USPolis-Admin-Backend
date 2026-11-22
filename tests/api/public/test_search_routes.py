@@ -7,12 +7,12 @@ from sqlalchemy import text
 from sqlmodel import Session
 
 from server.models.database.building_db_model import Building
-from server.models.database.event_db_model import Event
-from server.models.database.meeting_db_model import Meeting
-from server.models.database.user_db_model import User
 from server.models.database.class_db_model import Class
 from server.models.database.classroom_db_model import Classroom
+from server.models.database.event_db_model import Event
+from server.models.database.meeting_db_model import Meeting
 from server.models.database.subject_db_model import Subject
+from server.models.database.user_db_model import User
 from server.repositories.search_repository import SearchRepository
 from server.utils.enums.reservation_status import ReservationStatus
 from tests.factories.model.event_model_factory import EventModelFactory

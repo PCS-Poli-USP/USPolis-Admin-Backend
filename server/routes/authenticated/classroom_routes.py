@@ -7,8 +7,8 @@ from server.deps.repository_adapters.classroom_repository_adapter import (
 from server.deps.session_dep import SessionDep
 from server.models.database.classroom_db_model import ClassroomWithConflictsIndicator
 from server.models.http.responses.classroom_response_models import (
-    ClassroomResponse,
     ClassroomFullResponse,
+    ClassroomResponse,
 )
 from server.repositories.classroom_repository import ClassroomRepository
 from server.services.conflict_checker import ConflictParams

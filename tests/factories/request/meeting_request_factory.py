@@ -1,9 +1,10 @@
 from typing import Unpack
+
+from server.models.database.classroom_db_model import Classroom
 from server.models.dicts.requests.meeting_requests_dicts import (
     MeetingRegisterDict,
     MeetingUpdateDict,
 )
-from server.models.database.classroom_db_model import Classroom
 from server.models.http.requests.meeting_request_models import (
     MeetingRegister,
     MeetingUpdate,

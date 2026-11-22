@@ -3,8 +3,8 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
-from server.models.database.event_db_model import Event
 from server.models.database.classroom_db_model import Classroom
+from server.models.database.event_db_model import Event
 from tests.factories.request.event_request_factory import EventRequestFactory
 from tests.utils.validators.event.event_model_validator import EventModelAsserts
 

@@ -1,4 +1,5 @@
 from httpx import Response
+
 from server.models.database.building_db_model import Building
 
 

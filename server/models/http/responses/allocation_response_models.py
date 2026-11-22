@@ -1,5 +1,7 @@
+from datetime import date as datetime_date
+from datetime import time
+
 from pydantic import BaseModel
-from datetime import time, date as datetime_date
 
 from server.models.database.building_db_model import Building
 from server.models.database.class_db_model import Class

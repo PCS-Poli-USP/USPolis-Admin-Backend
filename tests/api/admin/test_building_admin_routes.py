@@ -3,13 +3,12 @@ from fastapi import status
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
-from server.models.database.user_db_model import User
 from server.models.database.building_db_model import Building
+from server.models.database.user_db_model import User
 from server.repositories.building_repository import BuildingNotFound, BuildingRepository
 from server.repositories.group_repository import GroupRepository
 from server.utils.must_be_int import must_be_int
 from tests.factories.request.building_request_factory import BuildingRequestFactory
-
 
 URL_PREFIX = "/admin/buildings"
 

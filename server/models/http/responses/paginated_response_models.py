@@ -1,8 +1,8 @@
-from pydantic import BaseModel, Field
 from typing import Generic, TypeVar
 
-from server.models.page_models import MAX_PAGE_SIZE
+from pydantic import BaseModel, Field
 
+from server.models.page_models import MAX_PAGE_SIZE
 
 E = TypeVar("E")
 T = TypeVar("T", bound=BaseModel)

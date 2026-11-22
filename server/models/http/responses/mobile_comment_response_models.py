@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from pydantic import BaseModel
 
 from server.models.database.mobile_comments_db_model import Comment

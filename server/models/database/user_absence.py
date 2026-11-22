@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from typing import TYPE_CHECKING
+
 from sqlalchemy import ForeignKeyConstraint, Index, UniqueConstraint
 from sqlmodel import Field, Relationship
 

@@ -1,13 +1,15 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
-from sqlmodel import Field, Relationship, Column, Enum, Text
+
+from sqlmodel import Column, Enum, Field, Relationship, Text
+
 from server.models.database.base_db_model import BaseModel
 from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.bug_enums import BugPriority, BugStatus, BugType
 
 if TYPE_CHECKING:
-    from server.models.database.user_db_model import User
     from server.models.database.bug_report_evidence_db_model import BugReportEvidence
+    from server.models.database.user_db_model import User
 
 
 class BugReport(BaseModel, table=True):
