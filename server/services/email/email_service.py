@@ -45,6 +45,9 @@ env = Environment(loader=FileSystemLoader(template_path))
 # in front, so CONFIG.root_url already points straight at the app.
 _static_host = CONFIG.root_url if CONFIG.development else f"{CONFIG.root_url}/api"
 env.globals["logo_url"] = f"{_static_host}/static/assets/uspolis-logo-email.png"
+# Base of every link to a frontend page ("{{ frontend_url }}/admin/bug-reports"),
+# so emails sent from dev or staging point at that environment's frontend.
+env.globals["frontend_url"] = CONFIG.frontend_url.rstrip("/")
 
 
 RESERVATION_SUBJECT = "Reserva de Sala - USPolis"

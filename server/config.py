@@ -77,8 +77,8 @@ class Settings(BaseModel):
     )  # pyright: ignore[reportAssignmentType]
 
     root_url: str = config("ROOT_URL", default="http://localhost:8000")  # pyright: ignore[reportAssignmentType]
-    # Where the frontend lives: links sent to people (e.g. API key delivery
-    # links) point here.
+    # Where the frontend lives: links sent to people (API key delivery links
+    # and the frontend pages linked from emails) point here.
     frontend_url: str = config("FRONTEND_URL", default="http://localhost:3000")  # pyright: ignore[reportAssignmentType]
     port: str = config("PORT", default="5000")  # pyright: ignore[reportAssignmentType]
     debug: bool = config("DEBUG", default=False, cast=bool)  # pyright: ignore[reportAssignmentType]

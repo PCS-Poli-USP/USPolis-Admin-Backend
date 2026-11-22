@@ -22,6 +22,8 @@ env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
 # offline-friendly preview we copy the asset alongside the output and link to it
 # relatively instead.
 env.globals["logo_url"] = "assets/uspolis-logo-email.png"
+# Links to frontend pages use the production site, so they can be clicked.
+env.globals["frontend_url"] = "https://www.uspolis.com.br"
 
 SAMPLE_DATA: dict[str, tuple[str, dict[str, object]]] = {
     "solicitation-requested": (
