@@ -21,36 +21,40 @@ poetry run pytest
 
 There is no `--cov-fail-under` gate yet — this round only established a baseline (§6); enforcing a minimum threshold is listed as future work in §8.
 
-**Test isolation**: each test gets a fresh DB state via `tests/conftest.py`'s `session` fixture, which registers a `truncate_tables(username)` Postgres function (created once at collection time) and calls it as a finalizer after every test — every table (except `alembic_version`) is truncated with `RESTART IDENTITY CASCADE`. Migrations are applied once per test session via the autouse, session-scoped `apply_migrations` fixture. This means tests are fully isolated from each other but pay a truncation cost every test — there is no per-test transaction/rollback optimization in place today.
+**Test isolation**: each test runs inside its own database transaction. `tests/conftest.py`'s `session` fixture opens a connection, begins a transaction and binds the `Session` with `join_transaction_mode="create_savepoint"`, so the code's own `session.commit()` calls become SAVEPOINTs inside it; after the test the outer transaction is rolled back. Nothing a test writes survives it, and no table is ever truncated. Migrations are applied once per test session (real `alembic upgrade head` against `TEST_ALEMBIC_URL`) via the autouse, session-scoped `apply_migrations` fixture. The conftest also sets `CONFIG.testing = True` (Redis and rate limiting off) and a fixed `API_KEY_SECRET`.
 
 ## 3. Test tiers and directory layout
 
-| Directory | Purpose | DB / HTTP? | Files |
-|---|---|---|---|
-| `tests/api/admin` | Full HTTP tests for admin-only routes, via the `client` fixture | Yes (DB + `TestClient`) | 5 |
-| `tests/api/authenticated` | HTTP tests for routes requiring any logged-in user | Yes | 3 |
-| `tests/api/public` | HTTP tests for no-auth/optional-auth routes — every `server/routes/public/*.py` file now has a matching test file | Yes | 20 |
-| `tests/api/restricted` | HTTP tests for routes requiring admin-or-group-member | Yes | 6 |
-| `tests/integration/repositories` | DB-backed repository tests, no HTTP layer | Yes (DB only) | 18 |
-| `tests/integration/deps/repository_adapters` | DB-backed tests for the FastAPI-DI "repository adapter" layer (`server/deps/repository_adapters/*.py`), constructed directly (bypassing FastAPI's DI) via the same dependency-provider functions the framework would call | Yes (DB only) | 10 |
-| `tests/integration/services` | DB-backed service-layer tests, plus `tests/integration/services/security/` mirroring `server/services/security/` (one file per checker) | Yes | 3 + 10 in `security/` |
-| `tests/unit/models` | Pure-Python model-logic tests, no DB/session, including `tests/unit/models/{requests,responses}/` | No | 21 |
-| `tests/unit/services` | Pure-Python service-logic tests, plus `tests/unit/services/security/` for the one security file that's DB-free | No | 3 + 1 in `security/` |
-| `tests/unit/utils` | Pure-Python utility tests | No | 8 |
-| `tests/unit/deps` | Pure-Python dependency-provider tests | No | 1 |
-| `tests/e2e` | End-to-end tests | — | 0 — empty scaffolding |
-| `tests/performance` | Performance-oriented tests, separate from correctness suite | Yes | 1 |
-| `tests/services/jupiter_crawler` | Regression tests for the Júpiter course-data crawler, replayed against a cached HTML+JSON snapshot (`tests/data/jupiter/`) | No (replay only — see below) | 1 |
-| `tests/services/janus_crawler` | Same, for the postgraduate Janus crawler (`tests/data/janus/`) | No (replay only) | 1 |
-| `tests/` (root) | Initial-data script test | Mixed | 1 |
+| Directory | Purpose | DB / HTTP? |
+|---|---|---|
+| `tests/api/admin` | Full HTTP tests for admin-only routes, via the `client` fixture | Yes (DB + `TestClient`) |
+| `tests/api/authenticated` | HTTP tests for routes requiring any logged-in user | Yes |
+| `tests/api/public` | HTTP tests for no-auth/optional-auth routes — every `server/routes/public/*.py` file now has a matching test file | Yes |
+| `tests/api/restricted` | HTTP tests for routes requiring admin-or-group-member | Yes |
+| `tests/integration/repositories` | DB-backed repository tests, no HTTP layer | Yes (DB only) |
+| `tests/integration/deps/repository_adapters` | DB-backed tests for the FastAPI-DI "repository adapter" layer (`server/deps/repository_adapters/*.py`), constructed directly (bypassing FastAPI's DI) via the same dependency-provider functions the framework would call | Yes (DB only) |
+| `tests/integration/services` | DB-backed service-layer tests, plus `tests/integration/services/security/` mirroring `server/services/security/` (one file per checker) | Yes |
+| `tests/unit/models` | Pure-Python model-logic tests, no DB/session, including `tests/unit/models/{requests,responses}/` | No |
+| `tests/unit/services` | Pure-Python service-logic tests, plus `tests/unit/services/security/` for the one security file that's DB-free | No |
+| `tests/unit/utils` | Pure-Python utility tests | No |
+| `tests/unit/deps` | Pure-Python dependency-provider tests | No |
+| `tests/unit/middlewares` | Logger, API key and rate limit middlewares, with fake Redis | No |
+| `tests/unit/enums` | Enum values and translations | No |
+| `tests/unit/cache` | `server/cache.py` decorators | No |
+| `tests/integration/deps` | DB-backed dependency providers (`authenticate`, `owned_building_ids`, `permission_index_dep`, `session_dep`) | Yes (DB only) |
+| `tests/e2e` | End-to-end tests | — |
+| `tests/performance` | Performance-oriented tests, separate from correctness suite | Yes |
+| `tests/services/jupiter_crawler` | Regression tests for the Júpiter course-data crawler, replayed against a cached HTML+JSON snapshot (`tests/data/jupiter/`) | No (replay only — see below) |
+| `tests/services/janus_crawler` | Same, for the postgraduate Janus crawler (`tests/data/janus/`) | No (replay only) |
+| `tests/` (root) | Initial-data script test | Mixed |
 
 Both crawler test files replay a **cached** snapshot — no network calls during a normal run. `tests/services/jupiter_crawler/test_jupiter_crawler.py` does have one lazy exception: if the current semester (JupiterWeb resets its offerings every semester) has no snapshot yet, it live-fetches a candidate once, saves it as an unreviewed `pending/` snapshot, and fails with instructions to review + promote it (`tests/scripts/promote_jupiter_snapshot.py`) — see `tests/services/jupiter_crawler/crawler_test_utils.py::ensure_fresh_snapshot`. Janus isn't semester-scoped, so its snapshot (`tests/data/janus/snapshots/`) is refreshed only manually, via `tests/scripts/generate_janus_snapshot.py` — no automatic staleness check.
 
 ## 4. Fixtures (`tests/conftest.py`)
 
-Dependency order: `apply_migrations` (autouse, session-scoped) → `session` (per-test, truncate-on-teardown) → `user` (the seeded first-superuser admin) / `restricted_user` / `common_user` → `building` (also creates its main `Group`) → `group` (adds `restricted_user` to the building's main group) → `classroom` → `allocated_classroom` (creates a second classroom and allocates the standard `class_`'s first schedule into it — **don't reuse `class_` in allocation tests that also use this fixture**, per its docstring) → `subject` → `class_` → `meeting` / `exam` / `event`.
+Dependency order: `apply_migrations` (autouse, session-scoped) → `session` (per-test, rolled back on teardown) → `admin_user` (the first-superuser admin, created if missing) / `restricted_user` / `common_user` → `building` (also creates its main `Group`) → `group` (adds `restricted_user` to the building's main group) → `classroom` → `allocated_classroom` (creates a second classroom and allocates the standard `class_`'s first schedule into it — **don't reuse `class_` in allocation tests that also use this fixture**, per its docstring) → `subject` → `class_` → `meeting` / `exam` / `event`.
 
-Four `TestClient` fixtures, each overriding `authenticate`/`google_token_authenticate` via `app.dependency_overrides`: `client` (admin `user`), `restricted_client` (`restricted_user`), `common_client` (`common_user`, no building/group), `public_client` (no auth override at all).
+Four `TestClient` fixtures, each overriding `authenticate`/`google_token_authenticate` via `app.dependency_overrides`: `client` (`admin_user`), `restricted_client` (`restricted_user`), `common_client` (`common_user`, no building/group), `public_client` (no auth override at all).
 
 ## 5. Factories (`tests/factories/`)
 
@@ -154,7 +158,7 @@ Recommended next priority: `ConflictChecker` (highest business-risk, zero covera
 
 Follow this checklist **every time a test needs to create a DB model instance** (whether it ends up committed or not), instead of hand-constructing the model inline:
 
-1. **Do you need a factory at all?** If the test can use an existing `tests/conftest.py` fixture (`user`, `building`, `classroom`, `subject`, `class_`, `meeting`, `exam`, `event`, etc. — see §4), prefer that over building your own instance.
+1. **Do you need a factory at all?** If the test can use an existing `tests/conftest.py` fixture (`admin_user`, `building`, `classroom`, `subject`, `class_`, `meeting`, `exam`, `event`, etc. — see §4), prefer that over building your own instance.
 2. **Does a factory for this model already exist?** Check `tests/factories/model/` for `<Resource>ModelFactory`. If yes, reuse it — don't write a new local `make_*`/inline constructor for a model that already has one.
 3. **Pick the right construction mode**:
    - Need the row queryable via `session`/HTTP (integration or API test) → `XxxModelFactory(session=session, ...).create()` or `.create_and_refresh()`.

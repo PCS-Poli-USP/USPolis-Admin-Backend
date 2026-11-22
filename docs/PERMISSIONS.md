@@ -20,8 +20,8 @@ Three concrete permission tables extend the shared `BasePermission`
 - `CoursePermission` (`server/models/database/course_permission_db_model.py`)
 
 Each permission scopes a set of `action`s (`server/utils/enums/actions_enums.py`
-— `CREATE`, `READ`, `UPDATE`, `DELETE`, and for `BUILDING`/`CLASSROOM` also
-`ALLOCATE`/`RESERVE`) to a resource (`Resource.BUILDING` / `CLASSROOM` /
+— `CREATE`, `READ`, `UPDATE`, `DELETE`, for `BUILDING`/`CLASSROOM` also
+`ALLOCATE`/`RESERVE`, and for `CLASSROOM` also `REQUEST`) to a resource (`Resource.BUILDING` / `CLASSROOM` /
 `COURSE`, `server/utils/enums/resources_enums.py`), either a specific
 instance (`resource_id`) or a wildcard (`resource_id = -1` in requests,
 stored as `NULL`) meaning "every instance of that resource".
@@ -31,7 +31,7 @@ stored as `NULL`) meaning "every instance of that resource".
   lets a role allocate any room in it without needing one
   `ClassroomPermission` per room.
 - A wildcard grant (no specific building/classroom/course) is only honored
-  for `UPDATE`, `DELETE`, `ALLOCATE`, and `RESERVE` when the requesting user
+  for `UPDATE`, `DELETE`, `ALLOCATE`, `RESERVE`, and `REQUEST` when the requesting user
   is an admin (`GLOBAL_WILDCARD_ADMIN_ONLY_ACTIONS` in
   `server/services/security/role_permission_evaluator.py`) — a non-admin
   role can never be granted "update/delete/allocate/reserve everything in
@@ -186,6 +186,16 @@ The `is_allowed`-style check in each checker (e.g.
 `ClassroomPermissionChecker.is_allowed`) shows the fallback order directly:
 the legacy `Group`-based check (`user.classrooms_ids_set()`) runs first,
 and only if that's `False` does it fall through to the `PermissionIndex`.
+The tier gate in front of all of this accepts both models:
+`restricted_authenticate` (`server/deps/authenticate.py`) lets a request
+into the `restricted` tier if the user is an admin, has at least one
+`Group`, or has at least one `Role`. The gate only decides who enters the
+tier; what a role-only user can touch inside it is still decided per object
+by the checkers above. The frontend mirrors the gate in `hasRestrictedAccess`
+(`src/utils/users/users.formatter.ts`: admin, a building, or a role), which
+is why `UserResponse` (`GET /users`) carries `role_ids`. Change both sides
+together.
+
 Retiring `Group` entirely — dropping its tables/columns and the `OR`
 fallback, leaving `Role`/`Permission` as the sole source of truth — is a
 later, separate step (tracked as its own phase, not yet started).

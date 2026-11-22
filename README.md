@@ -31,9 +31,9 @@ Here we have the tecnologies used on backend:
 
 ## Docs
 
-You can see a complete documentation at [USPolis-Admin Wiki](https://github.com/PCS-Poli-USP/USPolis-Admin/wiki), there you will find our architecture, diagrams, bussiness rules, descriptions and more.
+The developer reference (in Portuguese) lives in the frontend repo's VitePress docs, published at [uspolis.com.br/docs/dev](https://www.uspolis.com.br/docs/dev/) (source: `docs/dev/` in [USPolis-Admin-Frontend](https://github.com/PCS-Poli-USP/USPolis-Admin-Frontend)). It covers the full file layout, route tiers, the request flow, authentication and permissions, configuration, tests and a step-by-step for adding a resource. The older [USPolis-Admin Wiki](https://github.com/PCS-Poli-USP/USPolis-Admin/wiki) has architecture diagrams and business rules.
 
-Repo-local docs: [TESTS.md](docs/TESTS.md) (test suite structure and coverage), [SESSION_MANAGEMENT.md](docs/SESSION_MANAGEMENT.md) (login/session cookie lifecycle and expiration rules), [LOGGING.md](docs/LOGGING.md) (request logging, the Loki access log, and file rotation), [PERMISSIONS.md](docs/PERMISSIONS.md) (role-based permission model, the `Group`→`Role` migration, and how `PermissionIndex` is wired into route dependencies), [RATE_LIMIT.md](docs/RATE_LIMIT.md) (per-IP rate limiting: Nginx + Redis-backed middleware, limits, rollout and Redis setup), [API_KEYS.md](docs/API_KEYS.md) (partner API keys: data model, key format, hashing, the rules for issuing them, and delivery by one-time link or email), [PARTNER_API.md](docs/PARTNER_API.md) (guide for partners consuming the API, in Portuguese).
+Repo-local docs: [TESTS.md](docs/TESTS.md) (test suite structure and coverage), [SESSION_MANAGEMENT.md](docs/SESSION_MANAGEMENT.md) (login/session cookie lifecycle and expiration rules), [LOGGING.md](docs/LOGGING.md) (request logging, the Loki access log, and file rotation), [PERMISSIONS.md](docs/PERMISSIONS.md) (role-based permission model, the `Group`→`Role` migration, and how `PermissionIndex` is wired into route dependencies), [RATE_LIMIT.md](docs/RATE_LIMIT.md) (per-IP rate limiting: Nginx + Redis-backed middleware, limits, rollout and Redis setup), [API_KEYS.md](docs/API_KEYS.md) (partner API keys: data model, key format, hashing, the rules for issuing them, and delivery by one-time link or email), [PARTNER_API.md](docs/PARTNER_API.md) (guide for partners consuming the API, in Portuguese), [SEARCH.md](docs/SEARCH.md) (the public search: materialized view, ranking, extensions), [BUGS_FOUND.md](docs/BUGS_FOUND.md) (bugs found and fixed, with root causes), [BACKLOG.md](docs/BACKLOG.md) (known pending work).
 
 ## Setup
 
@@ -52,17 +52,17 @@ poetry install --without test,dev
 
 There are other settings in `server/config.py` and the included `.env` file, you can see all enviroment variables used at `.env.example` file. 
 
-Assuming you've created and setted the '.env' file, everything should run as-is if there is a local [PostgreSQL](https://www.postgresql.org/) instance running (and, for rate limiting and the API key cache, a [Redis](https://redis.io/) one: see [RATE_LIMIT.md](docs/RATE_LIMIT.md)) (see the [docs](https://github.com/PCS-Poli-USP/USPolis-Admin/wiki) for a complete step by step to how set the enviroment).
+Assuming you've created and setted the '.env' file, everything should run as-is if there is a local [PostgreSQL](https://www.postgresql.org/) instance running (and, for rate limiting and the API key cache, a [Redis](https://redis.io/) one: see [RATE_LIMIT.md](docs/RATE_LIMIT.md)) (see [Configurando seu Ambiente](https://www.uspolis.com.br/docs/dev/enviroment/) for a complete step by step). `.env` only holds `ENVIRONMENT`; every other variable goes in `.env.dev` / `.env.prod` / `.env.stage`, picked by that value (see `server/config.py`).
 
 ## Run
 
-This sample uses [uvicorn](https://www.uvicorn.org/) as our ASGI web server. This allows us to run our server code in a much more robust and configurable environment than the development server. For example, ASGI servers let you run multiple workers that recycle themselves after a set amount of time or number of requests.
+The app is `server.app:app`. For development, `wsgi.py` runs it with [uvicorn](https://www.uvicorn.org/) on `PORT` (default 5000), with reload and HTTPS (`certs/key.pem` and `certs/cert.pem`) when `ENVIRONMENT` is `development` or `staging`:
 
 ```bash
-uvicorn server.main:app --reload --port 8080
+python wsgi.py
 ```
 
-Your API should now be available at http://localhost:8080
+The API is mounted under `root_path="/api"`; the Swagger UI is at `/api/docs` (e.g. `https://localhost:5000/api/docs` locally). In production, gunicorn runs `asgi:app` with uvicorn workers (see `docker/entrypoint.sh`).
 
 ### With Docker
 

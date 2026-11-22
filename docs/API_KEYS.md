@@ -105,7 +105,7 @@ deactivate a client or revoke a key instead, so the audit trail is kept.
 | GET | `/admin/api-clients/{id}/keys` | The client's keys, newest first |
 | POST | `/admin/api-clients/{id}/keys` | Issue a key (201). **The only response that contains the key** (`key` field), sent with `Cache-Control: no-store` |
 | GET | `/admin/api-keys/{id}` | One key (masked) |
-| PUT | `/admin/api-keys/{id}` | Edit name, prefixes, origins, expiry (409 if revoked) |
+| PUT | `/admin/api-keys/{id}` | Edit name, prefixes, expiry (409 if revoked; a non-empty `allowed_origins` is rejected) |
 | PUT | `/admin/api-keys/{id}/rate-limits` | Replace its limits; `{"rate_limits": []}` = back to the defaults |
 | PATCH | `/admin/api-keys/{id}/revoke` | `{"reason": "..."}`, final (409 if already revoked) |
 
