@@ -52,6 +52,19 @@ class Settings(BaseModel):
     search_index_refresh_seconds: int = config(
         "SEARCH_INDEX_REFRESH_SECONDS", default=600, cast=int
     )  # pyright: ignore[reportAssignmentType]
+    # Days the anonymous search query log (searchquerylog) is kept.
+    search_log_retention_days: int = config(
+        "SEARCH_LOG_RETENTION_DAYS", default=365, cast=int
+    )  # pyright: ignore[reportAssignmentType]
+    # Flood guards of the search query log (see docs/SEARCH.md, "Query log").
+    # Repeating a query never adds a row; these cap the rows for new queries:
+    # per client IP (counted in Redis) and for everyone, per Brazil day.
+    search_log_max_new_queries_per_ip_per_day: int = config(
+        "SEARCH_LOG_MAX_NEW_QUERIES_PER_IP_PER_DAY", default=200, cast=int
+    )  # pyright: ignore[reportAssignmentType]
+    search_log_max_new_queries_per_day: int = config(
+        "SEARCH_LOG_MAX_NEW_QUERIES_PER_DAY", default=5000, cast=int
+    )  # pyright: ignore[reportAssignmentType]
     # CORS
     allowed_origins: list[str] = config(
         "ALLOWED_ORIGINS",

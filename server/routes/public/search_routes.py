@@ -1,15 +1,18 @@
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Path, Query, status
+from fastapi import APIRouter, HTTPException, Path, Query, Request, status
 from sqlmodel import Session
 
 from server.deps.session_dep import SessionDep
+from server.middlewares.request_utils import get_client_ip
+from server.models.http.requests.search_request_models import SearchLogRequest
 from server.models.http.responses.search_response_models import (
     SearchGroupResponse,
     SearchResponse,
     SearchTopResponse,
 )
 from server.repositories.search_repository import SearchHit, SearchRepository
+from server.services.search_log_service import record_search
 from server.utils.enums.search_entity_type import SearchEntityType
 
 router = APIRouter(prefix="/search", tags=["Search"])
@@ -49,6 +52,28 @@ async def search(
     )
     top = _expand(hits[0], related_limit, session) if hits else None
     return SearchResponse(query=q, top=top, groups=SearchGroupResponse.from_hits(hits))
+
+
+@router.post("/log", status_code=status.HTTP_204_NO_CONTENT)
+async def log_search(
+    request: Request, session: SessionDep, body: SearchLogRequest
+) -> None:
+    """Record a search the user settled on, for finding what people look for
+    and do not find (see docs/SEARCH.md, "Query log").
+
+    The client calls this once per query, after the user stops typing or
+    opens a result, not on every keystroke. The record is anonymous and
+    aggregated per day: the normalized query, the type filter, how many times
+    it was searched and how many results it had (recomputed here, never
+    trusted from the client). Always answers 204: queries that look like
+    personal data, and new queries past the per-IP or daily caps, are
+    accepted but not recorded."""
+    await record_search(
+        query=body.q,
+        types=body.types,
+        host=get_client_ip(request),
+        session=session,
+    )
 
 
 @router.get("/documents/{doc_key}")

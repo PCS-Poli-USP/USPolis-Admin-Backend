@@ -47,6 +47,7 @@ from server.models.database import (  # noqa
     reservation_db_model,
     role_db_model,
     schedule_db_model,
+    search_query_log_db_model,
     solicitation_db_model,
     subject_building_link,
     subject_db_model,

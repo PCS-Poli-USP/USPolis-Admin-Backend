@@ -12,6 +12,7 @@ from server.repositories.api_key_delivery_link_repository import (
     ApiKeyDeliveryLinkRepository,
 )
 from server.repositories.api_key_repository import ApiKeyRepository
+from server.repositories.search_query_log_repository import SearchQueryLogRepository
 from server.services.email.email_service import EmailService
 from server.services.security.api_key_auth import invalidate_api_key_cache
 from server.utils.brazil_datetime import BrazilDatetime
@@ -28,6 +29,14 @@ def purge_old_access_logs(session: Session) -> None:
     )
     deleted = ApiAccessLogRepository.delete_older_than(cutoff=cutoff, session=session)
     logger.info("Purged %d api access log(s) older than %s", deleted, cutoff)
+
+
+def purge_old_search_logs(session: Session) -> None:
+    cutoff = BrazilDatetime.now_utc().date() - timedelta(
+        days=CONFIG.search_log_retention_days
+    )
+    deleted = SearchQueryLogRepository.delete_older_than(cutoff=cutoff, session=session)
+    logger.info("Purged %d search query log(s) older than %s", deleted, cutoff)
 
 
 def expire_api_key_links(session: Session) -> None:
@@ -98,6 +107,7 @@ def warn_expiring_api_keys(session: Session) -> None:
 
 DAILY_TASKS: list[Callable[[Session], None]] = [
     purge_old_access_logs,
+    purge_old_search_logs,
     expire_api_key_links,
     # Last: it commits on its own, key by key.
     warn_expiring_api_keys,

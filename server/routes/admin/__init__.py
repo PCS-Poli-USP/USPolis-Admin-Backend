@@ -25,6 +25,9 @@ from server.routes.admin.permissions_admin_routes import (
     router as AdminPermissionRouter,
 )
 from server.routes.admin.roles_admin_routes import router as AdminRoleRouter
+from server.routes.admin.search_log_admin_routes import (
+    router as AdminSearchLogRouter,
+)
 from server.routes.admin.user_admin_routes import router as AdminUserRouter
 from server.routes.admin.user_session_admin_routes import (
     router as AdminUserSessionRouter,
@@ -50,3 +53,4 @@ router.include_router(AdminCurriculumSubjectRouter)
 router.include_router(AdminApiAccessLogRouter)
 router.include_router(AdminApiIncidentReportRouter)
 router.include_router(AdminApiKeyRouter)
+router.include_router(AdminSearchLogRouter)

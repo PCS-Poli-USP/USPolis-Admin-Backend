@@ -1,20 +1,24 @@
 from typing import Any
 
 import pytest
+from fakeredis import FakeAsyncRedis, FakeServer
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy import text
-from sqlmodel import Session
+from sqlmodel import Session, col, select
 
 from server.models.database.building_db_model import Building
 from server.models.database.class_db_model import Class
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.event_db_model import Event
 from server.models.database.meeting_db_model import Meeting
+from server.models.database.search_query_log_db_model import SearchQueryLog
 from server.models.database.subject_db_model import Subject
 from server.models.database.user_db_model import User
 from server.repositories.search_repository import SearchRepository
+from server.utils.brazil_datetime import BrazilDatetime
 from server.utils.enums.reservation_status import ReservationStatus
+from server.utils.enums.search_entity_type import SearchEntityType
 from tests.factories.model.event_model_factory import EventModelFactory
 from tests.factories.model.meeting_model_factory import MeetingModelFactory
 
@@ -323,3 +327,146 @@ class TestSearchReservations:
         related = {i["doc_key"] for g in response.json()["related"] for i in g["items"]}
         event_id = reservation_data["event"].reservation_id
         assert f"reservation:{event_id}" in related
+
+
+def _logs(session: Session) -> list[SearchQueryLog]:
+    return list(session.exec(select(SearchQueryLog).order_by(col(SearchQueryLog.id))))
+
+
+def _log(client: TestClient, q: str, **body: Any) -> None:
+    response = client.post(f"{URL_PREFIX}/log", json={"q": q, **body})
+    assert response.status_code == status.HTTP_204_NO_CONTENT, response.text
+
+
+@pytest.fixture(autouse=True)
+def _no_redis(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The per-IP quota runs without Redis unless a test asks for fake_redis
+    (the container's real Redis client is bound to another event loop)."""
+    monkeypatch.setattr("server.services.search_log_service.get_redis", lambda: None)
+
+
+@pytest.fixture(name="fake_redis")
+def fake_redis_fixture(monkeypatch: pytest.MonkeyPatch) -> FakeAsyncRedis:
+    """Redis for the per-IP quota (the suite runs without one)."""
+    redis = FakeAsyncRedis(server=FakeServer())
+    monkeypatch.setattr("server.services.search_log_service.get_redis", lambda: redis)
+    return redis
+
+
+class TestSearchLog:
+    def test_logs_normalized_query_with_server_side_count(
+        self,
+        public_client: TestClient,
+        search_data: dict[str, Any],
+        session: Session,
+    ) -> None:
+        _log(public_client, "  Cálculo   Diferencial ")
+
+        [log] = _logs(session)
+        assert log.query == "calculo diferencial"
+        assert log.types == []
+        assert log.day == BrazilDatetime.now_utc().date()
+        assert (log.searches, log.empty_searches) == (1, 0)
+        expected = sum(
+            g["total"]
+            for g in _search(public_client, q="calculo diferencial")["groups"]
+        )
+        assert expected > 0
+        assert log.last_result_count == expected
+
+    def test_repeating_a_query_only_bumps_its_counters(
+        self, public_client: TestClient, search_data: dict[str, Any], session: Session
+    ) -> None:
+        for q in ("zzxqwv", "ZZXQWV", "zzxqwv"):
+            _log(public_client, q)
+
+        [log] = _logs(session)
+        assert log.query == "zzxqwv"
+        assert (log.searches, log.empty_searches, log.last_result_count) == (3, 3, 0)
+
+    def test_logs_type_filter_as_its_own_row(
+        self, public_client: TestClient, search_data: dict[str, Any], session: Session
+    ) -> None:
+        _log(public_client, "MAC0110", types=["subject", "class"])
+        _log(public_client, "MAC0110")
+
+        filtered, unfiltered = _logs(session)
+        assert filtered.types == ["class", "subject"]
+        assert unfiltered.types == []
+        data = _search(public_client, q="MAC0110", types=["class", "subject"])
+        assert filtered.last_result_count == sum(g["total"] for g in data["groups"])
+
+    def test_all_types_is_stored_as_no_filter(
+        self, public_client: TestClient, session: Session
+    ) -> None:
+        _log(public_client, "calculo", types=[t.value for t in SearchEntityType])
+        _log(public_client, "calculo")
+
+        [log] = _logs(session)
+        assert log.types == []
+        assert log.searches == 2
+
+    @pytest.mark.parametrize(
+        "q", ["joao.silva@usp.br", "123.456.789-00", "(11) 99999-1234", "12345678"]
+    )
+    def test_personal_data_is_accepted_but_not_stored(
+        self, public_client: TestClient, session: Session, q: str
+    ) -> None:
+        _log(public_client, q)
+
+        assert _logs(session) == []
+
+    def test_rejects_invalid_body(self, public_client: TestClient) -> None:
+        for body in ({"q": "a"}, {"q": "x" * 101}, {"q": "ok", "types": ["nope"]}):
+            response = public_client.post(f"{URL_PREFIX}/log", json=body)
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+class TestSearchLogFloodGuards:
+    def test_daily_cap_stops_new_queries_but_keeps_counting_known_ones(
+        self,
+        public_client: TestClient,
+        session: Session,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setattr(
+            "server.services.search_log_service.CONFIG.search_log_max_new_queries_per_day",
+            2,
+        )
+
+        for q in ("primeira", "segunda", "terceira", "primeira"):
+            _log(public_client, q)
+
+        assert {(log.query, log.searches) for log in _logs(session)} == {
+            ("primeira", 2),
+            ("segunda", 1),
+        }
+
+    def test_ip_quota_stops_new_queries_but_keeps_counting_known_ones(
+        self,
+        public_client: TestClient,
+        session: Session,
+        fake_redis: FakeAsyncRedis,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setattr(
+            "server.services.search_log_service.CONFIG.search_log_max_new_queries_per_ip_per_day",
+            2,
+        )
+
+        for q in ("primeira", "segunda", "terceira", "quarta", "segunda"):
+            _log(public_client, q)
+
+        assert {(log.query, log.searches) for log in _logs(session)} == {
+            ("primeira", 1),
+            ("segunda", 2),
+        }
+
+    def test_flood_of_one_query_is_a_single_row(
+        self, public_client: TestClient, session: Session, fake_redis: FakeAsyncRedis
+    ) -> None:
+        for _ in range(30):
+            _log(public_client, "flood")
+
+        [log] = _logs(session)
+        assert log.searches == 30
