@@ -22,7 +22,9 @@ from server.models.http.requests.email_request_models import (
     BCCMailSend,
     BugReportMail,
     FeedbackMail,
+    ForumPostReportedMail,
     MailSend,
+    MobileCommentMail,
     SolicitationApprovedMail,
     SolicitationCancelledMail,
     SolicitationDeletedMail,
@@ -61,7 +63,21 @@ API_KEY_EXPIRING_SUBJECT = "Sua chave da API expira {expires_in} - USPolis"
 SMTP_TIMEOUT_SECONDS = 15
 
 
+MOBILE_COMMENT_SUBJECT = "Fale conosco - App USPolis"
+FORUM_POST_REPORTED_SUBJECT = "Postagem denunciada no fórum - App USPolis"
+
+
 class EmailService:
+    # The app's emails go out through the Gmail API (server/services/
+    # gmail_service.py), not SMTP; these only render their templates.
+    @staticmethod
+    def render_mobile_comment(data: MobileCommentMail) -> str:
+        return env.get_template("/mobile/mobile-comment.html").render(data=data)
+
+    @staticmethod
+    def render_forum_post_reported(data: ForumPostReportedMail) -> str:
+        return env.get_template("/mobile/forum-post-reported.html").render(data=data)
+
     @staticmethod
     def send_bcc_email_sync(context: BCCMailSend) -> None:
         try:

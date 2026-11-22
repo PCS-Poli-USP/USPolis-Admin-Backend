@@ -9,7 +9,11 @@ from sqlmodel import Session, select
 from server.models.database.forum_db_model import ForumPost
 from server.models.database.mobile_user_db_model import MobileUser
 from server.models.database.subject_db_model import Subject
-from tests.utils.mobile_user_test_utils import make_mobile_user
+from tests.utils.mobile_user_test_utils import (
+    APP_TOKEN_HEADER,
+    make_mobile_user,
+    signed_in_as,
+)
 
 URL_PREFIX = "/mobile/forum"
 
@@ -149,11 +153,12 @@ class TestCreateForumPost:
     ) -> None:
         user = make_mobile_user(sub="u1", session=session)
 
-        response = public_client.post(
-            f"{URL_PREFIX}/posts",
-            json={"user_id": user.id, "content": "hello", "subject_id": subject.id},
-            headers={"authorization": "Bearer whatever"},
-        )
+        with signed_in_as(user):
+            response = public_client.post(
+                f"{URL_PREFIX}/posts",
+                json={"user_id": user.id, "content": "hello", "subject_id": subject.id},
+                headers=APP_TOKEN_HEADER,
+            )
 
         assert response.status_code == status.HTTP_200_OK
         body = response.json()
@@ -166,11 +171,12 @@ class TestCreateForumPost:
     ) -> None:
         user = make_mobile_user(sub="u1", session=session)
 
-        response = public_client.post(
-            f"{URL_PREFIX}/posts",
-            json={"user_id": user.id, "content": "general", "subject_id": -1},
-            headers={"authorization": "x"},
-        )
+        with signed_in_as(user):
+            response = public_client.post(
+                f"{URL_PREFIX}/posts",
+                json={"user_id": user.id, "content": "general", "subject_id": -1},
+                headers=APP_TOKEN_HEADER,
+            )
 
         assert response.status_code == status.HTTP_200_OK
         general_subject = session.exec(
@@ -183,16 +189,13 @@ class TestCreateForumPost:
     ) -> None:
         user = make_mobile_user(sub="u1", session=session)
 
-        public_client.post(
-            f"{URL_PREFIX}/posts",
-            json={"user_id": user.id, "content": "first", "subject_id": -1},
-            headers={"authorization": "x"},
-        )
-        public_client.post(
-            f"{URL_PREFIX}/posts",
-            json={"user_id": user.id, "content": "second", "subject_id": -1},
-            headers={"authorization": "x"},
-        )
+        with signed_in_as(user):
+            for content in ("first", "second"):
+                public_client.post(
+                    f"{URL_PREFIX}/posts",
+                    json={"user_id": user.id, "content": content, "subject_id": -1},
+                    headers=APP_TOKEN_HEADER,
+                )
 
         general_subjects = session.exec(
             select(Subject).where(Subject.name == "Forum Geral")
@@ -201,19 +204,60 @@ class TestCreateForumPost:
 
 
 class TestDeleteForumPost:
-    def test_disables_the_post(
+    def test_the_author_disables_the_post(
         self, public_client: TestClient, subject: Subject, session: Session
     ) -> None:
         user = make_mobile_user(sub="u1", session=session)
         post = make_forum_post(subject=subject, user=user, session=session)
 
-        response = public_client.delete(
-            f"{URL_PREFIX}/posts/{post.id}", headers={"authorization": "x"}
-        )
+        with signed_in_as(user):
+            response = public_client.delete(
+                f"{URL_PREFIX}/posts/{post.id}", headers=APP_TOKEN_HEADER
+            )
 
         assert response.status_code == status.HTTP_200_OK
         session.refresh(post)
         assert post.enabled is False
+
+    def test_someone_else_cannot(
+        self, public_client: TestClient, subject: Subject, session: Session
+    ) -> None:
+        author = make_mobile_user(sub="author", session=session)
+        other = make_mobile_user(sub="other", session=session)
+        post = make_forum_post(subject=subject, user=author, session=session)
+
+        with signed_in_as(other):
+            response = public_client.delete(
+                f"{URL_PREFIX}/posts/{post.id}", headers=APP_TOKEN_HEADER
+            )
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        session.refresh(post)
+        assert post.enabled is True
+
+    def test_a_google_account_with_no_app_user_cannot(
+        self, public_client: TestClient, subject: Subject, session: Session
+    ) -> None:
+        author = make_mobile_user(sub="author", session=session)
+        post = make_forum_post(subject=subject, user=author, session=session)
+
+        response = public_client.delete(
+            f"{URL_PREFIX}/posts/{post.id}", headers={"authorization": "x"}
+        )
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_an_unknown_post_is_404(
+        self, public_client: TestClient, session: Session
+    ) -> None:
+        user = make_mobile_user(sub="u1", session=session)
+
+        with signed_in_as(user):
+            response = public_client.delete(
+                f"{URL_PREFIX}/posts/999999", headers=APP_TOKEN_HEADER
+            )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 class TestReportForumPost:
@@ -224,16 +268,21 @@ class TestReportForumPost:
         reporter = make_mobile_user(sub="reporter", session=session)
         post = make_forum_post(subject=subject, user=author, session=session)
 
-        response = public_client.post(
-            f"{URL_PREFIX}/report", json={"post_id": post.id, "user_id": reporter.id}
-        )
-        assert response.json()["report_count"] == 1
+        with signed_in_as(reporter):
+            response = public_client.post(
+                f"{URL_PREFIX}/report",
+                json={"post_id": post.id, "user_id": reporter.id},
+                headers=APP_TOKEN_HEADER,
+            )
+            assert response.json()["report_count"] == 1
 
-        # Same user reporting again must not double-count.
-        response = public_client.post(
-            f"{URL_PREFIX}/report", json={"post_id": post.id, "user_id": reporter.id}
-        )
-        assert response.json()["report_count"] == 1
+            # Same user reporting again must not double-count.
+            response = public_client.post(
+                f"{URL_PREFIX}/report",
+                json={"post_id": post.id, "user_id": reporter.id},
+                headers=APP_TOKEN_HEADER,
+            )
+            assert response.json()["report_count"] == 1
 
     def test_sends_email_when_report_count_reaches_ten(
         self, public_client: TestClient, subject: Subject, session: Session
@@ -255,10 +304,12 @@ class TestReportForumPost:
             ) as mock_send,
         ):
             for reporter in reporters:
-                response = public_client.post(
-                    f"{URL_PREFIX}/report",
-                    json={"post_id": post.id, "user_id": reporter.id},
-                )
+                with signed_in_as(reporter):
+                    response = public_client.post(
+                        f"{URL_PREFIX}/report",
+                        json={"post_id": post.id, "user_id": reporter.id},
+                        headers=APP_TOKEN_HEADER,
+                    )
 
         assert response.json()["report_count"] == 10
         mock_login.assert_called_once()
@@ -273,15 +324,16 @@ class TestCreateForumPostReply:
         post = make_forum_post(subject=subject, user=author, session=session)
         replier = make_mobile_user(sub="replier", session=session)
 
-        response = public_client.post(
-            f"{URL_PREFIX}/posts/{post.id}",
-            json={
-                "user_id": replier.id,
-                "content": "a reply",
-                "subject_id": subject.id,
-            },
-            headers={"authorization": "x"},
-        )
+        with signed_in_as(replier):
+            response = public_client.post(
+                f"{URL_PREFIX}/posts/{post.id}",
+                json={
+                    "user_id": replier.id,
+                    "content": "a reply",
+                    "subject_id": subject.id,
+                },
+                headers=APP_TOKEN_HEADER,
+            )
 
         assert response.status_code == status.HTTP_200_OK
         assert response.json()["reply_of_post_id"] == post.id
@@ -293,15 +345,16 @@ class TestCreateForumPostReply:
     ) -> None:
         replier = make_mobile_user(sub="replier", session=session)
 
-        response = public_client.post(
-            f"{URL_PREFIX}/posts/999999",
-            json={
-                "user_id": replier.id,
-                "content": "a reply",
-                "subject_id": subject.id,
-            },
-            headers={"authorization": "x"},
-        )
+        with signed_in_as(replier):
+            response = public_client.post(
+                f"{URL_PREFIX}/posts/999999",
+                json={
+                    "user_id": replier.id,
+                    "content": "a reply",
+                    "subject_id": subject.id,
+                },
+                headers=APP_TOKEN_HEADER,
+            )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
@@ -343,10 +396,12 @@ class TestUpdateForumPostLike:
         liker = make_mobile_user(sub="liker", session=session)
         post = make_forum_post(subject=subject, user=author, session=session)
 
-        response = public_client.post(
-            f"{URL_PREFIX}/posts/{post.id}/liked",
-            json={"post_id": post.id, "user_id": liker.id, "like_state": True},
-        )
+        with signed_in_as(liker):
+            response = public_client.post(
+                f"{URL_PREFIX}/posts/{post.id}/liked",
+                json={"post_id": post.id, "user_id": liker.id, "like_state": True},
+                headers=APP_TOKEN_HEADER,
+            )
 
         assert response.status_code == status.HTTP_200_OK
         assert response.json()["likes_count"] == 1
@@ -358,14 +413,17 @@ class TestUpdateForumPostLike:
         liker = make_mobile_user(sub="liker", session=session)
         post = make_forum_post(subject=subject, user=author, session=session)
 
-        public_client.post(
-            f"{URL_PREFIX}/posts/{post.id}/liked",
-            json={"post_id": post.id, "user_id": liker.id, "like_state": True},
-        )
-        response = public_client.post(
-            f"{URL_PREFIX}/posts/{post.id}/liked",
-            json={"post_id": post.id, "user_id": liker.id, "like_state": False},
-        )
+        with signed_in_as(liker):
+            for like_state in (True, False):
+                response = public_client.post(
+                    f"{URL_PREFIX}/posts/{post.id}/liked",
+                    json={
+                        "post_id": post.id,
+                        "user_id": liker.id,
+                        "like_state": like_state,
+                    },
+                    headers=APP_TOKEN_HEADER,
+                )
 
         assert response.json()["likes_count"] == 0
 
@@ -423,3 +481,91 @@ class TestAuthenticationGate:
             )
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+class TestTheUserComesFromTheToken:
+    """Every write through the app acts as the token's user: a body that names
+    another user is refused, and so is a request with no token."""
+
+    def test_cannot_post_as_another_user(
+        self, public_client: TestClient, subject: Subject, session: Session
+    ) -> None:
+        me = make_mobile_user(sub="me", session=session)
+        other = make_mobile_user(sub="other", session=session)
+
+        with signed_in_as(me):
+            response = public_client.post(
+                f"{URL_PREFIX}/posts",
+                json={"user_id": other.id, "content": "x", "subject_id": subject.id},
+                headers=APP_TOKEN_HEADER,
+            )
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_cannot_reply_as_another_user(
+        self, public_client: TestClient, subject: Subject, session: Session
+    ) -> None:
+        me = make_mobile_user(sub="me", session=session)
+        other = make_mobile_user(sub="other", session=session)
+        post = make_forum_post(subject=subject, user=other, session=session)
+
+        with signed_in_as(me):
+            response = public_client.post(
+                f"{URL_PREFIX}/posts/{post.id}",
+                json={"user_id": other.id, "content": "x", "subject_id": subject.id},
+                headers=APP_TOKEN_HEADER,
+            )
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_cannot_report_as_another_user(
+        self, public_client: TestClient, subject: Subject, session: Session
+    ) -> None:
+        me = make_mobile_user(sub="me", session=session)
+        other = make_mobile_user(sub="other", session=session)
+        post = make_forum_post(subject=subject, user=other, session=session)
+
+        with signed_in_as(me):
+            response = public_client.post(
+                f"{URL_PREFIX}/report",
+                json={"post_id": post.id, "user_id": other.id},
+                headers=APP_TOKEN_HEADER,
+            )
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        session.refresh(post)
+        assert post.report_count == 0
+
+    def test_cannot_like_as_another_user(
+        self, public_client: TestClient, subject: Subject, session: Session
+    ) -> None:
+        me = make_mobile_user(sub="me", session=session)
+        other = make_mobile_user(sub="other", session=session)
+        post = make_forum_post(subject=subject, user=other, session=session)
+
+        with signed_in_as(me):
+            response = public_client.post(
+                f"{URL_PREFIX}/posts/{post.id}/liked",
+                json={"post_id": post.id, "user_id": other.id, "like_state": True},
+                headers=APP_TOKEN_HEADER,
+            )
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_report_and_like_need_the_token(
+        self, public_client: TestClient, subject: Subject, session: Session
+    ) -> None:
+        author = make_mobile_user(sub="author", session=session)
+        post = make_forum_post(subject=subject, user=author, session=session)
+
+        with patch(_AUTH_PATCH_TARGET, side_effect=ValueError("no token")):
+            report = public_client.post(
+                f"{URL_PREFIX}/report", json={"post_id": post.id, "user_id": author.id}
+            )
+            like = public_client.post(
+                f"{URL_PREFIX}/posts/{post.id}/liked",
+                json={"post_id": post.id, "user_id": author.id, "like_state": True},
+            )
+
+        assert report.status_code == status.HTTP_401_UNAUTHORIZED
+        assert like.status_code == status.HTTP_401_UNAUTHORIZED

@@ -1,0 +1,27 @@
+{% extends "_layout/base_email.html" %}
+
+{% block title %}Postagem denunciada no fórum do app{% endblock %}
+
+{% block status %}
+<tr>
+    <td class="status-ribbon" style="background-color: #fdecea; color: #c0392b;">
+        &#128681; POSTAGEM DENUNCIADA {{ data.report_count }} VEZES
+    </td>
+</tr>
+{% endblock %}
+
+{% block content %}
+<p>Uma postagem do fórum do app USPolis recebeu {{ data.report_count }} denúncias e precisa de análise.</p>
+
+<div class="section-title">Postagem</div>
+<table class="detail-table" role="presentation" cellpadding="0" cellspacing="0">
+    <tr><td class="detail-label">ID</td><td class="detail-value">{{ data.post_id }}</td></tr>
+    <tr><td class="detail-label">Disciplina</td><td class="detail-value">{{ data.subject|e }}</td></tr>
+    <tr><td class="detail-label">Publicada em</td><td class="detail-value">{{ data.created_at }}</td></tr>
+    <tr><td class="detail-label">Autor</td><td class="detail-value">{{ data.author_name|e }}</td></tr>
+    <tr><td class="detail-label">Email do autor</td><td class="detail-value">{{ data.author_email|e }}</td></tr>
+</table>
+
+<div class="section-title">Conteúdo</div>
+<div class="quote-block">{{ (data.content or "(sem texto)")|e }}</div>
+{% endblock %}

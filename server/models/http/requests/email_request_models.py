@@ -7,6 +7,8 @@ from server.models.database.api_key_db_model import ApiKey
 from server.models.database.api_key_delivery_link_db_model import ApiKeyDeliveryLink
 from server.models.database.bug_report_db_model import BugReport
 from server.models.database.feedback_db_model import Feedback
+from server.models.database.forum_db_model import ForumPost
+from server.models.database.mobile_user_db_model import MobileUser
 from server.models.database.solicitation_db_model import (
     Solicitation,
 )
@@ -228,3 +230,48 @@ class ApiKeyExpiringMail(BaseModel):
         if days == 1:
             return "amanhã"
         return f"em {days} dias"
+
+
+class MobileCommentMail(BaseModel):
+    """A message sent from the app's "Fale conosco" (mobile/mobile-comment.html)."""
+
+    comment: str
+    email: str | None
+    user_id: int | None
+    user_name: str | None
+
+    @classmethod
+    def from_comment(
+        cls, *, comment: str, email: str | None, user: MobileUser | None
+    ) -> "MobileCommentMail":
+        return cls(
+            comment=comment,
+            email=email or (user.email if user else None),
+            user_id=user.id if user else None,
+            user_name=f"{user.given_name} {user.family_name}" if user else None,
+        )
+
+
+class ForumPostReportedMail(BaseModel):
+    """An app forum post reached the report threshold
+    (mobile/forum-post-reported.html)."""
+
+    post_id: int
+    subject: str
+    content: str | None
+    created_at: str
+    author_name: str
+    author_email: str
+    report_count: int
+
+    @classmethod
+    def from_post(cls, post: ForumPost, subject: str) -> "ForumPostReportedMail":
+        return cls(
+            post_id=post.id,  # type: ignore[arg-type]
+            subject=subject,
+            content=post.content,
+            created_at=post.created_at.strftime("%d/%m/%Y às %H:%M"),
+            author_name=f"{post.user.given_name} {post.user.family_name}",
+            author_email=post.user.email,
+            report_count=post.report_count,
+        )

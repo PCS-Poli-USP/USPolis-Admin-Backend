@@ -1,11 +1,12 @@
 from typing import Any
 
-from fastapi import APIRouter, Body, Query
+from fastapi import APIRouter, Body, HTTPException, Query, status
 
-from server.deps.google_auth_dep import GoogleAuthorizationDep
+from server.deps.google_auth_dep import MobileUserDep, check_acting_as
 from server.deps.session_dep import SessionDep
 from server.models.database.forum_db_model import ForumPost
 from server.models.database.subject_db_model import Subject
+from server.models.http.requests.email_request_models import ForumPostReportedMail
 from server.models.http.requests.forum_request_models import (
     ForumPostLike,
     ForumPostRegister,
@@ -19,6 +20,10 @@ from server.models.http.responses.forum_post_response import (
 )
 from server.repositories.forum_repository import ForumRepository
 from server.repositories.subject_repository import SubjectNotFound, SubjectRepository
+from server.services.email.email_service import (
+    FORUM_POST_REPORTED_SUBJECT,
+    EmailService,
+)
 from server.services.gmail_service import gmail_login, gmail_send_message
 from server.utils.must_be_int import must_be_int
 
@@ -52,9 +57,10 @@ async def get_posts(
 async def create_forum_post(
     input: ForumPostRegister,
     session: SessionDep,
-    _: GoogleAuthorizationDep,
+    user: MobileUserDep,
 ) -> ForumPostResponse:
     """Create a forum post with provided tags. The General Forum is associeted with subject_id == -1"""
+    check_acting_as(user, input.user_id)
 
     if input.subject_id == -1:
         globalForumSubject: Subject
@@ -79,39 +85,48 @@ async def create_forum_post(
 
 @router.delete("/posts/{post_id}")
 async def delete_forum_post(
-    post_id: int, session: SessionDep, _: GoogleAuthorizationDep
+    post_id: int, session: SessionDep, user: MobileUserDep
 ) -> None:
-    """Soft delete (disable) a forum post"""
+    """Soft delete (disable) a forum post (its author only: the mobile user of
+    the Google token)"""
+    post = session.get(ForumPost, post_id)
+    if post is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Post não encontrado")
+    if user.id != post.user_id:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, "Só quem escreveu o post pode excluí-lo"
+        )
     ForumRepository.disable_post(post_id=post_id, session=session)
 
 
 @router.post("/report")
 async def report_forum_post(
-    input: ForumReportRegister, session: SessionDep
+    input: ForumReportRegister, session: SessionDep, user: MobileUserDep
 ) -> ForumPost:
-    """Report forum post and send e-mail to uspolis admin if necessary"""
+    """Report forum post (as the token's user) and send e-mail to uspolis
+    admin if necessary"""
+    check_acting_as(user, input.user_id)
     updated_post = ForumRepository.update_forum_report_count(
         post_id=input.post_id,
-        mobile_user_id=input.user_id,
+        mobile_user_id=must_be_int(user.id),
         session=session,
     )
 
     if updated_post.report_count == 10:
-        send_email(updated_post)
+        subject = session.get(Subject, updated_post.subject_id)
+        send_email(updated_post, subject.code if subject else "")
 
     return updated_post
 
 
-def send_email(post: ForumPost) -> Any:
-    html_content = f"""
-        <h1> Um postagem foi denunciada {post.report_count} vezes! </h1>
-        <h2> Dados da postagem </h2>
-        <p>Post ID: {post.id}</p>
-        <p>Conteúdo: {post.content}</p>
-        <p>Autor da postagem: {post.user}</p>
-    """
+def send_email(post: ForumPost, subject_code: str) -> Any:
+    html_content = EmailService.render_forum_post_reported(
+        ForumPostReportedMail.from_post(post, subject_code)
+    )
     creds = gmail_login()
-    sent_email = gmail_send_message(creds, html_content)
+    sent_email = gmail_send_message(
+        creds, html_content, subject=FORUM_POST_REPORTED_SUBJECT
+    )
     return sent_email
 
 
@@ -121,9 +136,10 @@ async def create_forum_post_reply(
     post_id: int,
     input: ForumPostRegister,
     session: SessionDep,
-    _: GoogleAuthorizationDep,
+    user: MobileUserDep,
 ) -> ForumPostReplyResponse:
     """Create forum post reply"""
+    check_acting_as(user, input.user_id)
     reply = ForumRepository.create_reply(
         input=to_forumreply_model(post_id, input),
         session=session,
@@ -143,12 +159,13 @@ async def get_forum_post_replies(
 
 @router.post("/posts/{post_id}/liked")
 async def update_forum_post_like(
-    post_id: int, input: ForumPostLike, session: SessionDep
+    post_id: int, input: ForumPostLike, session: SessionDep, user: MobileUserDep
 ) -> ForumPost:
-    """Change post like reaction state"""
+    """Change post like reaction state (of the token's user)"""
+    check_acting_as(user, input.user_id)
     like_changed_post = ForumRepository.change_forum_post_like(
         post_id=post_id,
-        mobile_user_id=input.user_id,
+        mobile_user_id=must_be_int(user.id),
         like_state=input.like_state,
         session=session,
     )

@@ -1,0 +1,27 @@
+{% extends "_layout/base_email.html" %}
+
+{% block title %}Nova mensagem pelo app{% endblock %}
+
+{% block status %}
+<tr>
+    <td class="status-ribbon" style="background-color: #eaf2f2; color: #2f6666;">
+        &#128241; FALE CONOSCO &middot; APP
+    </td>
+</tr>
+{% endblock %}
+
+{% block content %}
+<p>Uma nova mensagem foi enviada pelo "Fale conosco" do app USPolis.</p>
+
+<div class="section-title">Remetente</div>
+<table class="detail-table" role="presentation" cellpadding="0" cellspacing="0">
+    <tr><td class="detail-label">Usuário</td><td class="detail-value">{{ (data.user_name or "Não identificado")|e }}</td></tr>
+    <tr><td class="detail-label">Email</td><td class="detail-value">{{ (data.email or "Não informado")|e }}</td></tr>
+    {% if data.user_id %}
+    <tr><td class="detail-label">ID no app</td><td class="detail-value">{{ data.user_id }}</td></tr>
+    {% endif %}
+</table>
+
+<div class="section-title">Mensagem</div>
+<div class="quote-block">{{ data.comment|e }}</div>
+{% endblock %}

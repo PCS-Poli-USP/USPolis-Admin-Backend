@@ -38,7 +38,9 @@ def gmail_login() -> Credentials:
     return creds  # type: ignore
 
 
-def gmail_send_message(creds: Credentials, content: Any) -> Any:
+def gmail_send_message(
+    creds: Credentials, content: Any, subject: str = "Comentário no app USPolis"
+) -> Any:
     """Create and send an email message
     Print the returned  message id
     Returns: Message object, including message id
@@ -51,7 +53,7 @@ def gmail_send_message(creds: Credentials, content: Any) -> Any:
         message["From"] = (
             service.users().getProfile(userId="me").execute().get("emailAddress")
         )
-        message["Subject"] = "Comentário no app USPolis"
+        message["Subject"] = subject
 
         # encoded message
         encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()

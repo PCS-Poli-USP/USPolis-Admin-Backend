@@ -119,6 +119,27 @@ SAMPLE_DATA: dict[str, tuple[str, dict[str, object]]] = {
             "message": "Seria ótimo poder filtrar as reservas por prédio diretamente no calendário principal.",
         },
     ),
+    "mobile-comment": (
+        "/mobile/mobile-comment.html",
+        {
+            "comment": "O mapa de salas no app não mostra o prédio da Elétrica.",
+            "email": "ana.souza@usp.br",
+            "user_id": 42,
+            "user_name": "Ana Souza",
+        },
+    ),
+    "forum-post-reported": (
+        "/mobile/forum-post-reported.html",
+        {
+            "post_id": 1287,
+            "subject": "MAC0110",
+            "content": "Alguém tem as respostas da prova de amanhã?",
+            "created_at": "21/11/2026 às 22:14",
+            "author_name": "Carlos Lima",
+            "author_email": "carlos.lima@usp.br",
+            "report_count": 10,
+        },
+    ),
     "bug-report": (
         "/reports/bug-report.html",
         {
