@@ -2,6 +2,9 @@ from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
 
 from server.deps.authenticate import UserDep
+from server.deps.repository_adapters.class_repository_adapter import (
+    ClassRepositoryDep,
+)
 from server.deps.repository_adapters.occurrence_repository_adapter import (
     OccurrenceRepositoryDep,
 )
@@ -19,7 +22,7 @@ from server.models.http.responses.allocation_response_models import (
 )
 from server.models.http.responses.schedule_response_models import ScheduleResponseBase
 from server.repositories.building_repository import BuildingRepository
-from server.repositories.class_repository import ClassRepository
+from server.repositories.classroom_repository import ClassroomRepository
 from server.repositories.occurrence_repository import OccurrenceRepository
 from server.repositories.schedule_repository import ScheduleRepository
 from server.repositories.subject_repository import SubjectRepository
@@ -42,15 +45,15 @@ def update_event(
                 occurrence = OccurrenceRepository.get_by_id(
                     id=input.occurrence_id, session=occurrence_repo.session
                 )
-                OccurrenceRepository.remove_occurrence_allocation(
-                    occurrence, occurrence_repo.session
-                )
+                occurrence_repo.remove_occurrence_allocation(occurrence)
     else:
         building = BuildingRepository.get_by_name(
             name=input.building, session=occurrence_repo.session
         )
-        classroom = occurrence_repo.classroom_repo.get_by_name_and_building(
-            input.classroom, building
+        # The allocation rule (ALLOCATE on the classrooms involved) is checked
+        # by the occurrence adapter, not READ on the target classroom.
+        classroom = ClassroomRepository.get_by_name_and_building(
+            input.classroom, building, occurrence_repo.session
         )
         if input.all_occurrences:
             schedule = ScheduleRepository.get_by_id(
@@ -66,11 +69,9 @@ def update_event(
                 occurrence = OccurrenceRepository.get_by_id(
                     id=input.occurrence_id, session=occurrence_repo.session
                 )
+                occurrence_repo.allocate_occurrence(occurrence, classroom)
                 occurrence.start_time = input.start_time
                 occurrence.end_time = input.end_time
-                OccurrenceRepository.allocate_occurrence(
-                    occurrence, classroom, occurrence_repo.session
-                )
 
     occurrence_repo.session.commit()
     return JSONResponse(content={"message": "Evento atualizado com sucesso!"})
@@ -79,12 +80,15 @@ def update_event(
 @router.post("/reuse-options")
 def allocation_reuse_options(
     input: AllocationReuseInput,
+    class_repository: ClassRepositoryDep,
     session: SessionDep,
 ) -> AllocationReuseResponse:
+    """Last year's allocations that fit the schedules of the given classes
+    (READ on every class)."""
     target_options: list[AllocationReuseTargetOptions] = []
     for target in input.targets:
         subject = SubjectRepository.get_by_id(id=target.subject_id, session=session)
-        classes = ClassRepository.get_by_ids(ids=target.class_ids, session=session)
+        classes = class_repository.get_by_ids(target.class_ids)
         class_options: list[AllocationClassOptions] = []
         for cls in classes:
             if cls.subject_id != target.subject_id:
@@ -138,10 +142,8 @@ def allocate_allocation_map(
     repository: OccurrenceRepositoryDep,
     session: SessionDep,
 ) -> JSONResponse:
-    schedule_repo = repository.schedule_repo
-    classroom_repo = repository.classroom_repo
     for val in input_map.allocation_map:
-        schedule = schedule_repo.get_by_id(val.schedule_id)
+        schedule = ScheduleRepository.get_by_id(id=val.schedule_id, session=session)
         if schedule.reservation:
             raise InvalidAllocationMapInputError(
                 "Não é permitido usar agenda de reservas na reutiliazação de alocação!"
@@ -154,9 +156,20 @@ def allocate_allocation_map(
                 detail="Agenda sem turma ou reserva encontrada!",
             )
 
-        classrooms = classroom_repo.get_by_ids(ids=val.classroom_ids)
+        classrooms = ClassroomRepository.get_by_ids(
+            ids=val.classroom_ids, session=session
+        )
         if len(classrooms) == 0:
             raise InvalidAllocationMapInputError("As salas fornecidas não existem!")
+        # Same rule as any allocation: ALLOCATE on the classroom the schedule
+        # leaves and on every classroom it goes to.
+        repository.check_can_allocate(
+            schedule=schedule, current_classroom_id=schedule.classroom_id, target=None
+        )
+        for classroom in classrooms:
+            repository.check_can_allocate(
+                schedule=schedule, current_classroom_id=None, target=classroom
+            )
 
         first_classroom = classrooms[0]
         OccurrenceRepository.allocate_schedule(

@@ -1,7 +1,6 @@
 import pytest
 from sqlmodel import Session
 
-from server.deps.owned_building_ids import owned_building_ids
 from server.deps.repository_adapters.classroom_repository_adapter import (
     ClassroomInsertionOnInvalidGroup,
     ClassroomNameAlreadyExists,
@@ -27,15 +26,16 @@ from tests.factories.model.building_model_factory import BuildingModelFactory
 from tests.factories.model.classroom_model_factory import ClassroomModelFactory
 from tests.factories.model.group_model_factory import GroupModelFactory
 from tests.factories.request.classroom_request_factory import ClassroomRequestFactory
+from tests.utils.access_scope_test_utils import access_scope_for
 from tests.utils.permission_test_utils import RolePermissionTestHelper
 
 
 def _adapter(*, user: User, session: Session) -> ClassroomRepositoryAdapter:
     return ClassroomRepositoryAdapter(
-        owned_building_ids=owned_building_ids(user=user, session=session),
         session=session,
         user=user,
         permission_index=build_permission_index(user),
+        scope=access_scope_for(user, session),
     )
 
 

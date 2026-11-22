@@ -29,6 +29,32 @@ GLOBAL_WILDCARD_ADMIN_ONLY_ACTIONS = frozenset(
 
 _EMPTY_IDS: frozenset[int] = frozenset()
 
+# Actions that make no sense alone grant the actions they depend on, so a role
+# can never hold an inconsistent set (e.g. reserving a classroom it cannot read):
+# - every action implies READ on the same resource;
+# - DELETE also implies UPDATE (deleting something you cannot edit makes no
+#   sense).
+# Applied when the index is built, so existing roles follow it too.
+IMPLIED_ACTIONS: dict[str, frozenset[str]] = {
+    BaseAction.CREATE: frozenset({BaseAction.READ}),
+    BaseAction.UPDATE: frozenset({BaseAction.READ}),
+    BaseAction.DELETE: frozenset({BaseAction.UPDATE, BaseAction.READ}),
+    ClassroomAction.ALLOCATE: frozenset({BaseAction.READ}),
+    ClassroomAction.RESERVE: frozenset({BaseAction.READ}),
+    ClassroomAction.REQUEST: frozenset({BaseAction.READ}),
+}
+
+
+def with_implied_actions(
+    actions: "list[PermissionAction] | frozenset[PermissionAction]",
+) -> frozenset[str]:
+    """`actions` plus every action they imply (see IMPLIED_ACTIONS)."""
+    granted: set[str] = set(actions)
+    for action in actions:
+        granted |= IMPLIED_ACTIONS.get(action, frozenset())
+    return frozenset(granted)
+
+
 _PermissionKey = tuple[Resource, PermissionAction]
 
 
@@ -72,6 +98,22 @@ class PermissionIndex:
             key in self._wildcard and action not in GLOBAL_WILDCARD_ADMIN_ONLY_ACTIONS
         )
 
+    def ids_with_permission(
+        self, *, resource: Resource, action: PermissionAction
+    ) -> frozenset[int] | None:
+        """The ids of `resource` this user can perform `action` on, through roles.
+
+        None means every id: the user is an admin, or holds a wildcard grant
+        that is honored for `action` (see GLOBAL_WILDCARD_ADMIN_ONLY_ACTIONS).
+        Same rule as `has_permission`, for listing instead of checking one id.
+        """
+        if self.is_admin:
+            return None
+        key = (resource, action)
+        if key in self._wildcard and action not in GLOBAL_WILDCARD_ADMIN_ONLY_ACTIONS:
+            return None
+        return self._exact.get(key, _EMPTY_IDS)
+
     def has_classroom_permission(
         self,
         *,
@@ -101,11 +143,18 @@ def build_permission_index(user: User) -> PermissionIndex:
         for permission in permissions:
             target_id = _permission_target_id(permission)
             for action in permission.actions:
-                key = (resource, action)
                 if target_id is None:
-                    wildcard.add(key)
+                    wildcard.add((resource, action))
+                    # A wildcard that is not honored (admin-only action, see
+                    # has_permission) must not grant its implied actions on
+                    # everything either.
+                    if action in GLOBAL_WILDCARD_ADMIN_ONLY_ACTIONS:
+                        continue
+                    for implied in with_implied_actions([action]):
+                        wildcard.add((resource, implied))  # type: ignore[arg-type]
                 else:
-                    exact[key].add(target_id)
+                    for implied in with_implied_actions([action]):
+                        exact[(resource, implied)].add(target_id)  # type: ignore[index]
 
     return PermissionIndex(
         is_admin=user.is_admin,

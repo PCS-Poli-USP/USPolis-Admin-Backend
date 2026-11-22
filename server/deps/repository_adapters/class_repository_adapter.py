@@ -2,9 +2,9 @@ from typing import Annotated
 
 from fastapi import Depends
 
+from server.deps.access_scope_dep import AccessScopeDep
 from server.deps.authenticate import UserDep
 from server.deps.interval_dep import QueryIntervalDep
-from server.deps.owned_building_ids import OwnedBuildingIdsDep
 from server.deps.permission_index_dep import PermissionIndexDep
 from server.deps.session_dep import SessionDep
 from server.models.database.class_db_model import Class
@@ -23,16 +23,16 @@ from server.utils.enums.actions_enums import BuildingAction, ClassroomAction
 class ClassRepositoryAdapter:
     def __init__(
         self,
-        owned_building_ids: OwnedBuildingIdsDep,
         session: SessionDep,
         user: UserDep,
         interval: QueryIntervalDep,
         permission_index: PermissionIndexDep,
+        scope: AccessScopeDep,
     ):
         self.session = session
+        self.scope = scope
         self.interval = interval
         self.user = user
-        self.owned_building_ids = owned_building_ids
         self.permission_index = permission_index
         self.checker = ClassPermissionChecker(
             user=user, session=session, permission_index=permission_index
@@ -55,7 +55,7 @@ class ClassRepositoryAdapter:
     def get_all_on_my_classrooms(self) -> list[Class]:
         """Get all classes on classrooms that the user has access to."""
         return ClassRepository.get_all_on_classrooms(
-            classroom_ids=self.user.classrooms_ids(),
+            classroom_ids=self.scope.classroom_ids(ClassroomAction.READ),
             session=self.session,
             interval=self.interval,
         )
@@ -63,7 +63,7 @@ class ClassRepositoryAdapter:
     def get_all_unallocated(self) -> list[Class]:
         """Get all classes that are not allocated in all schedules and are in one of the buildings."""
         return ClassRepository.get_all_unallocated_on_buildings(
-            building_ids=self.owned_building_ids,
+            building_ids=self.scope.readable_building_ids(),
             session=self.session,
             interval=self.interval,
         )
@@ -71,7 +71,7 @@ class ClassRepositoryAdapter:
     def get_all_on_my_buildings(self) -> list[Class]:
         """Get all classes on buildings that the user has access to."""
         return ClassRepository.get_all_on_buildings(
-            building_ids=self.owned_building_ids,
+            building_ids=self.scope.readable_building_ids(),
             session=self.session,
             interval=self.interval,
         )
@@ -80,6 +80,11 @@ class ClassRepositoryAdapter:
         class_ = ClassRepository.get_by_id(id=id, session=self.session)
         self.checker.check_permission(class_, ClassroomAction.READ)
         return class_
+
+    def get_by_ids(self, ids: list[int]) -> list[Class]:
+        classes = ClassRepository.get_by_ids(ids=ids, session=self.session)
+        self.checker.check_permission(classes, ClassroomAction.READ)
+        return classes
 
     def create(self, input: ClassRegister) -> Class:
         self.subject_checker.check_permission(input.subject_id, BuildingAction.CREATE)

@@ -2,8 +2,8 @@ from typing import Annotated
 
 from fastapi import Depends
 
+from server.deps.access_scope_dep import AccessScopeDep
 from server.deps.authenticate import UserDep
-from server.deps.owned_building_ids import OwnedBuildingIdsDep
 from server.deps.permission_index_dep import PermissionIndexDep
 from server.deps.session_dep import SessionDep
 from server.models.database.solicitation_db_model import Solicitation
@@ -27,12 +27,12 @@ from server.utils.enums.actions_enums import ClassroomAction
 class SolicitationRepositoryAdapter:
     def __init__(
         self,
-        owned_building_ids: OwnedBuildingIdsDep,
         session: SessionDep,
         user: UserDep,
         permission_index: PermissionIndexDep,
+        scope: AccessScopeDep,
     ):
-        self.owned_building_ids = owned_building_ids
+        self.scope = scope
         self.session = session
         self.user = user
         self.classroom_checker = ClassroomPermissionChecker(
@@ -42,16 +42,21 @@ class SolicitationRepositoryAdapter:
             user=user, session=session, permission_index=permission_index
         )
 
+    def _inbox_building_ids(self) -> list[int]:
+        # Answering a solicitation takes RESERVE (see SolicitationPermissionChecker),
+        # so the inbox lists the buildings where the user can reserve something.
+        return self.scope.visible_building_ids(ClassroomAction.RESERVE)
+
     def get_all(self, pagination: PaginationInput) -> Page[Solicitation]:
         return SolicitationRepository.get_by_buildings_ids_paginated(
-            building_ids=self.owned_building_ids,
+            building_ids=self._inbox_building_ids(),
             pagination=pagination,
             session=self.session,
         )
 
     def get_pending(self) -> list[Solicitation]:
         return SolicitationRepository.get_pending_by_buildings_ids(
-            building_ids=self.owned_building_ids, session=self.session
+            building_ids=self._inbox_building_ids(), session=self.session
         )
 
     def __check_restricted_classroom(self, classroom_id: int | None) -> None:

@@ -4,6 +4,7 @@ from sqlmodel import Session
 from server.models.database.class_db_model import Class
 from server.models.database.user_db_model import User
 from server.repositories.class_repository import ClassRepository
+from server.services.security.access_scope import AccessScope
 from server.services.security.base_permission_checker import PermissionChecker
 from server.services.security.buildings_permission_checker import (
     BuildingPermissionChecker,
@@ -30,6 +31,9 @@ class ClassPermissionChecker(PermissionChecker[Class]):
         self.classroom_checker = ClassroomPermissionChecker(
             user=user, session=session, permission_index=permission_index
         )
+        self.scope = AccessScope(
+            user=user, session=session, permission_index=permission_index
+        )
 
     def check_permission(  # type: ignore[override]
         self,
@@ -37,10 +41,10 @@ class ClassPermissionChecker(PermissionChecker[Class]):
         action: ClassroomAction,
     ) -> None:
         """
-        Checks the permission of a user for a specific class. **A user has access to a class if:**
+        Checks the permission of a user for a specific class. **A user can do `action` on a class if:**
         - The user is an admin.
-        - The class has not been allocated at least one of his schedules and the user has access to the building of the class.
-        - The class are full allocated and at least one of his schedules is at one of user classrooms.
+        - At least one of its schedules is allocated in a classroom where the user can do `action` (a classroom grant is enough, no building grant needed).
+        - Or at least one of its schedules is unallocated and the user can do `action` on one of the class's buildings.
 
         **IMPORTANT:** This method not check a strict permission, so if one of the schedules of the class is allocated in a classroom that the user has access to, the user will be allowed to access the class. For deleting a class you should check if the user has access to all schedules of the class.
 
@@ -68,32 +72,43 @@ class ClassPermissionChecker(PermissionChecker[Class]):
     def __class_obj_permission_checker(
         self, class_: Class, action: ClassroomAction
     ) -> None:
-        class_building_ids = class_.building_ids()
-        if not any(
-            self.building_checker.is_allowed(building_id, action)
-            for building_id in class_building_ids
+        # Reading: whoever belongs to one of the subject's buildings (can read
+        # the building or any classroom in it) reads every class of the
+        # subject, allocated or not, wherever its schedules are. Same rule as
+        # the listings (AccessScope.readable_building_ids), see
+        # docs/PERMISSIONS.md, "Class visibility".
+        if action == ClassroomAction.READ and self.__in_a_readable_building(
+            class_.building_ids()
         ):
-            raise ForbiddenClassAccess(
-                f"Usuário não tem permissão para {translate_action(action)} "
-                f"a turma {class_.subject.code} - {class_.code}"
-            )
+            return
 
-        allowed = False
-        for schedule in class_.schedules:
-            if not schedule.classroom_id:
-                allowed = True
-                break
-            if schedule.classroom_id and self.classroom_checker.is_allowed(
-                schedule.classroom_id, action
-            ):
-                allowed = True
-                break
+        # Everything else goes through the schedules:
+        # - an allocated schedule, through its classroom: the action on that
+        #   classroom is enough (a classroom-level role manages the classes
+        #   allocated in its classrooms, without any grant on the building);
+        # - an unallocated schedule, through the class's buildings.
+        allowed = any(
+            self.classroom_checker.is_allowed(schedule.classroom_id, action)
+            for schedule in class_.schedules
+            if schedule.classroom_id
+        )
+        if not allowed and any(
+            not schedule.classroom_id for schedule in class_.schedules
+        ):
+            allowed = any(
+                self.building_checker.is_allowed(building_id, action)
+                for building_id in class_.building_ids()
+            )
 
         if not allowed:
             raise ForbiddenClassAccess(
                 f"Usuário não tem permissão para {translate_action(action)} "
                 f"a turma {class_.subject.code} - {class_.code}"
             )
+
+    def __in_a_readable_building(self, building_ids: set[int]) -> bool:
+        readable = self.scope.visible_building_grant(ClassroomAction.READ)
+        return readable.all or bool(readable.ids & building_ids)
 
     def __class_list_permission_checker(
         self, classes: list[int] | list[Class], action: ClassroomAction

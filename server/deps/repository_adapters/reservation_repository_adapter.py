@@ -2,9 +2,9 @@ from typing import Annotated
 
 from fastapi import Depends
 
+from server.deps.access_scope_dep import AccessScopeDep
 from server.deps.authenticate import UserDep
 from server.deps.interval_dep import QueryIntervalDep
-from server.deps.owned_building_ids import OwnedBuildingIdsDep
 from server.deps.permission_index_dep import PermissionIndexDep
 from server.deps.session_dep import SessionDep
 from server.models.database.reservation_db_model import Reservation
@@ -27,16 +27,16 @@ from server.utils.must_be_int import must_be_int
 class ReservationRespositoryAdapter:
     def __init__(
         self,
-        owned_building_ids: OwnedBuildingIdsDep,
         session: SessionDep,
         user: UserDep,
         interval: QueryIntervalDep,
         permission_index: PermissionIndexDep,
+        scope: AccessScopeDep,
     ):
         self.session = session
+        self.scope = scope
         self.interval = interval
         self.user = user
-        self.owned_building_ids = owned_building_ids
         self.checker = ClassroomPermissionChecker(
             user=user, session=session, permission_index=permission_index
         )
@@ -46,28 +46,32 @@ class ReservationRespositoryAdapter:
 
     def get_all(self) -> list[Reservation]:
         """Get all reservations for authenticated user on owned buildings"""
-        if self.user.is_admin:
+        if self.scope.classroom_grant(ClassroomAction.READ).all:
             return ReservationRepository.get_all(
                 session=self.session, interval=self.interval
             )
         return ReservationRepository.get_all_on_classrooms(
-            classroom_ids=self.user.classrooms_ids(),
+            classroom_ids=self.scope.classroom_ids(ClassroomAction.READ),
             session=self.session,
             interval=self.interval,
         )
 
-    def get_by_id(self, id: int) -> Reservation:
-        """Get a reservation by id, checking if the user has permission to access it.
-        - If the reservation has a classroom, check if the user has permission on it.
-        - Otherwise check if the user has permission on the building.
+    def get_by_id(
+        self, id: int, action: ClassroomAction = ClassroomAction.READ
+    ) -> Reservation:
+        """Get a reservation by id, checking that the user can do `action` on it
+        (READ to show it; RESERVE when it is fetched to be changed, since the
+        whole booking lifecycle takes RESERVE, see docs/PERMISSIONS.md).
+        - If the reservation has a classroom, check the permission on it.
+        - Otherwise check the permission on the building.
         """
         reservation = ReservationRepository.get_by_id(id=id, session=self.session)
         classroom = reservation.get_classroom()
         if classroom:
-            self.checker.check_permission(classroom, ClassroomAction.READ)
+            self.checker.check_permission(classroom, action)
         if not classroom:
             self.building_checker.check_permission(
-                reservation.get_building(), BuildingAction.READ
+                reservation.get_building(), BuildingAction(action.value)
             )
         return reservation
 

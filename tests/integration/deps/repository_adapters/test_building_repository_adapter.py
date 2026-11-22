@@ -1,7 +1,6 @@
 import pytest
 from sqlmodel import Session
 
-from server.deps.owned_building_ids import owned_building_ids
 from server.deps.repository_adapters.building_repository_adapter import (
     BuildingAlreadyExists,
     BuildingRepositoryAdapter,
@@ -15,12 +14,13 @@ from server.services.security.role_permission_evaluator import build_permission_
 from server.utils.enums.actions_enums import BuildingAction
 from server.utils.must_be_int import must_be_int
 from tests.factories.request.building_request_factory import BuildingRequestFactory
+from tests.utils.access_scope_test_utils import access_scope_for
 from tests.utils.permission_test_utils import RolePermissionTestHelper
 
 
 def _adapter(*, user: User, session: Session) -> BuildingRepositoryAdapter:
     return BuildingRepositoryAdapter(
-        owned_building_ids=owned_building_ids(user=user, session=session),
+        scope=access_scope_for(user, session),
         session=session,
         user=user,
         permission_index=build_permission_index(user),

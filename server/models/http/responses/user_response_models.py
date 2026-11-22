@@ -172,3 +172,19 @@ class UserResponse(UseCoreResponse):
     @classmethod
     def from_user_list(cls, users: list[User]) -> list["UserResponse"]:
         return [cls.from_user(user) for user in users]
+
+
+class UserBuildingMemberResponse(BaseModel):
+    """A user of a building, as other users of the building see them."""
+
+    id: int
+    name: str
+    email: str
+
+    @classmethod
+    def from_user(cls, user: User) -> "UserBuildingMemberResponse":
+        return cls(id=must_be_int(user.id), name=user.name, email=user.email)
+
+    @classmethod
+    def from_user_list(cls, users: list[User]) -> list["UserBuildingMemberResponse"]:
+        return [cls.from_user(user) for user in users]

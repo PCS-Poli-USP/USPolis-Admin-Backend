@@ -22,6 +22,11 @@ from server.services.security.csrf import (
     UntrustedOriginForCookie,
     is_trusted_cookie_request,
 )
+from server.services.security.role_permission_evaluator import (
+    build_permission_index,
+)
+from server.utils.enums.actions_enums import BuildingAction
+from server.utils.enums.resources_enums import Resource
 
 security = HTTPBearer(auto_error=False)
 
@@ -183,10 +188,21 @@ def building_authenticate(
     session: SessionDep,
     building_id: Annotated[int, Header()],
 ) -> Building:
+    """The building of the `building-id` header, if the user can create
+    subjects in it (BuildingAction.CREATE, as SubjectRepositoryAdapter.create):
+    an admin, a role granting it, or a legacy group of the building.
+
+    Only the subject crawl (POST /subjects/crawl) uses it."""
     building = BuildingRepository.get_by_id(id=building_id, session=session)
     if user.is_admin:
         return building
-    if user.buildings is None or building not in user.buildings:
+    in_a_group = user.buildings is not None and building in user.buildings
+    granted_by_a_role = build_permission_index(user).has_permission(
+        resource=Resource.BUILDING,
+        action=BuildingAction.CREATE,
+        resource_id=building.id,
+    )
+    if not in_a_group and not granted_by_a_role:
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
             f"Usuário não tem permissão para acessar o prédio {building.name}",

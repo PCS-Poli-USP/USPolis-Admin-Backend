@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 
+from server.deps.access_scope_dep import AccessScopeDep
 from server.deps.authenticate import UserDep
 from server.deps.repository_adapters.building_repository_adapter import (
     BuildingRepositoryDep,
@@ -18,7 +19,7 @@ from server.deps.repository_adapters.subject_repository_adapter import (
     SubjectRepositoryDep,
 )
 from server.deps.session_dep import SessionDep
-from server.models.database.user_db_model import User
+from server.models.http.responses.access_response_models import UserAccessResponse
 from server.models.http.responses.building_response_models import BuildingResponse
 from server.models.http.responses.class_response_models import ClassResponse
 from server.models.http.responses.classroom_response_models import ClassroomResponse
@@ -30,7 +31,10 @@ from server.models.http.responses.solicitation_response_models import (
     SolicitationResponse,
 )
 from server.models.http.responses.subject_response_models import SubjectResponse
-from server.models.http.responses.user_response_models import UserResponse
+from server.models.http.responses.user_response_models import (
+    UserBuildingMemberResponse,
+    UserResponse,
+)
 from server.models.http.responses.user_schedule_response import UserScheduleResponse
 from server.repositories.group_repository import GroupRepository
 from server.repositories.solicitation_repository import (
@@ -38,6 +42,9 @@ from server.repositories.solicitation_repository import (
 )
 from server.repositories.user_repository import UserRepository
 from server.repositories.user_schedule_repository import UserScheduleRepository
+from server.services.security.buildings_permission_checker import (
+    ForbiddenBuildingAccess,
+)
 from server.utils.must_be_int import must_be_int
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -136,6 +143,14 @@ def get_my_reservations(
     return ReservationResponse.from_reservation_list(reservations)
 
 
+@router.get("/my-access")
+def get_my_access(user: UserDep, scope: AccessScopeDep) -> UserAccessResponse:
+    """Per action, the buildings and classrooms the authenticated user can act
+    on (roles with the building cascade, plus legacy groups). The frontend
+    reads this instead of re-implementing the permission rules."""
+    return UserAccessResponse.from_scope(is_admin=user.is_admin, scope=scope)
+
+
 @router.get("/my-solicitations")
 def get_my_solicitaions(
     user: UserDep,
@@ -212,7 +227,14 @@ def get_my_schedule(
 
 
 @router.get("/{building_id}")
-def get_users_on_building(building_id: int, session: SessionDep) -> list[User]:
-    """Get users on building"""
+def get_users_on_building(
+    building_id: int, scope: AccessScopeDep, session: SessionDep
+) -> list[UserBuildingMemberResponse]:
+    """Get users on building (to users who belong to it: they can read the
+    building or a classroom in it)"""
+    if building_id not in scope.readable_building_ids():
+        raise ForbiddenBuildingAccess(
+            "Usuário não tem permissão para ver os usuários deste prédio"
+        )
     users = UserRepository.get_all_on_building(building_id=building_id, session=session)
-    return users
+    return UserBuildingMemberResponse.from_user_list(users)

@@ -1,7 +1,4 @@
-import pytest
-
 from server.models.http.requests.classroom_request_models import (
-    ClassroomInvalidRequest,
     ClassroomRegister,
     ClassroomUpdate,
 )
@@ -26,12 +23,11 @@ class TestClassroomRegister:
 
         assert classroom.group_ids == [1]
 
-    def test_rejects_no_groups(self) -> None:
-        with pytest.raises(ClassroomInvalidRequest):
-            ClassroomRegister(group_ids=[], **_base_kwargs())
+    def test_groups_are_optional(self) -> None:
+        assert ClassroomRegister(**_base_kwargs()).group_ids == []
+        assert ClassroomRegister(group_ids=[], **_base_kwargs()).group_ids == []
 
 
 class TestClassroomUpdate:
-    def test_rejects_no_groups(self) -> None:
-        with pytest.raises(ClassroomInvalidRequest):
-            ClassroomUpdate(group_ids=[], **_base_kwargs())
+    def test_groups_are_optional(self) -> None:
+        assert ClassroomUpdate(group_ids=[], **_base_kwargs()).group_ids == []

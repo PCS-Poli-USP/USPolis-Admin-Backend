@@ -2,8 +2,8 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 
+from server.deps.access_scope_dep import AccessScopeDep
 from server.deps.authenticate import UserDep
-from server.deps.owned_building_ids import OwnedBuildingIdsDep
 from server.deps.permission_index_dep import PermissionIndexDep
 from server.deps.session_dep import SessionDep
 from server.models.database.allocation_log_db_model import AllocationLog
@@ -24,12 +24,12 @@ from server.utils.must_be_int import must_be_int
 class ScheduleRepositoryAdapter:
     def __init__(
         self,
-        owned_building_ids: OwnedBuildingIdsDep,
+        scope: AccessScopeDep,
         user: UserDep,
         session: SessionDep,
         permission_index: PermissionIndexDep,
     ):
-        self.owned_building_ids = owned_building_ids
+        self.scope = scope
         self.user = user
         self.session = session
         self.permission_index = permission_index
@@ -37,14 +37,14 @@ class ScheduleRepositoryAdapter:
     def get_by_id(self, schedule_id: int) -> Schedule:
         return ScheduleRepository.get_by_id_on_buildings(
             schedule_id=schedule_id,
-            owned_building_ids=self.owned_building_ids,
+            owned_building_ids=self.scope.readable_building_ids(),
             session=self.session,
         )
 
     def get_allocation_logs(self, schedule_id: int) -> list[AllocationLog]:
         schedule = ScheduleRepository.get_by_id_on_buildings(
             schedule_id=schedule_id,
-            owned_building_ids=self.owned_building_ids,
+            owned_building_ids=self.scope.readable_building_ids(),
             session=self.session,
         )
         return schedule.logs

@@ -39,11 +39,10 @@ async def crawl_subjects(
 
 @router.patch("/crawl")
 async def update_crawl_subjects(
-    session: SessionDep,
-    input: UpdateCrawlSubject,
+    input: UpdateCrawlSubject, repository: SubjectRepositoryDep
 ) -> SubjectCrawlResponse:
-    response = await SubjectRepository.crawler_update_many(input.subject_codes, session)
-    return response
+    """Re-crawl subjects (UPDATE on each subject's building)"""
+    return await repository.crawler_update_many(input.subject_codes)
 
 
 @router.post("")

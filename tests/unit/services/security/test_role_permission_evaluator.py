@@ -5,7 +5,10 @@ from server.models.database.classroom_permission_db_model import ClassroomPermis
 from server.models.database.course_permission_db_model import CoursePermission
 from server.models.database.role_db_model import Role
 from server.models.database.user_db_model import User
-from server.services.security.role_permission_evaluator import build_permission_index
+from server.services.security.role_permission_evaluator import (
+    PermissionIndex,
+    build_permission_index,
+)
 from server.utils.enums.actions_enums import (
     BuildingAction,
     ClassroomAction,
@@ -205,3 +208,74 @@ def test_course_permission_target_id_resolves_via_course_id() -> None:
 def test_building_action_includes_allocate_and_reserve() -> None:
     assert BuildingAction.ALLOCATE.value == ClassroomAction.ALLOCATE.value
     assert BuildingAction.RESERVE.value == ClassroomAction.RESERVE.value
+
+
+# -- implied actions (IMPLIED_ACTIONS) :
+
+
+def _classroom_index(
+    actions: list[ClassroomAction], classroom_id: int | None = 42
+) -> PermissionIndex:
+    permission = ClassroomPermission(
+        role_id=1, granted_by_id=1, classroom_id=classroom_id, actions=actions
+    )
+    role = make_role(resources=[Resource.CLASSROOM], classroom_permissions=[permission])
+    return build_permission_index(make_user(roles=[role]))
+
+
+def test_every_action_implies_read() -> None:
+    for action in [
+        ClassroomAction.CREATE,
+        ClassroomAction.UPDATE,
+        ClassroomAction.DELETE,
+        ClassroomAction.ALLOCATE,
+        ClassroomAction.RESERVE,
+        ClassroomAction.REQUEST,
+    ]:
+        index = _classroom_index([action])
+        assert index.has_permission(
+            resource=Resource.CLASSROOM, action=ClassroomAction.READ, resource_id=42
+        ), action
+
+
+def test_delete_implies_update() -> None:
+    index = _classroom_index([ClassroomAction.DELETE])
+
+    assert index.has_permission(
+        resource=Resource.CLASSROOM, action=ClassroomAction.UPDATE, resource_id=42
+    )
+
+
+def test_implications_do_not_grant_other_actions() -> None:
+    index = _classroom_index([ClassroomAction.UPDATE])
+
+    for action in [
+        ClassroomAction.DELETE,
+        ClassroomAction.ALLOCATE,
+        ClassroomAction.RESERVE,
+    ]:
+        assert not index.has_permission(
+            resource=Resource.CLASSROOM, action=action, resource_id=42
+        ), action
+
+
+def test_honored_wildcard_implies_read_everywhere() -> None:
+    index = _classroom_index([ClassroomAction.CREATE], classroom_id=None)
+
+    assert (
+        index.ids_with_permission(
+            resource=Resource.CLASSROOM, action=ClassroomAction.READ
+        )
+        is None
+    )
+
+
+def test_ignored_wildcard_implies_nothing() -> None:
+    index = _classroom_index([ClassroomAction.RESERVE], classroom_id=None)
+
+    assert (
+        index.ids_with_permission(
+            resource=Resource.CLASSROOM, action=ClassroomAction.READ
+        )
+        == frozenset()
+    )

@@ -4,6 +4,7 @@ from sqlmodel import Session
 from server.models.database.subject_db_model import Subject
 from server.models.database.user_db_model import User
 from server.repositories.subject_repository import SubjectRepository
+from server.services.security.access_scope import AccessScope
 from server.services.security.base_permission_checker import PermissionChecker
 from server.services.security.buildings_permission_checker import (
     BuildingPermissionChecker,
@@ -23,6 +24,9 @@ class SubjectPermissionChecker(PermissionChecker[Subject]):
     ) -> None:
         super().__init__(user=user, session=session)
         self.building_checker = BuildingPermissionChecker(
+            user=user, session=session, permission_index=permission_index
+        )
+        self.scope = AccessScope(
             user=user, session=session, permission_index=permission_index
         )
 
@@ -59,6 +63,12 @@ class SubjectPermissionChecker(PermissionChecker[Subject]):
         self, subject: Subject, action: BuildingAction
     ) -> None:
         building_ids = [must_be_int(building.id) for building in subject.buildings]
+        if action == BuildingAction.READ:
+            # Reading: belonging to one of its buildings (reading the building
+            # or any classroom in it) is enough, as in the listings.
+            readable = self.scope.visible_building_grant(BuildingAction.READ)
+            if readable.all or readable.ids & set(building_ids):
+                return
         if not any(
             self.building_checker.is_allowed(building_id, action)
             for building_id in building_ids

@@ -2,7 +2,6 @@ from datetime import date, time, timedelta
 
 from sqlmodel import Session
 
-from server.deps.owned_building_ids import owned_building_ids
 from server.deps.repository_adapters.building_repository_adapter import (
     BuildingRepositoryAdapter,
 )
@@ -30,6 +29,7 @@ from tests.factories.model.intentional_conflict_model_factory import (
 )
 from tests.factories.model.occurrence_model_factory import OccurrenceModelFactory
 from tests.factories.model.schedule_model_factory import ScheduleModelFactory
+from tests.utils.access_scope_test_utils import access_scope_for
 from tests.utils.permission_test_utils import RolePermissionTestHelper
 
 _FUTURE_DATE = date.today() + timedelta(days=10)
@@ -37,21 +37,20 @@ _FUTURE_DATE = date.today() + timedelta(days=10)
 
 def _checker(*, user: User, session: Session) -> ConflictChecker:
     permission_index = build_permission_index(user)
-    owned = owned_building_ids(user=user, session=session)
     classroom_repo = ClassroomRepositoryAdapter(
-        owned_building_ids=owned,
         session=session,
         user=user,
         permission_index=permission_index,
+        scope=access_scope_for(user, session),
     )
     schedule_repo = ScheduleRepositoryAdapter(
-        owned_building_ids=owned,
+        scope=access_scope_for(user, session),
         user=user,
         session=session,
         permission_index=permission_index,
     )
     building_repo = BuildingRepositoryAdapter(
-        owned_building_ids=owned,
+        scope=access_scope_for(user, session),
         session=session,
         user=user,
         permission_index=permission_index,
@@ -62,6 +61,7 @@ def _checker(*, user: User, session: Session) -> ConflictChecker:
         classroom_repository=classroom_repo,
         schedule_repository=schedule_repo,
         building_repository=building_repo,
+        scope=access_scope_for(user, session),
     )
 
 

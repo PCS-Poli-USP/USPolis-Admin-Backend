@@ -1,7 +1,6 @@
 import pytest
 from sqlmodel import Session
 
-from server.deps.owned_building_ids import owned_building_ids
 from server.deps.repository_adapters.building_repository_adapter import (
     BuildingRepositoryAdapter,
 )
@@ -19,7 +18,6 @@ from server.models.database.class_db_model import Class
 from server.models.database.classroom_db_model import Classroom
 from server.models.database.user_db_model import User
 from server.models.http.requests.allocate_request_models import AllocateSchedule
-from server.repositories.schedule_repository import ScheduleNotFound
 from server.services.conflict_checker import ConflictChecker
 from server.services.security.classrooms_permission_checker import (
     ForbiddenClassroomAccess,
@@ -28,26 +26,26 @@ from server.services.security.role_permission_evaluator import build_permission_
 from server.utils.enums.actions_enums import ClassroomAction
 from server.utils.must_be_int import must_be_int
 from tests.factories.model.classroom_model_factory import ClassroomModelFactory
+from tests.utils.access_scope_test_utils import access_scope_for
 from tests.utils.permission_test_utils import RolePermissionTestHelper
 
 
 def _adapter(*, user: User, session: Session) -> OccurrenceRepositoryAdapter:
     permission_index = build_permission_index(user)
-    owned = owned_building_ids(user=user, session=session)
     classroom_repo = ClassroomRepositoryAdapter(
-        owned_building_ids=owned,
         session=session,
         user=user,
         permission_index=permission_index,
+        scope=access_scope_for(user, session),
     )
     schedule_repo = ScheduleRepositoryAdapter(
-        owned_building_ids=owned,
+        scope=access_scope_for(user, session),
         user=user,
         session=session,
         permission_index=permission_index,
     )
     building_repo = BuildingRepositoryAdapter(
-        owned_building_ids=owned,
+        scope=access_scope_for(user, session),
         session=session,
         user=user,
         permission_index=permission_index,
@@ -58,9 +56,10 @@ def _adapter(*, user: User, session: Session) -> OccurrenceRepositoryAdapter:
         classroom_repository=classroom_repo,
         schedule_repository=schedule_repo,
         building_repository=building_repo,
+        scope=access_scope_for(user, session),
     )
     return OccurrenceRepositoryAdapter(
-        owned_building_ids=owned,
+        scope=access_scope_for(user, session),
         session=session,
         user=user,
         classroom_repo=classroom_repo,
@@ -150,12 +149,14 @@ class TestGetById:
 
 
 class TestAllocateSchedule:
-    def test_denies_when_schedule_outside_owned_buildings(
+    def test_denies_a_user_without_allocate_on_the_classroom(
         self, common_user: User, classroom: Classroom, class_: Class, session: Session
     ) -> None:
+        # Allocating takes ALLOCATE on the classroom (and on the one the
+        # schedule leaves), not access to the class's building.
         adapter = _adapter(user=common_user, session=session)
 
-        with pytest.raises(ScheduleNotFound):
+        with pytest.raises(ForbiddenClassroomAccess):
             adapter.allocate_schedule(
                 must_be_int(class_.schedules[0].id), must_be_int(classroom.id)
             )
@@ -218,7 +219,7 @@ class TestAllocateSchedule:
 
 
 class TestAllocateScheduleMany:
-    def test_denies_when_schedule_outside_owned_buildings(
+    def test_denies_a_user_without_allocate_on_the_classroom(
         self, common_user: User, classroom: Classroom, class_: Class, session: Session
     ) -> None:
         adapter = _adapter(user=common_user, session=session)
@@ -229,7 +230,7 @@ class TestAllocateScheduleMany:
             )
         ]
 
-        with pytest.raises(ScheduleNotFound):
+        with pytest.raises(ForbiddenClassroomAccess):
             adapter.allocate_schedule_many(pairs)
 
     def test_denies_without_classroom_allocate_permission(

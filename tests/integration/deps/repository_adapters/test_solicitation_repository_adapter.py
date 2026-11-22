@@ -1,7 +1,6 @@
 import pytest
 from sqlmodel import Session
 
-from server.deps.owned_building_ids import owned_building_ids
 from server.deps.repository_adapters.solicitation_repository_adapter import (
     SolicitationRepositoryAdapter,
 )
@@ -24,15 +23,16 @@ from server.utils.enums.actions_enums import ClassroomAction
 from server.utils.enums.reservation_status import ReservationStatus
 from server.utils.must_be_int import must_be_int
 from tests.factories.request.meeting_request_factory import MeetingRequestFactory
+from tests.utils.access_scope_test_utils import access_scope_for
 from tests.utils.permission_test_utils import RolePermissionTestHelper
 
 
 def _adapter(*, user: User, session: Session) -> SolicitationRepositoryAdapter:
     return SolicitationRepositoryAdapter(
-        owned_building_ids=owned_building_ids(user=user, session=session),
         session=session,
         user=user,
         permission_index=build_permission_index(user),
+        scope=access_scope_for(user, session),
     )
 
 

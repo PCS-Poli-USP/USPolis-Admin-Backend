@@ -5,6 +5,7 @@ from typing import Self
 from fastapi import HTTPException, status
 from pydantic import BaseModel, model_validator
 
+from server.deps.access_scope_dep import AccessScopeDep
 from server.deps.authenticate import UserDep
 from server.deps.repository_adapters.building_repository_adapter import (
     BuildingRepositoryDep,
@@ -24,11 +25,16 @@ from server.models.database.classroom_db_model import (
 from server.models.database.intentional_conflict_db_model import IntentionalConflict
 from server.models.database.occurrence_db_model import Occurrence
 from server.models.database.schedule_db_model import Schedule
+from server.repositories.building_repository import BuildingRepository
 from server.repositories.classroom_repository import ClassroomRepository
 from server.repositories.intentional_conflict_repository import (
     IntentionalConflictRepository,
 )
 from server.repositories.occurrence_repository import OccurrenceRepository
+from server.services.security.buildings_permission_checker import (
+    ForbiddenBuildingAccess,
+)
+from server.utils.enums.actions_enums import ClassroomAction
 from server.utils.enums.confict_enum import ConflictType
 from server.utils.enums.month_week import MonthWeek
 from server.utils.enums.recurrence import Recurrence
@@ -188,8 +194,10 @@ class ConflictChecker:
         classroom_repository: ClassroomRepositoryDep,
         schedule_repository: ScheduleRepositoryDep,
         building_repository: BuildingRepositoryDep,
+        scope: AccessScopeDep,
     ):
         self.user = user
+        self.scope = scope
         self.session = session
         self.classroom_repository = classroom_repository
         self.schedule_repository = schedule_repository
@@ -201,7 +209,7 @@ class ConflictChecker:
         schedule_id: int,
     ) -> list[ClassroomWithConflictsIndicator]:
         schedule = self.schedule_repository.get_by_id(schedule_id)
-        classrooms = self.classroom_repository.get_all_on_building(building_id)
+        classrooms = self.__readable_classrooms_on_building(building_id)
 
         classrooms_with_conflicts: list[ClassroomWithConflictsIndicator] = []
         for classroom in classrooms:
@@ -225,9 +233,7 @@ class ConflictChecker:
         building_id: int,
         params: ConflictParams,
     ) -> list[ClassroomWithConflictsIndicator]:
-        classrooms = ClassroomRepository.get_all_on_buildings(
-            building_ids=[building_id], session=self.session
-        )
+        classrooms = self.__readable_classrooms_on_building(building_id)
         dates = []
         if params.recurrence != Recurrence.CUSTOM:
             dates = OccurrenceUtils._dates_for_recurrence(
@@ -267,6 +273,23 @@ class ConflictChecker:
 
         return classrooms_with_conflicts
 
+    def __readable_classrooms_on_building(self, building_id: int) -> list[Classroom]:
+        """The classrooms of the building the user can read, if the user
+        belongs to it (reads the building or a classroom in it); same rule as
+        the building conflicts report."""
+        if building_id not in self.scope.readable_building_ids():
+            raise ForbiddenBuildingAccess(
+                f"Usuário não tem permissão para ler o prédio com ID {building_id}"
+            )
+        readable = self.scope.classroom_grant(ClassroomAction.READ)
+        return [
+            classroom
+            for classroom in ClassroomRepository.get_all_on_buildings(
+                building_ids=[building_id], session=self.session
+            )
+            if readable.all or classroom.id in readable.ids
+        ]
+
     def specificate_conflicts_for_allowed_classrooms_in_building(
         self,
         building_id: int,
@@ -274,8 +297,19 @@ class ConflictChecker:
         start: date | None,
         end: date | None,
     ) -> BuildingConflictSpecification:
-        building = self.building_repository.get_by_id(building_id)
-        classrooms = self.user.classrooms_by_building(building, self.session)
+        # Reading any classroom of the building is enough: the report then
+        # covers only the classrooms the user can read.
+        if building_id not in self.scope.readable_building_ids():
+            raise ForbiddenBuildingAccess(
+                f"Usuário não tem permissão para ler o prédio com ID {building_id}"
+            )
+        building = BuildingRepository.get_by_id(id=building_id, session=self.session)
+        readable = self.scope.classroom_grant(ClassroomAction.READ)
+        classrooms = [
+            classroom
+            for classroom in building.classrooms
+            if readable.all or classroom.id in readable.ids
+        ]
 
         if not classrooms:
             return BuildingConflictSpecification(

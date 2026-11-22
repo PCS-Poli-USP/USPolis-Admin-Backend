@@ -77,7 +77,10 @@ async def delete_reservation(
     reservation_id: int, repository: ReservationRepositoryDep
 ) -> JSONResponse:
     """Delete a Reservation by ID"""
-    reservation = repository.get_by_id(id=reservation_id)
+    # Deleting takes RESERVE, not READ: fetch it with the same action.
+    reservation = repository.get_by_id(
+        id=reservation_id, action=ClassroomAction.RESERVE
+    )
     repository.delete(id=reservation_id)
 
     if reservation.solicitation:
