@@ -61,20 +61,36 @@ class Solicitation(BaseModel, table=True):
         """
         self.reservation.status = status
 
+    def get_responsible_classroom(self) -> Optional["Classroom"]:
+        """
+        The classroom whose groups handle this solicitation: the allocated
+        one, or, while it is pending (nothing allocated yet), the solicited
+        one. None when no classroom was chosen.
+        """
+        return self.reservation.get_classroom() or self.solicited_classroom
+
     def get_administrative_users(self) -> list["User"]:
         """
         Get the list of users who have administrative access to this solicitation. That means users who can approve, deny, or update the solicitation.
 
-        If the solicitation is associated with a classroom, it returns the users that have access to the classroom.
+        If the solicitation has a classroom (allocated or solicited, see
+        get_responsible_classroom), it returns the users that have access to
+        that classroom, which includes the building main group.
 
-        Otherwise, it returns the users that have access to the building.
+        Otherwise, it returns only the users of the building main group: a
+        group restricted to some classrooms must not handle solicitations
+        for the whole building.
 
         Returns:
             List of User objects.
         """
-        if self.reservation.schedule.classroom is None:
-            return self.building.get_users()
-        return self.reservation.schedule.classroom.get_users()
+        classroom = self.get_responsible_classroom()
+        if classroom is not None:
+            return classroom.get_users()
+        main_group = self.building.main_group
+        if main_group is None:
+            return []
+        return list(main_group.users)
 
     def get_administrative_users_for_email(self) -> list["User"]:
         """

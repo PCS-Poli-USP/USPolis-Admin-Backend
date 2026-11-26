@@ -60,11 +60,13 @@ class Classroom(ClassroomBase, table=True):
         """Get the groups associated with this classroom.\n
         This method ensures that the main group of the building is included
         """
-        groups = self.groups
+        # A copy: appending to self.groups would link the main group to the
+        # classroom in the database on the next flush.
+        groups = list(self.groups)
         main_group = self.building.main_group
         if main_group and main_group not in groups:
             groups.append(main_group)
-        return self.groups
+        return groups
 
     def get_users(self) -> list["User"]:
         """

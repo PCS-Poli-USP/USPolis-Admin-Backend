@@ -97,6 +97,7 @@ class MeetingRepository:
         user: User,
         input: MeetingUpdate,
         session: Session,
+        allocate: bool = True,
     ) -> Meeting:
         meeting = MeetingRepository.get_by_id(id=id, session=session)
         classroom = None
@@ -111,6 +112,7 @@ class MeetingRepository:
             classroom=classroom,
             user=user,
             session=session,
+            allocate=allocate,
         )
         meeting.link = input.link
         session.add(meeting)

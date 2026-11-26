@@ -343,7 +343,11 @@ class ScheduleRepository:
         input: ScheduleUpdate,
         classroom: Classroom | None,
         session: Session,
+        allocate: bool = True,
     ) -> Schedule:
+        """Recreate the schedule when its classroom or dates change. With
+        allocate=False the new schedule keeps the classroom but books no
+        occurrence in it (a solicitation that is not approved)."""
         old_schedule = reservation.schedule
 
         should_reallocate = False
@@ -364,6 +368,7 @@ class ScheduleRepository:
                 input=input,
                 classroom=classroom,
                 session=session,
+                allocate=allocate,
             )
             reservation.schedule = new_schedule
             return new_schedule

@@ -1,6 +1,7 @@
 from datetime import date
 from typing import cast
 from fastapi import HTTPException, status
+from sqlalchemy import ColumnElement, and_, or_, true
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, col, select
 from server.models.database.reservation_db_model import Reservation
@@ -61,12 +62,47 @@ class SolicitationRepository:
         return list(solicitations)
 
     @staticmethod
+    def visible_to(user: User) -> ColumnElement[bool]:
+        """SQL filter with the rule of Solicitation.get_administrative_users,
+        for listings: the solicitations of the classrooms the user has access
+        to (allocated classroom, or the solicited one while nothing is
+        allocated), plus those without any classroom in the buildings whose
+        main group the user is in. Needs Schedule joined. Admins see all."""
+        if user.is_admin:
+            return true()
+        classroom_ids = user.classrooms_ids_set()
+        main_group_building_ids = {
+            group.building_id
+            for group in user.groups
+            if group.building.main_group_id == group.id
+        }
+        allocated = col(Schedule.classroom_id)
+        solicited = col(Solicitation.solicited_classroom_id)
+        return or_(
+            allocated.in_(classroom_ids),
+            and_(allocated.is_(None), solicited.in_(classroom_ids)),
+            and_(
+                allocated.is_(None),
+                solicited.is_(None),
+                col(Solicitation.building_id).in_(main_group_building_ids),
+            ),
+        )
+
+    @staticmethod
     def get_by_buildings_ids_paginated(
-        building_ids: list[int], pagination: PaginationInput, session: Session
+        building_ids: list[int],
+        user: User,
+        pagination: PaginationInput,
+        session: Session,
     ) -> Page[Solicitation]:
         statement = (
             select(Solicitation)
-            .where(col(Solicitation.building_id).in_(building_ids))
+            .join(Reservation, col(Solicitation.reservation_id) == col(Reservation.id))
+            .join(Schedule, col(Reservation.id) == col(Schedule.reservation_id))
+            .where(
+                col(Solicitation.building_id).in_(building_ids),
+                SolicitationRepository.visible_to(user),
+            )
             .order_by(col(Solicitation.updated_at).desc())
         )
         return Page.paginate(statement, pagination, session)
@@ -89,7 +125,7 @@ class SolicitationRepository:
 
     @staticmethod
     def get_pending_by_buildings_ids(
-        building_ids: list[int], session: Session
+        building_ids: list[int], user: User, session: Session
     ) -> list[Solicitation]:
         today = date.today()
         statement = (
@@ -98,6 +134,7 @@ class SolicitationRepository:
             .join(Schedule, col(Reservation.id) == col(Schedule.reservation_id))
             .where(
                 col(Solicitation.building_id).in_(building_ids),
+                SolicitationRepository.visible_to(user),
                 col(Reservation.status) == ReservationStatus.PENDING,
                 col(Schedule.end_date) >= today,
             )
@@ -242,6 +279,9 @@ class SolicitationRepository:
                 id=must_be_int(reservation.exam.id),
                 input=cast(ExamUpdate, reservation_data),
                 session=session,
+                # Editing a solicitation never books the classroom: only
+                # approve() does.
+                allocate=False,
             )
 
         elif reservation.type == ReservationType.EVENT and reservation.event:
@@ -250,6 +290,9 @@ class SolicitationRepository:
                 id=must_be_int(reservation.event.id),
                 input=cast(EventUpdate, reservation_data),
                 session=session,
+                # Editing a solicitation never books the classroom: only
+                # approve() does.
+                allocate=False,
             )
 
         elif reservation.type == ReservationType.MEETING and reservation.meeting:
@@ -258,6 +301,9 @@ class SolicitationRepository:
                 id=must_be_int(reservation.meeting.id),
                 input=cast(MeetingUpdate, reservation_data),
                 session=session,
+                # Editing a solicitation never books the classroom: only
+                # approve() does.
+                allocate=False,
             )
 
         solicitation.updated_at = BrazilDatetime.now_utc()

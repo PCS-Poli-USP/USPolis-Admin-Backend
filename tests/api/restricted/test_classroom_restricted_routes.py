@@ -159,10 +159,14 @@ def test_create_classroom_with_restricted_user(
     response = restricted_client.post(URL_PREFIX, json=body)
     created = response.json()
 
+    # The main group is never linked to classrooms: with none linked it
+    # covers every classroom of the building. The response still lists it.
     main_group = GroupRepository.get_by_id(id=must_be_int(group.id), session=session)
-    assert len(main_group.classrooms) == 1
+    session.refresh(main_group)
+    assert main_group.classrooms == []
 
     assert response.status_code == status.HTTP_200_OK
+    assert created["group_ids"] == [group.id]
     assert created["name"] == input.name
     assert created["created_by"] == restricted_user.name
     assert created["building_id"] == group.building.id
