@@ -493,3 +493,47 @@ class TestCreateRouteRecipients:
         got = self.recipients(send, common_client, building, room_a, None)
 
         assert got == {must_be_int(building_admin.id)}
+
+
+@pytest.mark.usefixtures("room_a_group")
+class TestApproveRouteMessage:
+    """The approver can add a note to the approval email; it is not stored."""
+
+    @pytest.fixture
+    def send(self) -> Generator[AsyncMock, None, None]:
+        with patch(
+            "server.routes.restricted.solicitation_routes.EmailService.send_solicitation_approved_email",
+            new_callable=AsyncMock,
+        ) as send:
+            yield send
+
+    @pytest.mark.parametrize(
+        ("sent", "expected"),
+        [
+            ("  Retire a chave na portaria.  ", "Retire a chave na portaria."),
+            (None, None),
+        ],
+    )
+    def test_the_message_goes_to_the_email(
+        self,
+        sent: str | None,
+        expected: str | None,
+        send: AsyncMock,
+        solicit: Solicit,
+        room_a: Classroom,
+        restricted_client: TestClient,
+    ) -> None:
+        solicitation = solicit(room_a)
+        body: dict[str, Any] = {
+            "classroom_id": room_a.id,
+            "classroom_name": room_a.name,
+        }
+        if sent is not None:
+            body["message"] = sent
+
+        response = restricted_client.put(
+            f"/solicitations/approve/{solicitation.id}", json=body
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert send.call_args.args[0].message == expected

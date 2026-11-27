@@ -82,6 +82,7 @@ class SolicitationDeniedMail(SolicitationMailBase):
 class SolicitationApprovedMail(SolicitationMailBase):
     username: str
     approved_classroom: str
+    message: str | None = None
 
     @classmethod
     def from_solicitation(  # type: ignore
@@ -94,6 +95,7 @@ class SolicitationApprovedMail(SolicitationMailBase):
             **base.model_dump(),
             username=solicitation.user.name,
             approved_classroom=input.classroom_name,
+            message=input.message,
         )
 
 
