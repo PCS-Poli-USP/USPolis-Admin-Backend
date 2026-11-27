@@ -123,7 +123,14 @@ class ExamRepository:
         return exam
 
     @staticmethod
-    def update(*, user: User, id: int, input: ExamUpdate, session: Session) -> Exam:
+    def update(
+        *,
+        user: User,
+        id: int,
+        input: ExamUpdate,
+        session: Session,
+        allocate: bool = True,
+    ) -> Exam:
         exam = ExamRepository.get_by_id(id=id, session=session)
         classroom = None
         if input.classroom_id:
@@ -138,6 +145,7 @@ class ExamRepository:
             classroom=classroom,
             user=user,
             session=session,
+            allocate=allocate,
         )  # pyright: ignore[reportArgumentType]
 
         subject = SubjectRepository.get_by_id(id=input.subject_id, session=session)

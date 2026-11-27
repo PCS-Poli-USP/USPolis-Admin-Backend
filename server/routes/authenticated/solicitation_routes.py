@@ -27,11 +27,13 @@ router = APIRouter(prefix="/solicitations", tags=["Solicitations"])
 @router.get("")
 def get_all_solicitations(
     building_ids: OwnedBuildingIdsDep,
+    user: UserDep,
     session: SessionDep,
     pagination: PaginationDep,
 ) -> PaginatedResponse[SolicitationResponse]:
+    """Solicitations the user handles (see SolicitationRepository.visible_to)."""
     paginated_result = SolicitationRepository.get_by_buildings_ids_paginated(
-        building_ids=building_ids, pagination=pagination, session=session
+        building_ids=building_ids, user=user, pagination=pagination, session=session
     )
     response = PaginatedResponse[SolicitationResponse](
         page=paginated_result.page,
@@ -45,10 +47,11 @@ def get_all_solicitations(
 
 @router.get("/pending")
 async def get_pending_solicitations(
-    building_ids: OwnedBuildingIdsDep, session: SessionDep
+    building_ids: OwnedBuildingIdsDep, user: UserDep, session: SessionDep
 ) -> list[SolicitationResponse]:
+    """Pending solicitations the user handles (see SolicitationRepository.visible_to)."""
     solicitations = SolicitationRepository.get_pending_by_buildings_ids(
-        building_ids=building_ids, session=session
+        building_ids=building_ids, user=user, session=session
     )
     return SolicitationResponse.from_solicitation_list(solicitations)
 

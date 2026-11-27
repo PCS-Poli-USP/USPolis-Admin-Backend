@@ -178,8 +178,14 @@ class ReservationRepository:
         classroom: Classroom | None,
         user: User,
         session: Session,
+        allocate: bool = True,
     ) -> Reservation:
+        """Update a reservation. Only an approved reservation is ever booked
+        in its classroom: editing a pending, denied or cancelled solicitation
+        must not take the classroom without an approval, whatever the caller
+        passes."""
         reservation = ReservationRepository.get_by_id(id=id, session=session)
+        allocate = allocate and reservation.status == ReservationStatus.APPROVED
         reservation.title = input.title
         # reservation.type = input.type
         reservation.reason = input.reason
@@ -190,6 +196,7 @@ class ReservationRepository:
             input=input.schedule_data,
             classroom=classroom,
             session=session,
+            allocate=allocate,
         )
 
         solicitation = reservation.solicitation

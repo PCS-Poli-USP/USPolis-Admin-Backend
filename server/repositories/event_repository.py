@@ -87,7 +87,14 @@ class EventRepository:
         return event
 
     @staticmethod
-    def update(*, user: User, id: int, input: EventUpdate, session: Session) -> Event:
+    def update(
+        *,
+        user: User,
+        id: int,
+        input: EventUpdate,
+        session: Session,
+        allocate: bool = True,
+    ) -> Event:
         event = EventRepository.get_by_id(id=id, session=session)
         classroom = None
         if input.classroom_id:
@@ -101,6 +108,7 @@ class EventRepository:
             classroom=classroom,
             user=user,
             session=session,
+            allocate=allocate,
         )  # pyright: ignore[reportArgumentType]
         event.link = input.link
         event.type = input.event_type

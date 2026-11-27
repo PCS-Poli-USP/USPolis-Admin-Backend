@@ -13,7 +13,7 @@
 {% block content %}
 <p>Caro(a) {{ data.username }},</p>
 <p>A sua solicitação foi <b>negada</b> com a seguinte justificativa:</p>
-<div class="quote-block">{{ data.justification }}</div>
+<div class="quote-block" style="white-space: pre-line;">{{ data.justification|e }}</div>
 
 <div class="section-title">Detalhes da solicitação</div>
 <table class="detail-table" role="presentation" cellpadding="0" cellspacing="0">

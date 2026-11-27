@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
 from server.models.http.requests.event_request_models import EventRegister
 from server.models.http.requests.exam_request_models import ExamRegister
@@ -27,9 +27,22 @@ class SolicitationRegister(BaseModel):
     reservation_data: SolicitationData
 
 
+APPROVE_MESSAGE_MAX_LENGTH = 256
+
+
 class SolicitationApprove(BaseModel):
     classroom_id: int
     classroom_name: str
+    # Optional note from the approver, sent in the approval email only (not
+    # stored).
+    message: str | None = Field(default=None, max_length=APPROVE_MESSAGE_MAX_LENGTH)
+
+    @field_validator("message")
+    @classmethod
+    def blank_message_is_none(cls, message: str | None) -> str | None:
+        if message is None:
+            return None
+        return message.strip() or None
 
 
 class SolicitationUpdated(SolicitationApprove):

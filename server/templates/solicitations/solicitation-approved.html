@@ -14,6 +14,11 @@
 <p>Caro(a) {{ data.username }},</p>
 <p>A sua solicitação foi <b>aprovada</b>! Confira abaixo o local e horário definidos para a sua reserva.</p>
 
+{% if data.message %}
+<p>Mensagem de quem aprovou:</p>
+<div class="quote-block" style="white-space: pre-line;">{{ data.message|e }}</div>
+{% endif %}
+
 <div class="section-title">Local e horário definidos</div>
 <table class="detail-table" role="presentation" cellpadding="0" cellspacing="0">
     <tr><td class="detail-label">Prédio</td><td class="detail-value">{{ data.building }}</td></tr>
